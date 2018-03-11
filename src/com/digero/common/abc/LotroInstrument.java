@@ -46,7 +46,8 @@ public enum LotroInstrument
 	PIBGORN             ( "Pibgorn",              true,         84,             2,           false,         -3.5f         ),
 	DRUMS               ( "Drums",               false,        118,             0,            true,          0.0f         ),
 	COWBELL             ( "Cowbell",             false,        115,             0,            true,          0.0f         ),
-	MOOR_COWBELL        ( "Moor Cowbell",        false,        114,             0,            true,          0.0f         );
+	MOOR_COWBELL        ( "Moor Cowbell",        false,        114,             0,            true,          0.0f         ),
+	STUDENT_FIDDLE		("Student Fiddle",		  true,			40,				0,			 false,			 0.0f		  );
 // @formatter:on
 
 	public static final LotroInstrument DEFAULT_LUTE = LUTE_OF_AGES;
@@ -138,6 +139,7 @@ public enum LotroInstrument
 			addNicknames(LotroInstrument.DRUMS, "Drum");
 			addNicknames(LotroInstrument.BAGPIPE, "Bagpipes");
 			addNicknames(LotroInstrument.MOOR_COWBELL, "Moor Cowbell", "More Cowbell");
+			addNicknames(LotroInstrument.STUDENT_FIDDLE, "Student Fiddle", "Fiddle");
 		}
 
 		for (Pair<Pattern, LotroInstrument> patternAndInstrument : instrumentNicknames)
