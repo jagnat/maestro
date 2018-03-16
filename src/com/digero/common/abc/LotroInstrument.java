@@ -47,7 +47,7 @@ public enum LotroInstrument
 	DRUMS               ( "Drums",               false,        118,             0,            true,          0.0f         ),
 	COWBELL             ( "Cowbell",             false,        115,             0,            true,          0.0f         ),
 	MOOR_COWBELL        ( "Moor Cowbell",        false,        114,             0,            true,          0.0f         ),
-	STUDENT_FIDDLE		("Student Fiddle",		  true,			40,				0,			 false,			 0.0f		  );
+	STUDENT_FIDDLE		( "Student Fiddle",		  true,			40,				1,			 false,			 0.0f		  );
 // @formatter:on
 
 	public static final LotroInstrument DEFAULT_LUTE = LUTE_OF_AGES;
@@ -65,7 +65,11 @@ public enum LotroInstrument
 	private LotroInstrument(String friendlyName, boolean sustainable, int midiProgramId, int octaveDelta,
 			boolean isPercussion, float dBVolumeAdjust)
 	{
-		this.lowestPlayable = Note.MIN_PLAYABLE;
+		if (friendlyName == "Student Fiddle") {
+			this.lowestPlayable = Note.G2;
+		} else {
+			this.lowestPlayable = Note.MIN_PLAYABLE;			
+		}
 		this.highestPlayable = Note.MAX_PLAYABLE;
 		this.friendlyName = friendlyName;
 		this.sustainable = sustainable;
@@ -133,13 +137,13 @@ public enum LotroInstrument
 			addNicknames(LotroInstrument.BASIC_LUTE, "Basic Lute", "New Lute", "LuteB", "Banjo");
 			addNicknames(LotroInstrument.LUTE_OF_AGES, "Lute of Ages", "Age Lute", "LuteA", "LOA", "Guitar");
 			addNicknames(LotroInstrument.DEFAULT_LUTE, "Lute");
-			addNicknames(LotroInstrument.MISTY_MOUNTAIN_HARP, "Misty Mountain Harp", "Misty Harp", "MM Harp", "MMH");
+			addNicknames(LotroInstrument.MISTY_MOUNTAIN_HARP, "Misty Mountain Harp", "Misty Harp", "MM Harp", "MMH", "MMHarp");
 			addNicknames(LotroInstrument.HARP, "Basic Harp");
 			addNicknames(LotroInstrument.THEORBO, "Theo", "Bass");
 			addNicknames(LotroInstrument.DRUMS, "Drum");
 			addNicknames(LotroInstrument.BAGPIPE, "Bagpipes");
 			addNicknames(LotroInstrument.MOOR_COWBELL, "Moor Cowbell", "More Cowbell");
-			addNicknames(LotroInstrument.STUDENT_FIDDLE, "Student Fiddle", "Fiddle");
+			addNicknames(LotroInstrument.STUDENT_FIDDLE, "Student Fiddle", "Fiddle", "StFiddle");
 		}
 
 		for (Pair<Pattern, LotroInstrument> patternAndInstrument : instrumentNicknames)

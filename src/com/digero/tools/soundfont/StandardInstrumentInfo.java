@@ -32,8 +32,11 @@ public class StandardInstrumentInfo extends InstrumentInfo
 
 		SortedSet<SampleInfo> usedSamples = new TreeSet<SampleInfo>();
 		int startId = lowestNoteId + notesBelowSample;
-		for (int id = startId; id <= highestNoteId; id += notesPerSample)
+		//System.err.println(name);
+		for (int id = startId; id <= highestNoteId; id += notesPerSample) {
+			//System.err.println(Integer.toString(id));
 			usedSamples.add(samples.get(new Key(lotroInstrument, id)));
+		}
 
 		this.usedSamples = Collections.unmodifiableSortedSet(usedSamples);
 	}

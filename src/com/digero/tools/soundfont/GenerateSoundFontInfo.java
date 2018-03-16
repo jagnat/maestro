@@ -34,6 +34,7 @@ public class GenerateSoundFontInfo
 			return 1;
 
 		case LUTE_OF_AGES:
+		case STUDENT_FIDDLE:
 		case BASIC_LUTE:
 		case HARP:
 			return 1;

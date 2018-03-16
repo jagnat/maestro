@@ -36,6 +36,10 @@ public final class AboutDialog
 				+ appName + "<br>" //
 				+ "Version " + appVersion + "<br>" //
 				+ "Created by Digero of Landroval<br>" //
+				+ "Updated by:<br>"//
+				+ "Bruzo,<br>"//
+				+ " adarbyem,<br>"//
+				+ " & Aifel of Lauralin<br>"//
 				+ "Copyright &copy; 2015 Ben Howell<br>" //
 				+ "<a href='" + appUrl + "'>" + appUrl + "</a>" //
 				+ "</html>");
