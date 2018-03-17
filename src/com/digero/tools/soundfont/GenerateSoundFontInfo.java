@@ -2,6 +2,8 @@ package com.digero.tools.soundfont;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.SortedSet;
@@ -162,7 +164,7 @@ public class GenerateSoundFontInfo
 			out.println("Name=LotroInstruments.sf2");
 			out.println("ROMName=");
 			out.println("ROMVersion=0.0");
-			out.println("Date=4/12/2015 12:34:56 PM");
+			out.println("Date="+new SimpleDateFormat("MM/dd/yyyy KK:mm:ss a").format(new Date()));
 			out.println("Designer=Digero");
 			out.println("Product=Maestro");
 			out.println("Copyright=Turbine Entertainment");
