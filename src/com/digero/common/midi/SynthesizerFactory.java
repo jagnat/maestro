@@ -89,7 +89,7 @@ public class SynthesizerFactory
 		if (synth instanceof AudioSynthesizer)
 			return (AudioSynthesizer) synth;
 
-		// If default synhtesizer is not AudioSynthesizer, check others.
+		// If default synthesizer is not AudioSynthesizer, check others.
 		for (Info info : MidiSystem.getMidiDeviceInfo())
 		{
 			MidiDevice dev = MidiSystem.getMidiDevice(info);

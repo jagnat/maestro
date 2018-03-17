@@ -39,7 +39,7 @@ public final class AboutDialog
 				+ "Updated by:<br>"//
 				+ "Bruzo,<br>"//
 				+ " adarbyem,<br>"//
-				+ " & Aifel of Lauralin<br>"//
+				+ " & Aifel of Laurelin<br>"//
 				+ "Copyright &copy; 2015 Ben Howell<br>" //
 				+ "<a href='" + appUrl + "'>" + appUrl + "</a>" //
 				+ "</html>");
