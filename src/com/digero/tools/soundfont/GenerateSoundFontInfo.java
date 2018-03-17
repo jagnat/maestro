@@ -164,7 +164,7 @@ public class GenerateSoundFontInfo
 			out.println("Name=LotroInstruments.sf2");
 			out.println("ROMName=");
 			out.println("ROMVersion=0.0");
-			out.println("Date="+new SimpleDateFormat("MM/dd/yyyy KK:mm:ss a").format(new Date()));
+			out.println("Date="+new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a").format(new Date()));
 			out.println("Designer=Digero");
 			out.println("Product=Maestro");
 			out.println("Copyright=Turbine Entertainment");
