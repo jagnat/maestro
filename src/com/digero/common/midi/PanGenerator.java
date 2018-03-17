@@ -90,6 +90,8 @@ public class PanGenerator
 			return CENTER + sign * 35;
 		case CLARINET:
 			return CENTER + sign * 45;
+		case STUDENT_FIDDLE:
+			return CENTER + sign * -20;
 		default:
 			return CENTER;
 		}
