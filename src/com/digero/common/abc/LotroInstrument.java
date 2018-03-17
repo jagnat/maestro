@@ -65,8 +65,8 @@ public enum LotroInstrument
 	private LotroInstrument(String friendlyName, boolean sustainable, int midiProgramId, int octaveDelta,
 			boolean isPercussion, float dBVolumeAdjust)
 	{
-		if (friendlyName == "Student Fiddle") {
-			this.lowestPlayable = Note.G2;
+		if (midiProgramId == 40) {
+			this.lowestPlayable = AbcConstants.FIDDLE_LOWEST_MUSICAL_NOTE;
 		} else {
 			this.lowestPlayable = Note.MIN_PLAYABLE;			
 		}
@@ -134,16 +134,17 @@ public enum LotroInstrument
 	{
 		if (instrumentNicknames.size() == 0)
 		{
-			addNicknames(LotroInstrument.BASIC_LUTE, "Basic Lute", "New Lute", "LuteB", "Banjo");
-			addNicknames(LotroInstrument.LUTE_OF_AGES, "Lute of Ages", "Age Lute", "LuteA", "LOA", "Guitar");
+			addNicknames(LotroInstrument.BASIC_LUTE, "New Lute", "LuteB", "Banjo");
+			addNicknames(LotroInstrument.LUTE_OF_AGES, "Age Lute", "LuteA", "LOA", "Guitar");
 			addNicknames(LotroInstrument.DEFAULT_LUTE, "Lute");
-			addNicknames(LotroInstrument.MISTY_MOUNTAIN_HARP, "Misty Mountain Harp", "Misty Harp", "MM Harp", "MMH", "MMHarp");
+			addNicknames(LotroInstrument.MISTY_MOUNTAIN_HARP, "Misty Harp", "MM Harp", "MMH", "MMHarp");
 			addNicknames(LotroInstrument.HARP, "Basic Harp");
 			addNicknames(LotroInstrument.THEORBO, "Theo", "Bass");
 			addNicknames(LotroInstrument.DRUMS, "Drum");
-			addNicknames(LotroInstrument.BAGPIPE, "Bagpipes");
-			addNicknames(LotroInstrument.MOOR_COWBELL, "Moor Cowbell", "More Cowbell");
-			addNicknames(LotroInstrument.STUDENT_FIDDLE, "Student Fiddle", "Fiddle", "StFiddle");
+			addNicknames(LotroInstrument.CLARINET, "Clari");
+			addNicknames(LotroInstrument.BAGPIPE, "Bagpipes", "Pipes");
+			addNicknames(LotroInstrument.MOOR_COWBELL, "More Cowbell");
+			addNicknames(LotroInstrument.STUDENT_FIDDLE, "Fiddle", "StFiddle", "Student's Fiddle");
 		}
 
 		for (Pair<Pattern, LotroInstrument> patternAndInstrument : instrumentNicknames)

@@ -22,4 +22,6 @@ public interface AbcConstants
 
 	/** The highest Note ID for bagpipe drones */
 	public static final int BAGPIPE_LAST_DRONE_NOTE_ID = Note.B2.id;
+	
+	public static final Note FIDDLE_LOWEST_MUSICAL_NOTE = Note.G2;
 }
