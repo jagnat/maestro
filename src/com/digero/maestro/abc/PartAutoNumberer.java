@@ -26,7 +26,8 @@ public class PartAutoNumberer
 			for (LotroInstrument instrument : LotroInstrument.values())
 			{
 				if (instrument != LotroInstrument.BASIC_LUTE && instrument != LotroInstrument.MISTY_MOUNTAIN_HARP
-						&& instrument != LotroInstrument.PIBGORN && instrument != LotroInstrument.MOOR_COWBELL)
+						&& instrument != LotroInstrument.PIBGORN && instrument != LotroInstrument.COWBELL
+						&& instrument != LotroInstrument.MOOR_COWBELL)
 				{
 					i++;
 					int defaultValue = i;
@@ -51,9 +52,11 @@ public class PartAutoNumberer
 			firstNumber.put(LotroInstrument.PIBGORN,
 					prefs.getInt(LotroInstrument.PIBGORN.toString(), firstNumber.get(LotroInstrument.BAGPIPE)));
 
-			// Moor cowbell defaults to the cowbell number
+			// Cowbells defaults to the drum number
+			firstNumber.put(LotroInstrument.COWBELL,
+					prefs.getInt(LotroInstrument.COWBELL.toString(), firstNumber.get(LotroInstrument.DRUMS)));
 			firstNumber.put(LotroInstrument.MOOR_COWBELL,
-					prefs.getInt(LotroInstrument.MOOR_COWBELL.toString(), firstNumber.get(LotroInstrument.COWBELL)));
+					prefs.getInt(LotroInstrument.MOOR_COWBELL.toString(), firstNumber.get(LotroInstrument.DRUMS)));
 
 			incrementByTen = prefs.getBoolean("incrementByTen", true);
 		}
