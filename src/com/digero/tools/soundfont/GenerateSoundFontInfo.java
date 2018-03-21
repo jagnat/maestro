@@ -36,7 +36,10 @@ public class GenerateSoundFontInfo
 			return 1;
 
 		case LUTE_OF_AGES:
-		case STUDENT_FIDDLE:
+		case STUDENT_FIDDLE: 
+		case LONELY_MOUNTAIN_FIDDLE:
+		case SPRIGHTLY_FIDDLE:
+		case TRAVELLERS_TRUSTY_FIDDLE:
 		case BASIC_LUTE:
 		case HARP:
 			return 1;
@@ -116,6 +119,14 @@ public class GenerateSoundFontInfo
 				usedSamples.addAll(bagpipe.usedSamples);
 
 				presets.add(new PresetInfo(drones, bagpipe));
+			}
+			else if (li == LotroInstrument.STUDENT_FIDDLE)
+			{
+				StudentFiddleInfo info = new StudentFiddleInfo(li, getNotesPerSample(li), samples);
+				instruments.add(info);
+				usedSamples.addAll(info.usedSamples);
+
+				presets.add(new PresetInfo(info));
 			}
 			else
 			{

@@ -78,6 +78,8 @@ public class SongPositionLabel extends JLabel implements Listener<SequencerEvent
 		long length = sequencer.tickToMicros(tickLength);
 		if (micros != lastPrintedMicros || length != lastPrintedLength)
 		{
+			// the following line reveals that ABCPlayer and meastro does not necessary have same amount of ticks for same imported abc file, might be a bug..
+			//System.out.println(String.format("tl=%d off=%d l=%d th=%d", new Object[] {sequencer.getTickLength(), initialOffsetTick, tickLength, sequencer.getThumbTick()}));
 			lastPrintedMicros = micros;
 			lastPrintedLength = length;
 			setText(Util.formatDuration(micros, length) + "/" + Util.formatDuration(length, length));

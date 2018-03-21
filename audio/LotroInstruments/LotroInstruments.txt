@@ -1068,6 +1068,186 @@
         FineTune=0
         Type=1
 
+    SampleName=lonely_43
+        SampleRate=44100
+        Key=43
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_44
+        SampleRate=44100
+        Key=44
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_45
+        SampleRate=44100
+        Key=45
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_46
+        SampleRate=44100
+        Key=46
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_47
+        SampleRate=44100
+        Key=47
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_48
+        SampleRate=44100
+        Key=48
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_49
+        SampleRate=44100
+        Key=49
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_50
+        SampleRate=44100
+        Key=50
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_51
+        SampleRate=44100
+        Key=51
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_52
+        SampleRate=44100
+        Key=52
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_53
+        SampleRate=44100
+        Key=53
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_54
+        SampleRate=44100
+        Key=54
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_55
+        SampleRate=44100
+        Key=55
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_56
+        SampleRate=44100
+        Key=56
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_57
+        SampleRate=44100
+        Key=57
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_58
+        SampleRate=44100
+        Key=58
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_59
+        SampleRate=44100
+        Key=59
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_60
+        SampleRate=44100
+        Key=60
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_61
+        SampleRate=44100
+        Key=61
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_62
+        SampleRate=44100
+        Key=62
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_63
+        SampleRate=44100
+        Key=63
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_64
+        SampleRate=44100
+        Key=64
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_65
+        SampleRate=44100
+        Key=65
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_66
+        SampleRate=44100
+        Key=66
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_67
+        SampleRate=44100
+        Key=67
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_68
+        SampleRate=44100
+        Key=68
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_69
+        SampleRate=44100
+        Key=69
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_70
+        SampleRate=44100
+        Key=70
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_71
+        SampleRate=44100
+        Key=71
+        FineTune=0
+        Type=1
+
+    SampleName=lonely_72
+        SampleRate=44100
+        Key=72
+        FineTune=0
+        Type=1
+
     SampleName=lute_of_ages_36
         SampleRate=44100
         Key=36
@@ -1446,6 +1626,228 @@
         FineTune=0
         Type=1
 
+    SampleName=sprightly_43
+        SampleRate=44100
+        Key=43
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_44
+        SampleRate=44100
+        Key=44
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_45
+        SampleRate=44100
+        Key=45
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_46
+        SampleRate=44100
+        Key=46
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_47
+        SampleRate=44100
+        Key=47
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_48
+        SampleRate=44100
+        Key=48
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_49
+        SampleRate=44100
+        Key=49
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_50
+        SampleRate=44100
+        Key=50
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_51
+        SampleRate=44100
+        Key=51
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_52
+        SampleRate=44100
+        Key=52
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_53
+        SampleRate=44100
+        Key=53
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_54
+        SampleRate=44100
+        Key=54
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_55
+        SampleRate=44100
+        Key=55
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_56
+        SampleRate=44100
+        Key=56
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_57
+        SampleRate=44100
+        Key=57
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_58
+        SampleRate=44100
+        Key=58
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_59
+        SampleRate=44100
+        Key=59
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_60
+        SampleRate=44100
+        Key=60
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_61
+        SampleRate=44100
+        Key=61
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_62
+        SampleRate=44100
+        Key=62
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_63
+        SampleRate=44100
+        Key=63
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_64
+        SampleRate=44100
+        Key=64
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_65
+        SampleRate=44100
+        Key=65
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_66
+        SampleRate=44100
+        Key=66
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_67
+        SampleRate=44100
+        Key=67
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_68
+        SampleRate=44100
+        Key=68
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_69
+        SampleRate=44100
+        Key=69
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_70
+        SampleRate=44100
+        Key=70
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_71
+        SampleRate=44100
+        Key=71
+        FineTune=0
+        Type=1
+
+    SampleName=sprightly_72
+        SampleRate=44100
+        Key=72
+        FineTune=0
+        Type=1
+
+    SampleName=student_fiddle_36
+        SampleRate=44100
+        Key=36
+        FineTune=0
+        Type=1
+
+    SampleName=student_fiddle_37
+        SampleRate=44100
+        Key=37
+        FineTune=0
+        Type=1
+
+    SampleName=student_fiddle_38
+        SampleRate=44100
+        Key=38
+        FineTune=0
+        Type=1
+
+    SampleName=student_fiddle_39
+        SampleRate=44100
+        Key=39
+        FineTune=0
+        Type=1
+
+    SampleName=student_fiddle_40
+        SampleRate=44100
+        Key=40
+        FineTune=0
+        Type=1
+
+    SampleName=student_fiddle_41
+        SampleRate=44100
+        Key=41
+        FineTune=0
+        Type=1
+
+    SampleName=student_fiddle_42
+        SampleRate=44100
+        Key=42
+        FineTune=0
+        Type=1
+
     SampleName=student_fiddle_43
         SampleRate=44100
         Key=43
@@ -1735,6 +2137,186 @@
         Type=1
 
     SampleName=theorbo_72
+        SampleRate=44100
+        Key=72
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_43
+        SampleRate=44100
+        Key=43
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_44
+        SampleRate=44100
+        Key=44
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_45
+        SampleRate=44100
+        Key=45
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_46
+        SampleRate=44100
+        Key=46
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_47
+        SampleRate=44100
+        Key=47
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_48
+        SampleRate=44100
+        Key=48
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_49
+        SampleRate=44100
+        Key=49
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_50
+        SampleRate=44100
+        Key=50
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_51
+        SampleRate=44100
+        Key=51
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_52
+        SampleRate=44100
+        Key=52
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_53
+        SampleRate=44100
+        Key=53
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_54
+        SampleRate=44100
+        Key=54
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_55
+        SampleRate=44100
+        Key=55
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_56
+        SampleRate=44100
+        Key=56
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_57
+        SampleRate=44100
+        Key=57
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_58
+        SampleRate=44100
+        Key=58
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_59
+        SampleRate=44100
+        Key=59
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_60
+        SampleRate=44100
+        Key=60
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_61
+        SampleRate=44100
+        Key=61
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_62
+        SampleRate=44100
+        Key=62
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_63
+        SampleRate=44100
+        Key=63
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_64
+        SampleRate=44100
+        Key=64
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_65
+        SampleRate=44100
+        Key=65
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_66
+        SampleRate=44100
+        Key=66
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_67
+        SampleRate=44100
+        Key=67
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_68
+        SampleRate=44100
+        Key=68
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_69
+        SampleRate=44100
+        Key=69
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_70
+        SampleRate=44100
+        Key=70
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_71
+        SampleRate=44100
+        Key=71
+        FineTune=0
+        Type=1
+
+    SampleName=traveller_72
         SampleRate=44100
         Key=72
         FineTune=0
@@ -3129,6 +3711,189 @@
             Z_HighVelocity=127
 
 
+    InstrumentName=Lonely Mountain Fiddle
+
+        Sample=lonely_43
+            Z_LowKey=43
+            Z_HighKey=43
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_44
+            Z_LowKey=44
+            Z_HighKey=44
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_45
+            Z_LowKey=45
+            Z_HighKey=45
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_46
+            Z_LowKey=46
+            Z_HighKey=46
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_47
+            Z_LowKey=47
+            Z_HighKey=47
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_48
+            Z_LowKey=48
+            Z_HighKey=48
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_49
+            Z_LowKey=49
+            Z_HighKey=49
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_50
+            Z_LowKey=50
+            Z_HighKey=50
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_51
+            Z_LowKey=51
+            Z_HighKey=51
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_52
+            Z_LowKey=52
+            Z_HighKey=52
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_53
+            Z_LowKey=53
+            Z_HighKey=53
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_54
+            Z_LowKey=54
+            Z_HighKey=54
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_55
+            Z_LowKey=55
+            Z_HighKey=55
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_56
+            Z_LowKey=56
+            Z_HighKey=56
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_57
+            Z_LowKey=57
+            Z_HighKey=57
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_58
+            Z_LowKey=58
+            Z_HighKey=58
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_59
+            Z_LowKey=59
+            Z_HighKey=59
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_60
+            Z_LowKey=60
+            Z_HighKey=60
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_61
+            Z_LowKey=61
+            Z_HighKey=61
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_62
+            Z_LowKey=62
+            Z_HighKey=62
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_63
+            Z_LowKey=63
+            Z_HighKey=63
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_64
+            Z_LowKey=64
+            Z_HighKey=64
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_65
+            Z_LowKey=65
+            Z_HighKey=65
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_66
+            Z_LowKey=66
+            Z_HighKey=66
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_67
+            Z_LowKey=67
+            Z_HighKey=67
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_68
+            Z_LowKey=68
+            Z_HighKey=68
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_69
+            Z_LowKey=69
+            Z_HighKey=69
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_70
+            Z_LowKey=70
+            Z_HighKey=70
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_71
+            Z_LowKey=71
+            Z_HighKey=71
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=lonely_72
+            Z_LowKey=72
+            Z_HighKey=72
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+
     InstrumentName=Lute of Ages
 
         Sample=lute_of_ages_36
@@ -3807,7 +4572,236 @@
             Z_HighVelocity=127
 
 
+    InstrumentName=Sprightly Fiddle
+
+        Sample=sprightly_43
+            Z_LowKey=43
+            Z_HighKey=43
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_44
+            Z_LowKey=44
+            Z_HighKey=44
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_45
+            Z_LowKey=45
+            Z_HighKey=45
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_46
+            Z_LowKey=46
+            Z_HighKey=46
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_47
+            Z_LowKey=47
+            Z_HighKey=47
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_48
+            Z_LowKey=48
+            Z_HighKey=48
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_49
+            Z_LowKey=49
+            Z_HighKey=49
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_50
+            Z_LowKey=50
+            Z_HighKey=50
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_51
+            Z_LowKey=51
+            Z_HighKey=51
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_52
+            Z_LowKey=52
+            Z_HighKey=52
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_53
+            Z_LowKey=53
+            Z_HighKey=53
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_54
+            Z_LowKey=54
+            Z_HighKey=54
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_55
+            Z_LowKey=55
+            Z_HighKey=55
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_56
+            Z_LowKey=56
+            Z_HighKey=56
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_57
+            Z_LowKey=57
+            Z_HighKey=57
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_58
+            Z_LowKey=58
+            Z_HighKey=58
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_59
+            Z_LowKey=59
+            Z_HighKey=59
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_60
+            Z_LowKey=60
+            Z_HighKey=60
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_61
+            Z_LowKey=61
+            Z_HighKey=61
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_62
+            Z_LowKey=62
+            Z_HighKey=62
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_63
+            Z_LowKey=63
+            Z_HighKey=63
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_64
+            Z_LowKey=64
+            Z_HighKey=64
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_65
+            Z_LowKey=65
+            Z_HighKey=65
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_66
+            Z_LowKey=66
+            Z_HighKey=66
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_67
+            Z_LowKey=67
+            Z_HighKey=67
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_68
+            Z_LowKey=68
+            Z_HighKey=68
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_69
+            Z_LowKey=69
+            Z_HighKey=69
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_70
+            Z_LowKey=70
+            Z_HighKey=70
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_71
+            Z_LowKey=71
+            Z_HighKey=71
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=sprightly_72
+            Z_LowKey=72
+            Z_HighKey=72
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+
     InstrumentName=Student Fiddle
+
+        Sample=student_fiddle_36
+            Z_LowKey=36
+            Z_HighKey=36
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_37
+            Z_LowKey=37
+            Z_HighKey=37
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_38
+            Z_LowKey=38
+            Z_HighKey=38
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_39
+            Z_LowKey=39
+            Z_HighKey=39
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+            Z_initialAttenuation=960
+
+        Sample=student_fiddle_40
+            Z_LowKey=40
+            Z_HighKey=40
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+            Z_initialAttenuation=960
+
+        Sample=student_fiddle_41
+            Z_LowKey=41
+            Z_HighKey=41
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+            Z_initialAttenuation=960
+
+        Sample=student_fiddle_42
+            Z_LowKey=42
+            Z_HighKey=42
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+            Z_initialAttenuation=960
 
         Sample=student_fiddle_43
             Z_LowKey=43
@@ -4107,6 +5101,189 @@
             Z_HighVelocity=127
 
 
+    InstrumentName=Travellers Trusty Fiddle
+
+        Sample=traveller_43
+            Z_LowKey=43
+            Z_HighKey=43
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_44
+            Z_LowKey=44
+            Z_HighKey=44
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_45
+            Z_LowKey=45
+            Z_HighKey=45
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_46
+            Z_LowKey=46
+            Z_HighKey=46
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_47
+            Z_LowKey=47
+            Z_HighKey=47
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_48
+            Z_LowKey=48
+            Z_HighKey=48
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_49
+            Z_LowKey=49
+            Z_HighKey=49
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_50
+            Z_LowKey=50
+            Z_HighKey=50
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_51
+            Z_LowKey=51
+            Z_HighKey=51
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_52
+            Z_LowKey=52
+            Z_HighKey=52
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_53
+            Z_LowKey=53
+            Z_HighKey=53
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_54
+            Z_LowKey=54
+            Z_HighKey=54
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_55
+            Z_LowKey=55
+            Z_HighKey=55
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_56
+            Z_LowKey=56
+            Z_HighKey=56
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_57
+            Z_LowKey=57
+            Z_HighKey=57
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_58
+            Z_LowKey=58
+            Z_HighKey=58
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_59
+            Z_LowKey=59
+            Z_HighKey=59
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_60
+            Z_LowKey=60
+            Z_HighKey=60
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_61
+            Z_LowKey=61
+            Z_HighKey=61
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_62
+            Z_LowKey=62
+            Z_HighKey=62
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_63
+            Z_LowKey=63
+            Z_HighKey=63
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_64
+            Z_LowKey=64
+            Z_HighKey=64
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_65
+            Z_LowKey=65
+            Z_HighKey=65
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_66
+            Z_LowKey=66
+            Z_HighKey=66
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_67
+            Z_LowKey=67
+            Z_HighKey=67
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_68
+            Z_LowKey=68
+            Z_HighKey=68
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_69
+            Z_LowKey=69
+            Z_HighKey=69
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_70
+            Z_LowKey=70
+            Z_HighKey=70
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_71
+            Z_LowKey=71
+            Z_HighKey=71
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=traveller_72
+            Z_LowKey=72
+            Z_HighKey=72
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+
 [Presets]
 
     PresetName=Bagpipe
@@ -4209,6 +5386,18 @@
             L_HighVelocity=127
 
 
+    PresetName=Lonely Mountain Fiddle
+        Bank=0
+        Program=41
+
+        Instrument=Lonely Mountain Fiddle
+            L_LowKey=43
+            L_HighKey=72
+            L_LowVelocity=0
+            L_HighVelocity=127
+            L_initialAttenuation=30
+
+
     PresetName=Lute of Ages
         Bank=0
         Program=24
@@ -4266,15 +5455,28 @@
             L_initialAttenuation=35
 
 
-    PresetName=Student Fiddle
+    PresetName=Sprightly Fiddle
         Bank=0
-        Program=40
+        Program=49
 
-        Instrument=Student Fiddle
+        Instrument=Sprightly Fiddle
             L_LowKey=43
             L_HighKey=72
             L_LowVelocity=0
             L_HighVelocity=127
+            L_initialAttenuation=30
+
+
+    PresetName=Student Fiddle
+        Bank=0
+        Program=60
+
+        Instrument=Student Fiddle
+            L_LowKey=36
+            L_HighKey=72
+            L_LowVelocity=0
+            L_HighVelocity=127
+            L_initialAttenuation=30
 
 
     PresetName=Theorbo
@@ -4289,13 +5491,25 @@
             L_initialAttenuation=120
 
 
+    PresetName=Travellers Trusty Fiddle
+        Bank=0
+        Program=45
+
+        Instrument=Travellers Trusty Fiddle
+            L_LowKey=43
+            L_HighKey=72
+            L_LowVelocity=0
+            L_HighVelocity=127
+            L_initialAttenuation=30
+
+
 [Info]
 Version=2.1
 Engine=E-mu 10K1
 Name=LotroInstruments.sf2
 ROMName=
 ROMVersion=0.0
-Date=03/17/2018 01:12:38 PM
+Date=03/21/2018 12:51:17 PM
 Designer=Digero
 Product=Maestro
 Copyright=Turbine Entertainment
