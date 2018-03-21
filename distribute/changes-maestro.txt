@@ -1,4 +1,4 @@
-Version 2.3.2
+Version 2.3.3
   * Added Sprightly, Lonely Mountain and Traveller's Trusty Fiddles. (extracted by Bruzo)
   * All the fiddles are now auto-numbered as 9, and cowbells are same as drums.
   * The Student's Fiddle has now got its silence and noises at bottom of lowest octave, and its program is moved from 40 to 60.
