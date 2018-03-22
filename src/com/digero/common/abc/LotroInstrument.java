@@ -150,31 +150,37 @@ public enum LotroInstrument
 	{
 		if (instrumentNicknames.size() == 0)
 		{
-			addNicknames(LotroInstrument.BASIC_LUTE, "New Lute", "LuteB", "Banjo");
+			// the order matters here, so make sure words that are used as part of names but also as standalone descriptions, like lute, harp and fiddle is added last.
+			// also since nicknames are checked first, "basic lute" could be seen as Lute and therefore lute of ages if not listed as nickname. Thats why some friendly names are relisted as nicknames.
+			addNicknames(LotroInstrument.BASIC_LUTE, "Basic Lute", "New Lute", "LuteB", "Banjo");
 			addNicknames(LotroInstrument.LUTE_OF_AGES, "Age Lute", "LuteA", "LOA", "Guitar");
 			addNicknames(LotroInstrument.DEFAULT_LUTE, "Lute");
-			addNicknames(LotroInstrument.MISTY_MOUNTAIN_HARP, "Misty Harp", "MM Harp", "MMH", "MMHarp");
-			addNicknames(LotroInstrument.HARP, "Basic Harp");
+			addNicknames(LotroInstrument.MISTY_MOUNTAIN_HARP, "Misty Mountain Harp", "Misty Harp", "MM Harp", "MMH", "MMHarp");
+			addNicknames(LotroInstrument.HARP, "Basic Harp", "Gleowine's Harp", "Gleowines Harp");
 			addNicknames(LotroInstrument.THEORBO, "Theo", "Bass");
 			addNicknames(LotroInstrument.DRUMS, "Drum");
 			addNicknames(LotroInstrument.CLARINET, "Clari");
 			addNicknames(LotroInstrument.BAGPIPE, "Bagpipes", "Pipes");
-			addNicknames(LotroInstrument.MOOR_COWBELL, "More Cowbell");
+			addNicknames(LotroInstrument.MOOR_COWBELL, "Moor Cowbell", "More Cowbell");
+			addNicknames(LotroInstrument.LONELY_MOUNTAIN_FIDDLE, "Lonely Mountain Fiddle", "LMFiddle", "Lonely Fiddle", "Mountain Fiddle");
+			addNicknames(LotroInstrument.SPRIGHTLY_FIDDLE, "Sprightly Fiddle", "SpFiddle");
+			addNicknames(LotroInstrument.TRAVELLERS_TRUSTY_FIDDLE, "Travellers Trusty Fiddle", "TTFiddle", "Travellers Fiddle", "Trusty Fiddle", "Traveller's Trusty Fiddle");
 			addNicknames(LotroInstrument.STUDENT_FIDDLE, "Fiddle", "StFiddle", "Student's Fiddle", "Students Fiddle");
-			addNicknames(LotroInstrument.LONELY_MOUNTAIN_FIDDLE, "LMFiddle", "Lonely Fiddle", "Mountain Fiddle");
-			addNicknames(LotroInstrument.SPRIGHTLY_FIDDLE, "SpFiddle");
-			addNicknames(LotroInstrument.TRAVELLERS_TRUSTY_FIDDLE, "TTFiddle", "Travellers Fiddle", "Trusty Fiddle", "Traveller's Trusty Fiddle");
 		}
 
+		// first check nicknames
 		for (Pair<Pattern, LotroInstrument> patternAndInstrument : instrumentNicknames)
 		{
-			if (patternAndInstrument.first.matcher(str).find())
+			if (patternAndInstrument.first.matcher(str).find()) {
 				return patternAndInstrument.second;
+			}
 		}
 
-		if (instrumentsRegex == null)
+		if (instrumentsRegex == null) {
 			instrumentsRegex = makeInstrumentRegex(LotroInstrument.values());
+		}
 
+		// second check friendly names
 		Matcher m = instrumentsRegex.matcher(str);
 		if (m.find())
 			return LotroInstrument.parseInstrument(m.group(1));
