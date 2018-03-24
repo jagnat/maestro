@@ -96,6 +96,9 @@ public class GenerateSoundFontInfo
 		SortedSet<PresetInfo> presets = new TreeSet<PresetInfo>();
 		for (LotroInstrument li : LotroInstrument.values())
 		{
+			if (li.sharingProgram == true) {
+				continue;
+			}
 			if (li == LotroInstrument.COWBELL || li == LotroInstrument.MOOR_COWBELL)
 			{
 				SampleInfo sample = (li == LotroInstrument.COWBELL) ? cowbellSample : moorCowbellSample;
@@ -123,6 +126,14 @@ public class GenerateSoundFontInfo
 			else if (li == LotroInstrument.STUDENT_FIDDLE)
 			{
 				StudentFiddleInfo info = new StudentFiddleInfo(li, getNotesPerSample(li), samples);
+				instruments.add(info);
+				usedSamples.addAll(info.usedSamples);
+
+				presets.add(new PresetInfo(info));
+			}
+			else if (li == LotroInstrument.SPRIGHTLY_FIDDLE)
+			{
+				SprightlyFiddleInfo info = new SprightlyFiddleInfo(li, getNotesPerSample(li), samples);
 				instruments.add(info);
 				usedSamples.addAll(info.usedSamples);
 

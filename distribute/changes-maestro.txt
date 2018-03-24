@@ -1,3 +1,9 @@
+Version 2.3.5
+  * Added Student Fiddle NoFX, which is without the noises and silent notes.
+  
+Version 2.3.4
+  * Fixed regression that it would not proper assign instruments when loaded from ABC.
+
 Version 2.3.3
   * Added Sprightly, Lonely Mountain and Traveller's Trusty Fiddles. (extracted by Bruzo)
   * All the fiddles are now auto-numbered as 9, and cowbells are same as drums.

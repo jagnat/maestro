@@ -28,7 +28,8 @@ public class PartAutoNumberer
 				if (instrument != LotroInstrument.BASIC_LUTE && instrument != LotroInstrument.MISTY_MOUNTAIN_HARP
 						&& instrument != LotroInstrument.PIBGORN && instrument != LotroInstrument.COWBELL
 						&& instrument != LotroInstrument.MOOR_COWBELL && instrument != LotroInstrument.LONELY_MOUNTAIN_FIDDLE
-						&& instrument != LotroInstrument.SPRIGHTLY_FIDDLE && instrument != LotroInstrument.TRAVELLERS_TRUSTY_FIDDLE)
+						&& instrument != LotroInstrument.SPRIGHTLY_FIDDLE && instrument != LotroInstrument.TRAVELLERS_TRUSTY_FIDDLE
+						&& instrument != LotroInstrument.STUDENT_FIDDLE_NOFX)
 				{
 					i++;
 					int defaultValue = i;
@@ -66,6 +67,8 @@ public class PartAutoNumberer
 					prefs.getInt(LotroInstrument.SPRIGHTLY_FIDDLE.toString(), firstNumber.get(LotroInstrument.STUDENT_FIDDLE)));
 			firstNumber.put(LotroInstrument.TRAVELLERS_TRUSTY_FIDDLE,
 					prefs.getInt(LotroInstrument.TRAVELLERS_TRUSTY_FIDDLE.toString(), firstNumber.get(LotroInstrument.STUDENT_FIDDLE)));
+			firstNumber.put(LotroInstrument.STUDENT_FIDDLE_NOFX,
+					prefs.getInt(LotroInstrument.STUDENT_FIDDLE_NOFX.toString(), firstNumber.get(LotroInstrument.STUDENT_FIDDLE)));
 
 			incrementByTen = prefs.getBoolean("incrementByTen", true);
 		}
