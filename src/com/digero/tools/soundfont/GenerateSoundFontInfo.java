@@ -40,6 +40,7 @@ public class GenerateSoundFontInfo
 		case LONELY_MOUNTAIN_FIDDLE:
 		case SPRIGHTLY_FIDDLE:
 		case TRAVELLERS_TRUSTY_FIDDLE:
+		case BASIC_FIDDLE:
 		case BASIC_LUTE:
 		case HARP:
 			return 1;
@@ -136,6 +137,30 @@ public class GenerateSoundFontInfo
 				SprightlyFiddleInfo info = new SprightlyFiddleInfo(li, getNotesPerSample(li), samples);
 				instruments.add(info);
 				usedSamples.addAll(info.usedSamples);
+
+				presets.add(new PresetInfo(info));
+			}
+			else if (li == LotroInstrument.TRAVELLERS_TRUSTY_FIDDLE)
+			{
+				TravellersTrustyFiddleInfo info = new TravellersTrustyFiddleInfo(li, getNotesPerSample(li), samples);
+				instruments.add(info);
+				usedSamples.addAll(info.usedSamples);
+
+				presets.add(new PresetInfo(info));
+			}
+			else if (li == LotroInstrument.LONELY_MOUNTAIN_FIDDLE)
+			{
+				LonelyMountainFiddleInfo info = new LonelyMountainFiddleInfo(li, getNotesPerSample(li), samples);
+				instruments.add(info);
+				usedSamples.addAll(info.usedSamples);
+
+				presets.add(new PresetInfo(info));
+			}
+			else if (li == LotroInstrument.BASIC_FIDDLE)
+			{
+				BasicFiddleInfo info = new BasicFiddleInfo(li, getNotesPerSample(li), samples);
+				instruments.add(info);
+				//usedSamples.addAll(info.usedSamples);
 
 				presets.add(new PresetInfo(info));
 			}

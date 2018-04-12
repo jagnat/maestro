@@ -10,18 +10,18 @@ import com.digero.common.abc.AbcConstants;
 import com.digero.common.abc.LotroInstrument;
 import com.digero.tools.soundfont.SampleInfo.Key;
 
-public class SprightlyFiddleInfo extends InstrumentInfo {
+public class TravellersTrustyFiddleInfo extends InstrumentInfo {
 	public final SortedSet<SampleInfo> usedSamples;
 	protected final int notesBelowSample;
 	protected final int notesAboveSample;
 
-	public SprightlyFiddleInfo(LotroInstrument lotroInstrument, int notesPerSample, Map<Key, SampleInfo> samples) {
+	public TravellersTrustyFiddleInfo(LotroInstrument lotroInstrument, int notesPerSample, Map<Key, SampleInfo> samples) {
 //		super(lotroInstrument, notesPerSample, samples);
 		this(lotroInstrument, lotroInstrument.toString(), lotroInstrument.lowestPlayable.id,
 				lotroInstrument.highestPlayable.id, notesPerSample, samples);
 	}
 	
-	public SprightlyFiddleInfo(LotroInstrument lotroInstrument, String name, int lowestNoteId, int highestNoteId,
+	public TravellersTrustyFiddleInfo(LotroInstrument lotroInstrument, String name, int lowestNoteId, int highestNoteId,
 			int notesPerSample, Map<Key, SampleInfo> samples) {
 //		super(lotroInstrument, name, lowestNoteId, highestNoteId, notesPerSample, samples);
 		

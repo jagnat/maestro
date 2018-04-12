@@ -2388,6 +2388,189 @@
             Z_HighVelocity=127
 
 
+    InstrumentName=Basic Fiddle
+
+        Sample=student_fiddle_43
+            Z_LowKey=36
+            Z_HighKey=43
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_44
+            Z_LowKey=44
+            Z_HighKey=44
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_45
+            Z_LowKey=45
+            Z_HighKey=45
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_46
+            Z_LowKey=46
+            Z_HighKey=46
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_47
+            Z_LowKey=47
+            Z_HighKey=47
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_48
+            Z_LowKey=48
+            Z_HighKey=48
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_49
+            Z_LowKey=49
+            Z_HighKey=49
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_50
+            Z_LowKey=50
+            Z_HighKey=50
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_51
+            Z_LowKey=51
+            Z_HighKey=51
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_52
+            Z_LowKey=52
+            Z_HighKey=52
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_53
+            Z_LowKey=53
+            Z_HighKey=53
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_54
+            Z_LowKey=54
+            Z_HighKey=54
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_55
+            Z_LowKey=55
+            Z_HighKey=55
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_56
+            Z_LowKey=56
+            Z_HighKey=56
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_57
+            Z_LowKey=57
+            Z_HighKey=57
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_58
+            Z_LowKey=58
+            Z_HighKey=58
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_59
+            Z_LowKey=59
+            Z_HighKey=59
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_60
+            Z_LowKey=60
+            Z_HighKey=60
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_61
+            Z_LowKey=61
+            Z_HighKey=61
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_62
+            Z_LowKey=62
+            Z_HighKey=62
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_63
+            Z_LowKey=63
+            Z_HighKey=63
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_64
+            Z_LowKey=64
+            Z_HighKey=64
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_65
+            Z_LowKey=65
+            Z_HighKey=65
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_66
+            Z_LowKey=66
+            Z_HighKey=66
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_67
+            Z_LowKey=67
+            Z_HighKey=67
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_68
+            Z_LowKey=68
+            Z_HighKey=68
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_69
+            Z_LowKey=69
+            Z_HighKey=69
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_70
+            Z_LowKey=70
+            Z_HighKey=70
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_71
+            Z_LowKey=71
+            Z_HighKey=71
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+        Sample=student_fiddle_72
+            Z_LowKey=72
+            Z_HighKey=72
+            Z_LowVelocity=0
+            Z_HighVelocity=127
+
+
     InstrumentName=Basic Lute
 
         Sample=basic_lute_36
@@ -3714,7 +3897,7 @@
     InstrumentName=Lonely Mountain Fiddle
 
         Sample=lonely_43
-            Z_LowKey=43
+            Z_LowKey=36
             Z_HighKey=43
             Z_LowVelocity=0
             Z_HighVelocity=127
@@ -4575,7 +4758,7 @@
     InstrumentName=Sprightly Fiddle
 
         Sample=sprightly_43
-            Z_LowKey=43
+            Z_LowKey=36
             Z_HighKey=43
             Z_LowVelocity=0
             Z_HighVelocity=127
@@ -5104,7 +5287,7 @@
     InstrumentName=Travellers Trusty Fiddle
 
         Sample=traveller_43
-            Z_LowKey=43
+            Z_LowKey=36
             Z_HighKey=43
             Z_LowVelocity=0
             Z_HighVelocity=127
@@ -5305,6 +5488,18 @@
             L_initialAttenuation=32
 
 
+    PresetName=Basic Fiddle
+        Bank=0
+        Program=61
+
+        Instrument=Basic Fiddle
+            L_LowKey=36
+            L_HighKey=72
+            L_LowVelocity=0
+            L_HighVelocity=127
+            L_initialAttenuation=30
+
+
     PresetName=Basic Lute
         Bank=0
         Program=25
@@ -5326,7 +5521,7 @@
             L_HighKey=72
             L_LowVelocity=0
             L_HighVelocity=127
-            L_initialAttenuation=25
+            L_initialAttenuation=30
 
 
     PresetName=Cowbell
@@ -5338,6 +5533,7 @@
             L_HighKey=72
             L_LowVelocity=0
             L_HighVelocity=127
+            L_initialAttenuation=10
 
 
     PresetName=Drums
@@ -5360,7 +5556,7 @@
             L_HighKey=72
             L_LowVelocity=0
             L_HighVelocity=127
-            L_initialAttenuation=5
+            L_initialAttenuation=15
 
 
     PresetName=Harp
@@ -5391,11 +5587,11 @@
         Program=41
 
         Instrument=Lonely Mountain Fiddle
-            L_LowKey=43
+            L_LowKey=36
             L_HighKey=72
             L_LowVelocity=0
             L_HighVelocity=127
-            L_initialAttenuation=30
+            L_initialAttenuation=20
 
 
     PresetName=Lute of Ages
@@ -5452,7 +5648,7 @@
             L_HighKey=72
             L_LowVelocity=0
             L_HighVelocity=127
-            L_initialAttenuation=35
+            L_initialAttenuation=45
 
 
     PresetName=Sprightly Fiddle
@@ -5460,11 +5656,11 @@
         Program=49
 
         Instrument=Sprightly Fiddle
-            L_LowKey=43
+            L_LowKey=36
             L_HighKey=72
             L_LowVelocity=0
             L_HighVelocity=127
-            L_initialAttenuation=30
+            L_initialAttenuation=15
 
 
     PresetName=Student Fiddle
@@ -5496,11 +5692,11 @@
         Program=45
 
         Instrument=Travellers Trusty Fiddle
-            L_LowKey=43
+            L_LowKey=36
             L_HighKey=72
             L_LowVelocity=0
             L_HighVelocity=127
-            L_initialAttenuation=30
+            L_initialAttenuation=15
 
 
 [Info]
@@ -5509,7 +5705,7 @@ Engine=E-mu 10K1
 Name=LotroInstruments.sf2
 ROMName=
 ROMVersion=0.0
-Date=03/24/2018 03:30:19 PM
+Date=04/12/2018 09:48:31 AM
 Designer=Digero
 Product=Maestro
 Copyright=Turbine Entertainment

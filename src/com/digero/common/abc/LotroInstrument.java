@@ -39,20 +39,23 @@ public enum LotroInstrument
 	HARP                		( "Harp",                     false,         46,        0,           false,         6.0f,        false),//C4
 	MISTY_MOUNTAIN_HARP 		( "Misty Mountain Harp",      false,         27,        0,           false,       -12.5f,        false),//C4
 	THEORBO             		( "Theorbo",                  false,         32,       -1,           false,       -12.0f,        false),//C3
-	FLUTE               		( "Flute",                     true,         73,        2,           false,        -0.5f,        false),//C6
-	CLARINET            		( "Clarinet",                  true,         71,        1,           false,        -2.5f,        false),//C5
+	FLUTE               		( "Flute",                     true,         73,        2,           false,        -1.5f,        false),//C6
+	CLARINET            		( "Clarinet",                  true,         71,        1,           false,        -3.0f,        false),//C5
 	HORN                		( "Horn",                      true,         69,        0,           false,         0.0f,        false),//C4
 	BAGPIPE             		( "Bagpipe",                   true,        109,        1,           false,        -3.2f,        false),//C5
-	PIBGORN             		( "Pibgorn",                   true,         84,        2,           false,        -3.5f,        false),//C6
+	PIBGORN             		( "Pibgorn",                   true,         84,        2,           false,        -4.5f,        false),//C6
 	DRUMS               		( "Drums",                    false,        118,        0,            true,         0.0f,        false),
-	COWBELL             		( "Cowbell",                  false,        115,        0,            true,         0.0f,        false),//E5
+	COWBELL             		( "Cowbell",                  false,        115,        0,            true,        -1.0f,        false),//E5
 	MOOR_COWBELL        		( "Moor Cowbell",             false,        114,        0,            true,         0.0f,        false),//C6
 	STUDENT_FIDDLE				( "Student Fiddle",		       true,		 60,		1,			 false,		   -3.0f,		 false),//C5  noises are:C2,C#2,D2
-	LONELY_MOUNTAIN_FIDDLE 		( "Lonely Mountain Fiddle",    true,		 41,	    1,			 false,		   -3.0f,		 false),//C5
-	SPRIGHTLY_FIDDLE			( "Sprightly Fiddle",	      false,		 49,		1,			 false,		   -3.0f,		 false),//C5
-	TRAVELLERS_TRUSTY_FIDDLE 	( "Travellers Trusty Fiddle", false,		 45, 		1,			 false,		   -3.0f,		 false),//C5
-	STUDENT_FIDDLE_NOFX		    ( "Student Fiddle NoFX",       true,		 60,		1,			 false,		   -3.0f,		  true);//C5
+	LONELY_MOUNTAIN_FIDDLE 		( "Lonely Mountain Fiddle",    true,		 41,	    1,			 false,		   -2.0f,		 false),//C5
+	SPRIGHTLY_FIDDLE			( "Sprightly Fiddle",	      false,		 49,		1,			 false,		   -1.5f,		 false),//C5
+	TRAVELLERS_TRUSTY_FIDDLE 	( "Travellers Trusty Fiddle", false,		 45, 		1,			 false,		   -1.5f,		 false),//C5
+	STUDENT_FIDDLE_NOFX		    ( "Student Fiddle NoFX",       true,		 60,		1,			 false,		   -3.0f,		  true),//C5
+	BASIC_FIDDLE     		    ( "Basic Fiddle",              true,		 61,		1,			 false,		   -3.0f,		 false);//C5
 // @formatter:on
+	
+	// volume adjustment 26 March 2018: flute, pibgorn, cowbell: -1.0   clarinet: -0.5  sprightly: +1.5  lonely: +1.0  trusty: +1.5 (guess)
 
 	public static final LotroInstrument DEFAULT_LUTE = LUTE_OF_AGES;
 	public static final LotroInstrument DEFAULT_INSTRUMENT = LUTE_OF_AGES;
@@ -77,11 +80,14 @@ public enum LotroInstrument
 				this.lowestPlayable = Note.MIN_PLAYABLE;
 			}
 		} else if (midiProgramId == 41) {
-			this.lowestPlayable = AbcConstants.LONELY_MOUNTAIN_FIDDLE_LOWEST_NOTE;
+			//this.lowestPlayable = AbcConstants.LONELY_MOUNTAIN_FIDDLE_LOWEST_NOTE;
+			this.lowestPlayable = Note.MIN_PLAYABLE;
 		} else if (midiProgramId == 49) {
-			this.lowestPlayable = AbcConstants.SPRIGHTLY_FIDDLE_LOWEST_NOTE;
+			//this.lowestPlayable = AbcConstants.SPRIGHTLY_FIDDLE_LOWEST_NOTE;
+			this.lowestPlayable = Note.MIN_PLAYABLE;
 		} else if (midiProgramId == 45) {
-			this.lowestPlayable = AbcConstants.TRAVELLERS_TRUSTY_FIDDLE_LOWEST_NOTE;
+			//this.lowestPlayable = AbcConstants.TRAVELLERS_TRUSTY_FIDDLE_LOWEST_NOTE;
+			this.lowestPlayable = Note.MIN_PLAYABLE;
 		} else {
 			this.lowestPlayable = Note.MIN_PLAYABLE;			
 		}
@@ -172,6 +178,7 @@ public enum LotroInstrument
 			addNicknames(LotroInstrument.SPRIGHTLY_FIDDLE, "Sprightly Fiddle", "SpFiddle");
 			addNicknames(LotroInstrument.TRAVELLERS_TRUSTY_FIDDLE, "Travellers Trusty Fiddle", "TTFiddle", "Travellers Fiddle", "Trusty Fiddle", "Traveller's Trusty Fiddle");
 			addNicknames(LotroInstrument.STUDENT_FIDDLE_NOFX, "Student Fiddle NoFX");
+			addNicknames(LotroInstrument.BASIC_FIDDLE, "Basic Fiddle", "BFiddle");
 			addNicknames(LotroInstrument.STUDENT_FIDDLE, "Fiddle", "StFiddle", "Student's Fiddle", "Students Fiddle");
 		}
 

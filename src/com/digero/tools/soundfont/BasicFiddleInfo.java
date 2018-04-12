@@ -10,18 +10,18 @@ import com.digero.common.abc.AbcConstants;
 import com.digero.common.abc.LotroInstrument;
 import com.digero.tools.soundfont.SampleInfo.Key;
 
-public class SprightlyFiddleInfo extends InstrumentInfo {
+public class BasicFiddleInfo extends InstrumentInfo {
 	public final SortedSet<SampleInfo> usedSamples;
 	protected final int notesBelowSample;
 	protected final int notesAboveSample;
 
-	public SprightlyFiddleInfo(LotroInstrument lotroInstrument, int notesPerSample, Map<Key, SampleInfo> samples) {
+	public BasicFiddleInfo(LotroInstrument lotroInstrument, int notesPerSample, Map<Key, SampleInfo> samples) {
 //		super(lotroInstrument, notesPerSample, samples);
 		this(lotroInstrument, lotroInstrument.toString(), lotroInstrument.lowestPlayable.id,
 				lotroInstrument.highestPlayable.id, notesPerSample, samples);
 	}
 	
-	public SprightlyFiddleInfo(LotroInstrument lotroInstrument, String name, int lowestNoteId, int highestNoteId,
+	public BasicFiddleInfo(LotroInstrument lotroInstrument, String name, int lowestNoteId, int highestNoteId,
 			int notesPerSample, Map<Key, SampleInfo> samples) {
 //		super(lotroInstrument, name, lowestNoteId, highestNoteId, notesPerSample, samples);
 		
@@ -35,7 +35,7 @@ public class SprightlyFiddleInfo extends InstrumentInfo {
 		//System.err.println(name);
 		for (int id = startId; id <= highestNoteId; id += notesPerSample) {
 			//System.err.println(lotroInstrument.friendlyName+" "+Integer.toString(id));
-			usedSamples.add(samples.get(new Key(lotroInstrument, id)));
+			usedSamples.add(samples.get(new Key(LotroInstrument.STUDENT_FIDDLE, id)));
 		}
 
 		this.usedSamples = Collections.unmodifiableSortedSet(usedSamples);
