@@ -19,6 +19,7 @@ public enum Dynamics
 	public static final Dynamics DEFAULT = mf;
 	public static final Dynamics MAXIMUM = ffff;
 	public static final Dynamics MINIMUM = pppp;
+	private static Dynamics[] vals = values();
 
 	public static final Dynamics fromMidiVelocity(int velocity)
 	{
@@ -53,5 +54,15 @@ public enum Dynamics
 	{
 		this.midiVol = midiVol;
 		this.abcVol = abcVol;
+	}
+	
+	public Dynamics add(int step) {		
+		int newV = this.ordinal()+step;
+		
+		if (newV < 0 || newV > vals.length-1) {
+			return this;
+		}
+		
+	    return vals[newV];
 	}
 }

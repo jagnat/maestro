@@ -38,6 +38,7 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import com.digero.common.abc.Dynamics;
 import com.digero.common.abc.LotroInstrument;
 import com.digero.common.midi.MidiConstants;
 import com.digero.common.midi.Note;
@@ -796,6 +797,15 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 				noteId += abcPart.getTranspose(trackInfo.getTrackNumber(), microStart);
 			}
 			return noteId;
+		}
+		
+		@Override protected Dynamics transposeVelNote(NoteEvent note, long microStart)
+		{
+			if (!trackInfo.isDrumTrack())
+			{
+				return abcPart.getSectionVelocity(microStart, trackInfo.getTrackNumber(), note.velocity);
+			}
+			return note.velocity;
 		}
 
 		@Override protected boolean isNotePlayable(int noteId)

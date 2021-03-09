@@ -18,6 +18,7 @@ import javax.xml.xpath.XPathExpressionException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.digero.common.abc.Dynamics;
 import com.digero.common.abc.LotroInstrument;
 import com.digero.common.midi.ITempoCache;
 import com.digero.common.midi.MidiConstants;
@@ -554,6 +555,40 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		}		
 		
 		return secTrans;
+	}
+	
+	public Dynamics getSectionVelocity(long microStart, int track, Dynamics velocity) {
+		SequenceInfo se = getSequenceInfo();
+		
+		if (se != null && sections.get(track) != null && velocity != Dynamics.MAXIMUM && velocity != Dynamics.MINIMUM) {
+			SequenceDataCache data = se.getDataCache();
+			long barLengthTicks = data.getBarLengthTicks();
+
+			long startTick = barLengthTicks;
+			long endTick = data.getSongLengthTicks();
+
+			int bar = -1;
+			int curBar = 1;
+			for (long barTick = startTick; barTick <= endTick; barTick += barLengthTicks) {
+				long barMicros = data.tickToMicros(barTick);
+				if (microStart < barMicros) {
+					bar = curBar;
+					break;
+				}
+				curBar += 1;
+			}
+			if (bar != -1) {
+				Entry<Integer, PartSection> entry = sections.get(track).floorEntry(bar);
+				if (entry != null) {
+					if (bar <= entry.getValue().endBar) {
+						System.err.println(entry.getValue().volumeStep);
+						return velocity.add(entry.getValue().volumeStep);						
+					}
+				}
+			}
+		}		
+		
+		return velocity;
 	}
 
 	public boolean isTrackEnabled(int track)

@@ -49,6 +49,14 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		TimeSignature timeSignature = null;
 
 		divisionType = song.getDivisionType();
+		/*
+		if (divisionType == 0.0f) {
+			System.err.println("MIDI time signature is in pulses per beat.");
+		} else {
+			System.err.println("MIDI time signature is in " + divisionType + " frames per second.");
+		}
+		*/
+			
 		tickResolution = song.getResolution();
 
 		// Keep track of the active registered paramater number for pitch bend range
@@ -87,7 +95,9 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 						switch (m.getData1())
 						{
 						case CHANNEL_VOLUME_CONTROLLER_COARSE:
-							volume.put(ch, tick, m.getData2());
+							TempoEvent te = getTempoEventForTick(tick);
+							long elapsedMicros = MidiUtils.ticks2microsec(tick - te.tick, te.tempoMPQ, tickResolution);
+							volume.put(ch, elapsedMicros, m.getData2());
 							break;
 						case REGISTERED_PARAMETER_NUMBER_MSB:
 							rpn[ch] = (rpn[ch] & 0x7F) | ((m.getData2() & 0x7F) << 7);
@@ -156,7 +166,8 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 
 	public int getVolume(int channel, long tick)
 	{
-		return volume.get(channel, tick);
+		long micros = tickToMicros(tick);
+		return volume.get(channel, micros);
 	}
 
 	public double getPitchBendRange(int channel, long tick)
