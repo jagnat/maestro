@@ -1,5 +1,5 @@
 <target name="mytarget">
-    <subant target="debug">
+    <subant target="CommonJar">
         <fileset dir="distribute" includes="build.xml"/>
     </subant>
 </target>
