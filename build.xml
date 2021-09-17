@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project name="QLJavaRun">
+<project name="QLJavaRun" default="compile">
 
 	<target name="compile">
 	    <mkdir dir="target/classes"/>
@@ -11,5 +11,5 @@
 	         </classpath>
 	    </javac>
 	</target>
-	
+
 </project>
