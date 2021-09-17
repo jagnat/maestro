@@ -1,5 +1,8 @@
-<target name="mytarget">
-    <subant target="CommonJar">
-        <fileset dir="distribute" includes="build.xml"/>
-    </subant>
-</target>
+<?xml version="1.0"?>
+<project name="QLJavaRun">
+	<target name="mytarget">
+	    <subant target="CommonJar">
+	        <fileset dir="distribute" includes="build.xml"/>
+	    </subant>
+	</target>
+</project>
