@@ -1,8 +1,15 @@
 <?xml version="1.0"?>
 <project name="QLJavaRun">
-	<target name="common">
-	    <subant target="CommonJar">
-	        <fileset dir="distribute" includes="build.xml"/>
-	    </subant>
+
+	<target name="compile">
+	    <mkdir dir="target/classes"/>
+	    <javac srcdir="src" destdir="target/classes">
+	        <classpath>
+	               <fileset dir=".">
+	                  <include name="**/TableLayout.jar" />
+	               </fileset>
+	         </classpath>
+	    </javac>
 	</target>
+	
 </project>
