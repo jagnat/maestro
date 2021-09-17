@@ -24,6 +24,13 @@
       </plugin>
     </plugins>
   </build>
+  <repositories>
+      <repository>
+        <id>in-project</id>
+        <name>In Project Repo</name>
+        <url>file://${project.basedir}/libs</url>
+      </repository>
+    </repositories>
   <dependencies>
   <dependency>
   <groupId>jakarta.xml.bind</groupId>
@@ -36,5 +43,10 @@
   <version>3.0.0</version>
   <scope>runtime</scope>
 </dependency>
+<dependency>
+    <groupId>abba</groupId>
+    <artifactId>myLibrary</artifactId>
+    <version>1.0</version>
+  </dependency>
 </dependencies>
 </project>
