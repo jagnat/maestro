@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <project name="QLJavaRun">
-	<target name="mytarget">
+	<target name="common">
 	    <subant target="CommonJar">
 	        <fileset dir="distribute" includes="build.xml"/>
 	    </subant>
