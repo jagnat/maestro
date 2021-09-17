@@ -1,0 +1,5 @@
+<target name="mytarget">
+    <subant target="debug">
+        <fileset dir="distribute" includes="build.xml"/>
+    </subant>
+</target>
