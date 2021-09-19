@@ -27,7 +27,7 @@
   <repositories>
       <repository>
         <id>in-project</id>
-        <name>In Project Repo</name>
+        <name>ABBA Repo</name>
         <url>file://${project.basedir}/libs</url>
       </repository>
     </repositories>
