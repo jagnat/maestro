@@ -48,5 +48,10 @@
     <artifactId>myLibrary</artifactId>
     <version>1.0</version>
   </dependency>
+  <dependency>
+    <groupId>abba</groupId>
+    <artifactId>commons-math3</artifactId>
+    <version>3.4.1</version>
+  </dependency>
 </dependencies>
 </project>
