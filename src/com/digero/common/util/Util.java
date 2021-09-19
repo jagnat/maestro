@@ -258,7 +258,7 @@ public final class Util
 		{
 			if (System.getProperty("os.name").startsWith("Windows"))
 			{
-				Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
+				Runtime.getRuntime().exec(new String[] {"rundll32 url.dll,FileProtocolHandler ", url});
 				return true;
 			}
 		}

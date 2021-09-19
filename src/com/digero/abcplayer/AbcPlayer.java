@@ -1595,7 +1595,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		{
 			try
 			{
-				process = Runtime.getRuntime().exec(Util.quote(lameExe.getAbsolutePath()) + " -?");
+				process = Runtime.getRuntime().exec(new String[] {Util.quote(lameExe.getAbsolutePath()), " -?"});
 				BufferedReader rdr = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 				String line;
 				while ((line = rdr.readLine()) != null)
