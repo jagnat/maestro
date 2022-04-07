@@ -105,7 +105,6 @@ public class MaestroMain
 
 	public static void openSongFromCommandLine(String[] args)
 	{
-		logger.info("openSongFromCommandLine: "+args[0]);
 		if (mainWindow == null) {
 			return;
 		}
