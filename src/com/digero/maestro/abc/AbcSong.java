@@ -16,6 +16,8 @@ import java.util.Map.Entry;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.swing.DefaultListModel;
 import javax.swing.JOptionPane;
+import javax.swing.JButton;
+import javax.swing.table.AbstractTableModel;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Document;
@@ -1022,4 +1024,40 @@ public class AbcSong implements IDiscardable, AbcMetadataSource
 		
 		return true;
 	}*/
+	
+	public class PartTableModel extends AbstractTableModel
+	{
+		private ListModelWrapper<AbcPart> parts;
+		
+		protected String[] columnNames = new String[] {"part name", "solo", "mute"};
+		
+		protected Class[] columnClasses = new Class[] {String.class, JButton.class, JButton.class };
+		
+		public PartTableModel(ListModelWrapper<AbcPart> parts)
+		{
+			this.parts = parts;
+		}
+		@Override
+		public int getColumnCount()
+		{
+			return 3;
+		}
+
+		@Override
+		public int getRowCount()
+		{
+			return parts.size();
+		}
+
+		@Override
+		public Object getValueAt(int row, int col)
+		{
+			AbcPart part = parts.get(row);
+			switch(col)
+			{
+			case 0: return part;
+			default: return part;
+			}
+		}
+	}
 }

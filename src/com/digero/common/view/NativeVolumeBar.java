@@ -63,9 +63,11 @@ public class NativeVolumeBar extends JPanel
 		int right = getWidth();
 
 		Color fillA = useInvertedColors ? Color.WHITE : Color.DARK_GRAY;
-		Color fillB = useInvertedColors ? Color.LIGHT_GRAY : Color.GRAY;
+//		Color fillB = useInvertedColors ? Color.LIGHT_GRAY : Color.GRAY;
+		Color fillB = fillA;
 		Color bkgdA = useInvertedColors ? Color.DARK_GRAY : Color.LIGHT_GRAY;
-		Color bkgdB = useInvertedColors ? Color.GRAY : Color.WHITE;
+//		Color bkgdB = useInvertedColors ? Color.GRAY : Color.WHITE;
+		Color bkgdB = bkgdA;
 
 		g2.setClip(new RoundRectangle2D.Float(x, y, right - x, BAR_HEIGHT, ROUND, ROUND));
 		g2.setPaint(new GradientPaint(0, y, fillA, 0, y + BAR_HEIGHT, fillB));

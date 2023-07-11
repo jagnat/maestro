@@ -54,6 +54,7 @@ import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
@@ -74,6 +75,7 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.text.BadLocationException;
 import javax.xml.transform.TransformerException;
 
@@ -179,6 +181,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private JMenuItem closeProject;
 
 	private JList<AbcPartMetadataSource> partsList;
+	private ArrayList<AbcPartMetadataSource> parts;
+	private JTable partsTable;
 	private JButton newPartButton;
 	private JButton deletePartButton;
 	private JButton delayButton;
@@ -550,11 +554,12 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		exportSuccessfulLabel.setIcon(IconLoader.getImageIcon("check_16.png"));
 		exportSuccessfulLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
 		exportSuccessfulLabel.setVisible(false);
-
-		partsList = new JList<>();
-		partsList.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		partsList.getSelectionModel().addListSelectionListener(e -> {
-			AbcPart abcPart = (AbcPart) partsList.getSelectedValue();
+		
+		partsTable = new JTable(1, 3);
+		partsTable.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		partsTable.getSelectionModel().addListSelectionListener(e -> {
+			int index = partsTable.getSelectedRow();
+			AbcPart abcPart = index >= parts.size()? null : (AbcPart) parts.get(index);
 			sequencer.getFilter().onAbcPartChanged(abcPart != null);
 			abcSequencer.getFilter().onAbcPartChanged(abcPart != null);
 			partPanel.setAbcPart(abcPart);
@@ -562,12 +567,34 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				updateButtons(false);
 			} else {
 				updateDelayButton();
-				if (partsList.getModel().getSize() > 0) {
+				if (parts.size() > 0) {
 					// If ctrl-clicking to deselect this will ensure something is selected
-					partsList.setSelectedIndex(0);
+					partsTable.setRowSelectionInterval(0, 0);
 				}
 			}
 		});
+
+//		partsList = new JList<AbcPartMetadataSource>();
+//		partsList.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+//		partsList.getSelectionModel().addListSelectionListener(new ListSelectionListener()
+//		{
+//			@Override public void valueChanged(ListSelectionEvent e)
+//			{
+//				AbcPart abcPart = (AbcPart) partsList.getSelectedValue();
+//				sequencer.getFilter().onAbcPartChanged(abcPart != null);
+//				abcSequencer.getFilter().onAbcPartChanged(abcPart != null);
+//				partPanel.setAbcPart(abcPart);
+//				if (abcPart != null) {
+//					updateButtons(false);
+//				} else {
+//					updateDelayButton();
+//					if (partsList.getModel().getSize() > 0) {
+//						// If ctrl-clicking to deselect this will ensure something is selected
+//						partsList.setSelectedIndex(0);
+//					}
+//				}
+//			}
+//		});
 		// Using this class as prototype cell content will set the Jlist width to be at least big enough to display LM bassoon,
 		// and since this list determines the width of the flowlayout where the delete button is also, it should give space.
 		class ProtoClass implements AbcPartMetadataSource {
@@ -593,15 +620,18 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				return "00. " + LotroInstrument.LONELY_MOUNTAIN_BASSOON + "*";
 			}
 			
-		}
-		partsList.setPrototypeCellValue(new ProtoClass());// This call is attempt of fix for no delete button on MacOS part 1
-		partsList.setVisibleRowCount(8);
+		};
+//		partsTable.setPreferredSize(getPreferredSize())
+//		partsList.setPrototypeCellValue(new ProtoClass());// This call is attempt of fix for no delete button on MacOS part 1
+//		partsList.setVisibleRowCount(8);
 
 		// Wrap the part list in a panel that forces the list to the top
 		// Fixes a swing bug where clicking after the end of the list will select the last element
 		JPanel partListWrapperPanel = new JPanel(new BorderLayout());
-		partListWrapperPanel.add(partsList, BorderLayout.NORTH);
-		partListWrapperPanel.setBackground(partsList.getBackground());
+//		partListWrapperPanel.add(partsList, BorderLayout.NORTH);
+//		partListWrapperPanel.setBackground(partsList.getBackground());
+		partListWrapperPanel.add(partsTable, BorderLayout.NORTH);
+		partListWrapperPanel.setBackground(partsTable.getBackground());
 		
 		// Remove focus from text boxes if area under parts is clicked
 		partListWrapperPanel.addMouseListener(new MouseAdapter() {
@@ -624,19 +654,19 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			if (abcSong != null) {
 				if (abcSong.getParts().size() == 1) {
 					// When deleting last past, make sure a new part is replacing it, so something is selected
-					AbcPart deleteMe = (AbcPart) partsList.getSelectedValue();
+					AbcPart deleteMe = getSelectedPart();
 					abcSong.createNewPart();
 					abcSong.deletePart(deleteMe);
 				} else if (abcSong.getParts().size() > 1) {
-					abcSong.deletePart((AbcPart) partsList.getSelectedValue());
+					abcSong.deletePart(getSelectedPart());
 				}
 			}
 		});
 		
 		delayButton = new JButton("Delay Part");
 		delayButton.addActionListener(e -> {
-			if (partsList.getSelectedValue() != null) {
-				DelayDialog.show(ProjectFrame.this, (AbcPart) partsList.getSelectedValue());
+			if (partsTable.getSelectedRow() >= 0) {
+				DelayDialog.show(ProjectFrame.this, (AbcPart) parts.get(partsTable.getSelectedRow()));
 			}
 		});
 		delayButton.setToolTipText("Open a small dialog to edit delay on part.");
@@ -1457,7 +1487,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 					|| (abcSequencer.isLoaded() && (abcSequencer.isRunning() || abcSequencer.getPosition() != 0)));
 						
 			newPartButton.setEnabled(abcSong != null);
-			deletePartButton.setEnabled(partsList.getSelectedIndex() != -1);
+			deletePartButton.setEnabled(partsTable.getSelectedRow() != -1);
 			numerateButton.setEnabled(midiLoaded);
 			updateDelayButton();
 			exportButton.setEnabled(hasAbcNotes);
@@ -1508,7 +1538,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				midiModeRadioButton.setText("Original");
 			}
 			
-			double[] LAYOUT_COLS_DYN = new double[] { partsList.getFixedCellWidth() + 32, FILL };
+			double[] LAYOUT_COLS_DYN = new double[] { /*partsList.getFixedCellWidth()*/ 300 + 32, FILL };
 			tableLayout.setColumn(LAYOUT_COLS_DYN);// This call is attempt of fix for no delete button on MacOS part 2
 			
 			updateButtonsPending = false;
@@ -1516,9 +1546,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	};
 	
 	public void updateDelayButton () {
-		if (partsList.getSelectedIndex() != -1 && partPanel != null && partPanel.getAbcPart() != null && partPanel.getAbcPart().delay != 0) {
+		if (partsTable.getSelectedRow() != -1 && partPanel != null && partPanel.getAbcPart() != null && partPanel.getAbcPart().delay != 0) {
 			delayButton.setForeground(new Color(0.2f, 0.8f, 0.2f));//green
-		} else if (partsList.getSelectedIndex() != -1) {
+		} else if (partsTable.getSelectedRow() != -1) {
 			Color c = UIManager.getColor("TextField.foreground");
 			delayButton.setForeground(c);
 		} else {
@@ -1526,7 +1556,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			// it will no longer appear greyed out when disabled automatically.
 			delayButton.setForeground(new Color(0.6f, 0.6f, 0.6f));
 		}
-		delayButton.setEnabled(partsList.getSelectedIndex() != -1);
+		delayButton.setEnabled(partsTable.getSelectedRow() != -1);
 	}
 
 	private void updateButtons(boolean immediate)
@@ -1583,7 +1613,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			if (e.getProperty() == AbcPartProperty.TITLE && partPanel != null)
 				partPanel.setNewTitle(e.getSource());
 
-			partsList.repaint();
+			partsTable.repaint();
 			
 			setAbcSongModified(true);
 
@@ -1672,9 +1702,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				e.getPart().addAbcListener(abcPartListener);
 
 				idx = abcSong.getParts().indexOf(e.getPart());
-				partsList.setSelectedIndex(idx);
-				partsList.ensureIndexIsVisible(idx);
-				partsList.repaint();
+				partsTable.setRowSelectionInterval(idx, idx);
+				//partsTable.ensureIndexIsVisible(idx);
+				partsTable.repaint();
 				updateButtons(false);
 				maxNoteCountTotal = 0;
 				maxNoteCount = 0;
@@ -1682,9 +1712,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				
 			case TUNE_EDIT:
 				updateButtons(false);
-				if (partsList.getSelectedValue() != null) {
+				if (getSelectedPart() != null) {
 					// We do this to show the tempo panel if tune editor has changed something
-					partPanel.tuneUpdated((AbcPart) partsList.getSelectedValue());
+					partPanel.tuneUpdated(getSelectedPart());
 				}
 				if (abcSequencer.isRunning())
 					refreshPreviewSequence(false);
@@ -1697,9 +1727,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 				idx = abcSong.getParts().indexOf(e.getPart());
 				if (idx > 0)
-					partsList.setSelectedIndex(idx - 1);
+					partsTable.setRowSelectionInterval(idx - 1, idx - 1);
 				else if (abcSong.getParts().size() > 1) {
-					partsList.setSelectedIndex(1);
+					partsTable.setRowSelectionInterval(1, 1);
 				}
 
 				if (abcSong.getParts().size() == 0)
@@ -1712,16 +1742,19 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				if (abcSequencer.isRunning())
 					refreshPreviewSequence(false);
 
-				partsList.repaint();
+				partsTable.repaint();
 				updateButtons(false);
 				maxNoteCountTotal = 0;
 				maxNoteCount = 0;
 				break;
 
 			case PART_LIST_ORDER:
-				partsList.setSelectedIndex(abcSong.getParts().indexOf(partPanel.getAbcPart()));
-				partsList.repaint();
+			{
+				int index = abcSong.getParts().indexOf(partPanel.getAbcPart());
+				partsTable.setRowSelectionInterval(index, index);
+				partsTable.repaint();
 				updateButtons(false);
+			}
 				break;
 
 			case SKIP_SILENCE_AT_START:
@@ -1759,19 +1792,19 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	{
 		@Override public void intervalAdded(ListDataEvent e)
 		{
-			partsList.repaint();
+			partsTable.repaint();
 			updateButtons(false);
 		}
 
 		@Override public void intervalRemoved(ListDataEvent e)
 		{
-			partsList.repaint();
+			partsTable.repaint();
 			updateButtons(false);
 		}
 
 		@Override public void contentsChanged(ListDataEvent e)
 		{
-			partsList.repaint();
+			partsTable.repaint();
 			updateButtons(false);
 		}
 	};
@@ -1806,6 +1839,19 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	public int getTempo()
 	{
 		return (Integer) tempoSpinner.getValue();
+	}
+	
+	public AbcPart getSelectedPart()
+	{
+		int selectedRow = partsTable.getSelectedRow();
+		if (selectedRow > 0)
+		{
+			return (AbcPart)parts.get(selectedRow);
+		}
+		else
+		{
+			return null;
+		}
 	}
 
 	private boolean closeSong()
@@ -1964,7 +2010,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				}
 				else
 				{
-					partsList.setSelectedIndex(0);
+					partsTable.setRowSelectionInterval(0, 0);
 					updatePreviewMode(true, true);
 					updateButtons(true);
 				}
@@ -2006,10 +2052,11 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		}
 	}
 	
-	@SuppressWarnings({ "rawtypes", "unchecked" })
+//	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void setPartsListModel () {
 		// Not pretty..
-		partsList.setModel((DefaultListModel) (abcSong.getParts().getListModel()));
+//		partsTable.setModel(new DefaultTableModel);
+//		partsTable.setModel(abcSong.getParts().getListModel());
 	}
 
 	/** Used when the MIDI file in a Maestro song project can't be loaded. */
