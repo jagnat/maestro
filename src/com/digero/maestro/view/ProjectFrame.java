@@ -121,6 +121,7 @@ import com.digero.maestro.abc.PartAutoNumberer;
 import com.digero.maestro.abc.PartNameTemplate;
 import com.digero.maestro.midi.SequenceInfo;
 import com.digero.maestro.util.FileResolver;
+import com.digero.maestro.util.ListModelWrapper;
 import com.digero.maestro.util.XmlUtil;
 
 import info.clearthought.layout.TableLayout;
@@ -180,8 +181,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private JMenuItem saveExpandedMidiMenuItem;
 	private JMenuItem closeProject;
 
-	private JList<AbcPartMetadataSource> partsList;
-	private ArrayList<AbcPartMetadataSource> parts;
+//	private JList<AbcPartMetadataSource> partsList;
+//	private ArrayList<AbcPartMetadataSource> parts;
+	private ListModelWrapper<AbcPart> parts;
 	private JTable partsTable;
 	private JButton newPartButton;
 	private JButton deletePartButton;
@@ -2056,7 +2058,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private void setPartsListModel () {
 		// Not pretty..
 //		partsTable.setModel(new DefaultTableModel);
-//		partsTable.setModel(abcSong.getParts().getListModel());
+		parts = abcSong.getParts();
+		partsTable.setModel(abcSong.getPartTableModel());
 	}
 
 	/** Used when the MIDI file in a Maestro song project can't be loaded. */

@@ -91,6 +91,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource
 	private File saveFile; // The XML Maestro song file
 
 	private final ListModelWrapper<AbcPart> parts = new ListModelWrapper<>(new DefaultListModel<>());
+	private final PartTableModel tableModel = new PartTableModel(parts);
 
 	private final ListenerList<AbcSongEvent> listeners = new ListenerList<>();
 	boolean mixDirty = true;
@@ -795,6 +796,11 @@ public class AbcSong implements IDiscardable, AbcMetadataSource
 	{
 		return parts;
 	}
+	
+	public PartTableModel getPartTableModel()
+	{
+		return tableModel;
+	}
 
 	public void addSongListener(Listener<AbcSongEvent> l)
 	{
@@ -1056,7 +1062,14 @@ public class AbcSong implements IDiscardable, AbcMetadataSource
 			switch(col)
 			{
 			case 0: return part;
-			default: return part;
+			case 1:
+				final JButton button = new JButton("ttt");
+				return button;
+			case 2:
+				final JButton button2 = new JButton("zzz");
+				return button2;
+			default:
+				return "Error";
 			}
 		}
 	}
