@@ -1033,11 +1033,16 @@ public class AbcSong implements IDiscardable, AbcMetadataSource
 	
 	public class PartTableModel extends AbstractTableModel
 	{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = -7136508027083467956L;
+
 		private ListModelWrapper<AbcPart> parts;
 		
 		protected String[] columnNames = new String[] {"part name", "solo", "mute"};
 		
-		protected Class[] columnClasses = new Class[] {String.class, JButton.class, JButton.class };
+		protected Class[] columnClasses = new Class[] {String.class, String.class, String.class };
 		
 		public PartTableModel(ListModelWrapper<AbcPart> parts)
 		{
@@ -1063,11 +1068,9 @@ public class AbcSong implements IDiscardable, AbcMetadataSource
 			{
 			case 0: return part;
 			case 1:
-				final JButton button = new JButton("ttt");
-				return button;
+				return "Solo";
 			case 2:
-				final JButton button2 = new JButton("zzz");
-				return button2;
+				return "Mute";
 			default:
 				return "Error";
 			}

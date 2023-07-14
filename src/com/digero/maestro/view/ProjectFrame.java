@@ -181,8 +181,6 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private JMenuItem saveExpandedMidiMenuItem;
 	private JMenuItem closeProject;
 
-//	private JList<AbcPartMetadataSource> partsList;
-//	private ArrayList<AbcPartMetadataSource> parts;
 	private ListModelWrapper<AbcPart> parts;
 	private JTable partsTable;
 	private JButton newPartButton;
