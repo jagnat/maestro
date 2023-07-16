@@ -605,8 +605,10 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		// Wrap the part list in a panel that forces the list to the top
 		// Fixes a swing bug where clicking after the end of the list will select the last element
 		JPanel partListWrapperPanel = new JPanel(new BorderLayout());
-		partListWrapperPanel.add(partsList, BorderLayout.NORTH);
-		partListWrapperPanel.setBackground(partsList.getBackground());
+//		partListWrapperPanel.add(partsList, BorderLayout.NORTH);
+//		partListWrapperPanel.setBackground(partsList.getBackground());
+		
+		partListWrapperPanel.add(new PartsListItem(), BorderLayout.NORTH);
 		
 		// Remove focus from text boxes if area under parts is clicked
 		partListWrapperPanel.addMouseListener(new MouseAdapter() {
