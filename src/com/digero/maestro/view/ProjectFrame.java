@@ -181,6 +181,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private JMenuItem closeProject;
 
 	private JPanel partsListPanel;
+	private PartsList partsList2;
 	private JList<AbcPartMetadataSource> partsList;
 	private JButton newPartButton;
 	private JButton deletePartButton;
@@ -573,6 +574,24 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				}
 			}
 		});
+		
+		partsList2 = new PartsList();
+		partsList2.addListSelectionListener(e -> {
+			AbcPart abcPart = partsList2.getSelectedPart();
+			sequencer.getFilter().onAbcPartChanged(abcPart != null);
+			abcSequencer.getFilter().onAbcPartChanged(abcPart != null);
+			partPanel.setAbcPart(abcPart);
+			if (abcPart != null) {
+				updateButtons(false);
+			} else {
+				updateDelayButton();
+				if (partsList2.getModel().getSize() > 0) {
+					// If ctrl-clicking to deselect this will ensure something is selected
+					partsList2.setSelectedIndex(0);
+				}
+			}
+		});
+		
 		// Using this class as prototype cell content will set the Jlist width to be at least big enough to display LM bassoon,
 		// and since this list determines the width of the flowlayout where the delete button is also, it should give space.
 		class ProtoClass implements AbcPartMetadataSource {
@@ -605,10 +624,10 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		// Wrap the part list in a panel that forces the list to the top
 		// Fixes a swing bug where clicking after the end of the list will select the last element
 		JPanel partListWrapperPanel = new JPanel(new BorderLayout());
-//		partListWrapperPanel.add(partsList, BorderLayout.NORTH);
-//		partListWrapperPanel.setBackground(partsList.getBackground());
+		partListWrapperPanel.add(partsList, BorderLayout.NORTH);
+		partListWrapperPanel.setBackground(partsList.getBackground());
 		
-		partListWrapperPanel.add(new PartsListItem(), BorderLayout.NORTH);
+//		partListWrapperPanel.add(new PartsListItem(), BorderLayout.NORTH);
 		
 		// Remove focus from text boxes if area under parts is clicked
 		partListWrapperPanel.addMouseListener(new MouseAdapter() {
@@ -640,10 +659,28 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			}
 		});
 		
+		deletePartButton.addActionListener(e -> {
+			if (abcSong != null) {
+				if (abcSong.getParts().size() == 1) {
+					// When deleting last past, make sure a new part is replacing it, so something is selected
+					AbcPart deleteMe = partsList2.getSelectedPart();
+					abcSong.createNewPart();
+					abcSong.deletePart(deleteMe);
+				} else if (abcSong.getParts().size() > 1) {
+					abcSong.deletePart(partsList2.getSelectedPart());
+				}
+			}
+		});
+		
 		delayButton = new JButton("Delay Part");
+//		delayButton.addActionListener(e -> {
+//			if (partsList.getSelectedValue() != null) {
+//				DelayDialog.show(ProjectFrame.this, (AbcPart) partsList.getSelectedValue());
+//			}
+//		});
 		delayButton.addActionListener(e -> {
-			if (partsList.getSelectedValue() != null) {
-				DelayDialog.show(ProjectFrame.this, (AbcPart) partsList.getSelectedValue());
+			if (partsList2.getSelectedPart() != null) {
+				DelayDialog.show(ProjectFrame.this, partsList2.getSelectedPart());
 			}
 		});
 		delayButton.setToolTipText("Open a small dialog to edit delay on part.");
@@ -1512,6 +1549,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 						
 			newPartButton.setEnabled(abcSong != null);
 			deletePartButton.setEnabled(partsList.getSelectedIndex() != -1);
+			deletePartButton.setEnabled(partsList2.getSelectedIndex() != -1);
 			numerateButton.setEnabled(midiLoaded);
 			updateDelayButton();
 			exportButton.setEnabled(hasAbcNotes);
@@ -1646,6 +1684,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				partPanel.setNewTitle(e.getSource());
 
 			partsList.repaint();
+			partsList2.repaint();
 			
 			setAbcSongModified(true);
 
@@ -1737,6 +1776,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				partsList.setSelectedIndex(idx);
 				partsList.ensureIndexIsVisible(idx);
 				partsList.repaint();
+				partsList2.setSelectedIndex(idx);
+//				partsList2.ensureIndexIsVisible(idx);
+				partsList2.repaint();
 				updateButtons(false);
 				maxNoteCountTotal = 0;
 				maxNoteCount = 0;
