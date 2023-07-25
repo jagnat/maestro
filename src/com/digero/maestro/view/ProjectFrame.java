@@ -624,11 +624,10 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		// Wrap the part list in a panel that forces the list to the top
 		// Fixes a swing bug where clicking after the end of the list will select the last element
 		JPanel partListWrapperPanel = new JPanel(new BorderLayout());
-//		partListWrapperPanel.add(partsList, BorderLayout.NORTH);
-//		partListWrapperPanel.setBackground(partsList.getBackground());
+		partListWrapperPanel.add(partsList, BorderLayout.NORTH);
+		partListWrapperPanel.setBackground(partsList.getBackground());
 		
-//		partListWrapperPanel.add(new PartsListItem(), BorderLayout.NORTH);
-		partListWrapperPanel.add(partsList2, BorderLayout.NORTH);	
+//		partListWrapperPanel.add(partsList2, BorderLayout.NORTH);	
 		// Remove focus from text boxes if area under parts is clicked
 		partListWrapperPanel.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e)
@@ -1770,6 +1769,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 					prioCheckBox.setSelected(abcSong.isPriorityActive());
 				break;
 			case PART_ADDED:
+				System.out.println("PART_ADDED");
 				e.getPart().addAbcListener(abcPartListener);
 
 				idx = abcSong.getParts().indexOf(e.getPart());
@@ -1797,6 +1797,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				break;
 
 			case BEFORE_PART_REMOVED:
+				System.out.println("BEFORE_PART_REMOVED");
 				e.getPart().removeAbcListener(abcPartListener);
 
 				idx = abcSong.getParts().indexOf(e.getPart());
@@ -1823,6 +1824,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				break;
 
 			case PART_LIST_ORDER:
+				System.out.println("PART_LIST_ORDER");
 				partsList.setSelectedIndex(abcSong.getParts().indexOf(partPanel.getAbcPart()));
 				partsList.repaint();
 				updateButtons(false);
@@ -2117,6 +2119,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private void setPartsListModel () {
 		// Not pretty..
 		partsList.setModel((DefaultListModel) (abcSong.getParts().getListModel()));
+		partsList2.setModel(abcSong.getParts().getListModel());
 	}
 
 	/** Used when the MIDI file in a Maestro song project can't be loaded. */

@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Insets;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -24,7 +25,7 @@ public class PartsListItem extends JPanel implements IDiscardable, TableLayoutCo
 	static final int SOLO_WIDTH = 8;
 	static final int MUTE_WIDTH = 8;
 	
-	private static double[] LAYOUT_COLS = new double[] {GUTTER_WIDTH, FILL, PREFERRED, PREFERRED};
+	private static double[] LAYOUT_COLS = new double[] {FILL, PREFERRED, PREFERRED};
 	private static double[] LAYOUT_ROWS = new double[] {PREFERRED};
 	
 	private JPanel gutter;
@@ -42,20 +43,27 @@ public class PartsListItem extends JPanel implements IDiscardable, TableLayoutCo
 		gutter = new JPanel();
 		
 		title = new JLabel("This is test");
+		title.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0));
+		
+		Dimension buttonSize = new Dimension(22, 22);
 		
 		soloButton = new JButton("S");
-		soloButton.setPreferredSize(new Dimension(22, 22));
+		soloButton.setPreferredSize(buttonSize);
 		soloButton.setMargin( new Insets(0, 0, 0, 0));
 		soloButton.setFocusable(false);
 		soloButton.addActionListener(e -> {
 			isSolo = !isSolo;
-			soloButton.setBackground(isSolo? Color.decode("#aaaaff") : new JButton().getBackground());
+			soloButton.setBackground(isSolo? Color.decode("#7e7eff") : new JButton().getBackground());
 			soloButton.setText(isSolo? "<html><b>S</b></html>" : "S");
 		});
 		
 		muteButton = new JButton("M");
-		muteButton.setPreferredSize(new Dimension(22, 22));
+		
+		muteButton.setPreferredSize(buttonSize);
 		muteButton.setMargin( new Insets(0, 0, 0, 0));
+		
+//		muteButton.setMargin( new Insets(2, 4, 2, 3));
+		
 		muteButton.setFocusable(false);
 		muteButton.addActionListener(e -> {
 			isMute = !isMute;
@@ -64,7 +72,6 @@ public class PartsListItem extends JPanel implements IDiscardable, TableLayoutCo
 		});
 		
 		int col = -1;
-		add(gutter, ++col + ", 0");
 		add(title, ++col + ", 0");
 		add(soloButton, ++col + ", 0");
 		add(muteButton, ++col + ", 0");
