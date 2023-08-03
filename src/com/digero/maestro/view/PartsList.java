@@ -3,58 +3,87 @@ package com.digero.maestro.view;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.ListModel;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.digero.common.util.IDiscardable;
+import com.digero.common.util.Listener;
 import com.digero.maestro.abc.AbcPart;
+import com.digero.maestro.abc.AbcPartEvent;
 import com.digero.maestro.abc.AbcPartMetadataSource;
+import com.digero.maestro.abc.AbcSong;
+import com.digero.maestro.abc.AbcSongEvent;
 
-import info.clearthought.layout.TableLayout;
 import info.clearthought.layout.TableLayoutConstants;
 
-public class PartsList extends JPanel implements IDiscardable, TableLayoutConstants, ListDataListener
+@SuppressWarnings("serial")
+public class PartsList extends JPanel implements
+	IDiscardable, TableLayoutConstants
 {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 3832994437250655508L;
-	
-	private static double[] LAYOUT_COLS = new double[] {FILL};
-	private static double[] LAYOUT_ROWS = new double[] {PREFERRED, PREFERRED, PREFERRED, PREFERRED};
-	
 	private DefaultListModel<AbcPart> model;
-	private TableLayout layout;
+	private BoxLayout layout;
 	
-	private List<PartsListItem> partItemList = new ArrayList<PartsListItem>();
+	private List<PartsListItem> parts = new ArrayList<PartsListItem>();
+	
+	private int selectedIndex = -1;
 	
 	public PartsList()
 	{
-		super(new TableLayout(LAYOUT_COLS, LAYOUT_ROWS));
-		
-		layout = (TableLayout)getLayout();
-		
-		for (int i = 0; i < LAYOUT_ROWS.length; i++)
-		{
-			add(new PartsListItem(), "0, " + i);
-		}
-		
-		PartsListItem selected = new PartsListItem();
-		selected.setSelected(true);
-		add(selected, "0, 2");
+		layout = new BoxLayout(this, BoxLayout.Y_AXIS);
+		setLayout(layout);
+		setBackground(new JList<AbcPartMetadataSource>().getBackground());
 		
 		model = new DefaultListModel<AbcPart>();
 	}
 	
+	public void regenerateParts()
+	{
+		parts = new ArrayList<PartsListItem>();
+		removeAll();
+		
+		for (int i = 0; i < model.getSize(); i++)
+		{
+			addPart(i);
+		}
+		
+		this.revalidate();
+		this.repaint();
+	}
+	
+	private void addPart(int idx)
+	{
+		AbcPart part = model.elementAt(idx);
+		PartsListItem item = new PartsListItem(part);
+		
+		item.setListSelectionListener(selectionListener);
+		
+		parts.add(idx, item);
+		add(item);
+	}
+	
+	private void removePart(int idx)
+	{
+		
+	}
+	
+	public void selectPart(int idx)
+	{
+		for (int i = 0; i < parts.size(); i++)
+		{
+			PartsListItem item = parts.get(i);
+			item.setSelected(i == idx);
+		}
+		selectedIndex = idx;
+		repaint();
+	}
+	
 	public void init()
 	{
-		model.addListDataListener(this);
+		regenerateParts();
 	}
 
 	@Override
@@ -65,12 +94,23 @@ public class PartsList extends JPanel implements IDiscardable, TableLayoutConsta
 	
 	int getSelectedIndex()
 	{
-		return 0;
+		return selectedIndex;
 	}
 	
-	void setSelectedIndex(int i)
+	AbcPart getSelectedPart()
 	{
-		
+		if (model == null) return null;
+		return model.elementAt(getSelectedIndex());
+	}
+	
+	private int getIndexOfPart(AbcPart part)
+	{
+		for (int i = 0; i < model.size(); i++)
+		{
+			if (part.equals(model.get(i)))
+				return i;
+		}
+		return -1;
 	}
 	
 	DefaultListModel<AbcPart> getModel()
@@ -78,9 +118,8 @@ public class PartsList extends JPanel implements IDiscardable, TableLayoutConsta
 		return model;
 	}
 	
-	void setModel(DefaultListModel<AbcPart> model)
+	public void setModel(DefaultListModel<AbcPart> model)
 	{
-		model.removeListDataListener(this);
 		this.model = model;
 		init();
 	}
@@ -95,36 +134,59 @@ public class PartsList extends JPanel implements IDiscardable, TableLayoutConsta
 		listenerList.remove(ListSelectionListener.class, listener);
 	}
 	
-	AbcPart getSelectedPart()
-	{
-		return (AbcPart)model.getElementAt(0);
-	}
-	
 	void ensureIndexIsVisible(int index)
 	{
 		
 	}
 	
-	private int thre = 0;
-
-	// ListDataListener
-	@Override
-	public void contentsChanged(ListDataEvent e)
-	{
-		System.out.println(thre++ + " : 0 list listener " + e.getIndex0() + ", " + e.getIndex1() + "        type : " + e.getType());
-	}
-
-	// ListDataListener
-	@Override
-	public void intervalAdded(ListDataEvent e)
-	{
-		System.out.println(thre++ + " : 1 list listener " + e.getIndex0() + ", " + e.getIndex1() + "        type : " + e.getType());
-	}
-
-	// ListDataListener
-	@Override
-	public void intervalRemoved(ListDataEvent e)
-	{
-		System.out.println(thre++ + " : 2 list listener " + e.getIndex0() + ", " + e.getIndex1() + "        type : " + e.getType());
-	}
+	// Listens to the PartsListItems for selection events
+	// (only using AbcPartEvent out of convenience)
+	public Listener<AbcPartEvent> selectionListener = e -> {
+		AbcPart part = (AbcPart) e.getSource();
+		int i = getIndexOfPart(part);
+		if (i < 0) return;
+		
+		selectPart(i);
+		
+		for (ListSelectionListener listener : listenerList.getListeners(ListSelectionListener.class))
+		{
+			ListSelectionEvent event = new ListSelectionEvent(part, i, i, false);
+			listener.valueChanged(event);
+		}
+	};
+	
+	public Listener<AbcPartEvent> partListener = e -> {
+		switch(e.getProperty())
+		{
+		case TRACK_ENABLED:
+		case INSTRUMENT:
+			System.out.println(e.getProperty().name());
+			break;
+		default:
+			break;
+		}
+	};
+	
+	public Listener<AbcSongEvent> songListener = e -> {
+		AbcSong song = e.getSource();
+		if (song == null)
+			return;
+		
+		switch(e.getProperty())
+		{
+		case PART_ADDED:
+			e.getPart().addAbcListener(partListener);
+			System.out.println(e.getProperty().name());
+			break;
+		case BEFORE_PART_REMOVED:
+			e.getPart().addAbcListener(partListener);
+			System.out.println(e.getProperty().name());
+			break;
+		case PART_LIST_ORDER:
+			System.out.println(e.getProperty().name());
+			break;
+		default:
+			break;
+		}
+	};
 }

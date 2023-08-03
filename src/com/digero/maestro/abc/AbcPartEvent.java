@@ -19,7 +19,8 @@ public class AbcPartEvent extends EventObject
 		VOLUME_ADJUST,//
 		TRACK_SECTION_EDIT,//
 		DELAY_EDIT(true),
-		TRACK_PRIORITY; //
+		TRACK_PRIORITY,
+		SELECTED; // used by PartsList
 
 		private final boolean renderRelated;
 

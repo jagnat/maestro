@@ -4,14 +4,22 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Insets;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import com.digero.common.util.IDiscardable;
+import com.digero.common.util.Listener;
+import com.digero.maestro.abc.AbcPart;
+import com.digero.maestro.abc.AbcPartEvent;
+import com.digero.maestro.abc.AbcPartEvent.AbcPartProperty;
 
 import info.clearthought.layout.TableLayout;
 import info.clearthought.layout.TableLayoutConstants;
@@ -28,7 +36,6 @@ public class PartsListItem extends JPanel implements IDiscardable, TableLayoutCo
 	private static double[] LAYOUT_COLS = new double[] {FILL, PREFERRED, PREFERRED};
 	private static double[] LAYOUT_ROWS = new double[] {PREFERRED};
 	
-	private JPanel gutter;
 	private JLabel title;
 	private JButton soloButton;
 	private JButton muteButton;
@@ -36,14 +43,29 @@ public class PartsListItem extends JPanel implements IDiscardable, TableLayoutCo
 	private boolean isSolo = false;
 	private boolean isMute = false;
 	
-	public PartsListItem()
+	private AbcPart part;
+	
+	private Color selectedFg, selectedBg, unselectedFg, unselectedBg;
+	
+	private Listener<AbcPartEvent> selectListener = null;
+	
+	public PartsListItem(AbcPart part)
 	{
 		super(new TableLayout(LAYOUT_COLS, LAYOUT_ROWS));
 		
-		gutter = new JPanel();
+		this.setPart(part);
 		
-		title = new JLabel("This is test");
+		title = new JLabel(part.toString());
 		title.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0));
+		
+		JList dummy = new JList();
+		selectedFg = dummy.getSelectionForeground();
+		selectedBg = dummy.getSelectionBackground();
+		unselectedFg = dummy.getForeground();
+		unselectedBg = dummy.getBackground();
+		
+		setBackground(unselectedBg);
+		setForeground(unselectedFg);
 		
 		Dimension buttonSize = new Dimension(22, 22);
 		
@@ -75,15 +97,34 @@ public class PartsListItem extends JPanel implements IDiscardable, TableLayoutCo
 		add(title, ++col + ", 0");
 		add(soloButton, ++col + ", 0");
 		add(muteButton, ++col + ", 0");
+		
+		title.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (selectListener != null)
+                {
+                	AbcPartEvent ev = new AbcPartEvent(part, AbcPartProperty.SELECTED, isMute, AbcPartEvent.NO_TRACK_NUMBER);
+                	selectListener.onEvent(ev);
+                }
+            }
+
+        });
+	}
+	
+	public void setListSelectionListener(Listener<AbcPartEvent> l)
+	{
+		selectListener = l;
+	}
+	
+	public void removeListSelectionListener(Listener<AbcPartEvent> l)
+	{
+		selectListener = null;
 	}
 	
 	void setSelected(boolean selected)
 	{
-		JList dummy = new JList();
-		Color bg = selected? dummy.getSelectionBackground() : dummy.getBackground();
-		Color fg = selected? dummy.getSelectionForeground() : dummy.getForeground();
-		setBackground(bg);
-		setForeground(fg);
+		setBackground(selected? selectedBg : unselectedBg);
+		setForeground(selected? selectedFg : unselectedFg);
 //		title.setText("<html><b><u>This is a test</u></b></html>");
 	}
 	
@@ -91,6 +132,14 @@ public class PartsListItem extends JPanel implements IDiscardable, TableLayoutCo
 	public void discard()
 	{
 		
+	}
+
+	public AbcPart getPart() {
+		return part;
+	}
+
+	public void setPart(AbcPart part) {
+		this.part = part;
 	}
 	
 }

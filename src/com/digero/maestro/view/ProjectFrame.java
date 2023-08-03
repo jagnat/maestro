@@ -182,7 +182,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 	private JPanel partsListPanel;
 	private PartsList partsList2;
-	private JList<AbcPartMetadataSource> partsList;
+//	private JList<AbcPartMetadataSource> partsList;
 	private JButton newPartButton;
 	private JButton deletePartButton;
 	private JButton delayButton;
@@ -557,23 +557,23 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		exportSuccessfulLabel.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
 		exportSuccessfulLabel.setVisible(false);
 
-		partsList = new JList<>();
-		partsList.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		partsList.getSelectionModel().addListSelectionListener(e -> {
-			AbcPart abcPart = (AbcPart) partsList.getSelectedValue();
-			sequencer.getFilter().onAbcPartChanged(abcPart != null);
-			abcSequencer.getFilter().onAbcPartChanged(abcPart != null);
-			partPanel.setAbcPart(abcPart);
-			if (abcPart != null) {
-				updateButtons(false);
-			} else {
-				updateDelayButton();
-				if (partsList.getModel().getSize() > 0) {
-					// If ctrl-clicking to deselect this will ensure something is selected
-					partsList.setSelectedIndex(0);
-				}
-			}
-		});
+//		partsList = new JList<>();
+//		partsList.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+//		partsList.getSelectionModel().addListSelectionListener(e -> {
+//			AbcPart abcPart = (AbcPart) partsList.getSelectedValue();
+//			sequencer.getFilter().onAbcPartChanged(abcPart != null);
+//			abcSequencer.getFilter().onAbcPartChanged(abcPart != null);
+//			partPanel.setAbcPart(abcPart);
+//			if (abcPart != null) {
+//				updateButtons(false);
+//			} else {
+//				updateDelayButton();
+//				if (partsList.getModel().getSize() > 0) {
+//					// If ctrl-clicking to deselect this will ensure something is selected
+//					partsList.setSelectedIndex(0);
+//				}
+//			}
+//		});
 		
 		partsList2 = new PartsList();
 		partsList2.addListSelectionListener(e -> {
@@ -587,7 +587,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				updateDelayButton();
 				if (partsList2.getModel().getSize() > 0) {
 					// If ctrl-clicking to deselect this will ensure something is selected
-					partsList2.setSelectedIndex(0);
+					partsList2.selectPart(0);
 				}
 			}
 		});
@@ -618,16 +618,24 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			}
 			
 		}
-		partsList.setPrototypeCellValue(new ProtoClass());// This call is attempt of fix for no delete button on MacOS part 1
-		partsList.setVisibleRowCount(8);
+//		partsList.setPrototypeCellValue(new ProtoClass());// This call is attempt of fix for no delete button on MacOS part 1
+//		partsList.setVisibleRowCount(8);
 
 		// Wrap the part list in a panel that forces the list to the top
 		// Fixes a swing bug where clicking after the end of the list will select the last element
 		JPanel partListWrapperPanel = new JPanel(new BorderLayout());
-		partListWrapperPanel.add(partsList, BorderLayout.NORTH);
-		partListWrapperPanel.setBackground(partsList.getBackground());
+		if (false)
+		{
+//			partListWrapperPanel.add(partsList, BorderLayout.NORTH);
+		}
+		else
+		{
+			partListWrapperPanel.add(partsList2, BorderLayout.NORTH);
+		}
 		
-//		partListWrapperPanel.add(partsList2, BorderLayout.NORTH);	
+		partListWrapperPanel.setBackground(partsList2.getBackground());
+
+		
 		// Remove focus from text boxes if area under parts is clicked
 		partListWrapperPanel.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e)
@@ -649,19 +657,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			if (abcSong != null) {
 				if (abcSong.getParts().size() == 1) {
 					// When deleting last past, make sure a new part is replacing it, so something is selected
-					AbcPart deleteMe = (AbcPart) partsList.getSelectedValue();
-					abcSong.createNewPart();
-					abcSong.deletePart(deleteMe);
-				} else if (abcSong.getParts().size() > 1) {
-					abcSong.deletePart((AbcPart) partsList.getSelectedValue());
-				}
-			}
-		});
-		
-		deletePartButton.addActionListener(e -> {
-			if (abcSong != null) {
-				if (abcSong.getParts().size() == 1) {
-					// When deleting last past, make sure a new part is replacing it, so something is selected
+//					AbcPart deleteMe = (AbcPart) partsList.getSelectedValue();
 					AbcPart deleteMe = partsList2.getSelectedPart();
 					abcSong.createNewPart();
 					abcSong.deletePart(deleteMe);
@@ -671,17 +667,32 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			}
 		});
 		
-		delayButton = new JButton("Delay Part");
-//		delayButton.addActionListener(e -> {
-//			if (partsList.getSelectedValue() != null) {
-//				DelayDialog.show(ProjectFrame.this, (AbcPart) partsList.getSelectedValue());
+//		deletePartButton.addActionListener(e -> {
+//			if (abcSong != null) {
+//				if (abcSong.getParts().size() == 1) {
+//					// When deleting last past, make sure a new part is replacing it, so something is selected
+//					AbcPart deleteMe = partsList2.getSelectedPart();
+//					abcSong.createNewPart();
+//					abcSong.deletePart(deleteMe);
+//				} else if (abcSong.getParts().size() > 1) {
+//					abcSong.deletePart(partsList2.getSelectedPart());
+//				}
 //			}
 //		});
+		
+		delayButton = new JButton("Delay Part");
 		delayButton.addActionListener(e -> {
+//			if (partsList.getSelectedValue() != null) {
+//				DelayDialog.show(ProjectFrame.this, (AbcPart) partsList.getSelectedValue());
 			if (partsList2.getSelectedPart() != null) {
 				DelayDialog.show(ProjectFrame.this, partsList2.getSelectedPart());
 			}
 		});
+//		delayButton.addActionListener(e -> {
+//			if (partsList2.getSelectedPart() != null) {
+//				DelayDialog.show(ProjectFrame.this, partsList2.getSelectedPart());
+//			}
+//		});
 		delayButton.setToolTipText("Open a small dialog to edit delay on part.");
 		
 		numerateButton = new JButton("Numerate");
@@ -1547,7 +1558,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 					|| (abcSequencer.isLoaded() && (abcSequencer.isRunning() || abcSequencer.getPosition() != 0)));
 						
 			newPartButton.setEnabled(abcSong != null);
-			deletePartButton.setEnabled(partsList.getSelectedIndex() != -1);
+//			deletePartButton.setEnabled(partsList.getSelectedIndex() != -1);
 			deletePartButton.setEnabled(partsList2.getSelectedIndex() != -1);
 			numerateButton.setEnabled(midiLoaded);
 			updateDelayButton();
@@ -1599,7 +1610,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				midiModeRadioButton.setText("Original");
 			}
 			
-			double[] LAYOUT_COLS_DYN = new double[] { partsList.getFixedCellWidth() + 32, FILL };
+//			double[] LAYOUT_COLS_DYN = new double[] { partsList.getFixedCellWidth() + 32, FILL };
+			double[] LAYOUT_COLS_DYN = new double[] { 300 + 32, FILL };
 			tableLayout.setColumn(LAYOUT_COLS_DYN);// This call is attempt of fix for no delete button on MacOS part 2
 			
 			String partListTitle = "Song Parts";
@@ -1615,9 +1627,11 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	};
 	
 	public void updateDelayButton () {
-		if (partsList.getSelectedIndex() != -1 && partPanel != null && partPanel.getAbcPart() != null && partPanel.getAbcPart().delay != 0) {
+//		if (partsList.getSelectedIndex() != -1 && partPanel != null && partPanel.getAbcPart() != null && partPanel.getAbcPart().delay != 0) {
+		if (partsList2.getSelectedIndex() != -1 && partPanel != null && partPanel.getAbcPart() != null && partPanel.getAbcPart().delay != 0) {
 			delayButton.setForeground(new Color(0.2f, 0.8f, 0.2f));//green
-		} else if (partsList.getSelectedIndex() != -1) {
+//		} else if (partsList.getSelectedIndex() != -1) {
+		} else if (partsList2.getSelectedIndex() != -1) {
 			Color c = UIManager.getColor("TextField.foreground");
 			delayButton.setForeground(c);
 		} else {
@@ -1625,7 +1639,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			// it will no longer appear greyed out when disabled automatically.
 			delayButton.setForeground(new Color(0.6f, 0.6f, 0.6f));
 		}
-		delayButton.setEnabled(partsList.getSelectedIndex() != -1);
+//		delayButton.setEnabled(partsList.getSelectedIndex() != -1);
+		delayButton.setEnabled(partsList2.getSelectedIndex() != -1);
 	}
 
 	private void updateButtons(boolean immediate)
@@ -1682,7 +1697,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			if (e.getProperty() == AbcPartProperty.TITLE && partPanel != null)
 				partPanel.setNewTitle(e.getSource());
 
-			partsList.repaint();
+//			partsList.repaint();
 			partsList2.repaint();
 			
 			setAbcSongModified(true);
@@ -1769,15 +1784,14 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 					prioCheckBox.setSelected(abcSong.isPriorityActive());
 				break;
 			case PART_ADDED:
-				System.out.println("PART_ADDED");
 				e.getPart().addAbcListener(abcPartListener);
 
 				idx = abcSong.getParts().indexOf(e.getPart());
-				partsList.setSelectedIndex(idx);
-				partsList.ensureIndexIsVisible(idx);
-				partsList.repaint();
-				partsList2.setSelectedIndex(idx);
-//				partsList2.ensureIndexIsVisible(idx);
+//				partsList.setSelectedIndex(idx);
+//				partsList.ensureIndexIsVisible(idx);
+//				partsList.repaint();
+				partsList2.selectPart(idx);
+				partsList2.ensureIndexIsVisible(idx);
 				partsList2.repaint();
 				updateButtons(false);
 				maxNoteCountTotal = 0;
@@ -1786,9 +1800,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				
 			case TUNE_EDIT:
 				updateButtons(false);
-				if (partsList.getSelectedValue() != null) {
+				if (partsList2.getSelectedPart() != null) {
 					// We do this to show the tempo panel if tune editor has changed something
-					partPanel.tuneUpdated((AbcPart) partsList.getSelectedValue());
+					partPanel.tuneUpdated((AbcPart) partsList2.getSelectedPart());
 				}
 				if (abcSequencer.isRunning())
 					refreshPreviewSequence(false);
@@ -1797,14 +1811,13 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				break;
 
 			case BEFORE_PART_REMOVED:
-				System.out.println("BEFORE_PART_REMOVED");
 				e.getPart().removeAbcListener(abcPartListener);
 
 				idx = abcSong.getParts().indexOf(e.getPart());
 				if (idx > 0)
-					partsList.setSelectedIndex(idx - 1);
+					partsList2.selectPart(idx - 1);
 				else if (abcSong.getParts().size() > 1) {
-					partsList.setSelectedIndex(1);
+					partsList2.selectPart(1);
 				}
 
 				if (abcSong.getParts().size() == 0)
@@ -1817,16 +1830,19 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				if (abcSequencer.isRunning())
 					refreshPreviewSequence(false);
 
-				partsList.repaint();
+//				partsList.repaint();
+				partsList2.repaint();
 				updateButtons(false);
 				maxNoteCountTotal = 0;
 				maxNoteCount = 0;
 				break;
 
 			case PART_LIST_ORDER:
-				System.out.println("PART_LIST_ORDER");
-				partsList.setSelectedIndex(abcSong.getParts().indexOf(partPanel.getAbcPart()));
-				partsList.repaint();
+				
+//				partsList.setSelectedIndex(abcSong.getParts().indexOf(partPanel.getAbcPart()));
+//				partsList.repaint();
+				partsList2.selectPart(abcSong.getParts().indexOf(partPanel.getAbcPart()));
+				partsList2.repaint();
 				updateButtons(false);
 				break;
 
@@ -1868,19 +1884,19 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	{
 		@Override public void intervalAdded(ListDataEvent e)
 		{
-			partsList.repaint();
+			partsList2.repaint();
 			updateButtons(false);
 		}
 
 		@Override public void intervalRemoved(ListDataEvent e)
 		{
-			partsList.repaint();
+			partsList2.repaint();
 			updateButtons(false);
 		}
 
 		@Override public void contentsChanged(ListDataEvent e)
 		{
-			partsList.repaint();
+			partsList2.repaint();
 			updateButtons(false);
 		}
 	};
@@ -2006,9 +2022,11 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			abcSong.setAllOut(miscSettings.showBadger && miscSettings.allBadger);
 			abcSong.setBadger(miscSettings.showBadger);
 			abcSong.addSongListener(abcSongListener);
+			abcSong.addSongListener(partsList2.songListener);
 			for (AbcPart part : abcSong.getParts())
 			{
 				part.addAbcListener(abcPartListener);
+				part.addAbcListener(partsList2.partListener);
 			}
 
 			songTitleField.setText(abcSong.getTitle());
@@ -2073,7 +2091,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				}
 				else
 				{
-					partsList.setSelectedIndex(0);
+					partsList2.selectPart(0);
 					updatePreviewMode(true, true);
 					updateButtons(true);
 				}
@@ -2118,7 +2136,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void setPartsListModel () {
 		// Not pretty..
-		partsList.setModel((DefaultListModel) (abcSong.getParts().getListModel()));
+//		partsList.setModel((DefaultListModel) (abcSong.getParts().getListModel()));
 		partsList2.setModel(abcSong.getParts().getListModel());
 	}
 
@@ -2694,6 +2712,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	 * @param lockedSynchronizers
 	 * @return A string ready to be printed out
 	 */
+	@SuppressWarnings("unused")
 	private static String threadDump(boolean lockedMonitors, boolean lockedSynchronizers) {
 	    StringBuffer threadDump = new StringBuffer(System.lineSeparator());
 	    ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
