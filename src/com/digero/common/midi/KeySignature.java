@@ -10,6 +10,8 @@ import com.digero.common.abc.Accidental;
  */
 public class KeySignature implements MidiConstants
 {
+	private static final String INVALID_KEY_SIGNATURE = "Invalid key signature: ";
+
 	public static final KeySignature C_MAJOR = new KeySignature(0, true);
 
 	public final byte sharpsFlats;
@@ -65,7 +67,7 @@ public class KeySignature implements MidiConstants
 	public KeySignature(String str)
 	{
 		if (str.length() == 0)
-			throw new IllegalArgumentException("Invalid key signature: " + str);
+			throw new IllegalArgumentException(INVALID_KEY_SIGNATURE + str);
 
 		String keyPart;
 		if (str.length() == 1)
@@ -87,7 +89,7 @@ public class KeySignature implements MidiConstants
 
 		this.mode = KeyMode.parseMode(suffix);
 		if (this.mode == null)
-			throw new IllegalArgumentException("Invalid key signature: " + str);
+			throw new IllegalArgumentException(INVALID_KEY_SIGNATURE + str);
 
 		String[] keys = modeToKeys(this.mode);
 		for (int i = 0; i < keys.length; i++)
@@ -98,7 +100,7 @@ public class KeySignature implements MidiConstants
 				return;
 			}
 		}
-		throw new IllegalArgumentException("Invalid key signature: " + str);
+		throw new IllegalArgumentException(INVALID_KEY_SIGNATURE + str);
 	}
 
 	public KeySignature transpose(int semitones)

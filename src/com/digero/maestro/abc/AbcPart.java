@@ -1,5 +1,8 @@
 package com.digero.maestro.abc;
 
+import static com.digero.maestro.abc.AbcHelper.map;
+import static com.digero.maestro.abc.AbcHelper.matchNick;
+
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
@@ -41,8 +44,7 @@ import com.digero.maestro.util.SaveUtil;
 import com.digero.maestro.util.XmlUtil;
 import com.digero.maestro.view.InstrNameSettings;
 
-public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscardable
-{
+public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscardable {
 	private int partNumber = 1;
 	private String title;
 	private LotroInstrument instrument;
@@ -64,16 +66,16 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	private int previewSequenceTrackNumber = -1;
 	private final ListenerList<AbcPartEvent> listeners = new ListenerList<>();
 	private Preferences drumPrefs = Preferences.userNodeForPackage(AbcPart.class).node("drums");
-	
-	public ArrayList<TreeMap<Integer, PartSection>> sections;
-	public ArrayList<PartSection> nonSection;
-	public ArrayList<boolean[]> sectionsModified;
-	public int delay = 0;//ms
-	private int typeNumber = 0;// -1 for when instr do not match or string dont start with instr, 0 when instr match but no number, positive number when it has number.
+
+	public List<TreeMap<Integer, PartSection>> sections;
+	public List<PartSection> nonSection;
+	public List<boolean[]> sectionsModified;
+	public int delay = 0;// ms
+	private int typeNumber = 0;// -1 for when instr do not match or string dont start with instr, 0 when instr
+								// match but no number, positive number when it has number.
 	private final InstrNameSettings instrNameSettings;
 
-	public AbcPart(AbcSong abcSong)
-	{
+	public AbcPart(AbcSong abcSong) {
 		this.abcSong = abcSong;
 		abcSong.addSongListener(songListener);
 		this.instrument = LotroInstrument.DEFAULT_INSTRUMENT;
@@ -87,7 +89,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		this.playLeft = new boolean[t];
 		this.playCenter = new boolean[t];
 		this.playRight = new boolean[t];
-		
+
 		this.trackVolumeAdjust = new int[t];
 		this.drumNoteMap = new DrumNoteMap[t];
 		this.fxNoteMap = new StudentFXNoteMap[t];
@@ -104,27 +106,22 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		}
 	}
 
-	public AbcPart(AbcSong abcSong, Element loadFrom)
-	{
+	public AbcPart(AbcSong abcSong, Element loadFrom) {
 		this(abcSong);
 	}
 
-	@Override public void discard()
-	{
+	@Override
+	public void discard() {
 		abcSong.removeSongListener(songListener);
 		listeners.discard();
-		for (int i = 0; i < drumNoteMap.length; i++)
-		{
-			if (drumNoteMap[i] != null)
-			{
+		for (int i = 0; i < drumNoteMap.length; i++) {
+			if (drumNoteMap[i] != null) {
 				drumNoteMap[i].removeChangeListener(drumMapChangeListener);
 				drumNoteMap[i] = null;
 			}
 		}
-		for (int i = 0; i < fxNoteMap.length; i++)
-		{
-			if (fxNoteMap[i] != null)
-			{
+		for (int i = 0; i < fxNoteMap.length; i++) {
+			if (fxNoteMap[i] != null) {
 				fxNoteMap[i].removeChangeListener(drumMapChangeListener);
 				fxNoteMap[i] = null;
 			}
@@ -134,18 +131,16 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		delay = 0;
 	}
 
-	public void saveToXml(Element ele)
-	{
+	public void saveToXml(Element ele) {
 		Document doc = ele.getOwnerDocument();
 
 		ele.setAttribute("id", String.valueOf(partNumber));
 		SaveUtil.appendChildTextElement(ele, "title", String.valueOf(title));
 		SaveUtil.appendChildTextElement(ele, "instrument", String.valueOf(instrument));
-		if (delay != 0) {		
+		if (delay != 0) {
 			SaveUtil.appendChildTextElement(ele, "delay", String.valueOf(delay));
 		}
-		for (int t = 0; t < getTrackCount(); t++)
-		{
+		for (int t = 0; t < getTrackCount(); t++) {
 			if (!isTrackEnabled(t))
 				continue;
 
@@ -161,178 +156,136 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			if (trackVolumeAdjust[t] != 0)
 				SaveUtil.appendChildTextElement(trackEle, "volumeAdjust", String.valueOf(trackVolumeAdjust[t]));
 			if (abcSong.isMixTiming() && abcSong.isPriorityActive() && trackPriority[t])
-				SaveUtil.appendChildTextElement(trackEle, "combinePriority", String.valueOf(QuantizedTimingInfo.COMBINE_PRIORITY_MULTIPLIER));// Hardcoded to 4 for now, change QTM and UI if messing with this
-			
+				SaveUtil.appendChildTextElement(trackEle, "combinePriority",
+						String.valueOf(QuantizedTimingInfo.COMBINE_PRIORITY_MULTIPLIER));// Hardcoded to 4 for now,
+																							// change QTM and UI if
+																							// messing with this
+
 			trackEle.setAttribute("playLeft", String.valueOf(playLeft[t]));
 			trackEle.setAttribute("playCenter", String.valueOf(playCenter[t]));
 			trackEle.setAttribute("playRight", String.valueOf(playRight[t]));
-			
+
 			TreeMap<Integer, PartSection> tree = sections.get(t);
-	        if (tree != null) {
-		        for(Entry<Integer, PartSection> entry : tree.entrySet()) {
-		        	PartSection ps = entry.getValue();
-		        	Element sectionEle = (Element) trackEle.appendChild(doc.createElement("section"));
-		        	SaveUtil.appendChildTextElement(sectionEle, "startBar", String.valueOf(ps.startBar));
-		        	SaveUtil.appendChildTextElement(sectionEle, "endBar", String.valueOf(ps.endBar));
-		        	if (!instrument.isPercussion) {
-		        		SaveUtil.appendChildTextElement(sectionEle, "octaveStep", String.valueOf(ps.octaveStep));
-		        	}
-		        	SaveUtil.appendChildTextElement(sectionEle, "volumeStep", String.valueOf(ps.volumeStep));
-		        	SaveUtil.appendChildTextElement(sectionEle, "silence", String.valueOf(ps.silence));
-		        	SaveUtil.appendChildTextElement(sectionEle, "fade", String.valueOf(ps.fade));
-		        	SaveUtil.appendChildTextElement(sectionEle, "dialogLine", String.valueOf(ps.dialogLine));
-		        	SaveUtil.appendChildTextElement(sectionEle, "resetVelocities", String.valueOf(ps.resetVelocities));
-		        	if (!instrument.isPercussion) {
-			        	if (ps.doubling[0]) SaveUtil.appendChildTextElement(sectionEle, "double2OctDown", String.valueOf(ps.doubling[0]));
-			        	if (ps.doubling[1]) SaveUtil.appendChildTextElement(sectionEle, "double1OctDown", String.valueOf(ps.doubling[1]));
-			        	if (ps.doubling[2]) SaveUtil.appendChildTextElement(sectionEle, "double1OctUp", String.valueOf(ps.doubling[2]));
-			        	if (ps.doubling[3]) SaveUtil.appendChildTextElement(sectionEle, "double2OctUp", String.valueOf(ps.doubling[3]));
-		        	}
-		        }
-	        }
-	        
-	        if (nonSection.get(t) != null) {
-	        	PartSection ps = nonSection.get(t);
-	        	Element sectionEle = (Element) trackEle.appendChild(doc.createElement("nonSection"));
-	        	SaveUtil.appendChildTextElement(sectionEle, "silence", String.valueOf(ps.silence));
-	        	SaveUtil.appendChildTextElement(sectionEle, "resetVelocities", String.valueOf(ps.resetVelocities));
-	        	if (!instrument.isPercussion) {
-		        	if (ps.doubling[0]) SaveUtil.appendChildTextElement(sectionEle, "double2OctDown", String.valueOf(ps.doubling[0]));
-		        	if (ps.doubling[1]) SaveUtil.appendChildTextElement(sectionEle, "double1OctDown", String.valueOf(ps.doubling[1]));
-		        	if (ps.doubling[2]) SaveUtil.appendChildTextElement(sectionEle, "double1OctUp", String.valueOf(ps.doubling[2]));
-		        	if (ps.doubling[3]) SaveUtil.appendChildTextElement(sectionEle, "double2OctUp", String.valueOf(ps.doubling[3]));
-	        	}
-	        }
-			
-			if (instrument.isPercussion)
-			{
-				BitSet[] enabledSetByTrack = isCowbellPart() ? cowbellsEnabled : isFXPart()?fxEnabled:drumsEnabled;
-				BitSet enabledSet = (enabledSetByTrack == null) ? null : enabledSetByTrack[t];
-				if (enabledSet != null)
-				{
-					Element drumsEnabledEle = ele.getOwnerDocument().createElement("drumsEnabled");
-					trackEle.appendChild(drumsEnabledEle);
-
-					if (isCowbellPart())
-					{
-						drumsEnabledEle.setAttribute("defaultEnabled", String.valueOf(false));
-
-						// Only store the drums that are enabled
-						for (int i = enabledSet.nextSetBit(0); i >= 0; i = enabledSet.nextSetBit(i + 1))
-						{
-							Element drumEle = ele.getOwnerDocument().createElement("note");
-							drumsEnabledEle.appendChild(drumEle);
-							drumEle.setAttribute("id", String.valueOf(i));
-							drumEle.setAttribute("isEnabled", String.valueOf(true));
-						}
+			if (tree != null) {
+				for (Entry<Integer, PartSection> entry : tree.entrySet()) {
+					PartSection ps = entry.getValue();
+					Element sectionEle = (Element) trackEle.appendChild(doc.createElement("section"));
+					SaveUtil.appendChildTextElement(sectionEle, "startBar", String.valueOf(ps.startBar));
+					SaveUtil.appendChildTextElement(sectionEle, "endBar", String.valueOf(ps.endBar));
+					if (!instrument.isPercussion) {
+						SaveUtil.appendChildTextElement(sectionEle, "octaveStep", String.valueOf(ps.octaveStep));
 					}
-					else if (isFXPart())
-					{
-						drumsEnabledEle.setAttribute("defaultEnabled", String.valueOf(true));
-
-						// Only store the drums that are disabled
-						for (int i = enabledSet.nextClearBit(0); i >= 0; i = enabledSet.nextClearBit(i + 1))
-						{
-							if (i >= MidiConstants.NOTE_COUNT)
-								break;
-
-							Element drumEle = ele.getOwnerDocument().createElement("note");
-							drumsEnabledEle.appendChild(drumEle);
-							drumEle.setAttribute("id", String.valueOf(i));
-							drumEle.setAttribute("isEnabled", String.valueOf(false));
-						}
-					}
-					else
-					{
-						drumsEnabledEle.setAttribute("defaultEnabled", String.valueOf(true));
-
-						// Only store the drums that are disabled
-						for (int i = enabledSet.nextClearBit(0); i >= 0; i = enabledSet.nextClearBit(i + 1))
-						{
-							if (i >= MidiConstants.NOTE_COUNT)
-								break;
-
-							Element drumEle = ele.getOwnerDocument().createElement("note");
-							drumsEnabledEle.appendChild(drumEle);
-							drumEle.setAttribute("id", String.valueOf(i));
-							drumEle.setAttribute("isEnabled", String.valueOf(false));
-						}
-					}
+					SaveUtil.appendChildTextElement(sectionEle, "volumeStep", String.valueOf(ps.volumeStep));
+					SaveUtil.appendChildTextElement(sectionEle, "silence", String.valueOf(ps.silence));
+					SaveUtil.appendChildTextElement(sectionEle, "fade", String.valueOf(ps.fade));
+					SaveUtil.appendChildTextElement(sectionEle, "dialogLine", String.valueOf(ps.dialogLine));
+					SaveUtil.appendChildTextElement(sectionEle, "resetVelocities", String.valueOf(ps.resetVelocities));
+					AbcHelper.appendIfNotPercussion(ps, sectionEle, instrument.isPercussion);
 				}
+			}
 
-				if (!isCowbellPart())
-				{
-					if (!isFXPart() && drumNoteMap[t] != null)
-						drumNoteMap[t].saveToXml((Element) trackEle.appendChild(doc.createElement(drumNoteMap[t].getXmlName())));
-					if (isFXPart() && fxNoteMap[t] != null)
-						fxNoteMap[t].saveToXml((Element) trackEle.appendChild(doc.createElement(fxNoteMap[t].getXmlName())));
-				}
+			if (nonSection.get(t) != null) {
+				PartSection ps = nonSection.get(t);
+				Element sectionEle = (Element) trackEle.appendChild(doc.createElement("nonSection"));
+				SaveUtil.appendChildTextElement(sectionEle, "silence", String.valueOf(ps.silence));
+				SaveUtil.appendChildTextElement(sectionEle, "resetVelocities", String.valueOf(ps.resetVelocities));
+				AbcHelper.appendIfNotPercussion(ps, sectionEle, instrument.isPercussion);
+			}
+
+			if (instrument.isPercussion) {
+				calculateEnabledSet(ele, doc, t, trackEle);
 			}
 		}
 	}
 
-	public static AbcPart loadFromXml(AbcSong abcSong, Element ele, Version fileVersion) throws ParseException
-	{
+	private void calculateEnabledSet(Element ele, Document doc, int t, Element trackEle) {
+		BitSet[] enabledSetByTrack = isCowbellPart() ? cowbellsEnabled : isFXPart() ? fxEnabled : drumsEnabled;
+		BitSet enabledSet = (enabledSetByTrack == null) ? null : enabledSetByTrack[t];
+		if (enabledSet != null) {
+			Element drumsEnabledEle = ele.getOwnerDocument().createElement("drumsEnabled");
+			trackEle.appendChild(drumsEnabledEle);
+
+			if (isCowbellPart()) {
+				drumsEnabledEle.setAttribute("defaultEnabled", String.valueOf(false));
+
+				// Only store the drums that are enabled
+				for (int i = enabledSet.nextSetBit(0); i >= 0; i = enabledSet.nextSetBit(i + 1)) {
+					Element drumEle = ele.getOwnerDocument().createElement("note");
+					drumsEnabledEle.appendChild(drumEle);
+					drumEle.setAttribute("id", String.valueOf(i));
+					drumEle.setAttribute("isEnabled", String.valueOf(true));
+				}
+			} else if (isFXPart()) {
+				storeDisabledDrums(ele, enabledSet, drumsEnabledEle);
+			} else {
+				storeDisabledDrums(ele, enabledSet, drumsEnabledEle);
+			}
+		}
+
+		if (!isCowbellPart()) {
+			if (!isFXPart() && drumNoteMap[t] != null)
+				drumNoteMap[t]
+						.saveToXml((Element) trackEle.appendChild(doc.createElement(drumNoteMap[t].getXmlName())));
+			if (isFXPart() && fxNoteMap[t] != null)
+				fxNoteMap[t].saveToXml((Element) trackEle.appendChild(doc.createElement(fxNoteMap[t].getXmlName())));
+		}
+	}
+
+	private void storeDisabledDrums(Element ele, BitSet enabledSet, Element drumsEnabledEle) {
+		drumsEnabledEle.setAttribute("defaultEnabled", String.valueOf(true));
+
+		// Only store the drums that are disabled
+		for (int i = enabledSet.nextClearBit(0); i >= 0; i = enabledSet.nextClearBit(i + 1)) {
+			if (i >= MidiConstants.NOTE_COUNT)
+				break;
+
+			Element drumEle = ele.getOwnerDocument().createElement("note");
+			drumsEnabledEle.appendChild(drumEle);
+			drumEle.setAttribute("id", String.valueOf(i));
+			drumEle.setAttribute("isEnabled", String.valueOf(false));
+		}
+	}
+
+	public static AbcPart loadFromXml(AbcSong abcSong, Element ele, Version fileVersion) throws ParseException {
 		AbcPart part = new AbcPart(abcSong);
 		part.initFromXml(ele, fileVersion);
 		return part;
 	}
 
-	private void initFromXml(Element ele, Version fileVersion) throws ParseException
-	{
-		try
-		{
+	private void initFromXml(Element ele, Version fileVersion) throws ParseException {
+		try {
 			partNumber = SaveUtil.parseValue(ele, "@id", partNumber);
 			title = SaveUtil.parseValue(ele, "title", title);
 			instrument = SaveUtil.parseValue(ele, "instrument", instrument);
-			typeNumber = getTypeNumberMatchingTitle();//must be after instr and title
+			typeNumber = getTypeNumberMatchingTitle();// must be after instr and title
 			delay = SaveUtil.parseValue(ele, "delay", 0);
-			
-			for (Element trackEle : XmlUtil.selectElements(ele, "track"))
-			{
-				
-				// Try to find the specified track in the midi sequence by name, in case it moved
+
+			for (Element trackEle : XmlUtil.selectElements(ele, "track")) {
+
+				// Try to find the specified track in the midi sequence by name, in case it
+				// moved
 				int t = findTrackNumberByName(SaveUtil.parseValue(trackEle, "@name", ""));
 				// Fall back to the track ID if that didn't work
 				if (t == -1)
 					t = SaveUtil.parseValue(trackEle, "@id", -1);
 
-				if (t < 0 || t >= getTrackCount())
-				{
+				if (t < 0 || t >= getTrackCount()) {
 					String optionalName = SaveUtil.parseValue(trackEle, "@name", "");
-					
+
 					if (optionalName.length() > 0) {
 						optionalName = " (" + optionalName + ")";
 					}
-					
-					throw SaveUtil.invalidTrackException(trackEle, "Could not find track number " + t
-							+ optionalName + " in original MIDI file");
+
+					throw SaveUtil.invalidTrackException(trackEle,
+							"Could not find track number " + t + optionalName + " in original MIDI file");
 				}
-				
+
 				TreeMap<Integer, PartSection> tree = sections.get(t);
 				int lastEnd = 0;
 				for (Element sectionEle : XmlUtil.selectElements(trackEle, "section")) {
-					PartSection ps = new PartSection();
-					ps.startBar = SaveUtil.parseValue(sectionEle, "startBar", 0);
-					ps.endBar = SaveUtil.parseValue(sectionEle, "endBar", 0);
-					ps.volumeStep = SaveUtil.parseValue(sectionEle, "volumeStep", 0);
-					ps.octaveStep = SaveUtil.parseValue(sectionEle, "octaveStep", 0);
-					ps.silence = SaveUtil.parseValue(sectionEle, "silence", false);
-					ps.doubling[0] = SaveUtil.parseValue(sectionEle, "double2OctDown", false);
-					ps.doubling[1] = SaveUtil.parseValue(sectionEle, "double1OctDown", false);
-					ps.doubling[2] = SaveUtil.parseValue(sectionEle, "double1OctUp", false);
-					ps.doubling[3] = SaveUtil.parseValue(sectionEle, "double2OctUp", false);
-					ps.resetVelocities = SaveUtil.parseValue(sectionEle, "resetVelocities", false);
-					boolean fadeout = SaveUtil.parseValue(sectionEle, "fadeout", false);
-					int fade = SaveUtil.parseValue(sectionEle, "fade", 0);
-					if (fade != 0) {
-						ps.fade = fade;
-					} else {
-						// backwards compatibility
-						ps.fade = (fadeout?100:0);
-					}
-					ps.dialogLine = SaveUtil.parseValue(sectionEle, "dialogLine", -1);
-					if (ps.startBar > 0 && ps.endBar >= ps.startBar) {//  && (ps.volumeStep != 0 || ps.octaveStep != 0 || ps.silence || ps.fadeout)
+					PartSection ps = AbcHelper.generatePartSection(sectionEle);
+					if (ps.startBar > 0 && ps.endBar >= ps.startBar) {// && (ps.volumeStep != 0 || ps.octaveStep != 0 ||
+																		// ps.silence || ps.fadeout)
 						if (tree == null) {
 							tree = new TreeMap<>();
 							sections.set(t, tree);
@@ -343,16 +296,17 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 						tree.put(ps.startBar, ps);
 					}
 				}
-				boolean[] booleanArray = new boolean[lastEnd+1];
+				boolean[] booleanArray = new boolean[lastEnd + 1];
 				if (tree != null) {
-					for(int i = 0; i<lastEnd+1; i++) {
-						Entry<Integer, PartSection> entry = tree.floorEntry(i+1);
-						booleanArray[i] = entry != null && entry.getValue().startBar <= i+1 && entry.getValue().endBar >= i+1;
+					for (int i = 0; i < lastEnd + 1; i++) {
+						Entry<Integer, PartSection> entry = tree.floorEntry(i + 1);
+						booleanArray[i] = entry != null && entry.getValue().startBar <= i + 1
+								&& entry.getValue().endBar >= i + 1;
 					}
-					
+
 					sectionsModified.set(t, booleanArray);
 				}
-				
+
 				Element nonSectionEle = XmlUtil.selectSingleElement(trackEle, "nonSection");
 				if (nonSectionEle != null) {
 					PartSection ps = new PartSection();
@@ -379,82 +333,75 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 				playCenter[t] = SaveUtil.parseValue(trackEle, "@playCenter", true);
 				playRight[t] = SaveUtil.parseValue(trackEle, "@playRight", true);
 
-				if (instrument.isPercussion)
-				{
-					Element drumsEle = XmlUtil.selectSingleElement(trackEle, "drumsEnabled");
-					if (drumsEle != null)
-					{
-						boolean defaultEnabled = SaveUtil.parseValue(drumsEle, "@defaultEnabled", !isCowbellPart());
-
-						BitSet[] enabledSet;
-						if (isCowbellPart())
-						{
-							if (cowbellsEnabled == null)
-								cowbellsEnabled = new BitSet[getTrackCount()];
-							enabledSet = cowbellsEnabled;
-						}
-						else if (isFXPart())
-						{
-							if (fxEnabled == null)
-								fxEnabled = new BitSet[getTrackCount()];
-							enabledSet = fxEnabled;
-						}
-						else
-						{
-							if (drumsEnabled == null)
-								drumsEnabled = new BitSet[getTrackCount()];
-							enabledSet = drumsEnabled;
-						}
-
-						enabledSet[t] = new BitSet(MidiConstants.NOTE_COUNT);
-						if (defaultEnabled)
-							enabledSet[t].set(0, MidiConstants.NOTE_COUNT, true);
-
-						for (Element drumEle : XmlUtil.selectElements(drumsEle, "note"))
-						{
-							int id = SaveUtil.parseValue(drumEle, "@id", -1);
-							if (id >= 0 && id < MidiConstants.NOTE_COUNT)
-								enabledSet[t].set(id, SaveUtil.parseValue(drumEle, "@isEnabled", !defaultEnabled));
-						}
-					}
-
-					Element drumMapEle = XmlUtil.selectSingleElement(trackEle, "drumMap");
-					if (drumMapEle != null) {
-						drumNoteMap[t] = DrumNoteMap.loadFromXml(drumMapEle, fileVersion);
-						if (drumNoteMap[t] != null)
-							drumNoteMap[t].addChangeListener(drumMapChangeListener);
-					}
-					drumMapEle = XmlUtil.selectSingleElement(trackEle, "fxMap");
-					if (drumMapEle != null) {
-						fxNoteMap[t] = StudentFXNoteMap.loadFromXml(drumMapEle, fileVersion);
-						if (fxNoteMap[t] != null)
-							fxNoteMap[t].addChangeListener(drumMapChangeListener);
-					}
+				if (instrument.isPercussion) {
+					handlePercussion(fileVersion, trackEle, t);
 				}
 			}
-		}
-		catch (XPathExpressionException e)
-		{
+		} catch (XPathExpressionException e) {
 			throw new ParseException("XPath error: " + e.getMessage(), null);
 		}
 	}
 
-	private int findTrackNumberByName(String trackName)
-	{
+	private void handlePercussion(Version fileVersion, Element trackEle, int t)
+			throws XPathExpressionException, ParseException {
+		Element drumsEle = XmlUtil.selectSingleElement(trackEle, "drumsEnabled");
+		if (drumsEle != null) {
+			calculateEnabledSet(t, drumsEle);
+		}
+
+		Element drumMapEle = XmlUtil.selectSingleElement(trackEle, "drumMap");
+		if (drumMapEle != null) {
+			drumNoteMap[t] = DrumNoteMap.loadFromXml(drumMapEle, fileVersion);
+			if (drumNoteMap[t] != null)
+				drumNoteMap[t].addChangeListener(drumMapChangeListener);
+		}
+		drumMapEle = XmlUtil.selectSingleElement(trackEle, "fxMap");
+		if (drumMapEle != null) {
+			fxNoteMap[t] = StudentFXNoteMap.loadFromXml(drumMapEle, fileVersion);
+			if (fxNoteMap[t] != null)
+				fxNoteMap[t].addChangeListener(drumMapChangeListener);
+		}
+	}
+
+	private void calculateEnabledSet(int t, Element drumsEle) throws ParseException, XPathExpressionException {
+		boolean defaultEnabled = SaveUtil.parseValue(drumsEle, "@defaultEnabled", !isCowbellPart());
+
+		BitSet[] enabledSet;
+		if (isCowbellPart()) {
+			if (cowbellsEnabled == null)
+				cowbellsEnabled = new BitSet[getTrackCount()];
+			enabledSet = cowbellsEnabled;
+		} else if (isFXPart()) {
+			if (fxEnabled == null)
+				fxEnabled = new BitSet[getTrackCount()];
+			enabledSet = fxEnabled;
+		} else {
+			if (drumsEnabled == null)
+				drumsEnabled = new BitSet[getTrackCount()];
+			enabledSet = drumsEnabled;
+		}
+
+		enabledSet[t] = new BitSet(MidiConstants.NOTE_COUNT);
+		if (defaultEnabled)
+			enabledSet[t].set(0, MidiConstants.NOTE_COUNT, true);
+
+		for (Element drumEle : XmlUtil.selectElements(drumsEle, "note")) {
+			int id = SaveUtil.parseValue(drumEle, "@id", -1);
+			if (id >= 0 && id < MidiConstants.NOTE_COUNT)
+				enabledSet[t].set(id, SaveUtil.parseValue(drumEle, "@isEnabled", !defaultEnabled));
+		}
+	}
+
+	private int findTrackNumberByName(String trackName) {
 		if (trackName.equals(""))
 			return -1;
 
 		int namedTrackNumber = -1;
-		for (TrackInfo trackInfo : abcSong.getSequenceInfo().getTrackList())
-		{
-			if (trackInfo.hasName() && trackName.equals(trackInfo.getName()))
-			{
-				if (namedTrackNumber == -1)
-				{
+		for (TrackInfo trackInfo : abcSong.getSequenceInfo().getTrackList()) {
+			if (trackInfo.hasName() && trackName.equals(trackInfo.getName())) {
+				if (namedTrackNumber == -1) {
 					namedTrackNumber = trackInfo.getTrackNumber();
-				}
-				else
-				{
+				} else {
 					// Found multiple tracks with the same name; don't know which one it could be
 					return -1;
 				}
@@ -464,30 +411,28 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	}
 
 	private Listener<AbcSongEvent> songListener = e -> {
-		if (e.getProperty() == AbcSongProperty.TRANSPOSE)
-		{
+		if (e.getProperty() == AbcSongProperty.TRANSPOSE) {
 			fireChangeEvent(AbcPartProperty.BASE_TRANSPOSE, !isDrumPart() /* affectsAbcPreview */);
 		}
-		if (e.getProperty() == AbcSongProperty.MIX_TIMING_COMBINE_PRIORITIES || e.getProperty() == AbcSongProperty.MIX_TIMING) {
+		if (e.getProperty() == AbcSongProperty.MIX_TIMING_COMBINE_PRIORITIES
+				|| e.getProperty() == AbcSongProperty.MIX_TIMING) {
 			fireChangeEvent(AbcPartProperty.TRACK_PRIORITY);
 		}
 	};
 
-	public List<NoteEvent> getTrackEvents(int track)
-	{
+	public List<NoteEvent> getTrackEvents(int track) {
 		return abcSong.getSequenceInfo().getTrackInfo(track).getEvents();
 	}
 
 	/**
-	 * Maps from a MIDI note to an ABC note. If no mapping is available, returns <code>null</code>.
+	 * Maps from a MIDI note to an ABC note. If no mapping is available, returns
+	 * <code>null</code>.
 	 */
-	public Note mapNote(int track, int noteId, long tickStart)
-	{
+	public Note mapNote(int track, int noteId, long tickStart) {
 		if (!getAudible(track, tickStart)) {
 			return null;
 		}
-		if (isDrumPart())
-		{
+		if (isDrumPart()) {
 			if (!isTrackEnabled(track) || !isDrumEnabled(track, noteId))
 				return null;
 
@@ -502,9 +447,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 				dstNote = getDrumMap(track).get(noteId);
 
 			return (dstNote == LotroDrumInfo.DISABLED.note.id) ? null : Note.fromId(dstNote);
-		}
-		else
-		{
+		} else {
 			noteId += getTranspose(track, tickStart);
 			while (noteId < instrument.lowestPlayable.id)
 				noteId += 12;
@@ -513,7 +456,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			return Note.fromId(noteId);
 		}
 	}
-	
+
 	public boolean shouldPlay(NoteEvent ne, int track) {
 		if (ne.midiPan == -1) {
 			// This should never happen, all midi note events should have pan set.
@@ -530,32 +473,27 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		}
 		return true;
 	}
-	
+
 	/**
-	 *  
+	 * 
 	 * @param track
 	 * @param noteId
 	 * @param tickStart
-	 * @return Return the note id the note would have had if the instrument did not a have range limit.
+	 * @return Return the note id the note would have had if the instrument did not
+	 *         a have range limit.
 	 */
-	public int mapNoteFullOctaves(int track, int noteId, long tickStart)
-	{
+	public int mapNoteFullOctaves(int track, int noteId, long tickStart) {
 		noteId += getTranspose(track, tickStart);
 		return noteId;
 	}
 
-	public long firstNoteStartTick()
-	{
+	public long firstNoteStartTick() {
 		long startTick = Long.MAX_VALUE;
 
-		for (int t = 0; t < getTrackCount(); t++)
-		{
-			if (isTrackEnabled(t))
-			{
-				for (NoteEvent ne : getTrackEvents(t))
-				{
-					if (mapNote(t, ne.note.id, ne.getStartTick()) != null && shouldPlay(ne, t))
-					{
+		for (int t = 0; t < getTrackCount(); t++) {
+			if (isTrackEnabled(t)) {
+				for (NoteEvent ne : getTrackEvents(t)) {
+					if (mapNote(t, ne.note.id, ne.getStartTick()) != null && shouldPlay(ne, t)) {
 						if (ne.getStartTick() < startTick)
 							startTick = ne.getStartTick();
 						break;
@@ -570,32 +508,27 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		return startTick;
 	}
 
-	public long lastNoteEndTick(boolean accountForSustain)
-	{
+	public long lastNoteEndTick(boolean accountForSustain) {
 		long endTick = Long.MIN_VALUE;
 
 		// The last note to start playing isn't necessarily the last note to end.
 		// Check the last several notes to find the one that ends last.
 		int notesToCheck = 1000;
 
-		for (int t = 0; t < getTrackCount(); t++)
-		{
-			if (isTrackEnabled(t))
-			{
+		for (int t = 0; t < getTrackCount(); t++) {
+			if (isTrackEnabled(t)) {
 				List<NoteEvent> evts = getTrackEvents(t);
 				ListIterator<NoteEvent> iter = evts.listIterator(evts.size());
-				while (iter.hasPrevious())
-				{
+				while (iter.hasPrevious()) {
 					NoteEvent ne = iter.previous();
-					if (mapNote(t, ne.note.id, ne.getStartTick()) != null && shouldPlay(ne, t))
-					{
+					if (mapNote(t, ne.note.id, ne.getStartTick()) != null && shouldPlay(ne, t)) {
 						long noteEndTick;
 						if (!accountForSustain || instrument.isSustainable(ne.note.id))
 							noteEndTick = ne.getEndTick();
-						else
-						{
+						else {
 							ITempoCache tc = ne.getTempoCache();
-							noteEndTick = tc.microsToTick(tc.tickToMicros(ne.getStartTick()) + TimingInfo.ONE_SECOND_MICROS);
+							noteEndTick = tc
+									.microsToTick(tc.tickToMicros(ne.getStartTick()) + TimingInfo.ONE_SECOND_MICROS);
 						}
 
 						if (noteEndTick > endTick)
@@ -611,41 +544,36 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		return endTick;
 	}
 
-	public AbcSong getAbcSong()
-	{
+	public AbcSong getAbcSong() {
 		return abcSong;
 	}
 
-	public SequenceInfo getSequenceInfo()
-	{
+	public SequenceInfo getSequenceInfo() {
 		return abcSong.getSequenceInfo();
 	}
 
-	public int getTrackCount()
-	{
+	public int getTrackCount() {
 		return abcSong.getSequenceInfo().getTrackCount();
 	}
 
-	@Override public String getTitle()
-	{
+	@Override
+	public String getTitle() {
 		return title;
 	}
 
-	@Override public String toString()
-	{
+	@Override
+	public String toString() {
 		String val = getPartNumber() + ". " + getTitle();
 		if (getEnabledTrackCount() == 0)
 			val += "*";
 		return val;
 	}
 
-	public void setTitle(String name)
-	{
+	public void setTitle(String name) {
 		if (name == null)
 			throw new NullPointerException();
 
-		if (!this.title.equals(name))
-		{
+		if (!this.title.equals(name)) {
 			this.title = name;
 			if (!isTypeNumberMatchingTitle()) {
 				typeNumber = getTypeNumberMatchingTitle();
@@ -654,14 +582,12 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		}
 	}
 
-	public void replaceTitleInstrument(LotroInstrument replacement, LotroInstrument previous)
-	{
+	public void replaceTitleInstrument(LotroInstrument replacement, LotroInstrument previous) {
 		stripTypeNumber();
 		Pair<LotroInstrument, MatchResult> result = LotroInstrument.matchInstrument(title);
 		String replacementName = instrNameSettings.getInstrNick(replacement);
-		if (result == null)
-		{
-			Integer[] result2 = matchNick(previous, title);
+		if (result == null) {
+			Integer[] result2 = matchNick(instrNameSettings.getInstrNick(previous), title);
 			if (result2 != null) {
 				if (isTypeNumberMatchingTitle() && typeNumber != -1) {
 					typeNumber = 0;
@@ -677,9 +603,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			else {
 				setTitle(replacementName + " " + title);
 			}
-		}
-		else
-		{
+		} else {
 			MatchResult m = result.second;
 			if (isTypeNumberMatchingTitle() && typeNumber != -1) {
 				typeNumber = 0;
@@ -689,49 +613,50 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			}
 		}
 	}
-	
+
 	public int getTypeNumber() {
 		return typeNumber;
 	}
-	
+
 	public boolean setTypeNumber(int typeNumberNew) {
 		if (!isTypeNumberMatchingTitle()) {
 			int potentialOld = getTypeNumberMatchingTitle();
 			typeNumber = potentialOld;
 			if (potentialOld == -1) {
-				//System.out.println("  "+"Modified, setting -1");
+				// System.out.println(" "+"Modified, setting -1");
 				return typeNumber == typeNumberNew;
 			} else {
-				//System.out.println("  "+"Potential Old is "+potentialOld);
+				// System.out.println(" "+"Potential Old is "+potentialOld);
 			}
 		} else if (typeNumber == -1) {
-			//System.out.println("  "+"Modified, keeping -1");
+			// System.out.println(" "+"Modified, keeping -1");
 			return typeNumber == typeNumberNew;
 		} else {
-			//System.out.println("  "+"matching old title at least: "+typeNumber);
+			// System.out.println(" "+"matching old title at least: "+typeNumber);
 		}
-		if (typeNumberNew != typeNumber) {			
+		if (typeNumberNew != typeNumber) {
 			Pair<LotroInstrument, MatchResult> result = LotroInstrument.matchInstrument(title);
 
-			String typeString = " "+typeNumberNew;
+			String typeString = " " + typeNumberNew;
 			if (typeNumberNew == 0) {
 				typeString = "";
 			}
-			//System.out.println("  "+"Setting: "+result.second.group()+typeString);
+			// System.out.println(" "+"Setting: "+result.second.group()+typeString);
 			typeNumber = typeNumberNew;
-			setTitle(result.second.group()+typeString);// no need to check for null, as that is done in isTypeNumberMatchingTitle/getTypeNumberMatchingTitle
+			setTitle(result.second.group() + typeString);// no need to check for null, as that is done in
+															// isTypeNumberMatchingTitle/getTypeNumberMatchingTitle
 		} else {
-			//System.out.println("  "+"Same, not setting "+typeNumber);
+			// System.out.println(" "+"Same, not setting "+typeNumber);
 		}
 		return true;
 	}
-	
-	public void stripTypeNumber () {
+
+	public void stripTypeNumber() {
 		if (typeNumber != 0 && isTypeNumberMatchingTitle()) {
 			StringBuilder regex = new StringBuilder();
-			
-			String typeString = " "+getTypeNumber();
-			
+
+			String typeString = " " + getTypeNumber();
+
 			regex.append("\\b(?:");
 			regex.append('(');
 			regex.append((typeString).replace(" ", "[\\s_]*"));
@@ -744,38 +669,31 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			// Iterate through the matches to find the last one
 			for (int i = 0; m.find(i); i = m.end())
 				last = m.toMatchResult();
-			
-			if (last == null) return;
+
+			if (last == null)
+				return;
 			setTitle(getTitle().substring(0, last.start()));
 		}
 	}
-	
-	private Integer[] matchNick(LotroInstrument instr, String title) {
-		String nick = instrNameSettings.getInstrNick(instr);
-		if (title.contains(nick)) {
-			int startingPosition = title.indexOf(nick);
-		    int endingPosition = startingPosition + nick.length();
-		    Integer[] result = {startingPosition, endingPosition};
-		    return result;
-		}
-		return null;
-	}
-	
+
 	/**
 	 * 
-	 * @return -1 for when instr do not match or string dont start with instr, 0 when instr match but no postfix, positive number when it has number.
+	 * @return -1 for when instr do not match or string dont start with instr, 0
+	 *         when instr match but no postfix, positive number when it has number.
 	 */
 	public int getTypeNumberMatchingTitle() {
 		Pair<LotroInstrument, MatchResult> result = LotroInstrument.matchInstrument(title);
-		
+
 		if (result == null) {
-			Integer[] result2 = matchNick(instrument, title);
+			Integer[] result2 = matchNick(instrNameSettings.getInstrNick(instrument), title);
 			if (result2 != null) {
-				if (result2[0] != 0) return -1;
+				if (result2[0] != 0)
+					return -1;
 				String ending = title.substring(result2[1]);
-				
-				if (ending.length() == 0) return 0;
-				
+
+				if (ending.length() == 0)
+					return 0;
+
 				try {
 					int endsWith = Integer.parseInt(ending.trim());
 					return endsWith;
@@ -785,76 +703,70 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			}
 			return -1;
 		} else if (result.first.equals(instrument)) {
-			if (result.second.start() != 0) return -1;
-			
+			if (result.second.start() != 0)
+				return -1;
+
 			String ending = title.substring(result.second.end());
-			
-			if (ending.length() == 0) return 0;
-			
+
+			if (ending.length() == 0)
+				return 0;
+
 			try {
 				int endsWith = Integer.parseInt(ending.trim());
 				return endsWith;
 			} catch (NumberFormatException e) {
 				return -1;
-			}			
+			}
 		}
 		return -1;
 	}
-	
-	public boolean isTypeNumberMatchingTitle () {
+
+	public boolean isTypeNumberMatchingTitle() {
 		return typeNumber == getTypeNumberMatchingTitle();
 		/*
-		Pair<LotroInstrument, MatchResult> result = LotroInstrument.matchInstrument(title);
-		
-		if (result == null) {
-			System.out.println("    "+getTitle()+" has no instr match");
-			return false;
-		} else if (result.first.equals(instrument)) {
-			StringBuilder regex = new StringBuilder();
-			String typeString = " "+getTypeNumber();
-			
-			regex.append("\\b(?:");
-			regex.append('(');
-			regex.append((result.second.group()+typeString).replace(" ", "[\\s_]*"));
-			regex.append(')');
-			regex.append(")\\b");
-
-			Pattern typeRegex = Pattern.compile(regex.toString(), Pattern.CASE_INSENSITIVE);
-			Matcher m = typeRegex.matcher(getTitle());
-			MatchResult last = null;
-			// Iterate through the matches to find the last one
-			for (int i = 0; m.find(i); i = m.end())
-				last = m.toMatchResult();
-			
-			if (last == null) System.out.println("    "+getTitle()+"    last==null");
-			else System.out.println("    "+getTitle()+"    last.start():"+last.start()+" last.end():"+last.end()+" title.length:"+getTitle().length());
-			if (last != null && last.start() == 0 && last.end() == getTitle().length()) {
-				return true;
-			}
-		}
-		return false;*/
+		 * Pair<LotroInstrument, MatchResult> result =
+		 * LotroInstrument.matchInstrument(title);
+		 * 
+		 * if (result == null) {
+		 * System.out.println("    "+getTitle()+" has no instr match"); return false; }
+		 * else if (result.first.equals(instrument)) { StringBuilder regex = new
+		 * StringBuilder(); String typeString = " "+getTypeNumber();
+		 * 
+		 * regex.append("\\b(?:"); regex.append('(');
+		 * regex.append((result.second.group()+typeString).replace(" ", "[\\s_]*"));
+		 * regex.append(')'); regex.append(")\\b");
+		 * 
+		 * Pattern typeRegex = Pattern.compile(regex.toString(),
+		 * Pattern.CASE_INSENSITIVE); Matcher m = typeRegex.matcher(getTitle());
+		 * MatchResult last = null; // Iterate through the matches to find the last one
+		 * for (int i = 0; m.find(i); i = m.end()) last = m.toMatchResult();
+		 * 
+		 * if (last == null) System.out.println("    "+getTitle()+"    last==null");
+		 * else System.out.println("    "+getTitle()+"    last.start():"+last.start()
+		 * +" last.end():"+last.end()+" title.length:"+getTitle().length()); if (last !=
+		 * null && last.start() == 0 && last.end() == getTitle().length()) { return
+		 * true; } } return false;
+		 */
 	}
 
-	@Override public LotroInstrument getInstrument()
-	{
+	@Override
+	public LotroInstrument getInstrument() {
 		return instrument;
 	}
 
-	@Override public void setInstrument(LotroInstrument instrument)
-	{
+	@Override
+	public void setInstrument(LotroInstrument instrument) {
 		if (instrument == null)
 			throw new NullPointerException();
 
-		if (this.instrument != instrument)
-		{
+		if (this.instrument != instrument) {
 			this.instrument = instrument;
 			boolean affectsPreview = false;
-			for (boolean enabled : trackEnabled)
-			{
-				if (enabled)
-				{
+			for (boolean enabled : trackEnabled) {
+				if (enabled) {
 					affectsPreview = true;
-					abcSong.mixDirty = true;// Might have switched from sustained instr to non, or opposite, so lets recompute mixTimings
+					abcSong.setMixDirty(true);// Might have switched from sustained instr to non, or opposite, so lets
+												// recompute mixTimings
 					break;
 				}
 			}
@@ -862,30 +774,28 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		}
 	}
 
-	public int getTrackTranspose(int track)
-	{
+	public int getTrackTranspose(int track) {
 		return isDrumPart() ? 0 : trackTranspose[track];
 	}
 
-	public void setTrackTranspose(int track, int transpose)
-	{
-		if (trackTranspose[track] != transpose)
-		{
+	public void setTrackTranspose(int track, int transpose) {
+		if (trackTranspose[track] != transpose) {
 			trackTranspose[track] = transpose;
 			fireChangeEvent(AbcPartProperty.TRACK_TRANSPOSE, isTrackEnabled(track) /* previewRelated */, track);
 		}
 	}
 
-	public int getTranspose(int track, long tickStart)
-	{
+	public int getTranspose(int track, long tickStart) {
 		if (isDrumPart())
 			return 0;
-		return abcSong.getTranspose() + abcSong.getTuneTranspose(tickStart) + trackTranspose[track] - getInstrument().octaveDelta * 12 + getSectionTranspose(tickStart, track);
+		return abcSong.getTranspose() + abcSong.getTuneTranspose(tickStart) + trackTranspose[track]
+				- getInstrument().octaveDelta * 12 + getSectionTranspose(tickStart, track);
 	}
-	
+
 	public int getSectionTranspose(long tickStart, int track) {
 		int secTrans = 0;
-		if (!isTrackEnabled(track)) return secTrans;
+		if (!isTrackEnabled(track))
+			return secTrans;
 		SequenceInfo se = getSequenceInfo();
 		TreeMap<Integer, PartSection> tree = sections.get(track);
 		if (se != null && tree != null) {
@@ -897,7 +807,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 
 			int bar = -1;
 			int curBar = 1;
-			for (long barTick = startTick; barTick <= endTick+barLengthTicks; barTick += barLengthTicks) {
+			for (long barTick = startTick; barTick <= endTick + barLengthTicks; barTick += barLengthTicks) {
 				if (tickStart < barTick) {
 					bar = curBar;
 					break;
@@ -908,18 +818,19 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 				Entry<Integer, PartSection> entry = tree.floorEntry(bar);
 				if (entry != null) {
 					if (bar <= entry.getValue().endBar) {
-						secTrans = entry.getValue().octaveStep*12;
+						secTrans = entry.getValue().octaveStep * 12;
 					}
 				}
 			}
-		}		
-		
+		}
+
 		return secTrans;
 	}
-	
+
 	public Boolean[] getSectionDoubling(long tickStart, int track) {
-		Boolean[] secDoubling = {false, false, false, false};
-		if (!isTrackEnabled(track)) return secDoubling;
+		Boolean[] secDoubling = { false, false, false, false };
+		if (!isTrackEnabled(track))
+			return secDoubling;
 		SequenceInfo se = getSequenceInfo();
 		TreeMap<Integer, PartSection> tree = sections.get(track);
 		boolean isSection = false;
@@ -932,7 +843,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 
 			int bar = -1;
 			int curBar = 1;
-			for (long barTick = startTick; barTick <= endTick+barLengthTicks; barTick += barLengthTicks) {
+			for (long barTick = startTick; barTick <= endTick + barLengthTicks; barTick += barLengthTicks) {
 				if (tickStart < barTick) {
 					bar = curBar;
 					break;
@@ -952,15 +863,16 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		if (se != null && !isSection && nonSection.get(track) != null) {
 			secDoubling = nonSection.get(track).doubling;
 		}
-		
+
 		return secDoubling;
 	}
-	
+
 	/**
 	 * @param track
 	 * @param ne
-	 * @return velocity of the noteEvent, or is reset velocities active, then mezzoforte
-	 */	
+	 * @return velocity of the noteEvent, or is reset velocities active, then
+	 *         mezzoforte
+	 */
 	public int getSectionNoteVelocity(int track, NoteEvent ne) {
 		SequenceInfo se = getSequenceInfo();
 		TreeMap<Integer, PartSection> tree = sections.get(track);
@@ -974,7 +886,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 
 			int bar = -1;
 			int curBar = 1;
-			for (long barTick = startTick; barTick <= endTick+barLengthTicks; barTick += barLengthTicks) {
+			for (long barTick = startTick; barTick <= endTick + barLengthTicks; barTick += barLengthTicks) {
 				if (ne.getStartTick() < barTick) {
 					bar = curBar;
 					break;
@@ -986,18 +898,18 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 				if (entry != null) {
 					if (bar <= entry.getValue().endBar) {
 						isSection = true;
-						return entry.getValue().resetVelocities?Dynamics.DEFAULT.midiVol:ne.velocity;
+						return entry.getValue().resetVelocities ? Dynamics.DEFAULT.midiVol : ne.velocity;
 					}
 				}
 			}
 		}
 		if (se != null && !isSection && nonSection.get(track) != null) {
-			return nonSection.get(track).resetVelocities?Dynamics.DEFAULT.midiVol:ne.velocity;
+			return nonSection.get(track).resetVelocities ? Dynamics.DEFAULT.midiVol : ne.velocity;
 		}
-		
+
 		return ne.velocity;
 	}
-	
+
 	public int[] getSectionVolumeAdjust(int track, NoteEvent ne) {
 		SequenceInfo se = getSequenceInfo();
 		int delta = 0;// volume offset
@@ -1012,8 +924,8 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 
 			int bar = -1;
 			int curBar = 1;
-			for (long barTick = startTick; barTick <= endTick+barLengthTicks; barTick += barLengthTicks) {
-				//long barMicros = data.tickToMicros(barTick);
+			for (long barTick = startTick; barTick <= endTick + barLengthTicks; barTick += barLengthTicks) {
+				// long barMicros = data.tickToMicros(barTick);
 				if (ne.getStartTick() < barTick) {
 					bar = curBar;
 					break;
@@ -1026,9 +938,11 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 					if (bar <= entry.getValue().endBar) {
 						delta = entry.getValue().volumeStep;
 						if (entry.getValue().fade > 0) {
-							factor = map(ne.getStartTick(), entry.getValue().startBar*barLengthTicks-barLengthTicks, entry.getValue().endBar*barLengthTicks,100, 100-entry.getValue().fade);
+							factor = map(ne.getStartTick(), entry.getValue().startBar * barLengthTicks - barLengthTicks,
+									entry.getValue().endBar * barLengthTicks, 100, 100 - entry.getValue().fade);
 						} else if (entry.getValue().fade < 0) {
-							factor = map(ne.getStartTick(), entry.getValue().startBar*barLengthTicks-barLengthTicks, entry.getValue().endBar*barLengthTicks,100+entry.getValue().fade,100);
+							factor = map(ne.getStartTick(), entry.getValue().startBar * barLengthTicks - barLengthTicks,
+									entry.getValue().endBar * barLengthTicks, 100 + entry.getValue().fade, 100);
 						}
 					}
 				}
@@ -1039,21 +953,10 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		retur[1] = factor;
 		return retur;
 	}
-	
-	private int map(long value, long leftMin, long leftMax, int rightMin, int rightMax) {
-	    // Figure out how 'wide' each range is
-	    long leftSpan = leftMax - leftMin;
-	    int rightSpan = rightMax - rightMin;
 
-	    // Convert the left range into a 0-1 range (float)
-	    double valueScaled = (value - leftMin) / (double)leftSpan;
-
-	    // Convert the 0-1 range into a value in the right range.
-	    return (int)(rightMin + (valueScaled * rightSpan));
-	}
-	
 	public boolean getAudible(int track, long tickStart) {
-		if (!isTrackEnabled(track)) return true;
+		if (!isTrackEnabled(track))
+			return true;
 		SequenceInfo se = getSequenceInfo();
 		TreeMap<Integer, PartSection> tree = sections.get(track);
 		boolean isSection = false;
@@ -1066,7 +969,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 
 			int bar = -1;
 			int curBar = 1;
-			for (long barTick = startTick; barTick <= endTick+barLengthTicks; barTick += barLengthTicks) {
+			for (long barTick = startTick; barTick <= endTick + barLengthTicks; barTick += barLengthTicks) {
 				if (tickStart < barTick) {
 					bar = curBar;
 					break;
@@ -1086,96 +989,80 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		if (se != null && !isSection && nonSection.get(track) != null) {
 			return !nonSection.get(track).silence;
 		}
-		
+
 		return true;
 	}
 
-	public boolean isTrackEnabled(int track)
-	{
+	public boolean isTrackEnabled(int track) {
 		return trackEnabled[track];
 	}
 
-	public void setTrackEnabled(int track, boolean enabled)
-	{
-		if (trackEnabled[track] != enabled)
-		{
+	public void setTrackEnabled(int track, boolean enabled) {
+		if (trackEnabled[track] != enabled) {
 			trackEnabled[track] = enabled;
 			enabledTrackCount += enabled ? 1 : -1;
-			abcSong.mixDirty = true;
+			abcSong.setMixDirty(true);
 			fireChangeEvent(AbcPartProperty.TRACK_ENABLED, track);
 		}
 	}
 
-	public int getTrackVolumeAdjust(int track)
-	{
+	public int getTrackVolumeAdjust(int track) {
 		return trackVolumeAdjust[track];
 	}
 
-	public void setTrackVolumeAdjust(int track, int volumeAdjust)
-	{
-		if (trackVolumeAdjust[track] != volumeAdjust)
-		{
+	public void setTrackVolumeAdjust(int track, int volumeAdjust) {
+		if (trackVolumeAdjust[track] != volumeAdjust) {
 			trackVolumeAdjust[track] = volumeAdjust;
 			fireChangeEvent(AbcPartProperty.VOLUME_ADJUST, track);
 		}
 	}
 
-	public int getEnabledTrackCount()
-	{
+	public int getEnabledTrackCount() {
 		return enabledTrackCount;
 	}
 
-	public void setPreviewSequenceTrackNumber(int previewSequenceTrackNumber)
-	{
+	public void setPreviewSequenceTrackNumber(int previewSequenceTrackNumber) {
 		this.previewSequenceTrackNumber = previewSequenceTrackNumber;
 	}
 
-	public int getPreviewSequenceTrackNumber()
-	{
+	public int getPreviewSequenceTrackNumber() {
 		return previewSequenceTrackNumber;
 	}
 
-	@Override public int getPartNumber()
-	{
+	@Override
+	public int getPartNumber() {
 		return partNumber;
 	}
 
-	@Override public void setPartNumber(int partNumber)
-	{
-		if (this.partNumber != partNumber)
-		{
+	@Override
+	public void setPartNumber(int partNumber) {
+		if (this.partNumber != partNumber) {
 			this.partNumber = partNumber;
 			fireChangeEvent(AbcPartProperty.PART_NUMBER);
 		}
 	}
 
-	public void addAbcListener(Listener<AbcPartEvent> l)
-	{
+	public void addAbcListener(Listener<AbcPartEvent> l) {
 		listeners.add(l);
 	}
 
-	public void removeAbcListener(Listener<AbcPartEvent> l)
-	{
+	public void removeAbcListener(Listener<AbcPartEvent> l) {
 		listeners.remove(l);
 	}
 
-	protected void fireChangeEvent(AbcPartProperty property)
-	{
+	protected void fireChangeEvent(AbcPartProperty property) {
 		fireChangeEvent(property, property.isAbcPreviewRelated(), AbcPartEvent.NO_TRACK_NUMBER);
 	}
 
-	protected void fireChangeEvent(AbcPartProperty property, boolean abcPreviewRelated)
-	{
+	protected void fireChangeEvent(AbcPartProperty property, boolean abcPreviewRelated) {
 		fireChangeEvent(property, abcPreviewRelated, AbcPartEvent.NO_TRACK_NUMBER);
 	}
 
-	protected void fireChangeEvent(AbcPartProperty property, int trackNumber)
-	{
+	protected void fireChangeEvent(AbcPartProperty property, int trackNumber) {
 		fireChangeEvent(property, property.isAbcPreviewRelated(), trackNumber);
 	}
 
-	protected void fireChangeEvent(AbcPartProperty property, boolean abcPreviewRelated, int trackNumber)
-	{
+	protected void fireChangeEvent(AbcPartProperty property, boolean abcPreviewRelated, int trackNumber) {
 		if (listeners.size() == 0)
 			return;
 
@@ -1186,37 +1073,28 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	// DRUMS
 	//
 
-	public boolean isDrumPart()
-	{
+	public boolean isDrumPart() {
 		return instrument.isPercussion;
 	}
 
-	public boolean isCowbellPart()
-	{
+	public boolean isCowbellPart() {
 		return instrument == LotroInstrument.BASIC_COWBELL || instrument == LotroInstrument.MOOR_COWBELL;
 	}
-	
-	public boolean isFXPart()
-	{
+
+	public boolean isFXPart() {
 		return instrument == LotroInstrument.STUDENT_FX_FIDDLE;
 	}
 
-	public boolean isDrumTrack(int track)
-	{
+	public boolean isDrumTrack(int track) {
 		return abcSong.getSequenceInfo().getTrackInfo(track).isDrumTrack();
 	}
 
-	public DrumNoteMap getDrumMap(int track)
-	{
-		if (drumNoteMap[track] == null)
-		{
+	public DrumNoteMap getDrumMap(int track) {
+		if (drumNoteMap[track] == null) {
 			// For non-drum tracks, just use a straight pass-through
-			if (!abcSong.getSequenceInfo().getTrackInfo(track).isDrumTrack())
-			{
+			if (!abcSong.getSequenceInfo().getTrackInfo(track).isDrumTrack()) {
 				drumNoteMap[track] = new PassThroughDrumNoteMap();
-			}
-			else
-			{
+			} else {
 				drumNoteMap[track] = new DrumNoteMap();
 				drumNoteMap[track].load(drumPrefs);
 			}
@@ -1224,68 +1102,60 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		}
 		return drumNoteMap[track];
 	}
-	
-	public StudentFXNoteMap getFXMap(int track)
-	{
-		if (fxNoteMap[track] == null)
-		{
+
+	public StudentFXNoteMap getFXMap(int track) {
+		if (fxNoteMap[track] == null) {
 			// For non-drum tracks, just use a straight pass-through
-			//if (!abcSong.getSequenceInfo().getTrackInfo(track).isDrumTrack())
-			//{
-				fxNoteMap[track] = new PassThroughFXNoteMap();
-			//}
-			//else
-			//{
-			//	drumNoteMap[track] = new StudentFXNoteMap();
-				//drumNoteMap[track].load(drumPrefs);
-			//}
+			// if (!abcSong.getSequenceInfo().getTrackInfo(track).isDrumTrack())
+			// {
+			fxNoteMap[track] = new PassThroughFXNoteMap();
+			// }
+			// else
+			// {
+			// drumNoteMap[track] = new StudentFXNoteMap();
+			// drumNoteMap[track].load(drumPrefs);
+			// }
 			fxNoteMap[track].addChangeListener(drumMapChangeListener);
 		}
 		return fxNoteMap[track];
 	}
 
-	private final ChangeListener drumMapChangeListener = new ChangeListener()
-	{
-		@Override public void stateChanged(ChangeEvent e)
-		{
-			if (e.getSource() instanceof DrumNoteMap)
-			{
+	private final ChangeListener drumMapChangeListener = new ChangeListener() {
+		@Override
+		public void stateChanged(ChangeEvent e) {
+			if (e.getSource() instanceof DrumNoteMap) {
 				DrumNoteMap map = (DrumNoteMap) e.getSource();
 
-				// Don't write pass-through drum maps to the prefs node 
-				// these are used for non-drum tracks and their mapping 
+				// Don't write pass-through drum maps to the prefs node
+				// these are used for non-drum tracks and their mapping
 				// isn't desirable to save.
 				if (!(map instanceof PassThroughDrumNoteMap) && !(map instanceof StudentFXNoteMap))
 					map.save(drumPrefs);
 
-				abcSong.mixDirty = true;// Some drum sounds might have been toggled, so need to recompute mixTimings
+				abcSong.setMixDirty(true);// Some drum sounds might have been toggled, so need to recompute mixTimings
 				fireChangeEvent(AbcPartProperty.DRUM_MAPPING);
 			}
 		}
 	};
 
-	Preferences getDrumPrefs()
-	{
+	Preferences getDrumPrefs() {
 		return drumPrefs;
 	}
 
-	public boolean isDrumPlayable(int track, int drumId)
-	{
+	public boolean isDrumPlayable(int track, int drumId) {
 		if (isCowbellPart())
 			return true;
 
 		if (isFXPart())
 			return getFXMap(track).get(drumId) != LotroStudentFXInfo.DISABLED.note.id;
-		
+
 		return getDrumMap(track).get(drumId) != LotroDrumInfo.DISABLED.note.id;
 	}
 
-	public boolean isDrumEnabled(int track, int drumId)
-	{
-		BitSet[] enabledSet = isCowbellPart() ? cowbellsEnabled : isFXPart()?fxEnabled:drumsEnabled;
+	public boolean isDrumEnabled(int track, int drumId) {
+		BitSet[] enabledSet = isCowbellPart() ? cowbellsEnabled : isFXPart() ? fxEnabled : drumsEnabled;
 
-		if (enabledSet == null || enabledSet[track] == null)
-		{
+		if (enabledSet == null || enabledSet[track] == null) {
 			return !isCowbellPart() || (drumId == MidiDrum.COWBELL.id())
 					|| !abcSong.getSequenceInfo().getTrackInfo(track).isDrumTrack();
 		}
@@ -1293,41 +1163,30 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		return enabledSet[track].get(drumId);
 	}
 
-	public void setDrumEnabled(int track, int drumId, boolean enabled)
-	{
-		if (isDrumEnabled(track, drumId) != enabled)
-		{
+	public void setDrumEnabled(int track, int drumId, boolean enabled) {
+		if (isDrumEnabled(track, drumId) != enabled) {
 			BitSet[] enabledSet;
-			if (isCowbellPart())
-			{
+			if (isCowbellPart()) {
 				if (cowbellsEnabled == null)
 					cowbellsEnabled = new BitSet[getTrackCount()];
 				enabledSet = cowbellsEnabled;
-			}
-			else if (isFXPart())
-			{
+			} else if (isFXPart()) {
 				if (fxEnabled == null)
 					fxEnabled = new BitSet[getTrackCount()];
 				enabledSet = fxEnabled;
-			}
-			else
-			{
+			} else {
 				if (drumsEnabled == null)
 					drumsEnabled = new BitSet[getTrackCount()];
 				enabledSet = drumsEnabled;
 			}
 
-			if (enabledSet[track] == null)
-			{
+			if (enabledSet[track] == null) {
 				enabledSet[track] = new BitSet(MidiConstants.NOTE_COUNT);
-				if (isCowbellPart())
-				{
+				if (isCowbellPart()) {
 					SortedSet<Integer> notesInUse = abcSong.getSequenceInfo().getTrackInfo(track).getNotesInUse();
 					if (notesInUse.contains(MidiDrum.COWBELL.id()))
 						enabledSet[track].set(MidiDrum.COWBELL.id(), true);
-				}
-				else
-				{
+				} else {
 					enabledSet[track].set(0, MidiConstants.NOTE_COUNT, true);
 				}
 			}
@@ -1337,10 +1196,11 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	}
 
 	public void sectionEdited(int track) {
-		abcSong.mixDirty = true; // Some notes might have gotten silenced in which case the mixTimings need to be recomputed
+		abcSong.setMixDirty(true); // Some notes might have gotten silenced in which case the mixTimings need to be
+									// recomputed
 		fireChangeEvent(AbcPartProperty.TRACK_SECTION_EDIT, track);
 	}
-	
+
 	public void delayEdited() {
 		fireChangeEvent(AbcPartProperty.DELAY_EDIT);
 	}
@@ -1348,7 +1208,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	public void setTrackPriority(int track, boolean prio) {
 		if (trackPriority[track] != prio) {
 			trackPriority[track] = prio;
-			abcSong.mixDirty = true;
+			abcSong.setMixDirty(true);
 			fireChangeEvent(AbcPartProperty.TRACK_PRIORITY, true, track);
 		}
 	}

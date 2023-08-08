@@ -35,7 +35,7 @@ public class SingleSelectionModel<T extends ISelectable> implements IDiscardable
 			throw new NullPointerException();
 
 		if (listeners == null)
-			listeners = new ArrayList<ChangeListener>();
+			listeners = new ArrayList<>();
 
 		listeners.add(listener);
 	}

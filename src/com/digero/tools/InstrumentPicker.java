@@ -1,7 +1,7 @@
 package com.digero.tools;
 
 import java.io.File;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -17,7 +17,7 @@ public class InstrumentPicker
 		File notInstruments = new File(root, "not_instruments");
 		File maybe = new File(root, "maybe_instruments");
 
-		Map<LotroInstrument, File> dirs = new HashMap<>();
+		Map<LotroInstrument, File> dirs = new EnumMap<>(LotroInstrument.class);
 
 		StringBuilder pickString = new StringBuilder("[0] Replay");
 		final int REPLAY = 0;

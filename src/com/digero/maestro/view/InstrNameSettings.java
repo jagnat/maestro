@@ -1,68 +1,60 @@
 package com.digero.maestro.view;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 import com.digero.common.abc.LotroInstrument;
 
-public class InstrNameSettings
-{
-	private Map<LotroInstrument, String> nicks = new HashMap<>();
-	
+public class InstrNameSettings {
+	private Map<LotroInstrument, String> nicks = new EnumMap<>(LotroInstrument.class);
+
 	private final Preferences prefs;
 
-	public InstrNameSettings(Preferences prefs)
-	{
+	public InstrNameSettings(Preferences prefs) {
 		this.prefs = prefs;
-		
+
 		loadPrefs(prefs);
 		saveToPrefs();
 	}
-	
-	private void loadPrefs(Preferences prefs)
-	{
+
+	private void loadPrefs(Preferences prefs) {
 		for (LotroInstrument inst : LotroInstrument.values()) {
 			nicks.put(inst, prefs.get(inst.toString(), inst.friendlyName));
 		}
 	}
 
-	public InstrNameSettings(InstrNameSettings that)
-	{
+	public InstrNameSettings(InstrNameSettings that) {
 		this.prefs = that.prefs;
 		copyFrom(that);
 	}
 
-	public void copyFrom(InstrNameSettings that)
-	{
+	public void copyFrom(InstrNameSettings that) {
 		for (LotroInstrument inst : LotroInstrument.values()) {
 			nicks.put(inst, that.nicks.get(inst));
 		}
 	}
 
-	public void saveToPrefs()
-	{
+	public void saveToPrefs() {
 		for (LotroInstrument inst : LotroInstrument.values()) {
 			prefs.put(inst.toString(), nicks.get(inst));
 		}
 	}
-	
-	public void restoreDefaults()
-	{
+
+	public void restoreDefaults() {
 		try {
 			prefs.clear();
 		} catch (BackingStoreException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 		InstrNameSettings fresh = new InstrNameSettings(prefs);
 		this.copyFrom(fresh);
 	}
 
-	public InstrNameSettings getCopy()
-	{
+	public InstrNameSettings getCopy() {
 		return new InstrNameSettings(this);
 	}
 

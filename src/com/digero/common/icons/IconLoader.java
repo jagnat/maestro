@@ -32,7 +32,9 @@ public class IconLoader
 			int height = img.getHeight();
 			int[] argbArray = new int[width];
 			float[] hsb = null;
-			final int H = 0, S = 1, B = 2;
+			final int H = 0;
+			final int S = 1;
+			final int B = 2;
 			for (int y = 0; y < height; y++)
 			{
 				img.getRGB(0, y, width, 1, argbArray, 0, width);

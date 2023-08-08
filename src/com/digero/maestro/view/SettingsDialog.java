@@ -9,8 +9,9 @@ import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -55,8 +56,7 @@ import info.clearthought.layout.TableLayout;
 import info.clearthought.layout.TableLayoutConstants;
 
 @SuppressWarnings("serial")
-public class SettingsDialog extends JDialog implements TableLayoutConstants
-{
+public class SettingsDialog extends JDialog implements TableLayoutConstants {
 	private static final String PART_NUMBERING_CONFIG_DIRECTORY = "PartNumConfigDir";
 	public static final int NUMBERING_TAB = 0;
 	public static final int NAME_TEMPLATE_TAB = 1;
@@ -77,22 +77,22 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 	private PartNameTemplate.Settings nameTemplateSettings;
 	private PartNameTemplate nameTemplate;
 	private JLabel nameTemplateExampleLabel;
-	
+
 	private ExportFilenameTemplate.Settings exportTemplateSettings;
 	private ExportFilenameTemplate exportTemplate;
 	private JLabel exportTemplateExampleLabel;
-	
+
 	private InstrNameSettings instrNameSettings;
 
 	private SaveAndExportSettings saveSettings;
 	private MiscSettings miscSettings;
-	
+
 	private List<InstrumentSpinner> instrumentSpinners = new ArrayList<>();
-	private JComboBox<Integer> incrementComboBox = new JComboBox<>(new Integer[]{1, 10});
+	private JComboBox<Integer> incrementComboBox = new JComboBox<>(new Integer[] { 1, 10 });
 
 	public SettingsDialog(JFrame owner, PartAutoNumberer partNumberer, PartNameTemplate nameTemplate,
-			ExportFilenameTemplate exportTemplate, SaveAndExportSettings saveSettings, MiscSettings miscSettings, InstrNameSettings instrNameSettings)
-	{
+			ExportFilenameTemplate exportTemplate, SaveAndExportSettings saveSettings, MiscSettings miscSettings,
+			InstrNameSettings instrNameSettings) {
 		super(owner, "Options", true);
 		setDefaultCloseOperation(HIDE_ON_CLOSE);
 
@@ -100,7 +100,7 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 
 		this.nameTemplate = nameTemplate;
 		this.nameTemplateSettings = nameTemplate.getSettingsCopy();
-		
+
 		this.exportTemplate = exportTemplate;
 		this.exportTemplateSettings = exportTemplate.getSettingsCopy();
 
@@ -115,22 +115,22 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 			success = true;
 			SettingsDialog.this.setVisible(false);
 		});
-		
+
 		JButton resetButton = new JButton("Reset Page");
 		resetButton.addActionListener(e -> {
 			String page = tabPanel.getTitleAt(tabPanel.getSelectedIndex());
 			String title = "Reset '" + page + "' Settings?";
 			String message = "Are you sure you want to reset the " + page.toLowerCase() + " settings? No undo!";
-			int result = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.OK_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE, null);
-			if (result == JOptionPane.YES_OPTION)
-			{
+			int result = JOptionPane.showConfirmDialog(null, message, title, JOptionPane.OK_CANCEL_OPTION,
+					JOptionPane.WARNING_MESSAGE, null);
+			if (result == JOptionPane.YES_OPTION) {
 				success = false;
 				settingPageReset = true;
 				settingPageResetIndex = tabPanel.getSelectedIndex();
 				SettingsDialog.this.setVisible(false);
 			}
 		});
-		
+
 		JButton cancelButton = new JButton("Cancel");
 		cancelButton.setMnemonic('C');
 		cancelButton.addActionListener(e -> {
@@ -141,17 +141,16 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 		final String CLOSE_WINDOW_ACTION = "com.digero.maestro.view.SettingsDialog:CLOSE_WINDOW_ACTION";
 		getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0),
 				CLOSE_WINDOW_ACTION);
-		getRootPane().getActionMap().put(CLOSE_WINDOW_ACTION, new AbstractAction()
-		{
-			@Override public void actionPerformed(ActionEvent e)
-			{
+		getRootPane().getActionMap().put(CLOSE_WINDOW_ACTION, new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
 				success = false;
 				SettingsDialog.this.setVisible(false);
 			}
 		});
 
 		JPanel buttonsPanel = new JPanel(new TableLayout(//
-				new double[] { 0.33, 0.33, 0.34 },//
+				new double[] { 0.33, 0.33, 0.34 }, //
 				new double[] { PREFERRED }));
 		((TableLayout) buttonsPanel.getLayout()).setHGap(PAD);
 		buttonsPanel.add(okButton, "0, 0, f, f");
@@ -176,8 +175,7 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 		setContentPane(mainPanel);
 		pack();
 
-		if (owner != null)
-		{
+		if (owner != null) {
 			int left = owner.getX() + (owner.getWidth() - this.getWidth()) / 2;
 			int top = owner.getY() + (owner.getHeight() - this.getHeight()) / 2;
 			this.setLocation(left, top);
@@ -188,13 +186,12 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 		updateExportFilenameExample();
 	}
 
-	private JPanel createNumberingPanel()
-	{
+	private JPanel createNumberingPanel() {
 		JLabel instrumentsTitle = new JLabel("<html><b><u>First part number</u></b></html>");
 
 		TableLayout instrumentsLayout = new TableLayout(//
-				new double[] { PREFERRED, PREFERRED, 2 * PAD, PREFERRED, PREFERRED },//
-				new double[] { });
+				new double[] { PREFERRED, PREFERRED, 2 * PAD, PREFERRED, PREFERRED }, //
+				new double[] {});
 		instrumentsLayout.setHGap(PAD);
 		instrumentsLayout.setVGap(3);
 		JPanel instrumentsPanel = new JPanel(instrumentsLayout);
@@ -202,19 +199,15 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 		instrumentSpinners.clear();
 
 		LotroInstrument[] instruments = LotroInstrument.values();
-		for (int i = 0; i < instruments.length; i++)
-		{
+		for (int i = 0; i < instruments.length; i++) {
 			LotroInstrument inst = instruments[i];
 
 			int row = i;
 			int col = 0;
-			if (i >= (instruments.length + 1) / 2)
-			{
+			if (i >= (instruments.length + 1) / 2) {
 				row -= (instruments.length + 1) / 2;
 				col = 3;
-			}
-			else
-			{
+			} else {
 				instrumentsLayout.insertRow(row, PREFERRED);
 			}
 			InstrumentSpinner spinner = new InstrumentSpinner(inst);
@@ -228,7 +221,7 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 				+ "<b>1</b>: number Lute parts as 10, 11, 12, etc.<br>"
 				+ "<b>10</b>: number Lute parts as 1, 11, 21, etc.</html>");
 
-		incrementComboBox = new JComboBox<>(new Integer[]{1, 10});
+		incrementComboBox = new JComboBox<>(new Integer[] { 1, 10 });
 		incrementComboBox.setSelectedItem(partNumbererSettings.getIncrement());
 		incrementComboBox.addActionListener(e -> {
 			int oldInc = partNumbererSettings.getIncrement();
@@ -237,19 +230,15 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 				return;
 
 			numbererSettingsChanged = true;
-			for (InstrumentSpinner spinner : instrumentSpinners)
-			{
+			for (InstrumentSpinner spinner : instrumentSpinners) {
 				int firstNumber = partNumbererSettings.getFirstNumber(spinner.instrument);
 				firstNumber = (firstNumber * oldInc) / newInc;
 				partNumbererSettings.setFirstNumber(spinner.instrument, firstNumber);
 				spinner.setValue(firstNumber);
 
-				if (newInc == 1)
-				{
+				if (newInc == 1) {
 					spinner.getModel().setMaximum(999);
-				}
-				else
-				{
+				} else {
 					spinner.getModel().setMaximum(10);
 				}
 			}
@@ -258,30 +247,26 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 		});
 
 		TableLayout incrementPanelLayout = new TableLayout(//
-				new double[] { PREFERRED, FILL },//
+				new double[] { PREFERRED, FILL }, //
 				new double[] { PREFERRED });
 		incrementPanelLayout.setHGap(10);
 		JPanel incrementPanel = new JPanel(incrementPanelLayout);
 		incrementPanel.setBorder(BorderFactory.createEmptyBorder(0, PAD, 0, 0));
 		incrementPanel.add(incrementComboBox, "0, 0, C, T");
 		incrementPanel.add(incrementDescr, "1, 0");
-		
+
 		JLabel numberingConfigLabel = new JLabel("<html><b><u>Part Numbering Config: </u></b></html>");
-		
+
 		LinkButton importButton = new LinkButton("Import");
-		importButton.addActionListener(e -> {
-			loadPartNumberingConfig();
-		});
-		
+		importButton.addActionListener(e -> loadPartNumberingConfig());
+
 		JLabel separator = new JLabel(" | ");
-		
+
 		LinkButton exportButton = new LinkButton("Export");
-		exportButton.addActionListener(e -> {
-			savePartNumberingConfig();
-		});
-		
+		exportButton.addActionListener(e -> savePartNumberingConfig());
+
 		TableLayout mapLayout = new TableLayout(//
-				new double[] { PREFERRED, PREFERRED, PREFERRED, FILL },//
+				new double[] { PREFERRED, PREFERRED, PREFERRED, FILL }, //
 				new double[] { PREFERRED });
 		mapLayout.setVGap(PAD);
 		mapLayout.setHGap(PAD);
@@ -293,7 +278,7 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 		mapPanel.add(exportButton, "3, 0");
 
 		TableLayout numberingLayout = new TableLayout(//
-				new double[] { FILL },//
+				new double[] { FILL }, //
 				new double[] { PREFERRED, PREFERRED, PREFERRED, PREFERRED, PREFERRED, PREFERRED });
 
 		numberingLayout.setVGap(PAD);
@@ -306,11 +291,11 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 		numberingPanel.add(mapPanel, "0, 5");
 		return numberingPanel;
 	}
-	
+
 	private JPanel createInstrNamePanel() {
 		TableLayout instrumentsLayout = new TableLayout(//
-				new double[] { PREFERRED, PREFERRED, 2 * PAD, PREFERRED, PREFERRED },//
-				new double[] { });
+				new double[] { PREFERRED, PREFERRED, 2 * PAD, PREFERRED, PREFERRED }, //
+				new double[] {});
 		instrumentsLayout.setHGap(PAD);
 		instrumentsLayout.setVGap(3);
 		JPanel instrNamePanel = new JPanel(instrumentsLayout);
@@ -318,31 +303,26 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 
 		final List<InstrumentDropdown> instrumentDropdowns = new ArrayList<>();
 		LotroInstrument[] instruments = LotroInstrument.values();
-		for (int i = 0; i < instruments.length; i++)
-		{
+		for (int i = 0; i < instruments.length; i++) {
 			LotroInstrument inst = instruments[i];
 
 			int row = i;
 			int col = 0;
-			if (i >= (instruments.length + 1) / 2)
-			{
+			if (i >= (instruments.length + 1) / 2) {
 				row -= (instruments.length + 1) / 2;
 				col = 3;
-			}
-			else
-			{
+			} else {
 				instrumentsLayout.insertRow(row, PREFERRED);
 			}
 			InstrumentDropdown dropdown = new InstrumentDropdown(inst);
-			
-			
+
 			instrumentDropdowns.add(dropdown);
 			instrNamePanel.add(dropdown, col + ", " + row);
 			instrNamePanel.add(new JLabel(inst.toString() + " "), (col + 1) + ", " + row);
 		}
 
 		TableLayout numberingLayout = new TableLayout(//
-				new double[] { FILL },//
+				new double[] { FILL }, //
 				new double[] { PREFERRED, PREFERRED, PREFERRED, PREFERRED, PREFERRED });
 
 		numberingLayout.setVGap(PAD);
@@ -350,31 +330,31 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 		backPanel.setBorder(BorderFactory.createEmptyBorder(PAD, PAD, PAD, PAD));
 		JLabel instrumentsTitle = new JLabel("<html><b><u>Default instrument naming for parts</u></b></html>");
 		backPanel.add(instrumentsTitle, "0, 0, C, F");
-		backPanel.add(instrNamePanel, "0, 1, L, F");		
-		
+		backPanel.add(instrNamePanel, "0, 1, L, F");
+
 		return backPanel;
 	}
-	
-	private class InstrumentDropdown extends JComboBox<String>  implements ItemListener
-	{
+
+	private class InstrumentDropdown extends JComboBox<String> implements ItemListener {
 		private LotroInstrument instrument;
 
-		public InstrumentDropdown(LotroInstrument instrument)
-		{
+		public InstrumentDropdown(LotroInstrument instrument) {
 			super();
 
 			this.instrument = instrument;
 			setEditable(true);
 			addItem(instrNameSettings.getInstrNick(instrument));
 			addItem(instrument.friendlyName);
-			for(String nick : LotroInstrumentNick.getNicks(instrument)) {
+			for (String nick : LotroInstrumentNick.getNicks(instrument)) {
 				addItem(nick);
 			}
 			addItemListener(this);
 		}
-		
-		@Override public void addItem(String item) {
-			if (item == null) return;
+
+		@Override
+		public void addItem(String item) {
+			if (item == null)
+				return;
 			int count = getItemCount();
 			for (int i = 0; i < count; i++) {
 				if (item.equals(getItemAt(i))) {
@@ -384,162 +364,146 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 			super.addItem(item);
 		}
 
-		@Override public void itemStateChanged(ItemEvent arg0) {
+		@Override
+		public void itemStateChanged(ItemEvent arg0) {
 			instrNameSettings.setInstrNick(instrument, (String) getSelectedItem());
 		}
 	}
 
-	private class InstrumentSpinner extends JSpinner implements ChangeListener
-	{
+	private class InstrumentSpinner extends JSpinner implements ChangeListener {
 		private LotroInstrument instrument;
 
-		public InstrumentSpinner(LotroInstrument instrument)
-		{
-			super(new SpinnerNumberModel(partNumbererSettings.getFirstNumber(instrument), 0, partNumbererSettings.isIncrementByTen() ? 10
-					: 999, 1));
+		public InstrumentSpinner(LotroInstrument instrument) {
+			super(new SpinnerNumberModel(partNumbererSettings.getFirstNumber(instrument), 0,
+					partNumbererSettings.isIncrementByTen() ? 10 : 999, 1));
 
 			this.instrument = instrument;
 			addChangeListener(this);
 		}
 
-		@Override public SpinnerNumberModel getModel()
-		{
+		@Override
+		public SpinnerNumberModel getModel() {
 			return (SpinnerNumberModel) super.getModel();
 		}
 
-		@Override public void stateChanged(ChangeEvent e)
-		{
+		@Override
+		public void stateChanged(ChangeEvent e) {
 			partNumbererSettings.setFirstNumber(instrument, (Integer) getValue());
 			numbererSettingsChanged = true;
 		}
 	}
-	
-	private boolean loadPartNumberingConfig()
-	{
+
+	private boolean loadPartNumberingConfig() {
 		Preferences prefs = Preferences.userNodeForPackage(TrackPanel.class);
-		
+
 		String dirPath = prefs.get(PART_NUMBERING_CONFIG_DIRECTORY, null);
 		File dir;
 		if (dirPath == null || !(dir = new File(dirPath)).isDirectory())
 			dir = Util.getLotroMusicPath(false /* create */);
 
 		JFileChooser fileChooser = new JFileChooser(dir);
-		fileChooser.setFileFilter(new ExtensionFileFilter("Part numbering config file (*.partsconfig.txt)",
-				"partsconfig.txt"));
-		
+		fileChooser.setFileFilter(
+				new ExtensionFileFilter("Part numbering config file (*.partsconfig.txt)", "partsconfig.txt"));
+
 		if (fileChooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION)
 			return false;
 
 		File loadFile = fileChooser.getSelectedFile();
-		
+
 		PartNumberingConfig config = new PartNumberingConfig();
 
-		try
-		{
+		try {
 			config.load(loadFile);
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			JOptionPane.showMessageDialog(this, "Failed to load part numbering config:\n\n" + e.getMessage(),
 					"Failed to load part numbering config", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
-		
+
 		incrementComboBox.setSelectedItem(config.increment);
-		
-		for (LotroInstrument ins : config.firstPartMap.keySet())
-		{
+
+		for (LotroInstrument ins : config.firstPartMap.keySet()) {
 			int firstPartNo = config.firstPartMap.get(ins);
-		
-			for (InstrumentSpinner spinner : instrumentSpinners)
-			{
-				if (spinner.instrument.name().equals(ins.name()))
-				{
+
+			for (InstrumentSpinner spinner : instrumentSpinners) {
+				if (spinner.instrument.name().equals(ins.name())) {
 					spinner.setValue(firstPartNo);
 				}
 			}
 		}
-		
+
 		prefs.put(PART_NUMBERING_CONFIG_DIRECTORY, fileChooser.getCurrentDirectory().getAbsolutePath());
 		return true;
 	}
-	
-	private boolean savePartNumberingConfig()
-	{
+
+	private boolean savePartNumberingConfig() {
 		Preferences prefs = Preferences.userNodeForPackage(TrackPanel.class);
-		
+
 		String dirPath = prefs.get(PART_NUMBERING_CONFIG_DIRECTORY, null);
 		File dir;
 		if (dirPath == null || !(dir = new File(dirPath)).isDirectory())
 			dir = Util.getLotroMusicPath(false /* create */);
 
 		JFileChooser fileChooser = new JFileChooser(dir);
-		fileChooser.setFileFilter(new ExtensionFileFilter("Part numbering config file (*.partsconfig.txt)",
-				"partsconfig.txt"));
-		
+		fileChooser.setFileFilter(
+				new ExtensionFileFilter("Part numbering config file (*.partsconfig.txt)", "partsconfig.txt"));
+
 		File saveFile;
 		if (fileChooser.showSaveDialog(this) != JFileChooser.APPROVE_OPTION)
 			return false;
 
 		saveFile = fileChooser.getSelectedFile();
 
-		if (saveFile.getName().indexOf('.') < 0)
-		{
+		if (saveFile.getName().indexOf('.') < 0) {
 			saveFile = new File(saveFile.getParentFile(), saveFile.getName() + ".partsconfig.txt");
 		}
 
-		if (saveFile.exists())
-		{
-			int result = JOptionPane.showConfirmDialog(this, "File " + saveFile.getName()
-					+ " already exists. Overwrite?", "Confirm overwrite", JOptionPane.OK_CANCEL_OPTION);
+		if (saveFile.exists()) {
+			int result = JOptionPane.showConfirmDialog(this,
+					"File " + saveFile.getName() + " already exists. Overwrite?", "Confirm overwrite",
+					JOptionPane.OK_CANCEL_OPTION);
 			if (result != JOptionPane.OK_OPTION)
 				return false;
 		}
-		
-		HashMap<LotroInstrument, Integer> map = new HashMap<LotroInstrument, Integer>();
+
+		Map<LotroInstrument, Integer> map = new EnumMap<>(LotroInstrument.class);
 		int increment = (int) incrementComboBox.getSelectedItem();
-		
-		for (InstrumentSpinner spinner : instrumentSpinners)
-		{
+
+		for (InstrumentSpinner spinner : instrumentSpinners) {
 			map.put(spinner.instrument, (Integer) spinner.getValue());
 		}
-		
+
 		PartNumberingConfig config = new PartNumberingConfig(increment, map);
-		
-		try
-		{
+
+		try {
 			config.save(saveFile);
-		}
-		catch(IOException e)
-		{
+		} catch (IOException e) {
 			JOptionPane.showMessageDialog(this, "Failed to save part numbering config:\n\n" + e.getMessage(),
-			"Failed to save part numbering config", JOptionPane.ERROR_MESSAGE);
+					"Failed to save part numbering config", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
-		
+
 		prefs.put(PART_NUMBERING_CONFIG_DIRECTORY, fileChooser.getCurrentDirectory().getAbsolutePath());
 		return true;
 	}
 
-	private JPanel createNameTemplatePanel()
-	{
+	private JPanel createNameTemplatePanel() {
 		final JTextField partNameTextField = new JTextField(nameTemplateSettings.getPartNamePattern(), 40);
-		partNameTextField.getDocument().addDocumentListener(new DocumentListener()
-		{
-			@Override public void removeUpdate(DocumentEvent e)
-			{
+		partNameTextField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
 				nameTemplateSettings.setPartNamePattern(partNameTextField.getText());
 				updateNameTemplateExample();
 			}
 
-			@Override public void insertUpdate(DocumentEvent e)
-			{
+			@Override
+			public void insertUpdate(DocumentEvent e) {
 				nameTemplateSettings.setPartNamePattern(partNameTextField.getText());
 				updateNameTemplateExample();
 			}
 
-			@Override public void changedUpdate(DocumentEvent e)
-			{
+			@Override
+			public void changedUpdate(DocumentEvent e) {
 				nameTemplateSettings.setPartNamePattern(partNameTextField.getText());
 				updateNameTemplateExample();
 			}
@@ -585,8 +549,7 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 		MockMetadataSource mockMetadata = new MockMetadataSource(originalMetadataSource);
 		nameTemplate.setMetadataSource(mockMetadata);
 		nameTemplate.setCurrentAbcPart(mockMetadata);
-		for (Entry<String, PartNameTemplate.Variable> entry : nameTemplate.getVariables().entrySet())
-		{
+		for (Entry<String, PartNameTemplate.Variable> entry : nameTemplate.getVariables().entrySet()) {
 			String tooltipText = "<html><b>" + entry.getKey() + "</b><br>"
 					+ entry.getValue().getDescription().replace("\n", "<br>") + "</html>";
 
@@ -604,9 +567,8 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 
 		return nameTemplatePanel;
 	}
-	
-	private void updateNameTemplateExample()
-	{
+
+	private void updateNameTemplateExample() {
 		AbcMetadataSource originalMetadataSource = nameTemplate.getMetadataSource();
 		MockMetadataSource mockMetadata = new MockMetadataSource(originalMetadataSource);
 		nameTemplate.setMetadataSource(mockMetadata);
@@ -621,40 +583,36 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 
 		nameTemplate.setMetadataSource(originalMetadataSource);
 	}
-	
-	private JPanel createExportTemplatePanel()
-	{
+
+	private JPanel createExportTemplatePanel() {
 		JLabel pageLabel = new JLabel("<html><b><u>ABC and MSX filename settings</b></u></html>");
-		
+
 		JLabel patternLabel = new JLabel("<html><b>Custom pattern for exported filename:</b></html>");
-		
+
 		JLabel whitespaceLabel = new JLabel("<html><b>Replace spaces in variables with:</b></html>");
-		
+
 		JComboBox<String> replaceWhitespaceComboBox = new JComboBox<>(ExportFilenameTemplate.spaceReplaceLabels);
 		String replaceText = exportTemplateSettings.getWhitespaceReplaceText();
 		int selectedIndex = 0;
 		exportTemplateSettings.setWhitespaceReplaceText(ExportFilenameTemplate.spaceReplaceChars[0]);
-		
-		for (int i = 0; i < ExportFilenameTemplate.spaceReplaceChars.length; i++)
-		{
-			if (replaceText.equals(ExportFilenameTemplate.spaceReplaceChars[i]))
-			{
+
+		for (int i = 0; i < ExportFilenameTemplate.spaceReplaceChars.length; i++) {
+			if (replaceText.equals(ExportFilenameTemplate.spaceReplaceChars[i])) {
 				exportTemplateSettings.setWhitespaceReplaceText(ExportFilenameTemplate.spaceReplaceChars[i]);
 				selectedIndex = i;
 			}
 		}
 		replaceWhitespaceComboBox.setSelectedIndex(selectedIndex);
 		replaceWhitespaceComboBox.setEnabled(exportTemplateSettings.isExportFilenamePatternEnabled());
-		replaceWhitespaceComboBox.addActionListener(e -> 
-		{
-			exportTemplateSettings.setWhitespaceReplaceText(ExportFilenameTemplate.spaceReplaceChars[replaceWhitespaceComboBox.getSelectedIndex()]);
+		replaceWhitespaceComboBox.addActionListener(e -> {
+			exportTemplateSettings.setWhitespaceReplaceText(
+					ExportFilenameTemplate.spaceReplaceChars[replaceWhitespaceComboBox.getSelectedIndex()]);
 			updateExportFilenameExample();
 		});
-		
+
 		JCheckBox zeroPadPartCountCheckbox = new JCheckBox("Zero-pad part count to two digits");
 		zeroPadPartCountCheckbox.setSelected(exportTemplateSettings.isPartCountZeroPadded());
-		zeroPadPartCountCheckbox.addActionListener(e ->
-		{
+		zeroPadPartCountCheckbox.addActionListener(e -> {
 			boolean selected = zeroPadPartCountCheckbox.isSelected();
 			exportTemplateSettings.setPartCountZeroPadded(selected);
 			updateExportFilenameExample();
@@ -662,40 +620,38 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 
 		final JTextField exportNameTextField = new JTextField(exportTemplateSettings.getExportFilenamePattern(), 40);
 		exportNameTextField.setEditable(exportTemplateSettings.isExportFilenamePatternEnabled());
-		exportNameTextField.getDocument().addDocumentListener(new DocumentListener()
-		{
-			@Override public void removeUpdate(DocumentEvent e)
-			{
+		exportNameTextField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
 				exportTemplateSettings.setExportFilenamePattern(exportNameTextField.getText());
 				updateExportFilenameExample();
 			}
 
-			@Override public void insertUpdate(DocumentEvent e)
-			{
+			@Override
+			public void insertUpdate(DocumentEvent e) {
 				exportTemplateSettings.setExportFilenamePattern(exportNameTextField.getText());
 				updateExportFilenameExample();
 			}
 
-			@Override public void changedUpdate(DocumentEvent e)
-			{
+			@Override
+			public void changedUpdate(DocumentEvent e) {
 				exportTemplateSettings.setExportFilenamePattern(exportNameTextField.getText());
 				updateExportFilenameExample();
 			}
 		});
-		
-		JCheckBox alwaysRegenerateCheckBox = new JCheckBox("Always regenerate filenames using pattern, even if a filename exists");
+
+		JCheckBox alwaysRegenerateCheckBox = new JCheckBox(
+				"Always regenerate filenames using pattern, even if a filename exists");
 		alwaysRegenerateCheckBox.setSelected(exportTemplateSettings.shouldAlwaysRegenerateFromPattern());
 		alwaysRegenerateCheckBox.setEnabled(exportTemplateSettings.isExportFilenamePatternEnabled());
-		alwaysRegenerateCheckBox.addActionListener(e ->
-		{
+		alwaysRegenerateCheckBox.addActionListener(e -> {
 			boolean selected = alwaysRegenerateCheckBox.isSelected();
 			exportTemplateSettings.setAlwaysRegenerateFromPattern(selected);
 		});
-		
+
 		JCheckBox enablePatternExportCheckBox = new JCheckBox("Enable custom pattern for generating filenames");
 		enablePatternExportCheckBox.setSelected(exportTemplateSettings.isExportFilenamePatternEnabled());
-		enablePatternExportCheckBox.addActionListener(e ->
-		{
+		enablePatternExportCheckBox.addActionListener(e -> {
 			boolean selected = enablePatternExportCheckBox.isSelected();
 			exportTemplateSettings.setExportFilenamePatternEnabled(selected);
 			replaceWhitespaceComboBox.setEnabled(selected);
@@ -703,48 +659,48 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 			zeroPadPartCountCheckbox.setEnabled(selected);
 			alwaysRegenerateCheckBox.setEnabled(selected);
 		});
-		
+
 		exportTemplateExampleLabel = new JLabel(".abc");
 		JPanel examplePanel = new JPanel(new BorderLayout());
 		examplePanel.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0));
 		examplePanel.add(exportTemplateExampleLabel, BorderLayout.CENTER);
-		
+
 		TableLayout layout = new TableLayout();
 		layout.insertColumn(0, PREFERRED);
 		layout.insertColumn(1, FILL);
 		layout.setVGap(PAD);
 		layout.setHGap(10);
-		
+
 		int row = -1;
 
 		JPanel panel = new JPanel(layout);
 		panel.setBorder(BorderFactory.createEmptyBorder(PAD, PAD, PAD, PAD));
-		
+
 		layout.insertRow(++row, PREFERRED);
 		panel.add(pageLabel, "0, " + row + ", 1, " + row);
-		
+
 		layout.insertRow(++row, PREFERRED);
 		panel.add(enablePatternExportCheckBox, "0, " + row + ", 1, " + row);
-		
+
 		layout.insertRow(++row, PREFERRED);
 		panel.add(alwaysRegenerateCheckBox, "0, " + row + ", 1, " + row);
-		
+
 		layout.insertRow(++row, PREFERRED);
 		panel.add(whitespaceLabel, "0, " + row);
 		panel.add(replaceWhitespaceComboBox, "1, " + row);
-		
+
 		layout.insertRow(++row, PREFERRED);
 		panel.add(zeroPadPartCountCheckbox, "0, " + row + ", 1, " + row);
-		
+
 		layout.insertRow(++row, PREFERRED);
 		panel.add(patternLabel, "0, " + row + ", 1, " + row);
-		
+
 		layout.insertRow(++row, PREFERRED);
 		panel.add(exportNameTextField, "0, " + row + ", 1, " + row);
-		
+
 		layout.insertRow(++row, PREFERRED);
 		panel.add(examplePanel, "0, " + row + ", 1, " + row);
-		
+
 		JLabel nameLabel = new JLabel("<html><u><b>Variable Name</b></u></html>");
 		JLabel exampleLabel = new JLabel("<html><u><b>Example</b></u></html>");
 
@@ -756,8 +712,7 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 
 		MockMetadataSource mockMetadata = new MockMetadataSource(originalMetadataSource);
 		exportTemplate.setMetadataSource(mockMetadata);
-		for (Entry<String, ExportFilenameTemplate.Variable> entry : exportTemplate.getVariables().entrySet())
-		{
+		for (Entry<String, ExportFilenameTemplate.Variable> entry : exportTemplate.getVariables().entrySet()) {
 			String tooltipText = "<html><b>" + entry.getKey() + "</b><br>"
 					+ entry.getValue().getDescription().replace("\n", "<br>") + "</html>";
 
@@ -771,12 +726,11 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 			panel.add(descriptionLabel, "1, " + row);
 		}
 		exportTemplate.setMetadataSource(originalMetadataSource);
-		
+
 		return panel;
 	}
-	
-	private void updateExportFilenameExample()
-	{
+
+	private void updateExportFilenameExample() {
 		AbcMetadataSource originalMetadataSource = exportTemplate.getMetadataSource();
 		MockMetadataSource mockMetadata = new MockMetadataSource(originalMetadataSource);
 		exportTemplate.setMetadataSource(mockMetadata);
@@ -793,14 +747,13 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 		exportTemplate.setMetadataSource(originalMetadataSource);
 	}
 
-	private JPanel createSaveAndExportSettingsPanel()
-	{
+	private JPanel createSaveAndExportSettingsPanel() {
 		JLabel titleLabel = new JLabel("<html><u><b>Save &amp; Export</b></u></html>");
 
 		final JCheckBox promptSaveCheckBox = new JCheckBox("Prompt to save new " + AbcSong.MSX_FILE_DESCRIPTION_PLURAL);
-		promptSaveCheckBox.setToolTipText("<html>Select to be prompted to save new "
-				+ AbcSong.MSX_FILE_DESCRIPTION_PLURAL + "<br>"
-				+ "when opening a new file or closing the application.</html>");
+		promptSaveCheckBox
+				.setToolTipText("<html>Select to be prompted to save new " + AbcSong.MSX_FILE_DESCRIPTION_PLURAL
+						+ "<br>" + "when opening a new file or closing the application.</html>");
 		promptSaveCheckBox.setSelected(saveSettings.promptSaveNewSong);
 		promptSaveCheckBox.addActionListener(e -> saveSettings.promptSaveNewSong = promptSaveCheckBox.isSelected());
 
@@ -809,7 +762,8 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 		showExportFileChooserCheckBox.setToolTipText("<html>Select to have the <b>Export ABC</b> button always<br>"
 				+ "prompt for the name of the file.</html>");
 		showExportFileChooserCheckBox.setSelected(saveSettings.showExportFileChooser);
-		showExportFileChooserCheckBox.addActionListener(e -> saveSettings.showExportFileChooser = showExportFileChooserCheckBox.isSelected());
+		showExportFileChooserCheckBox.addActionListener(
+				e -> saveSettings.showExportFileChooser = showExportFileChooserCheckBox.isSelected());
 
 		final JCheckBox skipSilenceAtStartCheckBox = new JCheckBox("Remove silence from start of exported ABC");
 		skipSilenceAtStartCheckBox.setToolTipText("<html>" //
@@ -820,9 +774,11 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 				+ "MIDI file that will be played together and need to line up." //
 				+ "</html>");
 		skipSilenceAtStartCheckBox.setSelected(saveSettings.skipSilenceAtStart);
-		skipSilenceAtStartCheckBox.addActionListener(e -> saveSettings.skipSilenceAtStart = skipSilenceAtStartCheckBox.isSelected());
-		
-		final JCheckBox convertABCStringsToBasicAsciiCheckBox = new JCheckBox("Convert unicode, most ext. ascii and diacritical marks in ABC");
+		skipSilenceAtStartCheckBox
+				.addActionListener(e -> saveSettings.skipSilenceAtStart = skipSilenceAtStartCheckBox.isSelected());
+
+		final JCheckBox convertABCStringsToBasicAsciiCheckBox = new JCheckBox(
+				"Convert unicode, most ext. ascii and diacritical marks in ABC");
 		convertABCStringsToBasicAsciiCheckBox.setToolTipText("<html>" //
 				+ "If checked, exported ABC files will not include letters such as<br>" //
 				+ "&aelig;&#248;&#229;&#246;&#228;&#223; etc.<br>" //
@@ -830,8 +786,9 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 				+ "Most songbooks cannot handle such chars, it's recommended to have this enabled." //
 				+ "</html>");
 		convertABCStringsToBasicAsciiCheckBox.setSelected(saveSettings.convertABCStringsToBasicAscii);
-		convertABCStringsToBasicAsciiCheckBox.addActionListener(e -> saveSettings.convertABCStringsToBasicAscii = convertABCStringsToBasicAsciiCheckBox.isSelected());
-		
+		convertABCStringsToBasicAsciiCheckBox.addActionListener(
+				e -> saveSettings.convertABCStringsToBasicAscii = convertABCStringsToBasicAsciiCheckBox.isSelected());
+
 		TableLayout layout = new TableLayout();
 		layout.insertColumn(0, PREFERRED);
 //		layout.insertColumn(1, FILL);
@@ -854,59 +811,55 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 
 		layout.insertRow(++row, PREFERRED);
 		panel.add(skipSilenceAtStartCheckBox, "0, " + row);
-		
+
 		layout.insertRow(++row, PREFERRED);
 		panel.add(convertABCStringsToBasicAsciiCheckBox, "0, " + row);
-		
+
 		return panel;
 	}
-	
-	private JPanel createMiscPanel()
-	{
+
+	private JPanel createMiscPanel() {
 		JLabel titleLabel = new JLabel("<html><u><b>Misc</b></u></html>");
 		/*
-		final JCheckBox showPrunedCheckBox = new JCheckBox("Show discarded notes in yellow");
-		showPrunedCheckBox.setToolTipText("<html>" //
-				+ "Notes that is going to be discarded due to lotro's limit<br>" //
-				+ "of 6 simultanious notes will be show as yellow<br>" //
-				+ "for the selected instrument." //
-				+ "</html>");
-		showPrunedCheckBox.setSelected(saveSettings.showPruned);
-		showPrunedCheckBox.addActionListener(new ActionListener()
-		{
-			@Override public void actionPerformed(ActionEvent e)
-			{
-				saveSettings.showPruned = showPrunedCheckBox.isSelected();
-			}
-		});
-		*/
+		 * final JCheckBox showPrunedCheckBox = new
+		 * JCheckBox("Show discarded notes in yellow");
+		 * showPrunedCheckBox.setToolTipText("<html>" // +
+		 * "Notes that is going to be discarded due to lotro's limit<br>" // +
+		 * "of 6 simultanious notes will be show as yellow<br>" // +
+		 * "for the selected instrument." // + "</html>");
+		 * showPrunedCheckBox.setSelected(saveSettings.showPruned);
+		 * showPrunedCheckBox.addActionListener(new ActionListener() {
+		 * 
+		 * @Override public void actionPerformed(ActionEvent e) {
+		 * saveSettings.showPruned = showPrunedCheckBox.isSelected(); } });
+		 */
 		final JCheckBox showMaxPolyphonyCheckBox = new JCheckBox("Show polyphony");
-		showMaxPolyphonyCheckBox.setToolTipText("<html>Show number of simultanious notes<br>"
-				+ "that is playing above the Zoom button.<br>"
-				+ "Use as rough (as it for tech reasons typically overestimates)<br>"
-				+ "guide to estimate how much of lotro max<br>"
-				+ "polyphony the song will consume.<br>"
-				+ "Stopped notes that are in release phase also counts.<br>"
-				+ "Enabling this might impact preview playback performance.</html>");
+		showMaxPolyphonyCheckBox.setToolTipText(
+				"<html>Show number of simultanious notes<br>" + "that is playing above the Zoom button.<br>"
+						+ "Use as rough (as it for tech reasons typically overestimates)<br>"
+						+ "guide to estimate how much of lotro max<br>" + "polyphony the song will consume.<br>"
+						+ "Stopped notes that are in release phase also counts.<br>"
+						+ "Enabling this might impact preview playback performance.</html>");
 		showMaxPolyphonyCheckBox.setSelected(miscSettings.showMaxPolyphony);
-		showMaxPolyphonyCheckBox.addActionListener(e -> miscSettings.showMaxPolyphony = showMaxPolyphonyCheckBox.isSelected());
-		
+		showMaxPolyphonyCheckBox
+				.addActionListener(e -> miscSettings.showMaxPolyphony = showMaxPolyphonyCheckBox.isSelected());
+
 		final JCheckBox allBadgerCheckBox = new JCheckBox("Output all playable parts per default");
 		allBadgerCheckBox.setToolTipText("<html>Output max playable parts for extended songbooks.</html>");
 		allBadgerCheckBox.setSelected(miscSettings.allBadger);
 		allBadgerCheckBox.addActionListener(e -> miscSettings.allBadger = allBadgerCheckBox.isSelected());
 		allBadgerCheckBox.setEnabled(miscSettings.showBadger);
-		
+
 		final JCheckBox showBadgerCheckBox = new JCheckBox("Support extended songbook");
-		showBadgerCheckBox.setToolTipText("<html>Output and show genre and mood fields<br>"
-				+ "that are used in extended songbooks:<br>"
-				+ "Badger Chapter, White Badger and Zedrock Chapter.</html>");
+		showBadgerCheckBox.setToolTipText(
+				"<html>Output and show genre and mood fields<br>" + "that are used in extended songbooks:<br>"
+						+ "Badger Chapter, White Badger and Zedrock Chapter.</html>");
 		showBadgerCheckBox.setSelected(miscSettings.showBadger);
 		showBadgerCheckBox.addActionListener(e -> {
 			miscSettings.showBadger = showBadgerCheckBox.isSelected();
 			allBadgerCheckBox.setEnabled(miscSettings.showBadger);
 		});
-		
+
 		final String defaultStr = "Default";
 		String preferredDevice = NoteFilterSequencerWrapper.prefs.get(NoteFilterSequencerWrapper.prefMIDISelect, null);
 		final JLabel deviceText = new JLabel("Preferred MIDI out device:");
@@ -919,7 +872,7 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 		try {
 			keys = prefsNode.keys();
 		} catch (BackingStoreException e1) {
-			//e1.printStackTrace();
+			// e1.printStackTrace();
 		}
 		for (String key : keys) {
 			deviceBox.addItem(key);
@@ -940,19 +893,19 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 			try {
 				NoteFilterSequencerWrapper.prefs.flush();
 			} catch (BackingStoreException e1) {
-				//e1.printStackTrace();
+				// e1.printStackTrace();
 			}
 		});
-		
+
 		final JLabel themeText = new JLabel("Theme (Requires restart):");
 		final JComboBox<String> themeBox = new JComboBox<>();
 		final JLabel fontSizeLabel = new JLabel("Font size (Requires restart):");
 		final JComboBox<String> fontBox = new JComboBox<>();
-		
-		themeBox.setToolTipText("<html>Select the theme for Maestro. Must restart Maestro for it to take effect.</html>");
+
+		themeBox.setToolTipText(
+				"<html>Select the theme for Maestro. Must restart Maestro for it to take effect.</html>");
 		themeBox.addItem(defaultStr);
-		for (String theme : Themer.themes)
-		{
+		for (String theme : Themer.themes) {
 			themeBox.addItem(theme);
 		}
 		themeBox.setEditable(false);
@@ -961,20 +914,17 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 			fontBox.setEnabled(!miscSettings.theme.equals(defaultStr));
 		});
 		themeBox.setSelectedItem(miscSettings.theme);
-		
-		fontBox.setToolTipText("<html>Select a font size. Only supported with a non-default theme. Must restart Maestro for it to take effect.</html>");
-		for (int i : Themer.fontSizes)
-		{
+
+		fontBox.setToolTipText(
+				"<html>Select a font size. Only supported with a non-default theme. Must restart Maestro for it to take effect.</html>");
+		for (int i : Themer.fontSizes) {
 			fontBox.addItem(Integer.toString(i));
 		}
 		fontBox.setEditable(false);
 		fontBox.addActionListener(e -> {
-			try
-			{
+			try {
 				miscSettings.fontSize = Integer.parseInt((String) fontBox.getSelectedItem());
-			}
-			catch(Exception ex)
-			{
+			} catch (Exception ex) {
 			}
 		});
 		fontBox.setSelectedItem(Integer.toString(miscSettings.fontSize));
@@ -992,28 +942,28 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 		layout.insertRow(++row, PREFERRED);
 		panel.add(titleLabel, "0, " + row);
 
-		//layout.insertRow(++row, PREFERRED);
-		//panel.add(showPrunedCheckBox, "0, " + row);
-		
+		// layout.insertRow(++row, PREFERRED);
+		// panel.add(showPrunedCheckBox, "0, " + row);
+
 		layout.insertRow(++row, PREFERRED);
 		panel.add(showMaxPolyphonyCheckBox, "0, " + row);
-		
+
 		layout.insertRow(++row, PREFERRED);
 		panel.add(showBadgerCheckBox, "0, " + row);
-		
+
 		layout.insertRow(++row, PREFERRED);
 		panel.add(allBadgerCheckBox, "0, " + row);
-		
+
 		layout.insertRow(++row, PREFERRED);
 		panel.add(deviceText, "0, " + row);
 		layout.insertRow(++row, PREFERRED);
 		panel.add(deviceBox, "0, " + row);
-		
+
 		layout.insertRow(++row, PREFERRED);
 		panel.add(themeText, "0, " + row);
 		layout.insertRow(++row, PREFERRED);
 		panel.add(themeBox, "0, " + row);
-		
+
 		layout.insertRow(++row, PREFERRED);
 		panel.add(fontSizeLabel, "0, " + row);
 		layout.insertRow(++row, PREFERRED);
@@ -1022,115 +972,103 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 		return panel;
 	}
 
-	public void setActiveTab(int tab)
-	{
+	public void setActiveTab(int tab) {
 		if (tab >= 0 && tab < tabPanel.getComponentCount())
 			tabPanel.setSelectedIndex(tab);
 	}
 
-	public int getActiveTab()
-	{
+	public int getActiveTab() {
 		return tabPanel.getSelectedIndex();
 	}
 
-	public boolean isSuccess()
-	{
+	public boolean isSuccess() {
 		return success;
 	}
-	
-	public boolean isSettingPageReset()
-	{
+
+	public boolean isSettingPageReset() {
 		return settingPageReset;
 	}
-	
-	public int getResetPageIndex()
-	{
+
+	public int getResetPageIndex() {
 		return settingPageResetIndex;
 	}
 
-	public boolean isNumbererSettingsChanged()
-	{
+	public boolean isNumbererSettingsChanged() {
 		return numbererSettingsChanged;
 	}
 
-	public PartAutoNumberer.Settings getNumbererSettings()
-	{
+	public PartAutoNumberer.Settings getNumbererSettings() {
 		return partNumbererSettings;
 	}
 
-	public PartNameTemplate.Settings getNameTemplateSettings()
-	{
+	public PartNameTemplate.Settings getNameTemplateSettings() {
 		return nameTemplateSettings;
 	}
-	
-	public ExportFilenameTemplate.Settings getExportFilenameTemplateSettings()
-	{
+
+	public ExportFilenameTemplate.Settings getExportFilenameTemplateSettings() {
 		return exportTemplateSettings;
 	}
-	
+
 	public InstrNameSettings getInstrNameSettings() {
 		return instrNameSettings;
 	}
 
-	public SaveAndExportSettings getSaveAndExportSettings()
-	{
+	public SaveAndExportSettings getSaveAndExportSettings() {
 		return saveSettings;
 	}
-	
+
 	public MiscSettings getMiscSettings() {
 		return miscSettings;
 	}
 
-	public static class MockMetadataSource implements AbcMetadataSource, AbcPartMetadataSource
-	{
+	public static class MockMetadataSource implements AbcMetadataSource, AbcPartMetadataSource {
 		private AbcMetadataSource originalSource;
 
-		public MockMetadataSource(AbcMetadataSource originalSource)
-		{
+		public MockMetadataSource(AbcMetadataSource originalSource) {
 			this.originalSource = originalSource;
 		}
 
-		@Override public String getTitle()
-		{
+		@Override
+		public String getTitle() {
 			return "First Flute";
 		}
 
-		@Override public LotroInstrument getInstrument()
-		{
+		@Override
+		public LotroInstrument getInstrument() {
 			return LotroInstrument.BASIC_FLUTE;
 		}
 
-		@Override public int getPartNumber()
-		{
+		@Override
+		public int getPartNumber() {
 			return 4;
 		}
 
-		@Override public String getSongTitle()
-		{
+		@Override
+		public String getSongTitle() {
 			if (originalSource != null && originalSource.getSongTitle().length() > 0)
 				return originalSource.getSongTitle();
 
 			return "Example Title";
 		}
 
-		@Override public String getComposer()
-		{
+		@Override
+		public String getComposer() {
 			if (originalSource != null && originalSource.getComposer().length() > 0)
 				return originalSource.getComposer();
 
 			return "Example Composer";
 		}
 
-		@Override public String getTranscriber()
-		{
+		@Override
+		public String getTranscriber() {
 			if (originalSource != null && originalSource.getTranscriber().length() > 0)
 				return originalSource.getTranscriber();
 
 			return "Your Name Here";
 		}
 
-		@Override public long getSongLengthMicros()
-		{
+		@Override
+		public long getSongLengthMicros() {
 			long length = 0;
 			if (originalSource != null)
 				length = originalSource.getSongLengthMicros();
@@ -1138,10 +1076,9 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 			return (length != 0) ? length : 227000000/* 3:47 */;
 		}
 
-		@Override public File getExportFile()
-		{
-			if (originalSource != null)
-			{
+		@Override
+		public File getExportFile() {
+			if (originalSource != null) {
 				File saveFile = originalSource.getExportFile();
 				if (saveFile != null)
 					return saveFile;
@@ -1150,34 +1087,34 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants
 			return new File(Util.getLotroMusicPath(false), "band/examplesong.abc");
 		}
 
-		@Override public String getPartName(AbcPartMetadataSource abcPart)
-		{
+		@Override
+		public String getPartName(AbcPartMetadataSource abcPart) {
 			return null;
 		}
-		
-		@Override public String getGenre()
-		{
+
+		@Override
+		public String getGenre() {
 			return "folk";
 		}
-		
-		@Override public String getMood()
-		{
+
+		@Override
+		public String getMood() {
 			return "sad";
 		}
-		
-		@Override public String getAllParts()
-		{
+
+		@Override
+		public String getAllParts() {
 			return "N: TS  1,   4";
 		}
-		
-		@Override public int getActivePartCount()
-		{
+
+		@Override
+		public int getActivePartCount() {
 			return 5;
 		}
 
 		@Override
 		public String getBadgerTitle() {
-			return "N: Title: "+getComposer()+" - "+getSongTitle();
+			return "N: Title: " + getComposer() + " - " + getSongTitle();
 		}
 
 		@Override

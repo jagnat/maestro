@@ -1,5 +1,7 @@
 package com.digero.maestro.view;
 
+import static javax.swing.SwingConstants.CENTER;
+
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
@@ -45,7 +47,7 @@ public class SectionEditor {
 	static boolean[] clipboardEnabled = new boolean[numberOfSections];
 	private static JDialog openDialog = null;
 
-	public static void show(JFrame jf, NoteGraph noteGraph, AbcPart abcPart, int track, final boolean percussion, final ArrayList<DrumPanel> dPanels) {
+	public static void show(JFrame jf, NoteGraph noteGraph, AbcPart abcPart, int track, final boolean percussion, final List<DrumPanel> dPanels) {
 		if (openDialog != null) return;
 		
 		@SuppressWarnings("serial")
@@ -155,7 +157,7 @@ public class SectionEditor {
 		        panel.add(titleLabel, "0, 0, 7, 0, C, C");
 		        JTextField octDouble = new JTextField("Octave doubling");
 		        octDouble.setEditable(false);
-		        octDouble.setHorizontalAlignment(JTextField.CENTER);
+		        octDouble.setHorizontalAlignment(CENTER);
 //		        panel.add(octDouble, "7, 0, 10, 0, f, f");
 		        panel.add(new JLabel("Octave doubling"), "8, 0, 11, 0, c, c");
 		        
@@ -187,7 +189,7 @@ public class SectionEditor {
 		        panel.add(new JLabel("2 up"), "11, 1, c, c");
 		        JTextField nonSection = new JTextField("Rest of the track");
 		        nonSection.setEditable(false);
-		        nonSection.setHorizontalAlignment(JTextField.CENTER);
+		        nonSection.setHorizontalAlignment(CENTER);
 		        panel.add(nonSection, "1, "+(firstRowIndex+numberOfSections)+", 4, "+(firstRowIndex+numberOfSections)+", f, f");
 		        //panel.add(new JLabel("Rest of the track"), "1, "+(3+numberOfSections)+", 2, "+(3+numberOfSections)+", c, c");
 		        
@@ -273,11 +275,11 @@ public class SectionEditor {
 		        	sectionInputs.get(i).doubling2.setToolTipText(d2);
 		        	sectionInputs.get(i).doubling3.setToolTipText(d3);
 		        	
-		        	sectionInputs.get(i).barA.setHorizontalAlignment(JTextField.CENTER);
-		        	sectionInputs.get(i).barB.setHorizontalAlignment(JTextField.CENTER);
-		        	sectionInputs.get(i).transpose.setHorizontalAlignment(JTextField.CENTER);
-		        	sectionInputs.get(i).velo.setHorizontalAlignment(JTextField.CENTER);
-		        	sectionInputs.get(i).fade.setHorizontalAlignment(JTextField.CENTER);
+		        	sectionInputs.get(i).barA.setHorizontalAlignment(CENTER);
+		        	sectionInputs.get(i).barB.setHorizontalAlignment(CENTER);
+		        	sectionInputs.get(i).transpose.setHorizontalAlignment(CENTER);
+		        	sectionInputs.get(i).velo.setHorizontalAlignment(CENTER);
+		        	sectionInputs.get(i).fade.setHorizontalAlignment(CENTER);
 		        	
 		        	panel.add(sectionInputs.get(i).enable, "0,"+(firstRowIndex+i)+",C,C");
 			        panel.add(sectionInputs.get(i).barA, "1,"+(firstRowIndex+i)+",f,f");
@@ -353,7 +355,7 @@ public class SectionEditor {
 		        
 		        JTextField help = new JTextField("Help");
 		        help.setEditable(false);
-		        help.setHorizontalAlignment(JTextField.CENTER);
+		        help.setHorizontalAlignment(CENTER);
 		        help.setToolTipText("<html><b>Enabled sections must have no overlap.<br>Bar numbers are inclusive and use original MIDI bars.<br>"
 		        		+ "No decimal numbers allowed, only whole numbers.<br>Bar numbers must be positive and greater than zero.<br>"
 		        		+ "Clicking APPLY will also disable faulty sections.<br><br>Warning: If 'Remove initial silence' is enabled or the<br>"
@@ -489,9 +491,7 @@ public class SectionEditor {
 				}
 			};
 		    
-		    private Listener<AbcSongEvent> songListener = new Listener<AbcSongEvent>()
-			{
-				@Override public void onEvent(AbcSongEvent e)
+		    private Listener<AbcSongEvent> songListener = e ->
 				{
 					switch (e.getProperty()) {
 						case BEFORE_PART_REMOVED:
@@ -507,7 +507,6 @@ public class SectionEditor {
 						default:
 							break;
 					}
-				}
 			};
 		}
 

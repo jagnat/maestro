@@ -2,7 +2,7 @@ package com.digero.maestro.abc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +17,7 @@ public class PartAutoNumberer
 {
 	public static class Settings
 	{
-		private Map<LotroInstrument, Integer> firstNumber = new HashMap<>();
+		private Map<LotroInstrument, Integer> firstNumber = new EnumMap<>(LotroInstrument.class);
 		private boolean incrementByTen;
 		private final Preferences prefs;
 
@@ -127,7 +127,7 @@ public class PartAutoNumberer
 
 		public void copyFrom(Settings source)
 		{
-			firstNumber = new HashMap<>(source.firstNumber);
+			firstNumber = new EnumMap<>(source.firstNumber);
 			incrementByTen = source.incrementByTen;
 		}
 
@@ -221,7 +221,7 @@ public class PartAutoNumberer
 
 		Set<Integer> numbersInUse = new HashSet<>(parts.size());
 		
-		List<? extends NumberedAbcPart> partsCopy = new ArrayList<NumberedAbcPart>(parts);// This is to prevent a reordering of parts while iterating through it.
+		List<? extends NumberedAbcPart> partsCopy = new ArrayList<>(parts);// This is to prevent a reordering of parts while iterating through it.
 		
 		for (NumberedAbcPart part : partsCopy)
 		{

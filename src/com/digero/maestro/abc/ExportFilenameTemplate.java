@@ -128,7 +128,7 @@ public class ExportFilenameTemplate
 		}
 	}
 
-	public static abstract class Variable
+	public abstract static class Variable
 	{
 		private String description;
 

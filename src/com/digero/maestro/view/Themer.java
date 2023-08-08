@@ -14,13 +14,13 @@ import com.formdev.flatlaf.themes.FlatMacLightLaf;
 
 public class Themer
 {
-	public static final String[] themes =
+	protected static final String[] themes =
 	{
 			"Flat Dark",
 			"Flat Light",
 	};
 	
-	public static final int[] fontSizes =
+	protected static final int[] fontSizes =
 	{
 		10,
 		11,
@@ -33,7 +33,7 @@ public class Themer
 		18
 	};
 	
-	public static void SetLookAndFeel() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException
+	public static void setLookAndFeel() throws ClassNotFoundException, InstantiationException, IllegalAccessException, UnsupportedLookAndFeelException
 	{
 		MiscSettings settings = new MiscSettings(Preferences.userNodeForPackage(MaestroMain.class).node("miscSettings"), true);
 		String theme = settings.theme;

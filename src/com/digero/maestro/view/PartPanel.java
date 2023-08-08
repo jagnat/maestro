@@ -3,6 +3,11 @@ package com.digero.maestro.view;
 import info.clearthought.layout.TableLayout;
 import info.clearthought.layout.TableLayoutConstants;
 
+import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED;
+import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER;
+import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
+import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -46,9 +51,9 @@ import com.digero.maestro.midi.TrackInfo;
 import com.digero.maestro.view.TrackPanel.TrackDimensions;
 
 @SuppressWarnings("serial")
-public class PartPanel extends JPanel implements ICompileConstants, TableLayoutConstants
-{
-	private static final int HGAP = 4, VGAP = 4;
+public class PartPanel extends JPanel implements ICompileConstants, TableLayoutConstants {
+	private static final int HGAP = 4;
+	private static final int VGAP = 4;
 
 	private AbcPart abcPart;
 	private PartAutoNumberer partAutoNumberer;
@@ -71,18 +76,17 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 	private GroupLayout.Group trackListHGroup;
 
 	private boolean initialized = false;
-	
+
 	private boolean zoomed = false;
 	private boolean noteVisible = false;
 	private JTextArea noteContent = new JTextArea();
 	private JScrollPane notePanel = null;
-	private boolean syncUpdate = false; 
+	private boolean syncUpdate = false;
 
 	public PartPanel(NoteFilterSequencerWrapper sequencer, PartAutoNumberer partAutoNumberer,
-			SequencerWrapper abcSequencer)
-	{
+			SequencerWrapper abcSequencer) {
 		super(new TableLayout(//
-				new double[] { FILL, PREFERRED },//
+				new double[] { FILL, PREFERRED }, //
 				new double[] { PREFERRED, FILL }));
 
 		TableLayout layout = (TableLayout) getLayout();
@@ -98,9 +102,9 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		numberSpinnerModel = new SpinnerNumberModel(0, 0, 999, partAutoNumberer.getIncrement());
 		numberSpinner = new JSpinner(numberSpinnerModel);
 		numberSpinner.addChangeListener(e -> {
-            if (abcPart != null)
-                PartPanel.this.partAutoNumberer.setPartNumber(abcPart, (Integer) numberSpinner.getValue());
-        });
+			if (abcPart != null)
+				PartPanel.this.partAutoNumberer.setPartNumber(abcPart, (Integer) numberSpinner.getValue());
+		});
 
 		numberSettingsButton = new JButton(IconLoader.getImageIcon("gear_16.png"));
 		numberSettingsButton.setMargin(new Insets(0, 0, 0, 0));
@@ -108,22 +112,21 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		numberSettingsButton.setVisible(false);
 
 		nameTextField = new JTextField(32);
-		nameTextField.getDocument().addDocumentListener(new DocumentListener()
-		{
-			@Override public void removeUpdate(DocumentEvent e)
-			{
+		nameTextField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
 				if (abcPart != null && !syncUpdate)
 					abcPart.setTitle(nameTextField.getText());
 			}
 
-			@Override public void insertUpdate(DocumentEvent e)
-			{
+			@Override
+			public void insertUpdate(DocumentEvent e) {
 				if (abcPart != null && !syncUpdate)
 					abcPart.setTitle(nameTextField.getText());
 			}
 
-			@Override public void changedUpdate(DocumentEvent e)
-			{
+			@Override
+			public void changedUpdate(DocumentEvent e) {
 				if (abcPart != null && !syncUpdate)
 					abcPart.setTitle(nameTextField.getText());
 			}
@@ -131,16 +134,15 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 
 		instrumentComboBox = new InstrumentComboBox();
 		instrumentComboBox.addActionListener(e -> {
-            if (abcPart != null)
-            {
-                LotroInstrument newInstrument = (LotroInstrument) instrumentComboBox.getSelectedItem();
-                LotroInstrument oldInstrument = abcPart.getInstrument();
-                PartPanel.this.partAutoNumberer.setInstrument(abcPart, newInstrument);
-                abcPart.replaceTitleInstrument(newInstrument, oldInstrument);
-                nameTextField.setText(abcPart.getTitle());
-                updateTracksVisible();
-            }
-        });
+			if (abcPart != null) {
+				LotroInstrument newInstrument = (LotroInstrument) instrumentComboBox.getSelectedItem();
+				LotroInstrument oldInstrument = abcPart.getInstrument();
+				PartPanel.this.partAutoNumberer.setInstrument(abcPart, newInstrument);
+				abcPart.replaceTitleInstrument(newInstrument, oldInstrument);
+				nameTextField.setText(abcPart.getTitle());
+				updateTracksVisible();
+			}
+		});
 
 		JPanel dataPanel = new JPanel(new BorderLayout(0, VGAP));
 		JPanel dataPanel2 = new JPanel(new FlowLayout(FlowLayout.LEFT, HGAP, 0));
@@ -161,12 +163,11 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		trackListPanel.setLayout(trackListLayout);
 		trackListPanel.setBackground(ColorTable.PANEL_BACKGROUND_DISABLED.get());
 
-		trackScrollPane = new JScrollPane(trackListPanel, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-				JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		trackScrollPane = new JScrollPane(trackListPanel, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		// Remove focus from text boxes if area under midi tracks is clicked
 		trackScrollPane.addMouseListener(new MouseAdapter() {
-			public void mouseClicked(MouseEvent e)
-			{
+			@Override
+			public void mouseClicked(MouseEvent e) {
 				getRootPane().requestFocus();
 			}
 		});
@@ -177,21 +178,20 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		messageLabel.setForeground(ColorTable.PANEL_TEXT_DISABLED.get());
 		messageLabel.setVisible(false);
 
-		notePanel = new JScrollPane(noteContent, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		notePanel.setPreferredSize(new Dimension(225,200));
+		notePanel = new JScrollPane(noteContent, VERTICAL_SCROLLBAR_AS_NEEDED, HORIZONTAL_SCROLLBAR_NEVER);
+		notePanel.setPreferredSize(new Dimension(225, 200));
 		noteContent.setLineWrap(true);
 		noteContent.setWrapStyleWord(true);
 		noteContent.setTabSize(4);
-		
+
 		add(dataPanel, "0, 0");
 		add(messageLabel, "0, 1, C, C");
 		add(trackScrollPane, "0, 1");
-		
-		
+
 		// Remove focus if any empty space in the window is clicked
 		MouseAdapter listenForFocus = new MouseAdapter() {
-			public void mouseClicked(MouseEvent e)
-			{
+			@Override
+			public void mouseClicked(MouseEvent e) {
 				getRootPane().requestFocus();
 			}
 		};
@@ -200,58 +200,46 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		setAbcPart(null);
 		initialized = true;
 	}
-	
+
 	public void setNewTitle(AbcPart thePart) {
-		if (thePart != abcPart || nameTextField.getText().equals(thePart.getTitle())) return;
+		if (thePart != abcPart || nameTextField.getText().equals(thePart.getTitle()))
+			return;
 		syncUpdate = true;
 		nameTextField.setText(thePart.getTitle());
 		syncUpdate = false;
 	}
 
-	public void addSettingsActionListener(ActionListener listener)
-	{
+	public void addSettingsActionListener(ActionListener listener) {
 		numberSettingsButton.addActionListener(listener);
 		numberSettingsButton.setVisible(true);
 	}
 
-	private Listener<AbcPartEvent> abcPartListener = new Listener<AbcPartEvent>()
-	{
-		@Override public void onEvent(AbcPartEvent e)
-		{
-			if (e.getProperty() == AbcPartProperty.PART_NUMBER)
-			{
-				numberSpinner.setValue(abcPart.getPartNumber());
-			}
+	private Listener<AbcPartEvent> abcPartListener = e -> {
+		if (e.getProperty() == AbcPartProperty.PART_NUMBER) {
+			numberSpinner.setValue(abcPart.getPartNumber());
 		}
 	};
 
-	public void settingsChanged()
-	{
+	public void settingsChanged() {
 		numberSpinnerModel.setStepSize(partAutoNumberer.getIncrement());
 	}
 
-	public void setAbcPart(AbcPart abcPart)
-	{
+	public void setAbcPart(AbcPart abcPart) {
 		messageLabel.setVisible(false);
 
 		if (this.abcPart == abcPart && initialized)
 			return;
 
-		if (this.abcPart != null)
-		{
-			try
-			{
+		if (this.abcPart != null) {
+			try {
 				numberSpinner.commitEdit();
-			}
-			catch (ParseException e)
-			{
+			} catch (ParseException e) {
 			}
 			this.abcPart.removeAbcListener(abcPartListener);
 			this.abcPart = null;
 		}
 
-		if (abcPart == null)
-		{
+		if (abcPart == null) {
 			numberSpinner.setEnabled(false);
 			nameTextField.setEnabled(false);
 			instrumentComboBox.setEnabled(false);
@@ -261,9 +249,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			instrumentComboBox.setSelectedItem(LotroInstrument.DEFAULT_INSTRUMENT);
 
 			clearTrackListPanel();
-		}
-		else
-		{
+		} else {
 			numberSpinner.setEnabled(true);
 			nameTextField.setEnabled(true);
 			instrumentComboBox.setEnabled(true);
@@ -275,9 +261,9 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			clearTrackListPanel();
 
 			// Add the tempo panel if this song contains tempo changes
-			if (abcPart.getSequenceInfo().hasTempoChanges() || abcPart.getAbcSong().tuneBarsModified != null)
-			{
-				TempoPanel tempoPanel = new TempoPanel(abcPart.getSequenceInfo(), sequencer, abcSequencer, abcPart.getAbcSong());
+			if (abcPart.getSequenceInfo().hasTempoChanges() || abcPart.getAbcSong().tuneBarsModified != null) {
+				TempoPanel tempoPanel = new TempoPanel(abcPart.getSequenceInfo(), sequencer, abcSequencer,
+						abcPart.getAbcSong());
 				tempoPanel.setAbcPreviewMode(isAbcPreviewMode);
 				trackScrollPane.getVerticalScrollBar().setUnitIncrement(tempoPanel.getPreferredSize().height);
 				trackListVGroup.addComponent(tempoPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE,
@@ -285,11 +271,9 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 				trackListHGroup.addComponent(tempoPanel);
 			}
 
-			for (TrackInfo track : abcPart.getSequenceInfo().getTrackList())
-			{
+			for (TrackInfo track : abcPart.getSequenceInfo().getTrackList()) {
 				int trackNumber = track.getTrackNumber();
-				if (track.hasEvents())
-				{
+				if (track.hasEvents()) {
 					TrackPanel trackPanel = new TrackPanel(track, sequencer, abcPart, abcSequencer);
 					trackPanel.setAbcPreviewMode(isAbcPreviewMode);
 					trackScrollPane.getVerticalScrollBar().setUnitIncrement(trackPanel.getPreferredSize().height);
@@ -309,8 +293,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		}
 
 		this.abcPart = abcPart;
-		if (this.abcPart != null)
-		{
+		if (this.abcPart != null) {
 			this.abcPart.addAbcListener(abcPartListener);
 		}
 
@@ -318,26 +301,20 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		validate();
 		repaint();
 	}
-	
-	public void tuneUpdated(AbcPart abcPart)
-	{
+
+	public void tuneUpdated(AbcPart abcPart) {
 		messageLabel.setVisible(false);
 
-		if (this.abcPart != null)
-		{
-			try
-			{
+		if (this.abcPart != null) {
+			try {
 				numberSpinner.commitEdit();
-			}
-			catch (ParseException e)
-			{
+			} catch (ParseException e) {
 			}
 			this.abcPart.removeAbcListener(abcPartListener);
 			this.abcPart = null;
 		}
 
-		if (abcPart == null)
-		{
+		if (abcPart == null) {
 			numberSpinner.setEnabled(false);
 			nameTextField.setEnabled(false);
 			instrumentComboBox.setEnabled(false);
@@ -347,9 +324,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			instrumentComboBox.setSelectedItem(LotroInstrument.DEFAULT_INSTRUMENT);
 
 			clearTrackListPanel();
-		}
-		else
-		{
+		} else {
 			numberSpinner.setEnabled(true);
 			nameTextField.setEnabled(true);
 			instrumentComboBox.setEnabled(true);
@@ -361,9 +336,9 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			clearTrackListPanel();
 
 			// Add the tempo panel if this song contains tempo changes
-			if (abcPart.getSequenceInfo().hasTempoChanges() || abcPart.getAbcSong().tuneBarsModified != null)
-			{
-				TempoPanel tempoPanel = new TempoPanel(abcPart.getSequenceInfo(), sequencer, abcSequencer, abcPart.getAbcSong());
+			if (abcPart.getSequenceInfo().hasTempoChanges() || abcPart.getAbcSong().tuneBarsModified != null) {
+				TempoPanel tempoPanel = new TempoPanel(abcPart.getSequenceInfo(), sequencer, abcSequencer,
+						abcPart.getAbcSong());
 				tempoPanel.setAbcPreviewMode(isAbcPreviewMode);
 				trackScrollPane.getVerticalScrollBar().setUnitIncrement(tempoPanel.getPreferredSize().height);
 				trackListVGroup.addComponent(tempoPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE,
@@ -371,11 +346,9 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 				trackListHGroup.addComponent(tempoPanel);
 			}
 
-			for (TrackInfo track : abcPart.getSequenceInfo().getTrackList())
-			{
+			for (TrackInfo track : abcPart.getSequenceInfo().getTrackList()) {
 				int trackNumber = track.getTrackNumber();
-				if (track.hasEvents())
-				{
+				if (track.hasEvents()) {
 					TrackPanel trackPanel = new TrackPanel(track, sequencer, abcPart, abcSequencer);
 					trackPanel.setAbcPreviewMode(isAbcPreviewMode);
 					trackScrollPane.getVerticalScrollBar().setUnitIncrement(trackPanel.getPreferredSize().height);
@@ -395,8 +368,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		}
 
 		this.abcPart = abcPart;
-		if (this.abcPart != null)
-		{
+		if (this.abcPart != null) {
 			this.abcPart.addAbcListener(abcPartListener);
 		}
 
@@ -405,72 +377,54 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		repaint();
 	}
 
-	public AbcPart getAbcPart()
-	{
+	public AbcPart getAbcPart() {
 		return abcPart;
 	}
 
-	public void setAbcPreviewMode(boolean isAbcPreviewMode)
-	{
-		if (this.isAbcPreviewMode != isAbcPreviewMode)
-		{
+	public void setAbcPreviewMode(boolean isAbcPreviewMode) {
+		if (this.isAbcPreviewMode != isAbcPreviewMode) {
 			this.isAbcPreviewMode = isAbcPreviewMode;
-			for (Component child : trackListPanel.getComponents())
-			{
-				if (child instanceof TrackPanel)
-				{
+			for (Component child : trackListPanel.getComponents()) {
+				if (child instanceof TrackPanel) {
 					((TrackPanel) child).setAbcPreviewMode(isAbcPreviewMode);
-				}
-				else if (child instanceof DrumPanel)
-				{
+				} else if (child instanceof DrumPanel) {
 					((DrumPanel) child).setAbcPreviewMode(isAbcPreviewMode);
-				}
-				else if (child instanceof TempoPanel)
-				{
+				} else if (child instanceof TempoPanel) {
 					((TempoPanel) child).setAbcPreviewMode(isAbcPreviewMode);
 				}
 			}
 		}
 	}
 
-	public boolean isAbcPreviewMode()
-	{
+	public boolean isAbcPreviewMode() {
 		return isAbcPreviewMode;
 	}
 
-	public void showInfoMessage(String message)
-	{
+	public void showInfoMessage(String message) {
 		setAbcPart(null);
 
 		messageLabel.setText(message);
 		messageLabel.setVisible(true);
 	}
 
-	private void updateTracksVisible()
-	{
+	private void updateTracksVisible() {
 		if (abcPart == null)
 			return;
 
 		boolean percussion = abcPart.getInstrument().isPercussion;
 		boolean setHeight = false;
 
-		for (Component child : trackListPanel.getComponents())
-		{
-			if (child instanceof TrackPanel)
-			{
+		for (Component child : trackListPanel.getComponents()) {
+			if (child instanceof TrackPanel) {
 				TrackPanel trackPanel = (TrackPanel) child;
 				child.setEnabled(percussion || trackPanel.getTrackInfo().hasEvents());
-				if (!setHeight && !percussion)
-				{
+				if (!setHeight && !percussion) {
 					trackScrollPane.getVerticalScrollBar().setUnitIncrement(child.getPreferredSize().height);
 					setHeight = true;
 				}
-			}
-			else if (child instanceof DrumPanel)
-			{
+			} else if (child instanceof DrumPanel) {
 				child.setVisible(percussion);
-				if (!setHeight && percussion)
-				{
+				if (!setHeight && percussion) {
 					trackScrollPane.getVerticalScrollBar().setUnitIncrement(child.getPreferredSize().height);
 					setHeight = true;
 				}
@@ -478,12 +432,9 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		}
 	}
 
-	private void clearTrackListPanel()
-	{
-		for (Component child : trackListPanel.getComponents())
-		{
-			if (child instanceof IDiscardable)
-			{
+	private void clearTrackListPanel() {
+		for (Component child : trackListPanel.getComponents()) {
+			if (child instanceof IDiscardable) {
 				((IDiscardable) child).discard();
 			}
 		}
@@ -493,52 +444,45 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		zoomed = false;
 	}
 
-	public void setSequencer(NoteFilterSequencerWrapper sequencer)
-	{
+	public void setSequencer(NoteFilterSequencerWrapper sequencer) {
 		AbcPart abcPartTmp = this.abcPart;
 		setAbcPart(null);
 		this.sequencer = sequencer;
 		setAbcPart(abcPartTmp);
 	}
 
-	public void commitAllFields()
-	{
-		try
-		{
+	public void commitAllFields() {
+		try {
 			numberSpinner.commitEdit();
-		}
-		catch (java.text.ParseException e)
-		{
+		} catch (java.text.ParseException e) {
 			// Ignore
 		}
 	}
 
 	public void zoom() {
-		// Notice that when instruement track selection is changed clearTrackListPanel() will be called and view will be unzoomed.
-		int horiz = 1920*3;
+		// Notice that when instruement track selection is changed clearTrackListPanel()
+		// will be called and view will be unzoomed.
+		int horiz = 1920 * 3;
 		try {
 			int width = Toolkit.getDefaultToolkit().getScreenSize().width;
 			if (width > 1920) {
 				horiz = Math.max(horiz, width * 2);
 			}
 		} catch (java.awt.HeadlessException e) {
-			
-		}
-		
-		TrackDimensions dims = TrackPanel.calculateTrackDims();
-		
 
-		int scaledHeight = (int)(dims.rowHeight * 1.25);
-		
-		for (Component child : trackListPanel.getComponents())
-		{
-			if (child instanceof TrackPanel)
-			{
+		}
+
+		TrackDimensions dims = TrackPanel.calculateTrackDims();
+
+		int scaledHeight = (int) (dims.rowHeight * 1.25);
+
+		for (Component child : trackListPanel.getComponents()) {
+			if (child instanceof TrackPanel) {
 				if (!zoomed && child.getHeight() == dims.rowHeight + 1) {
-					((TrackPanel)child).setVerticalSize(scaledHeight);
+					((TrackPanel) child).setVerticalSize(scaledHeight);
 					child.setPreferredSize(new Dimension(horiz, scaledHeight + 1));
 				} else {
-					((TrackPanel)child).setVerticalSize(dims.rowHeight);
+					((TrackPanel) child).setVerticalSize(dims.rowHeight);
 					child.setPreferredSize(null);
 				}
 				child.validate();
@@ -549,12 +493,12 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		repaint();
 		zoomed = !zoomed;
 	}
-	
-	public void noteToggle () {
+
+	public void noteToggle() {
 		noteVisible(!noteVisible);
 	}
-	
-	public void noteVisible (boolean vis) {
+
+	public void noteVisible(boolean vis) {
 		noteVisible = vis;
 		if (noteVisible) {
 			add(notePanel, "1, 0, 1, 1, F, F");
@@ -564,11 +508,11 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		validate();
 		repaint();
 	}
-	
+
 	public String getNote() {
 		return noteContent.getText();
 	}
-	
+
 	public void setNote(String note) {
 		noteContent.setText(note);
 	}

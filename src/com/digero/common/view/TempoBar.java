@@ -21,8 +21,7 @@ import com.digero.common.util.Listener;
 import com.digero.common.util.Util;
 
 @SuppressWarnings("serial")
-public class TempoBar extends JPanel implements Listener<SequencerEvent>
-{
+public class TempoBar extends JPanel implements Listener<SequencerEvent> {
 	private static final int PTR_WIDTH = 12;
 	private static final int PTR_HEIGHT = 12;
 	private static final int BAR_HEIGHT = 6;
@@ -38,8 +37,7 @@ public class TempoBar extends JPanel implements Listener<SequencerEvent>
 	private Rectangle ptrRect = new Rectangle(0, 0, PTR_WIDTH, PTR_HEIGHT);
 	private boolean useInvertedColors;
 
-	public TempoBar(SequencerWrapper seq)
-	{
+	public TempoBar(SequencerWrapper seq) {
 		this.seq = seq;
 
 		MouseHandler mouseHandler = new MouseHandler();
@@ -54,8 +52,7 @@ public class TempoBar extends JPanel implements Listener<SequencerEvent>
 		seq.addChangeListener(this);
 	}
 
-	private float tempoToPct(float tempo)
-	{
+	private float tempoToPct(float tempo) {
 		assert tempo >= 0;
 
 		if (tempo <= 1)
@@ -67,18 +64,8 @@ public class TempoBar extends JPanel implements Listener<SequencerEvent>
 		return MID + (1 - MID) * (tempo - 1) / (MAX_TEMPO - 1);
 	}
 
-	private float pctToTempo(float pct)
-	{
-		assert pct >= 0 && pct <= 1;
-
-		if (pct <= MID)
-			return pct / MID;
-
-		return (pct - MID) / (1 - MID) * (MAX_TEMPO - 1) + 1;
-	}
-
-	@Override protected void paintComponent(Graphics g)
-	{
+	@Override
+	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 
 		Graphics2D g2 = (Graphics2D) g;
@@ -91,16 +78,15 @@ public class TempoBar extends JPanel implements Listener<SequencerEvent>
 		int right = getWidth();
 
 		float tempo = seq.getTempoFactor();
-		Color fill, fillDark, fillBright;
-		if (tempo <= 1.0f)
-		{
+		Color fill;
+		Color fillDark;
+		Color fillBright;
+		if (tempo <= 1.0f) {
 			float sat = 1 - tempo;
 			fill = Color.getHSBColor(0.0f, sat, 0.50f);
 			fillDark = Color.getHSBColor(0.0f, sat, 0.25f);
 			fillBright = Color.getHSBColor(0.0f, sat, 0.75f);
-		}
-		else
-		{
+		} else {
 			float sat = 1 - (MAX_TEMPO - tempo) / (MAX_TEMPO - 1);
 			fill = Color.getHSBColor(0.33f, sat, 0.50f + 0.25f * sat);
 			fillDark = Color.getHSBColor(0.33f, sat, 0.25f + 0.25f * sat);
@@ -135,17 +121,14 @@ public class TempoBar extends JPanel implements Listener<SequencerEvent>
 		g2.drawOval(left, 0, PTR_WIDTH - 1, PTR_HEIGHT - 1);
 	}
 
-	private void updatePointerRect()
-	{
+	private void updatePointerRect() {
 		ptrRect.x = (int) (getWidth() * tempoToPct(seq.getTempoFactor()) - PTR_WIDTH / 2);
 	}
 
-	private class MouseHandler implements MouseListener, MouseMotionListener
-	{
+	private class MouseHandler implements MouseListener, MouseMotionListener {
 		private boolean draggingButton1 = false;
 
-		private float getTempo(int x)
-		{
+		private float getTempo(int x) {
 			float pct = ((float) x) / (getWidth());
 			pct = Util.clamp(pct, 0.0f, 1.0f);
 			float tempo = pctToTempo(pct);
@@ -161,23 +144,30 @@ public class TempoBar extends JPanel implements Listener<SequencerEvent>
 			return tempo;
 		}
 
-		@Override public void mouseClicked(MouseEvent e)
-		{
+		private float pctToTempo(float pct) {
+			assert pct >= 0 && pct <= 1;
+
+			if (pct <= MID)
+				return pct / MID;
+
+			return (pct - MID) / (1 - MID) * (MAX_TEMPO - 1) + 1;
 		}
 
-		@Override public void mousePressed(MouseEvent e)
-		{
+		@Override
+		public void mouseClicked(MouseEvent e) {
+		}
+
+		@Override
+		public void mousePressed(MouseEvent e) {
 			if (!TempoBar.this.isEnabled())
 				return;
-			if (e.getButton() == MouseEvent.BUTTON1)
-			{
+			if (e.getButton() == MouseEvent.BUTTON1) {
 				draggingButton1 = true;
 				seq.setTempoFactor(getTempo(e.getX()));
 				repaint();
 				requestFocus();
 			}
-			if (e.getButton() == MouseEvent.BUTTON3)
-			{
+			if (e.getButton() == MouseEvent.BUTTON3) {
 				if (seq.getTempoFactor() == 1.0f)
 					seq.setTempoFactor(0.001f);
 				else
@@ -185,53 +175,48 @@ public class TempoBar extends JPanel implements Listener<SequencerEvent>
 			}
 		}
 
-		@Override public void mouseReleased(MouseEvent e)
-		{
-			if (e.getButton() == MouseEvent.BUTTON1)
-			{
+		@Override
+		public void mouseReleased(MouseEvent e) {
+			if (e.getButton() == MouseEvent.BUTTON1) {
 				draggingButton1 = false;
 			}
 		}
 
-		@Override public void mouseDragged(MouseEvent e)
-		{
+		@Override
+		public void mouseDragged(MouseEvent e) {
 			if (!TempoBar.this.isEnabled())
 				return;
-			if (draggingButton1)
-			{
+			if (draggingButton1) {
 				seq.setTempoFactor(getTempo(e.getX()));
 				repaint();
 			}
 		}
 
-		@Override public void mouseMoved(MouseEvent e)
-		{
+		@Override
+		public void mouseMoved(MouseEvent e) {
 		}
 
-		@Override public void mouseEntered(MouseEvent e)
-		{
+		@Override
+		public void mouseEntered(MouseEvent e) {
 		}
 
-		@Override public void mouseExited(MouseEvent e)
-		{
+		@Override
+		public void mouseExited(MouseEvent e) {
 		}
 	}
 
-	@Override public void onEvent(SequencerEvent evt)
-	{
-		if (evt.getProperty() == SequencerProperty.TEMPO)
-		{
+	@Override
+	public void onEvent(SequencerEvent evt) {
+		if (evt.getProperty() == SequencerProperty.TEMPO) {
 			repaint();
 		}
 	}
 
-	public void setUseInvertedColors(boolean useInvertedColors)
-	{
+	public void setUseInvertedColors(boolean useInvertedColors) {
 		this.useInvertedColors = useInvertedColors;
 	}
 
-	public boolean isUseInvertedColors()
-	{
+	public boolean isUseInvertedColors() {
 		return useInvertedColors;
 	}
 }

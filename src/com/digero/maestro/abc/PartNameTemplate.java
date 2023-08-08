@@ -71,7 +71,7 @@ public class PartNameTemplate
 		}
 	}
 
-	public static abstract class Variable
+	public abstract static class Variable
 	{
 		private String description;
 

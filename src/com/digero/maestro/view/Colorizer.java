@@ -2,6 +2,8 @@ package com.digero.maestro.view;
 
 import info.clearthought.layout.TableLayout;
 
+import static info.clearthought.layout.TableLayoutConstants.PREFERRED;
+
 import java.awt.BorderLayout;
 import java.awt.Color;
 import javax.swing.JComboBox;
@@ -52,8 +54,8 @@ public class Colorizer extends JPanel
 		brt.addChangeListener(cl);
 
 		JPanel spinners = new JPanel(new TableLayout(//
-				new double[] { TableLayout.PREFERRED, 0.33, TableLayout.PREFERRED, 0.33, TableLayout.PREFERRED, 0.34 },//
-				new double[] { TableLayout.PREFERRED }));
+				new double[] { PREFERRED, 0.33, PREFERRED, 0.33, PREFERRED, 0.34 },//
+				new double[] { PREFERRED }));
 		spinners.add(new JLabel("H:"), "0, 0");
 		spinners.add(new JSpinner(hue), "1, 0");
 		spinners.add(new JLabel(" S:"), "2, 0");

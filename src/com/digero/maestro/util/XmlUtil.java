@@ -7,7 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.AbstractList;
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -130,7 +131,7 @@ public class XmlUtil
 	private static class LineNumberHandler extends DefaultHandler
 	{
 		private Document doc = null;
-		private Stack<Node> stack = new Stack<>();
+		private Deque<Node> stack = new ArrayDeque<>();
 		private StringBuilder text = new StringBuilder();
 		private Locator locator = null;
 

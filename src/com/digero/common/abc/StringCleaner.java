@@ -33,18 +33,18 @@ public class StringCleaner {
 	}
 	
 	private static String replaceUmlaut(String before) {
-		before = before.replaceAll("ß", "ss");
-		before = before.replaceAll("æ", "ae");
-		before = before.replaceAll("Æ", "AE");
-		before = before.replaceAll("ø", "oe");
-		before = before.replaceAll("Ø", "OE");
-		before = before.replaceAll("å", "aa");
-		before = before.replaceAll("Å", "AA");
-		before = before.replaceAll("ä", "ae");
-		before = before.replaceAll("Ä", "AE");
-		before = before.replaceAll("ö", "oe");
-		before = before.replaceAll("Ö", "OE");
-		before = before.replaceAll("—", "-");
+		before = before.replace("ß", "ss");
+		before = before.replace("æ", "ae");
+		before = before.replace("Æ", "AE");
+		before = before.replace("ø", "oe");
+		before = before.replace("Ø", "OE");
+		before = before.replace("å", "aa");
+		before = before.replace("Å", "AA");
+		before = before.replace("ä", "ae");
+		before = before.replace("Ä", "AE");
+		before = before.replace("ö", "oe");
+		before = before.replace("Ö", "OE");
+		before = before.replace("—", "-");
 	    return before;
 	}
 	

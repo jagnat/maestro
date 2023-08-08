@@ -238,7 +238,7 @@ public class ExportMp3Dialog extends JDialog implements TableLayoutConstants {
 		return Util.quote(theExe.getAbsolutePath()) + args;
 	}
 
-	public ArrayList<String> getCommandLineNew(File wav) {
+	public List<String> getCommandLineNew(File wav) {
 		ArrayList<String> args = new ArrayList<>();
 		String os = System.getProperty("os.name");
 		if (os.contains("Windows")) {

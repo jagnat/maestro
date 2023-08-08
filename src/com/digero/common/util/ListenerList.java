@@ -48,7 +48,7 @@ public class ListenerList<E extends EventObject> implements IDiscardable
 
 	public void fire(E e)
 	{
-		if (listeners == null || listeners.size() == 0)
+		if (listeners == null || listeners.isEmpty())
 			return;
 
 		try

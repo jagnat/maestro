@@ -1,17 +1,17 @@
 package com.digero.common.util;
 
-public class Version implements Comparable<Version>
-{
-	public static Version parseVersion(String versionString)
-	{
+public class Version implements Comparable<Version> {
+	public static Version parseVersion(String versionString) {
 		if (versionString == null)
 			return null;
 
 		String[] parts = versionString.trim().split("[\\._]");
-		int major, minor = 0, revision = 0, build = -1;
+		int major;
+		int minor = 0;
+		int revision = 0;
+		int build = -1;
 
-		try
-		{
+		try {
 			if (parts.length == 0)
 				return null;
 
@@ -24,55 +24,49 @@ public class Version implements Comparable<Version>
 				build = Integer.parseInt(parts[3]);
 
 			return new Version(major, minor, revision, build);
-		}
-		catch (NumberFormatException e)
-		{
+		} catch (NumberFormatException e) {
 			return null;
 		}
 	}
 
-	private final int major, minor, revision, build;
+	private final int major;
+	private final int minor;
+	private final int revision;
+	private final int build;
 
-	public Version(int major, int minor, int revision)
-	{
+	public Version(int major, int minor, int revision) {
 		this(major, minor, revision, -1);
 	}
 
-	public Version(int major, int minor, int revision, int build)
-	{
+	public Version(int major, int minor, int revision, int build) {
 		this.major = major;
 		this.minor = minor;
 		this.revision = revision;
 		this.build = build;
 	}
 
-	public int getMajor()
-	{
+	public int getMajor() {
 		return major;
 	}
 
-	public int getMinor()
-	{
+	public int getMinor() {
 		return minor;
 	}
 
-	public int getRevision()
-	{
+	public int getRevision() {
 		return revision;
 	}
 
-	public int getBuild()
-	{
+	public int getBuild() {
 		return build;
 	}
 
-	public boolean hasBuild()
-	{
+	public boolean hasBuild() {
 		return build != -1;
 	}
 
-	@Override public int compareTo(Version that)
-	{
+	@Override
+	public int compareTo(Version that) {
 		if (that == null)
 			return 1;
 
@@ -88,10 +82,9 @@ public class Version implements Comparable<Version>
 		return this.build - that.build;
 	}
 
-	@Override public boolean equals(Object obj)
-	{
-		if (obj == null || obj.getClass() != this.getClass())
-		{
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == null || obj.getClass() != this.getClass()) {
 			return false;
 		}
 
@@ -100,13 +93,13 @@ public class Version implements Comparable<Version>
 				&& (this.build == that.build);
 	}
 
-	@Override public int hashCode()
-	{
+	@Override
+	public int hashCode() {
 		return Integer.rotateLeft(major, 15) + Integer.rotateLeft(minor, 10) + Integer.rotateLeft(revision, 5) + build;
 	}
 
-	@Override public String toString()
-	{
+	@Override
+	public String toString() {
 		String s = major + "." + minor + "." + revision;
 		if (hasBuild())
 			s += "." + build;

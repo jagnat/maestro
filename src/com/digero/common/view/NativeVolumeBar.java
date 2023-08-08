@@ -12,7 +12,7 @@ import java.awt.geom.RoundRectangle2D;
 
 import javax.swing.JPanel;
 
-import com.digero.common.midi.VolumeTransceiver;
+import com.digero.common.midi.MidiConstants;
 
 @SuppressWarnings("serial")
 public class NativeVolumeBar extends JPanel
@@ -25,7 +25,7 @@ public class NativeVolumeBar extends JPanel
 
 	public static final int WIDTH = PTR_WIDTH * 5;
 
-	public static final int MAX_VOLUME = VolumeTransceiver.MAX_VOLUME;
+	public static final int MAX_VOLUME = MidiConstants.MAX_VOLUME;
 
 	public interface Callback
 	{

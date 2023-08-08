@@ -126,7 +126,7 @@ public class SequenceInfo implements MidiConstants
 		if (dot > 0)
 			title = title.substring(0, dot);
 		title = title.replace('_', ' ');
-		title = title.replaceAll("�", "-");//replace long dash with normal ascii dash
+		title = title.replace("�", "-");//replace long dash with normal ascii dash
 		
 		String[] array = title.split("-", 2);
 		if (array.length > 1 && array[0].length() > 0 && array[1].length() > 0) {
@@ -371,15 +371,15 @@ public class SequenceInfo implements MidiConstants
 					if (message.length == 9 && (message[0] & 0xFF) == 0xF0 && (message[1] & 0xFF) == 0x43
 							&& (message[4] & 0xFF) == 0x00 && (message[5] & 0xFF) == 0x00 && (message[6] & 0xFF) == 0x7E
 							&& (message[7] & 0xFF) == 0x00 && (message[8] & 0xFF) == 0xF7) {
-						if (standard != "GM" && standard != "XG") {
+						if (!"GM".equals(standard) && !"XG".equals(standard)) {
 							System.err.println(fileName + ": MIDI XG Reset in a " + standard + " file. This is unusual!");
 						}
 						if (evt.getTick() > lastResetTick) {
 							lastResetTick = evt.getTick();
 							standard = "XG";
-						} else if (standard == "GS" && evt.getTick() == lastResetTick) {
+						} else if ("GS".equals(standard) && evt.getTick() == lastResetTick) {
 							System.err.println("They are at same tick. Statistically bigger chance its a GS, so not switching to XG.");
-						} else if (standard == "GM2" && evt.getTick() == lastResetTick) {
+						} else if ("GM2".equals(standard) && evt.getTick() == lastResetTick) {
 							System.err.println("They are at same tick. Statistically bigger chance its a XG, so switching to that.");
 							lastResetTick = evt.getTick();
 							standard = "XG";
@@ -390,7 +390,7 @@ public class SequenceInfo implements MidiConstants
 							&& (message[4] & 0xFF) == 0x12
 							&& (message[5] & 0xFF) == 0x40 && (message[6] & 0xFF) == 0x00 && (message[7] & 0xFF) == 0x7F
 							&& (message[8] & 0xFF) == 0x00 && (message[10] & 0xFF) == 0xF7) {
-						if (standard != "GM" && standard != "GS") {
+						if (!"GM".equals(standard) && !"GS".equals(standard)) {
 							System.err.println(fileName + ": MIDI GS Reset in a " + standard + " file. This is unusual!");
 						}
 						if (evt.getTick() >= lastResetTick) {
@@ -401,13 +401,13 @@ public class SequenceInfo implements MidiConstants
 						//System.err.println("Roland GS Reset, tick "+evt.getTick());
 					} else if (message.length == 6 && (message[0] & 0xFF) == 0xF0 && (message[1] & 0xFF) == 0x7E && (message[3] & 0xFF) == 0x09
 							&& (message[4] & 0xFF) == 0x03 && (message[5] & 0xFF) == 0xF7) {
-						if (standard != "GM" && standard != "GM2") {
+						if (!"GM".equals(standard) && !"GM2".equals(standard)) {
 							System.err.println(fileName + ": MIDI GM2 Reset in a " + standard + " file. This is unusual!");
 						}
 						if (evt.getTick() > lastResetTick) {
 							lastResetTick = evt.getTick();
 							standard = "GM2";
-						} else if (evt.getTick() == lastResetTick && standard != "GM") {
+						} else if (evt.getTick() == lastResetTick && !"GM".equals(standard)) {
 							System.err.println("They are at same tick. Statistically bigger chance its not a GM2, so not switching standard.");
 						}
 						ExtensionMidiInstrument.getInstance();
@@ -545,16 +545,16 @@ public class SequenceInfo implements MidiConstants
 					byte[] message = sysex.getMessage();
 					// we already know that this sysex is a XG bank/patch change, so no need for if statement.
 				   	String bank = message[6]==1?"MSB":(message[6]==2?"LSB":(message[6]==3?"Patch":""));
-			    	if (bank != "" && message[5] < 16 && message[5] > -1 && message[7] < 128 && message[7] > -1) {
+			    	if (!"".equals(bank) && message[5] < 16 && message[5] > -1 && message[7] < 128 && message[7] > -1) {
 			    		//System.err.println(fileName+": Yamaha XG Sysex "+bank+" set to "+message[7]+" for channel "+message[5]);
 			    		int ch = message[5];
-			    		if (bank == "MSB") {
+			    		if ("MSB".equals(bank)) {
 				    		if (message[7] == 126 || message[7] == 127) {// 64 is chromatic effects, so not testing for that.
 				    			yamahaBankAndPatchChanges[ch] = 1;
 				    		} else {
 								yamahaBankAndPatchChanges[ch] = 0;
 							}
-			    		} else if (bank == "Patch") {
+			    		} else if ("Patch".equals(bank)) {
 			    			if (yamahaBankAndPatchChanges[ch] > 0) {
 								yamahaBankAndPatchChanges[ch] = 2;
 								yamahaDrumSwitches.get(ch).put(evt.getTick(), true);
@@ -636,7 +636,7 @@ public class SequenceInfo implements MidiConstants
 	 */
 	public static boolean convertToType1(Sequence song)
 	{
-		if (song.getTracks().length == 1 && standard != "ABC")
+		if (song.getTracks().length == 1 && !"ABC".equals(standard))
 		{
 			Track track0 = song.getTracks()[0];
 			Track[] tracks = new Track[CHANNEL_COUNT];
@@ -708,7 +708,7 @@ public class SequenceInfo implements MidiConstants
 	{
 		Track[] tracks = song.getTracks();
 		
-		if (standard == "ABC") {// || tracks.length <= 1
+		if ("ABC".equals(standard)) {// || tracks.length <= 1
 			return;
 		}		
 
@@ -736,23 +736,23 @@ public class SequenceInfo implements MidiConstants
 					int chan = m.getChannel();
 					if (m.getCommand() == ShortMessage.NOTE_ON)
 					{
-						if (chan == DRUM_CHANNEL && standard == "GM")
+						if (chan == DRUM_CHANNEL && "GM".equals(standard))
 						{
 							drums = 1;
 						}
-						else if (standard == "GS" && rolandDrumChannels[chan])
+						else if ("GS".equals(standard) && rolandDrumChannels[chan])
 						{
 							GS = 1;
 							if (chan == DRUM_CHANNEL) drumsExt9 = 1;
 							else drumsExtX = 1;
 						}
-						else if (standard == "XG" && yamahaDrumSwitches.get(chan).floorEntry(evt.getTick()) != null && yamahaDrumSwitches.get(chan).floorEntry(evt.getTick()).getValue())
+						else if ("XG".equals(standard) && yamahaDrumSwitches.get(chan).floorEntry(evt.getTick()) != null && yamahaDrumSwitches.get(chan).floorEntry(evt.getTick()).getValue())
 						{
 							XG = 1;
 							if (chan == DRUM_CHANNEL) drumsExt9 = 1;
 							else drumsExtX = 1;
 						}
-						else if (standard == "GM2" && mmaDrumSwitches.get(chan).floorEntry(evt.getTick()) != null && mmaDrumSwitches.get(chan).floorEntry(evt.getTick()).getValue())
+						else if ("GM2".equals(standard) && mmaDrumSwitches.get(chan).floorEntry(evt.getTick()) != null && mmaDrumSwitches.get(chan).floorEntry(evt.getTick()).getValue())
 						{
 							GM2 = 1;
 							if (chan == DRUM_CHANNEL) drumsExt9 = 1;

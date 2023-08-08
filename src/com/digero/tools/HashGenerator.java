@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import jakarta.xml.bind.DatatypeConverter;
@@ -329,13 +330,13 @@ public class HashGenerator
 		{
 			private final File directory;
 			private final List<File> files;
-			private final ConcurrentHashMap<File, Hash> hashes;
+			private final ConcurrentMap<File, Hash> hashes;
 
 			private final long startMillis = System.currentTimeMillis();
 			private final AtomicInteger index = new AtomicInteger(-1);
 			private final AtomicInteger lastPrintedCount = new AtomicInteger(-1);
 
-			public State(File directory, List<File> files, ConcurrentHashMap<File, Hash> hashes)
+			public State(File directory, List<File> files, ConcurrentMap<File, Hash> hashes)
 			{
 				this.directory = directory;
 				this.files = Collections.unmodifiableList(files);

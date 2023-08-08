@@ -1,6 +1,6 @@
 package com.digero.maestro.abc;
 
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 
 import com.digero.common.midi.Note;
@@ -9,8 +9,8 @@ import com.digero.maestro.midi.NoteEvent;
 public class LotroCombiDrumInfo {
 	
 	public static Note maxCombi = Note.Gs5;
-	public static Map<Note, Note> firstNotes = new HashMap<>();
-	public static Map<Note, Note> secondNotes = new HashMap<>();
+	public static Map<Note, Note> firstNotes = new EnumMap<>(Note.class);
+	public static Map<Note, Note> secondNotes = new EnumMap<>(Note.class);
 	public static int combiNoteCount = 0;
 		
 	static {

@@ -9,6 +9,7 @@ import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 
 import com.digero.maestro.abc.AbcPart;
 
@@ -43,7 +44,7 @@ public class DelayDialog {
 		        panel.setLayout(new TableLayout(LAYOUT_COLS, LAYOUT_ROWS));
 		        
 		        final JTextField delayField = new JTextField(String.format("%.3f",abcPart.delay*0.001f));
-		        delayField.setHorizontalAlignment(JTextField.CENTER);
+		        delayField.setHorizontalAlignment(SwingConstants.CENTER);
 		        
 		        JButton okButton = new JButton("APPLY");
 		        okButton.addActionListener(e -> {

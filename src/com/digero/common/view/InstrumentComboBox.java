@@ -23,13 +23,12 @@ import com.digero.common.abc.LotroInstrument;
 import com.digero.common.abc.LotroInstrumentGroup;
 
 @SuppressWarnings({ "rawtypes", "serial" })
-public class InstrumentComboBox extends JComboBox<LotroInstrument>
-{
+public class InstrumentComboBox extends JComboBox<LotroInstrument> {
 	private final List<Object> items;
 	private int selectedIndex = 0;
 
-	@SuppressWarnings("unchecked") public InstrumentComboBox()
-	{
+	@SuppressWarnings("unchecked")
+	public InstrumentComboBox() {
 		ArrayList<Object> items = new ArrayList<>(Arrays.asList(LotroInstrument.values()));
 
 		items.addAll(Arrays.asList(LotroInstrumentGroup.values()));
@@ -71,55 +70,56 @@ public class InstrumentComboBox extends JComboBox<LotroInstrument>
 		setRenderer(new Renderer());
 	}
 
-	private class Model implements ComboBoxModel
-	{
-		@Override public int getSize()
-		{
+	private class Model implements ComboBoxModel {
+		@Override
+		public int getSize() {
 			return items.size();
 		}
 
-		@Override public Object getElementAt(int index)
-		{
+		@Override
+		public Object getElementAt(int index) {
 			return items.get(index);
 		}
 
-		@Override public void setSelectedItem(Object item)
-		{
-			for (int i = items.indexOf(item); i >= 0 && i < items.size(); i += (i < selectedIndex) ? -1 : 1)
-			{
-				if (items.get(i) instanceof LotroInstrument)
-				{
+		@Override
+		public void setSelectedItem(Object item) {
+			for (int i = items.indexOf(item); i >= 0 && i < items.size(); i += (i < selectedIndex) ? -1 : 1) {
+				if (items.get(i) instanceof LotroInstrument) {
 					selectedIndex = i;
 					break;
 				}
 			}
 		}
 
-		@Override public Object getSelectedItem()
-		{
+		@Override
+		public Object getSelectedItem() {
 			return items.get(selectedIndex);
 		}
 
-		@Override public void addListDataListener(ListDataListener l)
-		{
+		@Override
+		public void addListDataListener(ListDataListener l) {
 			// Nothing ever changes
 		}
 
-		@Override public void removeListDataListener(ListDataListener l)
-		{
+		@Override
+		public void removeListDataListener(ListDataListener l) {
 		}
 	}
 
-	private static class Renderer implements ListCellRenderer
-	{
+	private static class Renderer implements ListCellRenderer {
 		private final JLabel label;
-		private final Font font, fontGroupHeader;
-		private final Border border, borderFocused;
-		private final Color foreground, foregroundHighlight, foregroundGroup;
-		private final Color background, backgroundHighlight, backgroundGroup;
+		private final Font font;
+		private final Font fontGroupHeader;
+		private final Border border;
+		private final Border borderFocused;
+		private final Color foreground;
+		private final Color foregroundHighlight;
+		private final Color foregroundGroup;
+		private final Color background;
+		private final Color backgroundHighlight;
+		private final Color backgroundGroup;
 
-		private Renderer()
-		{
+		private Renderer() {
 			label = new JLabel();
 			font = label.getFont();
 			fontGroupHeader = font.deriveFont(Font.BOLD);
@@ -135,26 +135,24 @@ public class InstrumentComboBox extends JComboBox<LotroInstrument>
 			hsb[2] += (hsb[2] < 0.5f) ? 0.08f : -0.08f;
 			backgroundGroup = Color.getHSBColor(hsb[0], hsb[1], hsb[2]);
 
-			final int PAD_X = 4, PAD_Y = 2;
+			final int PAD_X = 4;
+			final int PAD_Y = 2;
 			border = BorderFactory.createEmptyBorder(PAD_Y, PAD_X, PAD_Y, PAD_X);
 			borderFocused = BorderFactory.createCompoundBorder(BorderFactory.createDashedBorder(null),
 					BorderFactory.createEmptyBorder(PAD_Y - 1, PAD_X - 1, PAD_Y - 1, PAD_X - 1));
 		}
 
-		@Override public Component getListCellRendererComponent(JList list, Object value, int index,
-				boolean isSelected, boolean cellHasFocus)
-		{
+		@Override
+		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+				boolean cellHasFocus) {
 			label.setText(value.toString());
-			if (value instanceof LotroInstrumentGroup)
-			{
+			if (value instanceof LotroInstrumentGroup) {
 				label.setFont(fontGroupHeader);
 				label.setBorder(border);
 				label.setForeground(foregroundGroup);
 				label.setBackground(backgroundGroup);
 				label.setOpaque(true);
-			}
-			else
-			{
+			} else {
 				boolean highlight = isSelected && (index >= 0);
 				label.setFont(font);
 				label.setBorder(cellHasFocus || (isSelected && index < 0) ? borderFocused : border);

@@ -34,17 +34,17 @@ import com.digero.maestro.midi.TrackInfo;
 import com.digero.maestro.view.TrackPanel.TrackDimensions;
 
 @SuppressWarnings("serial")
-public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConstants, ICompileConstants
-{
-	//     0            1              2               3
-	//   +---+--------------------+----------+--------------------+
-	//   |   | TRACK NAME         | Drum     |  +--------------+  |
-	// 0 |   |                    | +------+ |  | (note graph) |  |
-	//   |   | Instrument(s)      | +-----v+ |  +--------------+  |
-	//   +---+--------------------+----------+--------------------+
+public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConstants, ICompileConstants {
+	// 0 1 2 3
+	// +---+--------------------+----------+--------------------+
+	// | | TRACK NAME | Drum | +--------------+ |
+	// 0 | | | +------+ | | (note graph) | |
+	// | | Instrument(s) | +-----v+ | +--------------+ |
+	// +---+--------------------+----------+--------------------+
 	private static final int GUTTER_WIDTH = TrackPanel.GUTTER_WIDTH;
 	private static final int COMBO_WIDTH = 122;
-	private static final int TITLE_WIDTH = TrackPanel.TITLE_WIDTH_DEFAULT + TrackPanel.HGAP + TrackPanel.PRIORITY_WIDTH_DEFAULT + TrackPanel.CONTROL_WIDTH_DEFAULT - COMBO_WIDTH;
+	private static final int TITLE_WIDTH = TrackPanel.TITLE_WIDTH_DEFAULT + TrackPanel.HGAP
+			+ TrackPanel.PRIORITY_WIDTH_DEFAULT + TrackPanel.CONTROL_WIDTH_DEFAULT - COMBO_WIDTH;
 	private static double[] LAYOUT_COLS = new double[] { GUTTER_WIDTH, TITLE_WIDTH, COMBO_WIDTH, FILL };
 	private static final double[] LAYOUT_ROWS = new double[] { PREFERRED };
 
@@ -63,12 +63,11 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 	private TrackVolumeBar trackVolumeBar;
 	private ActionListener trackVolumeBarListener;
 	private boolean showVolume = false;
-	
+
 	private TrackDimensions dims = new TrackDimensions(TITLE_WIDTH, 0, COMBO_WIDTH, -1);
 
 	public DrumPanel(TrackInfo info, NoteFilterSequencerWrapper sequencer, AbcPart part, int drumNoteId,
-			SequencerWrapper abcSequencer_, TrackVolumeBar trackVolumeBar_)
-	{
+			SequencerWrapper abcSequencer_, TrackVolumeBar trackVolumeBar_) {
 		super(new TableLayout(LAYOUT_COLS, LAYOUT_ROWS));
 
 		this.trackInfo = info;
@@ -80,15 +79,15 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 
 		TableLayout tableLayout = (TableLayout) getLayout();
 		tableLayout.setHGap(TrackPanel.HGAP);
-		
+
 		dims = TrackPanel.calculateTrackDims();
-		
+
 		int totalW = dims.titleWidth + TrackPanel.HGAP + dims.priorityWidth + dims.controlWidth;
 		int div2 = totalW / 2;
-		
-		dims.titleWidth = div2+ (div2 + div2 == totalW? 0 : 1);
+
+		dims.titleWidth = div2 + (div2 + div2 == totalW ? 0 : 1);
 		dims.controlWidth = div2;
-		
+
 		LAYOUT_COLS[1] = dims.titleWidth;
 		LAYOUT_COLS[2] = dims.controlWidth;
 		tableLayout.setColumn(LAYOUT_COLS);
@@ -98,7 +97,8 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 
 		checkBox = new JCheckBox();
 		checkBox.setSelected(abcPart.isDrumEnabled(trackInfo.getTrackNumber(), drumId));
-		checkBox.addActionListener(e -> abcPart.setDrumEnabled(trackInfo.getTrackNumber(), drumId, checkBox.isSelected()));
+		checkBox.addActionListener(
+				e -> abcPart.setDrumEnabled(trackInfo.getTrackNumber(), drumId, checkBox.isSelected()));
 
 		checkBox.setOpaque(false);
 
@@ -106,8 +106,7 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 		String instr;
 		if (info.isDrumTrack())
 			instr = MidiDrum.fromId(drumId).name;
-		else
-		{
+		else {
 			instr = Note.fromId(drumNoteId).abc;
 			checkBox.setFont(checkBox.getFont().deriveFont(Font.BOLD));
 		}
@@ -139,34 +138,27 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 
 		noteGraph = new DrumNoteGraph(seq, trackInfo);
 		noteGraph.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, ColorTable.OCTAVE_LINE.get()));
-		noteGraph.addMouseListener(new MouseAdapter()
-		{
+		noteGraph.addMouseListener(new MouseAdapter() {
 			private int soloAbcTrack = -1;
 			private int soloAbcDrumId = -1;
 			private int soloTrack = -1;
 			private int soloDrumId = -1;
 
-			@Override public void mousePressed(MouseEvent e)
-			{
-				if (e.getButton() == MouseEvent.BUTTON3)
-				{
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if (e.getButton() == MouseEvent.BUTTON3) {
 					int trackNumber = trackInfo.getTrackNumber();
-					if (isAbcPreviewMode() && abcSequencer instanceof NoteFilterSequencerWrapper)
-					{
-						if (abcPart.isTrackEnabled(trackNumber))
-						{
+					if (isAbcPreviewMode() && abcSequencer instanceof NoteFilterSequencerWrapper) {
+						if (abcPart.isTrackEnabled(trackNumber)) {
 							soloAbcTrack = abcPart.getPreviewSequenceTrackNumber();
 							Note soloDrumNote = abcPart.mapNote(trackNumber, drumId, 0);
 							soloAbcDrumId = (soloDrumNote == null) ? -1 : soloDrumNote.id;
 						}
 
-						if (soloAbcTrack >= 0 && soloAbcDrumId >= 0)
-						{
+						if (soloAbcTrack >= 0 && soloAbcDrumId >= 0) {
 							((NoteFilterSequencerWrapper) abcSequencer).setNoteSolo(soloAbcTrack, soloAbcDrumId, true);
 						}
-					}
-					else
-					{
+					} else {
 						soloTrack = trackNumber;
 						soloDrumId = drumId;
 						seq.setNoteSolo(trackNumber, drumId, true);
@@ -174,19 +166,16 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 				}
 			}
 
-			@Override public void mouseReleased(MouseEvent e)
-			{
-				if (e.getButton() == MouseEvent.BUTTON3)
-				{
-					if (soloAbcTrack >= 0 && soloAbcDrumId >= 0 && abcSequencer instanceof NoteFilterSequencerWrapper)
-					{
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				if (e.getButton() == MouseEvent.BUTTON3) {
+					if (soloAbcTrack >= 0 && soloAbcDrumId >= 0 && abcSequencer instanceof NoteFilterSequencerWrapper) {
 						((NoteFilterSequencerWrapper) abcSequencer).setNoteSolo(soloAbcTrack, soloAbcDrumId, false);
 					}
 					soloAbcTrack = -1;
 					soloAbcDrumId = -1;
 
-					if (soloTrack >= 0 && soloDrumId >= 0)
-					{
+					if (soloTrack >= 0 && soloDrumId >= 0) {
 						seq.setNoteSolo(soloTrack, soloDrumId, false);
 					}
 					soloTrack = -1;
@@ -195,8 +184,7 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 			}
 		});
 
-		if (trackVolumeBar != null)
-		{
+		if (trackVolumeBar != null) {
 			trackVolumeBar.addActionListener(trackVolumeBarListener = e -> updateState());
 		}
 
@@ -211,8 +199,8 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 		updateState();
 	}
 
-	@Override public void discard()
-	{
+	@Override
+	public void discard() {
 		noteGraph.discard();
 		abcPart.removeAbcListener(abcPartListener);
 		seq.removeChangeListener(sequencerListener);
@@ -222,21 +210,16 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 			trackVolumeBar.removeActionListener(trackVolumeBarListener);
 	}
 
-	private Listener<AbcPartEvent> abcPartListener = new Listener<AbcPartEvent>()
-	{
-		@Override public void onEvent(AbcPartEvent e)
-		{
-			if (e.isNoteGraphRelated())
-			{
-				checkBox.setEnabled(abcPart.isTrackEnabled(trackInfo.getTrackNumber()));
-				checkBox.setSelected(abcPart.isDrumEnabled(trackInfo.getTrackNumber(), drumId));
-				if (abcPart.isFXPart()) {
-					drumComboBoxFX.setSelectedItem(getSelectedFX());
-				} else {
-					drumComboBox.setSelectedItem(getSelectedDrum());
-				}
-				updateState();
+	private Listener<AbcPartEvent> abcPartListener = e -> {
+		if (e.isNoteGraphRelated()) {
+			checkBox.setEnabled(abcPart.isTrackEnabled(trackInfo.getTrackNumber()));
+			checkBox.setSelected(abcPart.isDrumEnabled(trackInfo.getTrackNumber(), drumId));
+			if (abcPart.isFXPart()) {
+				drumComboBoxFX.setSelectedItem(getSelectedFX());
+			} else {
+				drumComboBox.setSelectedItem(getSelectedDrum());
 			}
+			updateState();
 		}
 	};
 
@@ -244,14 +227,13 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 		if (evt.getProperty() == SequencerProperty.TRACK_ACTIVE)
 			updateState();
 	};
-	
+
 	public void updateVolume(boolean vol) {
 		showVolume = vol;
 		updateState();
 	}
 
-	private void updateState()
-	{
+	private void updateState() {
 		boolean abcPreviewMode = isAbcPreviewMode();
 		int trackNumber = trackInfo.getTrackNumber();
 		boolean trackEnabled = abcPart.isTrackEnabled(trackNumber);
@@ -259,12 +241,9 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 		boolean noteEnabledOtherPart = false;
 
 		boolean noteActive;
-		if (abcPreviewMode)
-		{
+		if (abcPreviewMode) {
 			noteActive = false;
-		}
-		else
-		{
+		} else {
 			noteActive = seq.isTrackActive(trackNumber) && seq.isNoteActive(drumId);
 		}
 
@@ -276,19 +255,15 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 		else
 			noteGraph.setDeltaVolume(abcPart.getTrackVolumeAdjust(trackInfo.getTrackNumber()));
 
-		for (AbcPart part : abcPart.getAbcSong().getParts())
-		{
-			if (part.isTrackEnabled(trackNumber))
-			{
+		for (AbcPart part : abcPart.getAbcSong().getParts()) {
+			if (part.isTrackEnabled(trackNumber)) {
 				if (part != this.abcPart && part.isDrumEnabled(trackNumber, drumId))
 					noteEnabledOtherPart = true;
 
-				if (abcPreviewMode)
-				{
+				if (abcPreviewMode) {
 					Note drumNote = part.mapNote(trackNumber, drumId, 0);
 					if (drumNote != null && abcSequencer.isTrackActive(part.getPreviewSequenceTrackNumber())
-							&& abcSequencer.isNoteActive(drumNote.id))
-					{
+							&& abcSequencer.isNoteActive(drumNote.id)) {
 						noteActive = true;
 					}
 				}
@@ -308,24 +283,19 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 		drumComboBoxFX.setEnabled(trackEnabled);
 		drumComboBoxFX.setVisible(abcPart.getInstrument() == LotroInstrument.STUDENT_FX_FIDDLE);
 
-		if (!noteActive)
-		{
+		if (!noteActive) {
 			noteGraph.setNoteColor(ColorTable.NOTE_DRUM_OFF);
 			noteGraph.setBadNoteColor(ColorTable.NOTE_DRUM_OFF);
 
 			setBackground(ColorTable.GRAPH_BACKGROUND_OFF.get());
 			checkBox.setForeground(ColorTable.PANEL_TEXT_OFF.get());
-		}
-		else if (trackEnabled && abcPart.isDrumEnabled(trackNumber, drumId))
-		{
+		} else if (trackEnabled && abcPart.isDrumEnabled(trackNumber, drumId)) {
 			noteGraph.setNoteColor(ColorTable.NOTE_DRUM_ENABLED);
 			noteGraph.setBadNoteColor(ColorTable.NOTE_BAD_ENABLED);
 
 			setBackground(ColorTable.GRAPH_BACKGROUND_ENABLED.get());
 			checkBox.setForeground(ColorTable.PANEL_TEXT_ENABLED.get());
-		}
-		else
-		{
+		} else {
 			noteGraph.setNoteColor(ColorTable.NOTE_DRUM_OFF);
 			noteGraph.setBadNoteColor(ColorTable.NOTE_BAD_OFF);
 
@@ -334,60 +304,51 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 		}
 	}
 
-	public void setAbcPreviewMode(boolean isAbcPreviewMode)
-	{
-		if (this.isAbcPreviewMode != isAbcPreviewMode)
-		{
+	public void setAbcPreviewMode(boolean isAbcPreviewMode) {
+		if (this.isAbcPreviewMode != isAbcPreviewMode) {
 			this.isAbcPreviewMode = isAbcPreviewMode;
 			updateState();
 		}
 	}
 
-	private boolean isAbcPreviewMode()
-	{
+	private boolean isAbcPreviewMode() {
 		return abcSequencer != null && isAbcPreviewMode;
 	}
 
-	private LotroDrumInfo getSelectedDrum()
-	{
+	private LotroDrumInfo getSelectedDrum() {
 		return LotroDrumInfo.getById(abcPart.getDrumMap(trackInfo.getTrackNumber()).get(drumId));
 	}
-	
-	private LotroStudentFXInfo getSelectedFX()
-	{
+
+	private LotroStudentFXInfo getSelectedFX() {
 		return LotroStudentFXInfo.getById(abcPart.getFXMap(trackInfo.getTrackNumber()).get(drumId));
 	}
 
-	private class DrumNoteGraph extends NoteGraph
-	{
+	private class DrumNoteGraph extends NoteGraph {
 		private boolean showingAbcNotesOn = true;
 
-		public DrumNoteGraph(SequencerWrapper sequencer, TrackInfo trackInfo)
-		{
+		public DrumNoteGraph(SequencerWrapper sequencer, TrackInfo trackInfo) {
 			super(sequencer, trackInfo, -1, 1, 2, 5);
 		}
 
-		public void setShowingAbcNotesOn(boolean showingAbcNotesOn)
-		{
-			if (this.showingAbcNotesOn != showingAbcNotesOn)
-			{
+		public void setShowingAbcNotesOn(boolean showingAbcNotesOn) {
+			if (this.showingAbcNotesOn != showingAbcNotesOn) {
 				this.showingAbcNotesOn = showingAbcNotesOn;
 				repaint();
 			}
 		}
 
-		@Override protected int transposeNote(int noteId, long tickStart)
-		{
+		@Override
+		protected int transposeNote(int noteId, long tickStart) {
 			return 0;
 		}
 
-		@Override protected boolean isNotePlayable(int noteId)
-		{
+		@Override
+		protected boolean isNotePlayable(int noteId) {
 			return abcPart.isDrumPlayable(trackInfo.getTrackNumber(), drumId);
 		}
 
-		@Override protected boolean isShowingNotesOn()
-		{
+		@Override
+		protected boolean isShowingNotesOn() {
 			if (sequencer.isRunning())
 				return sequencer.isTrackActive(trackInfo.getTrackNumber());
 
@@ -397,36 +358,36 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 			return false;
 		}
 
-		@Override protected boolean isNoteVisible(NoteEvent ne)
-		{
+		@Override
+		protected boolean isNoteVisible(NoteEvent ne) {
 			return ne.note.id == drumId;
 		}
-		
-		@Override protected boolean audibleNote(NoteEvent ne)
-		{
-			return abcPart.getAudible(trackInfo.getTrackNumber(), ne.getStartTick()) && abcPart.shouldPlay(ne, trackInfo.getTrackNumber());
+
+		@Override
+		protected boolean audibleNote(NoteEvent ne) {
+			return abcPart.getAudible(trackInfo.getTrackNumber(), ne.getStartTick())
+					&& abcPart.shouldPlay(ne, trackInfo.getTrackNumber());
 		}
-		
-		@Override protected int getSourceNoteVelocity(NoteEvent note)
-		{
+
+		@Override
+		protected int getSourceNoteVelocity(NoteEvent note) {
 			return abcPart.getSectionNoteVelocity(trackInfo.getTrackNumber(), note);
 		}
-		
-		@Override protected boolean[] getSectionsModified() {
+
+		@Override
+		protected boolean[] getSectionsModified() {
 			if (!abcPart.isTrackEnabled(trackInfo.getTrackNumber())) {
 				return null;
 			}
 			return abcPart.sectionsModified.get(trackInfo.getTrackNumber());
 		}
-		
-		@Override protected int[] getSectionVelocity(NoteEvent note)
-		{
+
+		@Override
+		protected int[] getSectionVelocity(NoteEvent note) {
 			return abcPart.getSectionVolumeAdjust(trackInfo.getTrackNumber(), note);
 			/*
-			int[] empty = new int[2];
-			empty[0] = 0;
-			empty[1] = 100;
-			return empty;*/
+			 * int[] empty = new int[2]; empty[0] = 0; empty[1] = 100; return empty;
+			 */
 		}
 	}
 }

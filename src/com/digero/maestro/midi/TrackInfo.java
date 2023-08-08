@@ -460,7 +460,7 @@ public class TrackInfo implements MidiConstants
 			return names.toString();
 		}
 		
-		if (instruments.size() == 0)
+		if (instruments.isEmpty())
 		{
 			if (hasEvents())
 				return MidiInstrument.PIANO.name;

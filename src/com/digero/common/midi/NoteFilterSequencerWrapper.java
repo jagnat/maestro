@@ -14,8 +14,8 @@ import com.digero.common.midi.SequencerEvent.SequencerProperty;
 
 public class NoteFilterSequencerWrapper extends SequencerWrapper
 {
-	public final static String prefMIDIHeader = "MIDI out devices";
-	public final static String prefMIDISelect = "Preferred MIDI out device";
+	public static final String prefMIDIHeader = "MIDI out devices";
+	public static final String prefMIDISelect = "Preferred MIDI out device";
 	public static Preferences prefs = Preferences.userNodeForPackage(NoteFilterSequencerWrapper.class);
 	private Preferences prefsNode = null;
 	private NoteFilterTransceiver filter;

@@ -1,5 +1,7 @@
 package com.digero.common.util;
 
+import static java.awt.Frame.MAXIMIZED_BOTH;
+
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -19,24 +21,20 @@ import javax.swing.JFrame;
 
 import sun.awt.shell.ShellFolder;
 
-public final class Util
-{
-	private Util()
-	{
+public final class Util {
+	private Util() {
 		// Can't instantiate class
 	}
 
-	public static Color grayscale(Color orig)
-	{
+	public static Color grayscale(Color orig) {
 		float[] hsb = Color.RGBtoHSB(orig.getRed(), orig.getGreen(), orig.getBlue(), null);
 		return Color.getHSBColor(0.0f, 0.0f, hsb[2]);
 	}
 
 	public static final String ELLIPSIS = "...";
 
-	@SuppressWarnings("deprecation")//
-	public static String ellipsis(String text, float maxWidth, Font font)
-	{
+	@SuppressWarnings("deprecation") //
+	public static String ellipsis(String text, float maxWidth, Font font) {
 		FontMetrics metrics = Toolkit.getDefaultToolkit().getFontMetrics(font);
 
 		float width = metrics.stringWidth(text);
@@ -52,9 +50,8 @@ public final class Util
 		String fit = "";
 
 		// find the longest string that fits into
-		// the control boundaries using bisection method 
-		while (seg > 1)
-		{
+		// the control boundaries using bisection method
+		while (seg > 1) {
 			seg -= seg / 2;
 
 			int left = len + seg;
@@ -63,9 +60,8 @@ public final class Util
 			if (left > right)
 				continue;
 
-			if (trimToWordBoundary)
-			{
-				// trim at a word boundary using regular expressions 
+			if (trimToWordBoundary) {
+				// trim at a word boundary using regular expressions
 				matcher.region(0, left);
 				if (matcher.find())
 					left = matcher.start();
@@ -78,8 +74,7 @@ public final class Util
 
 			// candidate string fits into boundaries, try a longer string
 			// stop when seg <= 1
-			if (width <= maxWidth)
-			{
+			if (width <= maxWidth) {
 				len += seg;
 				fit = tst;
 			}
@@ -92,8 +87,7 @@ public final class Util
 		return fit;
 	}
 
-	public static File getUserDocumentsPath()
-	{
+	public static File getUserDocumentsPath() {
 		String userHome = System.getProperty("user.home", "");
 		File docs = new File(userHome + "/Documents");
 		if (docs.isDirectory())
@@ -104,8 +98,7 @@ public final class Util
 		return new File(userHome);
 	}
 
-	public static File getUserMusicPath()
-	{
+	public static File getUserMusicPath() {
 		String userHome = System.getProperty("user.home", "");
 		File music = new File(userHome + "/Music");
 		if (music.isDirectory())
@@ -117,12 +110,10 @@ public final class Util
 		return getUserDocumentsPath();
 	}
 
-	public static File getLotroMusicPath(boolean create)
-	{
+	public static File getLotroMusicPath(boolean create) {
 		File docs = getUserDocumentsPath();
 		File lotro = new File(docs.getAbsolutePath() + "/The Lord of the Rings Online");
-		if (lotro.isDirectory())
-		{
+		if (lotro.isDirectory()) {
 			File music = new File(lotro.getAbsolutePath() + "/Music");
 			if (music.isDirectory() || create && music.mkdir())
 				return music;
@@ -132,63 +123,53 @@ public final class Util
 		return docs;
 	}
 
-	public static int clamp(int value, int min, int max)
-	{
+	public static int clamp(int value, int min, int max) {
 		assert min <= max;
 		if (value < min)
 			return min;
-        return Math.min(value, max);
-    }
+		return Math.min(value, max);
+	}
 
-	public static long clamp(long value, long min, long max)
-	{
+	public static long clamp(long value, long min, long max) {
 		assert min <= max;
 		if (value < min)
 			return min;
-        return Math.min(value, max);
-    }
+		return Math.min(value, max);
+	}
 
-	public static double clamp(double value, double min, double max)
-	{
+	public static double clamp(double value, double min, double max) {
 		assert min <= max;
 		if (value < min)
 			return min;
-        return Math.min(value, max);
-    }
+		return Math.min(value, max);
+	}
 
-	public static float clamp(float value, float min, float max)
-	{
+	public static float clamp(float value, float min, float max) {
 		assert min <= max;
 		if (value < min)
 			return min;
-        return Math.min(value, max);
-    }
+		return Math.min(value, max);
+	}
 
-	public static int valueOf(Integer val, int defaultIfNull)
-	{
+	public static int valueOf(Integer val, int defaultIfNull) {
 		return (val != null) ? val : defaultIfNull;
 	}
 
-	public static long valueOf(Long val, long defaultIfNull)
-	{
+	public static long valueOf(Long val, long defaultIfNull) {
 		return (val != null) ? val : defaultIfNull;
 	}
 
-	public static float valueOf(Float val, float defaultIfNull)
-	{
+	public static float valueOf(Float val, float defaultIfNull) {
 		return (val != null) ? val : defaultIfNull;
 	}
 
-	public static double valueOf(Double val, double defaultIfNull)
-	{
+	public static double valueOf(Double val, double defaultIfNull) {
 		return (val != null) ? val : defaultIfNull;
 	}
 
 	/** Greatest Common Divisor */
-	public static int gcd(int a, int b)
-	{
-		while (b != 0)
-		{
+	public static int gcd(int a, int b) {
+		while (b != 0) {
 			int t = b;
 			b = a % b;
 			a = t;
@@ -197,10 +178,8 @@ public final class Util
 	}
 
 	/** Greatest Common Divisor */
-	public static long gcd(long a, long b)
-	{
-		while (b != 0)
-		{
+	public static long gcd(long a, long b) {
+		while (b != 0) {
 			long t = b;
 			b = a % b;
 			a = t;
@@ -209,72 +188,55 @@ public final class Util
 	}
 
 	/** Least Common Multiple */
-	public static int lcm(int a, int b)
-	{
+	public static int lcm(int a, int b) {
 		return (a / gcd(a, b)) * b;
 	}
 
 	/** Least Common Multiple */
-	public static long lcm(long a, long b)
-	{
+	public static long lcm(long a, long b) {
 		return (a / gcd(a, b)) * b;
 	}
 
 	/** Rounds value to the nearest multiple of grid */
-	public static int roundGrid(int value, int grid)
-	{
+	public static int roundGrid(int value, int grid) {
 		return ((value + grid / 2) / grid) * grid;
 	}
 
 	/** Rounds value to the nearest multiple of grid */
-	public static long roundGrid(long value, long grid)
-	{
+	public static long roundGrid(long value, long grid) {
 		return ((value + grid / 2) / grid) * grid;
 	}
 
-	public static int floorGrid(int value, int grid)
-	{
+	public static int floorGrid(int value, int grid) {
 		return (value / grid) * grid;
 	}
 
-	public static long floorGrid(long value, long grid)
-	{
+	public static long floorGrid(long value, long grid) {
 		return (value / grid) * grid;
 	}
 
-	public static boolean openURL(String url)
-	{
-		try
-		{
-			if (System.getProperty("os.name").startsWith("Windows"))
-			{
-				Runtime.getRuntime().exec(new String[] {"rundll32 url.dll,FileProtocolHandler ", url});
+	public static boolean openURL(String url) {
+		try {
+			if (System.getProperty("os.name").startsWith("Windows")) {
+				Runtime.getRuntime().exec(new String[] { "rundll32 url.dll,FileProtocolHandler ", url });
 				return true;
 			}
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 		}
 		return false;
 	}
 
-	public static File resolveShortcut(File file)
-	{
-		if (file.getName().toLowerCase().endsWith(".lnk"))
-		{
-			try
-			{
+	public static File resolveShortcut(File file) {
+		if (file.getName().toLowerCase().endsWith(".lnk")) {
+			try {
 				return ShellFolder.getShellFolder(file).getLinkLocation();
-			}
-			catch (Exception e)
-			{
+			} catch (Exception e) {
 			}
 		}
 		return file;
 	}
 
-	public static void initWinBounds(final JFrame frame, final Preferences prefs, int defaultW, int defaultH)
-	{
+	public static void initWinBounds(final JFrame frame, final Preferences prefs, int defaultW, int defaultH) {
 		Dimension mainScreen = Toolkit.getDefaultToolkit().getScreenSize();
 
 		int width = prefs.getInt("width", defaultW);
@@ -282,34 +244,12 @@ public final class Util
 		int x = prefs.getInt("x", (mainScreen.width - width) / 2);
 		int y = prefs.getInt("y", (mainScreen.height - height) / 2);
 
-		Rectangle windowRect = new Rectangle(x, y, width, height);
+		Rectangle onScreen = calculateOnScreen(width, height, x, y);
 
-		// Handle the case where the window was last saved on
-		// a screen that is no longer connected
-		Rectangle onScreen = null;
-		int bestAreaOnscreen = 0;
-		for (GraphicsDevice device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices())
-		{
-			Rectangle monitorBounds = device.getDefaultConfiguration().getBounds();
-			Rectangle monitorIntersection = monitorBounds.intersection(windowRect);
-			if (!monitorIntersection.isEmpty())
-			{
-				int areaOnscreen = monitorIntersection.width * monitorIntersection.height;
-				if (areaOnscreen > bestAreaOnscreen)
-				{
-					bestAreaOnscreen = areaOnscreen;
-					onScreen = monitorBounds;
-				}
-			}
-		}
-
-		if (onScreen == null)
-		{
+		if (onScreen == null) {
 			x = (mainScreen.width - width) / 2;
 			y = (mainScreen.height - height) / 2;
-		}
-		else
-		{
+		} else {
 			if (x < onScreen.x)
 				x = onScreen.x;
 			else if (x + width > onScreen.x + onScreen.width)
@@ -323,45 +263,67 @@ public final class Util
 
 		frame.setBounds(x, y, width, height);
 
-		int maximized = prefs.getInt("maximized", 0) & JFrame.MAXIMIZED_BOTH;
-		frame.setExtendedState((frame.getExtendedState() & ~JFrame.MAXIMIZED_BOTH) | maximized);
+		int maximized = prefs.getInt("maximized", 0) & MAXIMIZED_BOTH;
+		frame.setExtendedState((frame.getExtendedState() & ~MAXIMIZED_BOTH) | maximized);
 
-		frame.addComponentListener(new ComponentAdapter()
-		{
-			@Override public void componentResized(ComponentEvent e)
-			{
-				if ((frame.getExtendedState() & JFrame.MAXIMIZED_BOTH) == 0)
-				{
+		frame.addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				if ((frame.getExtendedState() & MAXIMIZED_BOTH) == 0) {
 					prefs.putInt("width", frame.getWidth());
 					prefs.putInt("height", frame.getHeight());
 				}
 			}
 
-			@Override public void componentMoved(ComponentEvent e)
-			{
-				if ((frame.getExtendedState() & JFrame.MAXIMIZED_BOTH) == 0)
-				{
+			@Override
+			public void componentMoved(ComponentEvent e) {
+				if ((frame.getExtendedState() & MAXIMIZED_BOTH) == 0) {
 					prefs.putInt("x", frame.getX());
 					prefs.putInt("y", frame.getY());
 				}
 			}
 		});
 
-		frame.addWindowStateListener(e -> prefs.putInt("maximized", e.getNewState() & JFrame.MAXIMIZED_BOTH));
+		frame.addWindowStateListener(e -> prefs.putInt("maximized", e.getNewState() & MAXIMIZED_BOTH));
 	}
 
-	public static String formatDuration(long micros)
-	{
+	/**
+	 * Handle the case where the window was last saved on a screen that is no longer
+	 * connected
+	 * 
+	 * @param width
+	 * @param height
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	private static Rectangle calculateOnScreen(int width, int height, int x, int y) {
+		Rectangle windowRect = new Rectangle(x, y, width, height);
+		Rectangle onScreen = null;
+		int bestAreaOnscreen = 0;
+		for (GraphicsDevice device : GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()) {
+			Rectangle monitorBounds = device.getDefaultConfiguration().getBounds();
+			Rectangle monitorIntersection = monitorBounds.intersection(windowRect);
+			if (!monitorIntersection.isEmpty()) {
+				int areaOnscreen = monitorIntersection.width * monitorIntersection.height;
+				if (areaOnscreen > bestAreaOnscreen) {
+					bestAreaOnscreen = areaOnscreen;
+					onScreen = monitorBounds;
+				}
+			}
+		}
+		return onScreen;
+	}
+
+	public static String formatDuration(long micros) {
 		return formatDuration(micros, 0);
 	}
-	
-	public static String formatDuration(long micros, long maxMicros)
-	{
+
+	public static String formatDuration(long micros, long maxMicros) {
 		return formatDuration(micros, maxMicros, ':');
 	}
 
-	public static String formatDuration(long micros, long maxMicros, char separator)
-	{
+	public static String formatDuration(long micros, long maxMicros, char separator) {
 		if (maxMicros < micros)
 			maxMicros = micros;
 
@@ -379,21 +341,16 @@ public final class Util
 		tMax %= 60 * 60;
 		int minMax = tMax / 60;
 
-		if (hrMax > 0)
-		{
+		if (hrMax > 0) {
 			s.append(hr).append(separator);
-			if (min < 10)
-			{
+			if (min < 10) {
 				s.append('0');
 			}
-		}
-		else if (minMax >= 10 && min < 10)
-		{
+		} else if (minMax >= 10 && min < 10) {
 			s.append('0');
 		}
 		s.append(min).append(separator);
-		if (sec < 10)
-		{
+		if (sec < 10) {
 			s.append('0');
 		}
 		s.append(sec);
@@ -401,37 +358,31 @@ public final class Util
 		return s.toString();
 	}
 
-	public static String emptyIfNull(String in)
-	{
+	public static String emptyIfNull(String in) {
 		return (in != null) ? in : "";
 	}
 
-	public static String quote(String in)
-	{
+	public static String quote(String in) {
 		return "\"" + in.replace("\"", "\\\"") + "\"";
 	}
 
-	public static String htmlEscape(String in)
-	{
+	public static String htmlEscape(String in) {
 		return in.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;");
 	}
 
-	public static boolean stringEndsWithIgnoreCase(String source, String suffix)
-	{
+	public static boolean stringEndsWithIgnoreCase(String source, String suffix) {
 		int beginIndex = source.length() - suffix.length();
 		return (beginIndex >= 0) && source.substring(beginIndex, source.length()).equalsIgnoreCase(suffix);
 	}
 
-	public static String fileNameWithoutExtension(File file)
-	{
+	public static String fileNameWithoutExtension(File file) {
 		if (file.isDirectory())
 			return file.getName();
 
 		return fileNameWithoutExtension(file.getName());
 	}
 
-	public static String fileNameWithoutExtension(String fileName)
-	{
+	public static String fileNameWithoutExtension(String fileName) {
 		int dot = fileName.lastIndexOf('.');
 		if (dot > 0)
 			fileName = fileName.substring(0, dot);

@@ -8,6 +8,7 @@ import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -237,7 +238,7 @@ public class TrackVolumeBar extends JPanel implements IDiscardable
 
 		@Override public void mouseDragged(MouseEvent e)
 		{
-			if (isEnabled() && mouseDown && (e.getModifiersEx() & MouseEvent.BUTTON1_DOWN_MASK) != 0)
+			if (isEnabled() && mouseDown && (e.getModifiersEx() & InputEvent.BUTTON1_DOWN_MASK) != 0)
 				handleDrag(e);
 		}
 

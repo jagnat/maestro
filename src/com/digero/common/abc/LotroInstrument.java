@@ -84,7 +84,7 @@ public enum LotroInstrument
 			boolean isPercussion, float dBVolumeAdjust, String... nicknameRegexes)
 	{
 		this.lowestPlayable = Note.MIN_PLAYABLE;
-		if (friendlyName != "Student's FX Fiddle") {
+		if (!"Student's FX Fiddle".equals(friendlyName)) {
 			this.highestPlayable = Note.MAX_PLAYABLE;
 		} else {
 			this.highestPlayable = Note.D2;

@@ -164,7 +164,7 @@ public class LotroInstrumentNick {
 			default:
 				break;
 		}
-		return new ArrayList<String>(Arrays.asList(nicks));
+		return new ArrayList<>(Arrays.asList(nicks));
 	}
 	
 	
