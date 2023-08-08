@@ -57,7 +57,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	public static final String MSX_FILE_DESCRIPTION_PLURAL = MaestroMain.APP_NAME + " Songs";
 	public static final String MSX_FILE_EXTENSION_NO_DOT = "msx";
 	public static final String MSX_FILE_EXTENSION = "." + MSX_FILE_EXTENSION_NO_DOT;
-	public static final Version SONG_FILE_VERSION = new Version(1, 0, 117);
+	public static final Version SONG_FILE_VERSION = new Version(1, 0, 118);
 
 	private String title = "";
 	private String composer = "";
@@ -73,6 +73,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	private TimeSignature timeSignature = TimeSignature.FOUR_FOUR;
 	private boolean tripletTiming = false;
 	private boolean mixTiming = true;
+	private int mixVersion = 1;// TODO: make UI
 	private boolean priorityActive = false;
 	private boolean skipSilenceAtStart = true;
 	// private boolean showPruned = false;
@@ -269,6 +270,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 				keySignature = SaveUtil.parseValue(songEle, "exportSettings/@keySignature", keySignature);
 			timeSignature = SaveUtil.parseValue(songEle, "exportSettings/@timeSignature", timeSignature);
 			tripletTiming = SaveUtil.parseValue(songEle, "exportSettings/@tripletTiming", tripletTiming);
+
 			mixTiming = SaveUtil.parseValue(songEle, "exportSettings/@mixTiming", false);// default false as old
 																							// projects did not have
 																							// that available. This
@@ -278,6 +280,10 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 																							// timings, the project will
 																							// decide and it will be
 																							// false.
+
+			if (mixTiming)
+				mixVersion = SaveUtil.parseValue(songEle, "exportSettings/@mixVersion", 1);// default 1 as old projects did not have that available.
+
 			priorityActive = SaveUtil.parseValue(songEle, "exportSettings/@combinePriorities", false);
 
 			handleTuneSections(songEle);
@@ -394,7 +400,9 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		if (note.length() > 0)
 			SaveUtil.appendChildTextElement(songEle, "note", note);
 
+
 		appendExportSettings(doc, songEle);
+
 
 		if (tuneBars != null && tuneBarsModified != null) {
 			appendTuneSections(doc, songEle);
@@ -422,8 +430,10 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		if (tripletTiming)
 			exportSettingsEle.setAttribute("tripletTiming", String.valueOf(tripletTiming));
 		exportSettingsEle.setAttribute("mixTiming", String.valueOf(mixTiming));
-		if (mixTiming)
+		if (mixTiming) {
 			exportSettingsEle.setAttribute("combinePriorities", String.valueOf(priorityActive));
+			exportSettingsEle.setAttribute("mixVersion", String.valueOf(mixVersion));
+		}
 		if (exportSettingsEle.getAttributes().getLength() > 0 || exportSettingsEle.getChildNodes().getLength() > 0)
 			songEle.appendChild(exportSettingsEle);
 	}
@@ -641,10 +651,21 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		return mixTiming;
 	}
 
-	public void setMixTiming(boolean mixTiming) {
+	public int getMixVersion() {
+		return mixVersion;
+	}
+	
+	public void setMixTiming(boolean mixTiming)	{
 		if (this.mixTiming != mixTiming) {
 			this.mixTiming = mixTiming;
 			fireChangeEvent(AbcSongProperty.MIX_TIMING);
+		}
+	}
+	
+	public void setMixVersion(int mixVersion) {
+		if (this.mixVersion != mixVersion) {
+			this.mixVersion = mixVersion;
+			fireChangeEvent(AbcSongProperty.MIX_TIMING);// We can use same event as for mixtiming
 		}
 	}
 
@@ -784,10 +805,11 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 				|| timingInfo.getMeter() != getTimeSignature() //
 				|| timingInfo.isTripletTiming() != isTripletTiming() //
 				|| timingInfo.isMixTiming() != isMixTiming() //
+				|| timingInfo.getMixVersion() != getMixVersion() //
 				|| isMixDirty()) {
 			setMixDirty(false);
 			timingInfo = new QuantizedTimingInfo(sequenceInfo, getTempoFactor(), getTimeSignature(), isTripletTiming(),
-					getTempoBPM(), this, isMixTiming());
+					getTempoBPM(), this, isMixTiming(), getMixVersion());
 		}
 
 		return timingInfo;

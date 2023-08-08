@@ -39,11 +39,12 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 	private final TimeSignature meter;
 	private final boolean tripletTiming;
 	private final boolean oddsAndEnds;
+	private final int oddsAndEndsVersion;
 	public static final int COMBINE_PRIORITY_MULTIPLIER = 4;// Do not change this number without exposing the int in UI.
 															// Since old projects will have 4 saved in msx.
-
+	
 	public QuantizedTimingInfo(SequenceInfo source, float exportTempoFactor, TimeSignature meter,
-			boolean useTripletTiming, int abcSongBPM, AbcSong song, boolean oddsAndEnds) throws AbcConversionException {
+			boolean useTripletTiming, int abcSongBPM, AbcSong song, boolean oddsAndEnds, int mixVersion) throws AbcConversionException {
 		double exportPrimaryTempoMPQ = TimingInfo.roundTempoMPQ(source.getPrimaryTempoMPQ() / exportTempoFactor);
 		this.primaryTempoMPQ = (int) Math.round(exportPrimaryTempoMPQ * exportTempoFactor);
 		this.exportTempoFactor = exportTempoFactor;
@@ -182,8 +183,22 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 		}
 		int parts = song.getParts().size();
 		this.oddsAndEnds = oddsAndEnds;
+		this.oddsAndEndsVersion = mixVersion;
 		if (!oddsAndEnds)
 			return;
+		
+		int startWeight = 6;
+		int endingWeight = 2;// This must be divisable by endingSustainedWeightFactor
+		int endingSustainedWeightFactor = 2;
+		boolean noDrumEndingScore = false;
+		
+		if (mixVersion == 1) {
+			startWeight = 2;
+			endingWeight = 1;// This must be divisable by endingSustainedWeightFactor
+			endingSustainedWeightFactor = 1;
+			noDrumEndingScore = true;
+		}
+		
 		// default means timing is to laid out like the tripletcheckbox selected grid.
 		// odd means timing is to laid out the opposite of tripletcheckbox selected
 		// grid.
@@ -268,8 +283,14 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 
 				int highest = -1;
 				for (NoteEvent ne : eventList) {
+					int endingWeightFinal = endingWeight;
+					if (!abcPart.getInstrument().sustainable) {
+						endingWeightFinal /= endingSustainedWeightFactor;
+					}
+
 					if (ne.getStartTick() > tempoChange.tick
 							&& (nextTempoChange == null || ne.getStartTick() < nextTempoChange.tick)) {
+
 						// Note starting scores
 						// The note starts after current tempo change and either is last tempochange or
 						// note starts before next tempo change
@@ -279,25 +300,27 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 								tempoChange.infoOdd.getMinNoteLengthTicks());
 						int odd = (int) (Math.abs(ne.getStartTick() - q) - Math.abs(ne.getStartTick() - qOdd));
 						// determine which sixGrid we are in
-						int sixGrid = (int) ((ne.getStartTick() - tempoChange.tick) / sixTicks);
 
-						if (sixGrid >= maxSixths)
+						int sixGrid = (int) ((ne.getStartTick() - tempoChange.tick) / sixTicks);
+						
+						if (sixGrid >= maxSixths) 
 							continue;
-						if (sixGrid > highest)
+						if (sixGrid > highest) 
 							highest = sixGrid;
+
 						// Add a point to this sixGrid odd vs. default list.
-						int oddScore = odd * 2 * ne.combinePrioritiesScoreMultiplier;
+						int oddScoreStarts = odd * startWeight * ne.combinePrioritiesScoreMultiplier;
 						if (sixGridsOdds.get(sixGrid) != null) {
-							sixGridsOdds.set(sixGrid, sixGridsOdds.get(sixGrid) + oddScore);
+							sixGridsOdds.set(sixGrid, sixGridsOdds.get(sixGrid)+oddScoreStarts);
 						} else {
-							sixGridsOdds.set(sixGrid, oddScore);
+							sixGridsOdds.set(sixGrid, oddScoreStarts);
 						}
 					}
-					if (!abcPart.getInstrument().equals(LotroInstrument.BASIC_DRUM)
-							&& ne.getEndTick() > tempoChange.tick
-							&& (nextTempoChange == null || ne.getEndTick() < nextTempoChange.tick)) {
+					
+					if ((!noDrumEndingScore || !abcPart.getInstrument().equals(LotroInstrument.BASIC_DRUM)) 
+							&& ne.getEndTick() > tempoChange.tick 
+							&& (nextTempoChange == null	|| ne.getEndTick() < nextTempoChange.tick)) {
 						// Note ending scores
-						// Do not evaluate note endings for drum
 						// The note ends after current tempo change and either is last tempochange or
 						// note ends before next tempo change
 						long q = tempoChange.tick + Util.roundGrid(ne.getEndTick() - tempoChange.tick,
@@ -307,17 +330,18 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 						int odd = (int) (Math.abs(ne.getEndTick() - q) - Math.abs(ne.getEndTick() - qOdd));
 						// determine which sixGrid we are in
 						int sixGrid = (int) ((ne.getEndTick() - tempoChange.tick) / sixTicks);
-
-						if (sixGrid >= maxSixths)
+						
+						if (sixGrid >= maxSixths) 
 							continue;
-						if (sixGrid > highest)
+						if (sixGrid > highest) 
 							highest = sixGrid;
+						
 						// Add a point to this sixGrid odd vs. default list.
-						int oddScore = odd * 1 * ne.combinePrioritiesScoreMultiplier;
+						int oddScoreEnds = odd * endingWeightFinal * ne.combinePrioritiesScoreMultiplier;
 						if (sixGridsOdds.get(sixGrid) != null) {
-							sixGridsOdds.set(sixGrid, sixGridsOdds.get(sixGrid) + oddScore);
+							sixGridsOdds.set(sixGrid, sixGridsOdds.get(sixGrid) + oddScoreEnds);
 						} else {
-							sixGridsOdds.set(sixGrid, oddScore);
+							sixGridsOdds.set(sixGrid, oddScoreEnds);
 						}
 					}
 				}
@@ -371,11 +395,10 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 				}
 			}
 		}
-		// if (totalEven+totalSwing > 0) {
-		// System.err.println("Mix Timing:
-		// "+(int)(100*totalSwing/(float)(totalEven+totalSwing))+"% of abc song is
-		// swing/triplet timing.");
-		// }
+		//if (totalEven+totalSwing > 0) {
+		//  int pct = (int)((1000*totalSwing/(float)(totalEven+totalSwing))/10.0f);
+		//	System.err.println("Mix Timing: "+pct+"% of abc song is swing/triplet timing.");
+		//}
 	}
 
 	/**
@@ -440,6 +463,10 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 
 	public boolean isMixTiming() {
 		return oddsAndEnds;
+	}
+	
+	public int getMixVersion() {
+		return oddsAndEndsVersion;
 	}
 
 	public TimingInfo getTimingInfo(long tick, AbcPart part) {
