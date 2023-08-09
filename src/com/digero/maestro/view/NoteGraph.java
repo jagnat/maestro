@@ -401,7 +401,7 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 			
 			Set bendSet = be.bends.entrySet();
 			Object[] bends = bendSet.toArray();
-			Entry<Long, Integer> secondLast = (Entry<Long, Integer>) bends[bends.length-1];
+			
 			ITempoCache tempoCache = ne.getTempoCache();
 			for (int i = 0; i < bends.length; i++) {
 				Entry<Long, Integer> bend1 = (Entry<Long, Integer>) bends[i];

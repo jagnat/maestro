@@ -89,6 +89,7 @@ public class TrackInfo implements MidiConstants
 		MapByChannel panMap = createPanMap(track);
 		MapByChannel bendMap = createBendMap(track, sequenceCache);
 		
+		List<BentNoteEvent> allBentNotes = new ArrayList<>();
 		
 		long tick = -10000000;
 		for (int j = 0, sz = track.size(); j < sz; j++) {
@@ -103,6 +104,7 @@ public class TrackInfo implements MidiConstants
 						for (NoteEvent ne : notesOn[ch]) {							
 							if (!(ne instanceof BentNoteEvent)) {
 								BentNoteEvent be = new BentNoteEvent(ne.note, ne.velocity, ne.getStartTick(), ne.getEndTick(), ne.getTempoCache());
+								allBentNotes.add(be);
 								be.setMidiPan(ne.midiPan);
 								be.addBend(ne.getStartTick(), 0);// we need this in NoteGraph class
 								noteEvents.remove(ne);
@@ -178,6 +180,7 @@ public class TrackInfo implements MidiConstants
 						if (bendMap.get(c, tick) != 0) {
 							// pitch bend active in channel already when note starts
 							BentNoteEvent be = new BentNoteEvent(note, velocity, tick, tick, sequenceCache);
+							allBentNotes.add(be);
 							be.addBend(tick, bendMap.get(c, tick));
 							ne = be;
 						}
@@ -256,6 +259,15 @@ public class TrackInfo implements MidiConstants
 					timeSignature = new TimeSignature(m);
 				}
 			}
+		}
+		
+		for (BentNoteEvent be : allBentNotes) {
+			if (Math.abs(be.getMinBend() - be.getMaxBend()) > 12) {
+				List<NoteEvent> prematureSplit = be.split(); 
+				noteEvents.addAll(prematureSplit);
+				noteEvents.remove(be);
+			}
+			//be.setBendLimits();
 		}
 
 		// Turn off notes that are on at the end of the song.  This shouldn't happen...

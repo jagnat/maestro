@@ -1,7 +1,10 @@
 package com.digero.maestro.midi;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.NavigableMap;
 import java.util.TreeMap;
+import java.util.Map.Entry;
 
 import com.digero.common.midi.ITempoCache;
 import com.digero.common.midi.Note;
@@ -29,27 +32,68 @@ public class BentNoteEvent extends NoteEvent {
 		cacheMax = -1;
 	}
 	
-	public int getMaxNoteId() {
+	public Integer getBend(long tick) {
+		Entry<Long, Integer> entry = bends.floorEntry(tick);
+		if (entry == null) return null;
+		return entry.getValue();
+	}
+	
+	public int getMaxBend() {
 		if (cacheMax != -1) return cacheMax;
-		int maxBend = 0;// consider making this start from a lower number
+		int maxBend = -128;
 		for (int value : bends.values()) {
 			if (value > maxBend) {
 				maxBend = value;
 			}
 		}
-		cacheMax = note.id + maxBend;
+		cacheMax = maxBend;
 		return cacheMax;
 	}
 	
-	public int getMinNoteId() {
+	public int getMinBend() {
 		if (cacheMin != -1) return cacheMin;
-		int minBend = 0;// consider making this start from a higher number
+		int minBend = 128;
 		for (int value : bends.values()) {
 			if (value < minBend) {
 				minBend = value;
 			}
 		}
-		cacheMin = note.id + minBend;
+		cacheMin = minBend;
 		return cacheMin;
+	}
+	
+	public int getMinNote() {
+		getMinBend();
+		return note.id + cacheMin;
+	}
+	
+	public int getMaxNote() {
+		getMaxBend();
+		return note.id + cacheMax;
+	}
+	
+	/**
+	 * Split this bent note into smaller note events.
+	 * Will not take actual grid into consideration,
+	 * so is only for bent notes that has a big range.
+	 * 
+	 * @return list of NoteEvents
+	 */
+	public List<NoteEvent> split() {
+		List<NoteEvent> splits = new ArrayList<>();
+		Note currNote = Note.fromId(note.id + bends.get(getStartTick()));
+		if (currNote == null) return new ArrayList<>();// Too bad, lets cancel
+		NoteEvent curr = new NoteEvent(currNote, velocity, getStartTick(), getEndTick(), getTempoCache());
+		curr.setMidiPan(midiPan);
+		for (Long tick : bends.keySet()) {
+			if (tick == getStartTick()) continue;
+			curr.setEndTick(tick);
+			splits.add(curr);
+			currNote = Note.fromId(note.id + bends.get(tick));
+			if (currNote == null) return new ArrayList<>();// Too bad, lets cancel
+			curr = new NoteEvent(currNote, velocity, tick, getEndTick(), getTempoCache());
+		}
+		splits.add(curr);
+		return splits;
 	}
 }

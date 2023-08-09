@@ -1119,8 +1119,13 @@ public class AbcExporter {
 					}
 
 					if (mappedNote != null && part.shouldPlay(ne, t)) {
-						assert mappedNote.id >= part.getInstrument().lowestPlayable.id : mappedNote;
-						assert mappedNote.id <= part.getInstrument().highestPlayable.id : mappedNote;
+						if (!(ne instanceof BentNoteEvent)) {
+							assert mappedNote.id >= part.getInstrument().lowestPlayable.id : mappedNote;
+							assert mappedNote.id <= part.getInstrument().highestPlayable.id : mappedNote;
+						}
+						//if (mappedNote.id > part.getInstrument().highestPlayable.id) {
+						//	part.mapNoteEvent2(t, ne);
+						//}
 						long startTick = Math.max(ne.getStartTick(), songStartTick);
 						long endTick = Math.min(ne.getEndTick(), songEndTick);
 						if (part.isFXPart()) {
@@ -1473,9 +1478,9 @@ public class AbcExporter {
 			List<NoteEvent> benders = new ArrayList<>();
 			NoteEvent current = null;
 			for (long t = ne.getStartTick(); t < ne.getEndTick(); t++) {
-				 Entry<Long, Integer> entry = be.bends.floorEntry(t);
+				 Integer entry = be.getBend(t);
 				 if (entry != null) {
-					 noteID = startPitch + entry.getValue();
+					 noteID = startPitch + entry;
 				 }
 				 if (current == null) {
 					 Note newNote = Note.fromId(noteID);

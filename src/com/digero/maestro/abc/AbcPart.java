@@ -485,13 +485,13 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			return (dstNote == LotroDrumInfo.DISABLED.note.id) ? null : Note.fromId(dstNote);
 		} else if (ne instanceof BentNoteEvent) {
 			BentNoteEvent be = (BentNoteEvent) ne;
-			int minBend = be.getMinNoteId();
-			int maxBend = be.getMaxNoteId();
+			int minBend = be.getMinBend();
+			int maxBend = be.getMaxBend();
 			int transpose = getTranspose(track, tickStart);
 						
 			noteId += transpose;
-			minBend += transpose;
-			maxBend += transpose;			
+			minBend += ne.note.id + transpose;
+			maxBend += ne.note.id + transpose;			
 			
 			int octaveFittingMiddle = 0;
 			while (noteId < instrument.lowestPlayable.id) {
@@ -530,6 +530,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 				noteId = ne.note.id + transpose;
 				noteId += octaveFittingMin;
 			}
+			
 			return Note.fromId(noteId);
 		} else {
 			noteId += getTranspose(track, tickStart);
@@ -540,6 +541,8 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			return Note.fromId(noteId);
 		}
 	}
+	
+	
 
 	public boolean shouldPlay(NoteEvent ne, int track) {
 		if (ne.midiPan == -1) {

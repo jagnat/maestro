@@ -953,16 +953,15 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			if (ne instanceof BentNoteEvent) {
 				BentNoteEvent be = (BentNoteEvent) ne;
 							
-				lowId = transposeNote(be.getMinNoteId() + addition, ne.getStartTick());
-				highId = transposeNote(be.getMaxNoteId() + addition, ne.getStartTick());
+				lowId = transposeNote(be.getMinNote() + addition, ne.getStartTick());
+				highId = transposeNote(be.getMaxNote() + addition, ne.getStartTick());
 				
 				if (lowId < MidiConstants.LOWEST_NOTE_ID || lowId > MidiConstants.HIGHEST_NOTE_ID)
 					return false;
 				if (highId < MidiConstants.LOWEST_NOTE_ID || highId > MidiConstants.HIGHEST_NOTE_ID)
 					return false;
 				
-				return abcPart.getInstrument().isPlayable(midId) 
-						&& abcPart.getInstrument().isPlayable(highId) 
+				return abcPart.getInstrument().isPlayable(highId) 
 						&& abcPart.getInstrument().isPlayable(lowId);
 			}
 			return abcPart.getInstrument().isPlayable(midId);
