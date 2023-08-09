@@ -22,12 +22,15 @@ import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
 import com.digero.common.abc.Dynamics;
+import com.digero.common.midi.ITempoCache;
 import com.digero.common.midi.Note;
 import com.digero.common.midi.SequencerEvent;
 import com.digero.common.midi.SequencerEvent.SequencerProperty;
@@ -36,6 +39,7 @@ import com.digero.common.util.IDiscardable;
 import com.digero.common.util.Listener;
 import com.digero.common.util.Util;
 import com.digero.common.view.ColorTable;
+import com.digero.maestro.midi.BentNoteEvent;
 import com.digero.maestro.midi.NoteEvent;
 import com.digero.maestro.midi.SequenceDataCache;
 import com.digero.maestro.midi.SequenceInfo;
@@ -138,7 +142,7 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 		return true;
 	}
 
-	protected boolean isNotePlayable(int noteId) {
+	protected boolean isNotePlayable(NoteEvent ne, int addition) {
 		return true;
 	}
 
@@ -392,11 +396,38 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 
 	private void fillNote(Graphics2D g2, NoteEvent ne, int noteId, double minWidth, double height, double extraWidth,
 			double extraHeight) {
-		double width = Math.max(minWidth, ne.getLengthMicros());
-		double y = Util.clamp(noteId, MIN_RENDERED, MAX_RENDERED);
-		rectTmp.setRect(ne.getStartMicros() - extraWidth, y - extraHeight, width + 2 * extraWidth,
-				height + 2 * extraHeight);
-		g2.fill(rectTmp);
+		if (ne instanceof BentNoteEvent) {
+			BentNoteEvent be = (BentNoteEvent) ne;
+			
+			Set bendSet = be.bends.entrySet();
+			Object[] bends = bendSet.toArray();
+			Entry<Long, Integer> secondLast = (Entry<Long, Integer>) bends[bends.length-1];
+			ITempoCache tempoCache = ne.getTempoCache();
+			for (int i = 0; i < bends.length; i++) {
+				Entry<Long, Integer> bend1 = (Entry<Long, Integer>) bends[i];
+				
+				long bend1tick = bend1.getKey();
+				int bend1bend  = bend1.getValue();				
+				long bend2tick = -100000000L;
+				if (i != bends.length-1) {
+					bend2tick = ((Entry<Long, Integer>) bends[i+1]).getKey();
+				} else {
+					bend2tick = ne.getEndTick();
+				}
+				long startMicro = tempoCache.tickToMicros(bend1tick);
+				double width = Math.max(minWidth, tempoCache.tickToMicros(bend2tick)-startMicro);
+				double y = Util.clamp(noteId+bend1bend, MIN_RENDERED, MAX_RENDERED);
+				rectTmp.setRect(startMicro - extraWidth, y - extraHeight, width + 2 * extraWidth,
+						height + 2 * extraHeight);
+				g2.fill(rectTmp);				
+			}
+		} else {
+			double width = Math.max(minWidth, ne.getLengthMicros());
+			double y = Util.clamp(noteId, MIN_RENDERED, MAX_RENDERED);
+			rectTmp.setRect(ne.getStartMicros() - extraWidth, y - extraHeight, width + 2 * extraWidth,
+					height + 2 * extraHeight);
+			g2.fill(rectTmp);
+		}
 	}
 
 	private void fillNoteVelocity(Graphics2D g2, NoteEvent ne, Dynamics dynamics) {
@@ -604,7 +635,7 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 						if (notesOn == null)
 							notesOn = new BitSet(noteEvents.size());
 						notesOn.set(i);
-					} else if (!isNotePlayable(noteId)) {
+					} else if (!isNotePlayable(ne, 0)) {
 						if (notesBad == null)
 							notesBad = new BitSet(noteEvents.size());
 						notesBad.set(i);
@@ -630,7 +661,7 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 						if (showNotesOn && songPos >= ne.getStartMicros() && minSongPos <= ne.getEndMicros()
 								&& sequencer.isNoteActive(ne.note.id)) {
 							//
-						} else if (!isNotePlayable(noteIdDouble)) {
+						} else if (!isNotePlayable(ne, addition)) {
 							BitSet notesBadDouble;
 
 							if (k == 0) {

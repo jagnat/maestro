@@ -51,6 +51,7 @@ import com.digero.maestro.abc.AbcPart;
 import com.digero.maestro.abc.AbcPartEvent;
 import com.digero.maestro.abc.AbcPartEvent.AbcPartProperty;
 import com.digero.maestro.abc.DrumNoteMap;
+import com.digero.maestro.midi.BentNoteEvent;
 import com.digero.maestro.midi.NoteEvent;
 import com.digero.maestro.midi.TrackInfo;
 
@@ -934,18 +935,37 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			return abcPart.getSectionDoubling(tick, trackInfo.getTrackNumber());
 		}
 
-		@Override protected boolean isNotePlayable(int noteId)
+		@Override protected boolean isNotePlayable(NoteEvent ne, int addition)
 		{
-			if (noteId < MidiConstants.LOWEST_NOTE_ID || noteId > MidiConstants.HIGHEST_NOTE_ID)
+			int midId = transposeNote(ne.note.id + addition, ne.getStartTick());
+			int lowId = midId;
+			int highId = midId;
+			
+			if (midId < MidiConstants.LOWEST_NOTE_ID || midId > MidiConstants.HIGHEST_NOTE_ID)
 				return false;
 
 			if (abcPart.isDrumPart())
-				return abcPart.isDrumPlayable(trackInfo.getTrackNumber(), noteId);
+				return abcPart.isDrumPlayable(trackInfo.getTrackNumber(), ne.note.id);
 
 			if (trackInfo.isDrumTrack() && !abcPart.isTrackEnabled(trackInfo.getTrackNumber()))
 				return true;
-
-			return abcPart.getInstrument().isPlayable(noteId);
+			
+			if (ne instanceof BentNoteEvent) {
+				BentNoteEvent be = (BentNoteEvent) ne;
+							
+				lowId = transposeNote(be.getMinNoteId() + addition, ne.getStartTick());
+				highId = transposeNote(be.getMaxNoteId() + addition, ne.getStartTick());
+				
+				if (lowId < MidiConstants.LOWEST_NOTE_ID || lowId > MidiConstants.HIGHEST_NOTE_ID)
+					return false;
+				if (highId < MidiConstants.LOWEST_NOTE_ID || highId > MidiConstants.HIGHEST_NOTE_ID)
+					return false;
+				
+				return abcPart.getInstrument().isPlayable(midId) 
+						&& abcPart.getInstrument().isPlayable(highId) 
+						&& abcPart.getInstrument().isPlayable(lowId);
+			}
+			return abcPart.getInstrument().isPlayable(midId);
 		}
 
 		@Override protected boolean isShowingNotesOn()

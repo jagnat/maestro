@@ -26,7 +26,6 @@ import com.digero.common.midi.MidiConstants;
 import com.digero.common.midi.MidiInstrument;
 import com.digero.common.midi.Note;
 import com.digero.common.midi.TimeSignature;
-import com.digero.maestro.abc.TimingInfo;
 
 public class TrackInfo implements MidiConstants
 {
@@ -88,12 +87,37 @@ public class TrackInfo implements MidiConstants
 		
 		int[] pitchBend = new int[CHANNEL_COUNT];
 		MapByChannel panMap = createPanMap(track);
+		MapByChannel bendMap = createBendMap(track, sequenceCache);
 		
 		
-		for (int j = 0, sz = track.size(); j < sz; j++)
-		{
-			MidiEvent evt = track.get(j);
-			MidiMessage msg = evt.getMessage();
+		long tick = -10000000;
+		for (int j = 0, sz = track.size(); j < sz; j++) {
+ 			MidiEvent evt = track.get(j);
+ 			MidiMessage msg = evt.getMessage();
+ 			
+			if (evt.getTick() != tick && !isDrumTrack) {
+				for (int ch = 0; ch < CHANNEL_COUNT; ch++) {
+					int bend = bendMap.get(ch, tick);
+					if (bend != pitchBend[ch]) {
+						List<NoteEvent> bentNotes = new ArrayList<>();
+						for (NoteEvent ne : notesOn[ch]) {							
+							if (!(ne instanceof BentNoteEvent)) {
+								BentNoteEvent be = new BentNoteEvent(ne.note, ne.velocity, ne.getStartTick(), ne.getEndTick(), ne.getTempoCache());
+								be.setMidiPan(ne.midiPan);
+								be.addBend(ne.getStartTick(), 0);// we need this in NoteGraph class
+								noteEvents.remove(ne);
+								ne = be;
+								noteEvents.add(ne);
+							}
+							((BentNoteEvent)ne).addBend(tick, bend);
+							bentNotes.add(ne);
+						}
+						notesOn[ch] = bentNotes;
+						pitchBend[ch] = bend;
+					}
+				}
+			}
+			tick = evt.getTick();
 			
 			if (msg instanceof ShortMessage)
 			{
@@ -112,10 +136,9 @@ public class TrackInfo implements MidiConstants
 				if (notesOn[c] == null)
 					notesOn[c] = new ArrayList<>();
 
-				long tick = evt.getTick();
 				if (cmd == ShortMessage.NOTE_ON || cmd == ShortMessage.NOTE_OFF)
 				{
-					int noteId = m.getData1() + (isDrumTrack ? 0 : pitchBend[c]);
+					int noteId = m.getData1();
 					int velocity = m.getData2() * sequenceCache.getVolume(c, tick) / DEFAULT_CHANNEL_VOLUME;
 					if (velocity > 127)
 						velocity = 127;
@@ -152,6 +175,12 @@ public class TrackInfo implements MidiConstants
 						}
 
 						NoteEvent ne = new NoteEvent(note, velocity, tick, tick, sequenceCache);
+						if (bendMap.get(c, tick) != 0) {
+							// pitch bend active in channel already when note starts
+							BentNoteEvent be = new BentNoteEvent(note, velocity, tick, tick, sequenceCache);
+							be.addBend(tick, bendMap.get(c, tick));
+							ne = be;
+						}
 						ne.setMidiPan(panMap.get(c, tick));// We don't set this in constructor as only MIDI notes will get this set, abc notes not.
 						
 						Iterator<NoteEvent> onIter = notesOn[c].iterator();
@@ -194,55 +223,6 @@ public class TrackInfo implements MidiConstants
 						noteEvents.add(ne);
 						notesInUse.add(ne.note.id);
 						notesOn[c].add(ne);
-					}
-				}
-				else if (cmd == ShortMessage.PITCH_BEND && !isDrumTrack)
-				{
-					double pct = 2 * (((m.getData1() | (m.getData2() << 7)) / (double) (1 << 14)) - 0.5);
-					int bend = (int) Math.round(pct * sequenceCache.getPitchBendRange(m.getChannel(), tick));
-
-					if (bend != pitchBend[c])
-					{
-						List<NoteEvent> bentNotes = new ArrayList<>();
-						for (NoteEvent ne : notesOn[c])
-						{
-							ne.setEndTick(tick);
-							long bendTick = tick;
-							if (ne.getLengthMicros() < TimingInfo.getShortestNoteMicros(125))
-							{
-								/*
-								 TODO: While we know the note must not be shorter than TimingInfo.getShortestNoteMicros(125),
-								 it might not be allowed to become the new length either. But we do not now know yet what
-								 length it will allowed to be. This can become problem as this part of the bent note might be skipped later.
-								 Instead of handling bent notes like this, piece by piece every time the bend changes, we could
-								 after the TimingInfo has been established and we know the grid it will be laid onto,
-								 look at the note in its entirety, and determine where it should switch pitch in abc.
-								 Maybe we can put the bend info into the note event, and keep the full length, so we later
-								 have access to all the information we need to determine how to break it up into pitches.
-								 Only down side to that is that is that the bend wont be painted as bent in track-window,
-								 unless we code some custom painting of bent notes.
-								 ~ Aifel
-								*/
-								
-								// If the note is too short, just skip it. The new (bent) note will 
-								// replace it, so start the bent note at the same time this one started.
-								noteEvents.remove(ne);
-								bendTick = ne.getStartTick();
-							}
-
-							Note bn = Note.fromId(ne.note.id + bend - pitchBend[c]);
-							// If bn is null, the note was bent out of the 0-127 range. 
-							// Not much we can do except skip it.
-							if (bn != null)
-							{
-								NoteEvent bne = new NoteEvent(bn, ne.velocity, bendTick, bendTick, sequenceCache);
-								bne.setMidiPan(ne.midiPan);								
-								noteEvents.add(bne);
-								bentNotes.add(bne);
-							}
-						}
-						notesOn[c] = bentNotes;
-						pitchBend[c] = bend;
 					}
 				}
 			}
@@ -307,6 +287,46 @@ public class TrackInfo implements MidiConstants
 		noteEvents = Collections.unmodifiableList(noteEvents);
 		notesInUse = Collections.unmodifiableSortedSet(notesInUse);
 		instruments = Collections.unmodifiableSet(instruments);
+	}
+	
+	private MapByChannel createBendMap(Track track, SequenceDataCache sequenceCache) {
+		MapByChannel bendMap = new MapByChannel(0);
+		int totalEffectiveBends = 0;
+		for (int j = 0, sz = track.size(); j < sz; j++)
+		{
+			MidiEvent evt = track.get(j);
+			MidiMessage msg = evt.getMessage();
+			
+			if (msg instanceof ShortMessage)
+			{
+				ShortMessage m = (ShortMessage) msg;
+				int cmd = m.getCommand();
+				int c = m.getChannel();
+				long tick = evt.getTick();
+				
+				/*if (isXGDrumTrack || isGSDrumTrack) {
+					//
+				} else if (noteEvents.isEmpty() && cmd == ShortMessage.NOTE_ON)
+					isDrumTrack = (c == DRUM_CHANNEL);
+				else if (isDrumTrack != (c == DRUM_CHANNEL) && cmd == ShortMessage.NOTE_ON)
+					System.err.println("Track "+trackNumber+" contains both notes and drums.."+(name!=null?name:""));
+				*/				
+
+				
+				if (cmd == ShortMessage.PITCH_BEND && !isDrumTrack) {
+					double pct = 2 * (((m.getData1() | (m.getData2() << 7)) / (double) (1 << 14)) - 0.5);
+					int bend = (int) Math.round(pct * sequenceCache.getPitchBendRange(m.getChannel(), tick));
+					
+					if (bend != bendMap.get(c, tick))
+					{
+						totalEffectiveBends++;
+						bendMap.put(c, evt.getTick(), bend);
+					}
+				}
+			}
+		}
+		//if (totalEffectiveBends>0) System.out.println("Total bends in track "+trackNumber+" is "+totalEffectiveBends);
+		return bendMap;
 	}
 
 	private MapByChannel createPanMap(Track track) {

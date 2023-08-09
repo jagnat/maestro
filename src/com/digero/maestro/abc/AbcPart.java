@@ -36,6 +36,7 @@ import com.digero.common.util.ParseException;
 import com.digero.common.util.Version;
 import com.digero.maestro.abc.AbcPartEvent.AbcPartProperty;
 import com.digero.maestro.abc.AbcSongEvent.AbcSongProperty;
+import com.digero.maestro.midi.BentNoteEvent;
 import com.digero.maestro.midi.NoteEvent;
 import com.digero.maestro.midi.SequenceDataCache;
 import com.digero.maestro.midi.SequenceInfo;
@@ -447,6 +448,89 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 				dstNote = getDrumMap(track).get(noteId);
 
 			return (dstNote == LotroDrumInfo.DISABLED.note.id) ? null : Note.fromId(dstNote);
+		} else {
+			noteId += getTranspose(track, tickStart);
+			while (noteId < instrument.lowestPlayable.id)
+				noteId += 12;
+			while (noteId > instrument.highestPlayable.id)
+				noteId -= 12;
+			return Note.fromId(noteId);
+		}
+	}
+	
+	/**
+	 * Maps from a MIDI note to an ABC note. If no mapping is available, returns
+	 * <code>null</code>.
+	 */
+	public Note mapNoteEvent(int track, NoteEvent ne) {
+		long tickStart = ne.getStartTick();
+		int noteId = ne.note.id;
+		if (!getAudible(track, tickStart)) {
+			return null;
+		}
+		if (isDrumPart()) {
+			if (!isTrackEnabled(track) || !isDrumEnabled(track, noteId))
+				return null;
+
+			int dstNote;
+			if (instrument == LotroInstrument.BASIC_COWBELL)
+				dstNote = Note.G2.id; // "Tom High 1"
+			else if (instrument == LotroInstrument.MOOR_COWBELL)
+				dstNote = Note.A2.id; // "Tom High 2"
+			else if (instrument == LotroInstrument.STUDENT_FX_FIDDLE)
+				dstNote = getFXMap(track).get(noteId);
+			else
+				dstNote = getDrumMap(track).get(noteId);
+
+			return (dstNote == LotroDrumInfo.DISABLED.note.id) ? null : Note.fromId(dstNote);
+		} else if (ne instanceof BentNoteEvent) {
+			BentNoteEvent be = (BentNoteEvent) ne;
+			int minBend = be.getMinNoteId();
+			int maxBend = be.getMaxNoteId();
+			int transpose = getTranspose(track, tickStart);
+						
+			noteId += transpose;
+			minBend += transpose;
+			maxBend += transpose;			
+			
+			int octaveFittingMiddle = 0;
+			while (noteId < instrument.lowestPlayable.id) {
+				noteId += 12;
+				octaveFittingMiddle += 12;
+			}
+			while (noteId > instrument.highestPlayable.id) {
+				noteId -= 12;
+				octaveFittingMiddle -= 12;
+			}
+			
+			int octaveFittingMin = 0;
+			while (minBend < instrument.lowestPlayable.id) {
+				minBend += 12;
+				octaveFittingMin += 12;
+			}
+			while (minBend > instrument.highestPlayable.id) {
+				minBend -= 12;
+				octaveFittingMin -= 12;
+			}
+			
+			int octaveFittingMax = 0;
+			while (maxBend < instrument.lowestPlayable.id) {
+				maxBend += 12;
+				octaveFittingMax += 12;
+			}
+			while (maxBend > instrument.highestPlayable.id) {
+				maxBend -= 12;
+				octaveFittingMax -= 12;
+			}
+			
+			if (octaveFittingMax < 0) {
+				noteId = ne.note.id + transpose;
+				noteId += octaveFittingMax;
+			} else if (octaveFittingMin > 0) {
+				noteId = ne.note.id + transpose;
+				noteId += octaveFittingMin;
+			}
+			return Note.fromId(noteId);
 		} else {
 			noteId += getTranspose(track, tickStart);
 			while (noteId < instrument.lowestPlayable.id)

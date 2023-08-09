@@ -343,8 +343,8 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 		}
 
 		@Override
-		protected boolean isNotePlayable(int noteId) {
-			return abcPart.isDrumPlayable(trackInfo.getTrackNumber(), drumId);
+		protected boolean isNotePlayable(NoteEvent ne, int addition) {
+			return abcPart.isDrumPlayable(trackInfo.getTrackNumber(), ne.note.id);
 		}
 
 		@Override

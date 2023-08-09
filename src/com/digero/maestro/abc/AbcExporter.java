@@ -25,6 +25,7 @@ import com.digero.common.abc.AbcField;
 import com.digero.common.abc.Dynamics;
 import com.digero.common.abc.LotroInstrument;
 import com.digero.common.abc.StringCleaner;
+import com.digero.common.midi.ITempoCache;
 import com.digero.common.midi.KeySignature;
 import com.digero.common.midi.MidiConstants;
 import com.digero.common.midi.MidiFactory;
@@ -33,6 +34,7 @@ import com.digero.common.midi.PanGenerator;
 import com.digero.common.util.Pair;
 import com.digero.common.util.Util;
 import com.digero.maestro.MaestroMain;
+import com.digero.maestro.midi.BentNoteEvent;
 import com.digero.maestro.midi.Chord;
 import com.digero.maestro.midi.NoteEvent;
 import com.digero.maestro.midi.TrackInfo;
@@ -1113,7 +1115,7 @@ public class AbcExporter {
 					Note mappedNote = ne.note;
 
 					if (!ne.alreadyMapped) {
-						mappedNote = part.mapNote(t, ne.note.id, ne.getStartTick());
+						mappedNote = part.mapNoteEvent(t, ne);
 					}
 
 					if (mappedNote != null && part.shouldPlay(ne, t)) {
@@ -1131,7 +1133,8 @@ public class AbcExporter {
 						int[] sva = part.getSectionVolumeAdjust(t, ne);
 						int velocity = part.getSectionNoteVelocity(t, ne);
 						velocity = (int) ((velocity + part.getTrackVolumeAdjust(t) + sva[0]) * 0.01f * (float) sva[1]);
-						NoteEvent newNE = new NoteEvent(mappedNote, velocity, startTick, endTick, qtm);
+						
+						NoteEvent newNE = createNoteEvent(ne, mappedNote, velocity, startTick, endTick, qtm);
 						if (!part.isDrumPart()) {
 							int origId = part.mapNoteFullOctaves(t, ne.note.id, ne.getStartTick());
 							if (mappedNote.id != origId) {
@@ -1148,25 +1151,25 @@ public class AbcExporter {
 
 						if (doubling[0] && ne.note.id - 24 > Note.MIN.id) {
 							Note mappedNote2 = part.mapNote(t, ne.note.id - 24, ne.getStartTick());
-							NoteEvent newNE2 = new NoteEvent(mappedNote2, velocity, startTick, endTick, qtm);
+							NoteEvent newNE2 = createNoteEvent(ne, mappedNote2, velocity, startTick, endTick, qtm);
 							newNE2.doubledNote = true;// prune these first
 							events.add(newNE2);
 						}
 						if (doubling[1] && ne.note.id - 12 > Note.MIN.id) {
 							Note mappedNote2 = part.mapNote(t, ne.note.id - 12, ne.getStartTick());
-							NoteEvent newNE2 = new NoteEvent(mappedNote2, velocity, startTick, endTick, qtm);
+							NoteEvent newNE2 = createNoteEvent(ne, mappedNote2, velocity, startTick, endTick, qtm);
 							newNE2.doubledNote = true;
 							events.add(newNE2);
 						}
 						if (doubling[2] && ne.note.id + 12 < Note.MAX.id) {
 							Note mappedNote2 = part.mapNote(t, ne.note.id + 12, ne.getStartTick());
-							NoteEvent newNE2 = new NoteEvent(mappedNote2, velocity, startTick, endTick, qtm);
+							NoteEvent newNE2 = createNoteEvent(ne, mappedNote2, velocity, startTick, endTick, qtm);
 							newNE2.doubledNote = true;
 							events.add(newNE2);
 						}
 						if (doubling[3] && ne.note.id + 24 < Note.MAX.id) {
 							Note mappedNote2 = part.mapNote(t, ne.note.id + 24, ne.getStartTick());
-							NoteEvent newNE2 = new NoteEvent(mappedNote2, velocity, startTick, endTick, qtm);
+							NoteEvent newNE2 = createNoteEvent(ne, mappedNote2, velocity, startTick, endTick, qtm);
 							newNE2.doubledNote = true;
 							events.add(newNE2);
 						}
@@ -1184,6 +1187,7 @@ public class AbcExporter {
 		long lastEnding = 0;
 		NoteEvent lastEvent = null;
 		Iterator<NoteEvent> neIter = events.iterator();
+		List<NoteEvent> extraEvents = new ArrayList<>();
 		while (neIter.hasNext()) {
 			NoteEvent ne = neIter.next();
 
@@ -1202,13 +1206,33 @@ public class AbcExporter {
 				lastEnding = ne.getEndTick();
 				lastEvent = ne;
 			}
-			if (!addTies && qtm.getPrimaryExportTempoBPM() >= 50 && part.delay != 0) {
-				// Make delay on instrument be audible in preview
-				long delayMicros = (long) (part.delay * 1000 * qtm.getExportTempoFactor());
-				ne.setEndTick(qtm.microsToTick(qtm.tickToMicros(ne.getEndTick()) + delayMicros));
-				ne.setStartTick(qtm.microsToTick(qtm.tickToMicros(ne.getStartTick()) + delayMicros));
+			List<NoteEvent> bentNotes = quantizePitchBends(part, ne);
+						
+			if (bentNotes != null) {
+				neIter.remove();
+				for(NoteEvent bent : bentNotes) {
+					if (!addTies && qtm.getPrimaryExportTempoBPM() >= 50 && part.delay != 0) {
+						// Make delay on instrument be audible in preview
+						long delayMicros = (long)(part.delay * 1000 * qtm.getExportTempoFactor());
+						bent.setEndTick(qtm.microsToTick(qtm.tickToMicros(bent.getEndTick())+delayMicros));
+						bent.setStartTick(qtm.microsToTick(qtm.tickToMicros(bent.getStartTick())+delayMicros));
+					}
+				}
+				extraEvents.addAll(bentNotes);
+				if (bentNotes.size() > 0) {
+					lastEvent = bentNotes.get(bentNotes.size()-1);
+				}
+			} else {
+				if (!addTies && qtm.getPrimaryExportTempoBPM() >= 50 && part.delay != 0) {
+					// Make delay on instrument be audible in preview
+					long delayMicros = (long)(part.delay * 1000 * qtm.getExportTempoFactor());
+					ne.setEndTick(qtm.microsToTick(qtm.tickToMicros(ne.getEndTick())+delayMicros));
+					ne.setStartTick(qtm.microsToTick(qtm.tickToMicros(ne.getStartTick())+delayMicros));
+				}
 			}
 		}
+		
+		events.addAll(extraEvents);// add all the pitchbend fractions to the main event list
 
 		Collections.sort(events);
 
@@ -1421,6 +1445,71 @@ public class AbcExporter {
 		}
 
 		return chords;
+	}
+	
+	private NoteEvent createNoteEvent(NoteEvent oldNe, Note note, int velocity, long startTick, long endTick, ITempoCache tempos) {
+		if (oldNe instanceof BentNoteEvent) {
+			BentNoteEvent newNe = new BentNoteEvent(note, velocity, startTick, endTick, tempos);
+			newNe.setBends(((BentNoteEvent) oldNe).bends);
+			return newNe;
+		} else {
+			return new NoteEvent(note, velocity, startTick, endTick, tempos);
+		}
+	}
+
+	/**
+	 * Split all BentNoteEvents into multiple quantized NoteEvents
+	 * 
+	 * @param part Abc Part
+	 * @param ne The note event to be processed
+	 * @return List of multiple NoteEvents
+	 */
+	private List<NoteEvent> quantizePitchBends(AbcPart part, NoteEvent ne) {
+		// handle pitch bend
+		if (ne instanceof BentNoteEvent) {
+			BentNoteEvent be = (BentNoteEvent) ne;
+			int noteID = be.note.id;
+			int startPitch = noteID;
+			List<NoteEvent> benders = new ArrayList<>();
+			NoteEvent current = null;
+			for (long t = ne.getStartTick(); t < ne.getEndTick(); t++) {
+				 Entry<Long, Integer> entry = be.bends.floorEntry(t);
+				 if (entry != null) {
+					 noteID = startPitch + entry.getValue();
+				 }
+				 if (current == null) {
+					 Note newNote = Note.fromId(noteID);
+					 if (newNote == null) {
+						 System.out.println("Note removed, pitch bend out of range");
+						 return new ArrayList<>();
+					 }
+					 current = new NoteEvent(newNote, be.velocity, t, be.getEndTick(), be.getTempoCache());
+					 current.setMidiPan(be.midiPan);
+					 benders.add(current);
+				 } else {
+					 long qTick = qtm.quantize(t, part);
+					 if (t == qTick) {
+						 // this tick is on the grid
+						 if (current.note.id != noteID) {
+							 current.setEndTick(t);
+							 Note newNote = Note.fromId(noteID);
+							 if (newNote == null) {
+								 System.out.println("Note removed, pitch bend out of range");
+								 return new ArrayList<>();
+							 }
+							 current = new NoteEvent(newNote, be.velocity, t, be.getEndTick(), be.getTempoCache());
+							 current.setMidiPan(be.midiPan);
+							 benders.add(current);
+						 }
+					 }
+				 }
+			}
+			//double dura = be.getLengthMicros() / 1000.0d;
+			//System.out.println(dura+" Note split into "+benders.size()+" bends");
+			return benders;
+		} else {
+			return null;
+		}
 	}
 
 	private void breakLongNotes(AbcPart part, List<NoteEvent> events, boolean addTies) {
