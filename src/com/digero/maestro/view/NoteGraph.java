@@ -75,18 +75,18 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 	private JPanel indicatorLine;
 
 	public NoteGraph(SequencerWrapper sequencer, TrackInfo trackInfo, int minRenderedNoteId, int maxRenderedNoteId) {
-		this(sequencer, trackInfo, minRenderedNoteId, maxRenderedNoteId, 3, 2);
+		this(sequencer, trackInfo, minRenderedNoteId, maxRenderedNoteId, 2, 2);
 	}
 
 	public NoteGraph(SequencerWrapper sequencer, TrackInfo trackInfo, int minRenderedNoteId, int maxRenderedNoteId,
 			double noteWidthPx, double noteHeightPx) {
 		this(sequencer, (trackInfo == null) ? null : trackInfo.getSequenceInfo(), trackInfo, minRenderedNoteId,
-				maxRenderedNoteId, 3, 2);
+				maxRenderedNoteId, 2, 2);
 	}
 
 	public NoteGraph(SequencerWrapper sequencer, SequenceInfo sequenceInfo, int minRenderedNoteId,
 			int maxRenderedNoteId) {
-		this(sequencer, sequenceInfo, null, minRenderedNoteId, maxRenderedNoteId, 3, 2);
+		this(sequencer, sequenceInfo, null, minRenderedNoteId, maxRenderedNoteId, 2, 2);
 	}
 
 	private NoteGraph(SequencerWrapper sequencer, SequenceInfo sequenceInfo, TrackInfo trackInfo, int minRenderedNoteId,
