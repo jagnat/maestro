@@ -457,6 +457,9 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		return abcSequencer != null && isAbcPreviewMode;
 	}
 	
+	/**
+	 * Bent notes are ignored and not counted
+	 */
 	private void updateBadTooltipText() {
 		if (abcPart.getInstrument().ordinal() == LotroInstrument.BASIC_CLARINET.ordinal()) {
 			int g3count = 0;
@@ -465,9 +468,11 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 				if (ne.tiesFrom != null) {
 					continue;
 				}
-				Note mn = abcPart.mapNote(trackInfo.getTrackNumber(), ne.note.id, ne.getStartTick());
-				if (mn != null && abcPart.shouldPlay(ne, trackInfo.getTrackNumber()) && mn.id == Note.G3.id) {
-					g3count += 1;
+				if (!(ne instanceof BentNoteEvent)) {
+					Note mn = abcPart.mapNote(trackInfo.getTrackNumber(), ne.note.id, ne.getStartTick());
+					if (mn != null && abcPart.shouldPlay(ne, trackInfo.getTrackNumber()) && mn.id == Note.G3.id) {
+						g3count += 1;
+					}
 				}
 			}		
 			if (g3count == 0) {
@@ -483,9 +488,11 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 				if (ne.tiesFrom != null) {
 					continue;
 				}
-				Note mn = abcPart.mapNote(trackInfo.getTrackNumber(), ne.note.id, ne.getStartTick());
-				if (mn != null && abcPart.shouldPlay(ne, trackInfo.getTrackNumber()) && (mn.id == Note.A2.id || mn.id == Note.A3.id || mn.id == Note.A4.id)) {
-					acount += 1;
+				if (!(ne instanceof BentNoteEvent)) {
+					Note mn = abcPart.mapNote(trackInfo.getTrackNumber(), ne.note.id, ne.getStartTick());
+					if (mn != null && abcPart.shouldPlay(ne, trackInfo.getTrackNumber()) && (mn.id == Note.A2.id || mn.id == Note.A3.id || mn.id == Note.A4.id)) {
+						acount += 1;
+					}
 				}
 			}		
 			if (acount == 0) {

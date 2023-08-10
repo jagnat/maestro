@@ -428,6 +428,8 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	/**
 	 * Maps from a MIDI note to an ABC note. If no mapping is available, returns
 	 * <code>null</code>.
+	 * 
+	 * Notice this method does not work for bent notes, use mapNoteEvent for those.
 	 */
 	public Note mapNote(int track, int noteId, long tickStart) {
 		if (!getAudible(track, tickStart)) {
@@ -461,6 +463,8 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	/**
 	 * Maps from a MIDI note to an ABC note. If no mapping is available, returns
 	 * <code>null</code>.
+	 * 
+	 * This method will also handle bent notes.
 	 */
 	public Note mapNoteEvent(int track, NoteEvent ne) {
 		long tickStart = ne.getStartTick();
@@ -493,14 +497,11 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			minBend += ne.note.id + transpose;
 			maxBend += ne.note.id + transpose;			
 			
-			int octaveFittingMiddle = 0;
 			while (noteId < instrument.lowestPlayable.id) {
 				noteId += 12;
-				octaveFittingMiddle += 12;
 			}
 			while (noteId > instrument.highestPlayable.id) {
 				noteId -= 12;
-				octaveFittingMiddle -= 12;
 			}
 			
 			int octaveFittingMin = 0;
@@ -523,6 +524,9 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 				octaveFittingMax -= 12;
 			}
 			
+			// We transpose the entire bent note into
+			// the playable range as one coherent block of notes.
+			
 			if (octaveFittingMax < 0) {
 				noteId = ne.note.id + transpose;
 				noteId += octaveFittingMax;
@@ -542,8 +546,6 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		}
 	}
 	
-	
-
 	public boolean shouldPlay(NoteEvent ne, int track) {
 		if (ne.midiPan == -1) {
 			// This should never happen, all midi note events should have pan set.

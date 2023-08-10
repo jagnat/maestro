@@ -103,10 +103,12 @@ public class TrackInfo implements MidiConstants
 						List<NoteEvent> bentNotes = new ArrayList<>();
 						for (NoteEvent ne : notesOn[ch]) {							
 							if (!(ne instanceof BentNoteEvent)) {
+								// This note is playing while this bend happens
+								// Lets convert it to a BentNoteEvent
 								BentNoteEvent be = new BentNoteEvent(ne.note, ne.velocity, ne.getStartTick(), ne.getEndTick(), ne.getTempoCache());
 								allBentNotes.add(be);
 								be.setMidiPan(ne.midiPan);
-								be.addBend(ne.getStartTick(), 0);// we need this in NoteGraph class
+								be.addBend(ne.getStartTick(), 0);// we need this initial bend in NoteGraph class
 								noteEvents.remove(ne);
 								ne = be;
 								noteEvents.add(ne);
@@ -262,12 +264,13 @@ public class TrackInfo implements MidiConstants
 		}
 		
 		for (BentNoteEvent be : allBentNotes) {
-			if (Math.abs(be.getMinBend() - be.getMaxBend()) > 12) {
-				List<NoteEvent> prematureSplit = be.split(); 
+			// All bent notes that span more than an octave will
+			// already here be split into small pieces.
+			if (Math.abs(be.getMinBend() - be.getMaxBend()) > 12) {// TODO: Make this 12 into a misc setting: (-1, 6, 12, 24)
+				List<NoteEvent> prematureSplit = be.split();
 				noteEvents.addAll(prematureSplit);
 				noteEvents.remove(be);
 			}
-			//be.setBendLimits();
 		}
 
 		// Turn off notes that are on at the end of the song.  This shouldn't happen...
@@ -303,7 +306,7 @@ public class TrackInfo implements MidiConstants
 	
 	private MapByChannel createBendMap(Track track, SequenceDataCache sequenceCache) {
 		MapByChannel bendMap = new MapByChannel(0);
-		int totalEffectiveBends = 0;
+		//int totalEffectiveBends = 0;
 		for (int j = 0, sz = track.size(); j < sz; j++)
 		{
 			MidiEvent evt = track.get(j);
@@ -331,7 +334,7 @@ public class TrackInfo implements MidiConstants
 					
 					if (bend != bendMap.get(c, tick))
 					{
-						totalEffectiveBends++;
+						//totalEffectiveBends++;
 						bendMap.put(c, evt.getTick(), bend);
 					}
 				}

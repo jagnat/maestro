@@ -394,12 +394,13 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 		fillNote(g2, ne, noteId, minWidth, height, 0, 0);
 	}
 
+	@SuppressWarnings("unchecked")
 	private void fillNote(Graphics2D g2, NoteEvent ne, int noteId, double minWidth, double height, double extraWidth,
 			double extraHeight) {
 		if (ne instanceof BentNoteEvent) {
 			BentNoteEvent be = (BentNoteEvent) ne;
 			
-			Set bendSet = be.bends.entrySet();
+			Set<Entry<Long, Integer>> bendSet = be.bends.entrySet();
 			Object[] bends = bendSet.toArray();
 			
 			ITempoCache tempoCache = ne.getTempoCache();
@@ -407,8 +408,8 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 				Entry<Long, Integer> bend1 = (Entry<Long, Integer>) bends[i];
 				
 				long bend1tick = bend1.getKey();
-				int bend1bend  = bend1.getValue();				
-				long bend2tick = -100000000L;
+				int bend1bend  = bend1.getValue();
+				long bend2tick = Long.MIN_VALUE;
 				if (i != bends.length-1) {
 					bend2tick = ((Entry<Long, Integer>) bends[i+1]).getKey();
 				} else {

@@ -11,8 +11,8 @@ import com.digero.common.midi.Note;
 
 public class BentNoteEvent extends NoteEvent {
 	
-	private int cacheMin = -1;
-	private int cacheMax = -1;
+	private int cacheMin = -1;// These fields will only be used after all bends have been added
+	private int cacheMax = -1;// So its fine to cache them here.
 	
 	public NavigableMap<Long, Integer> bends = new TreeMap<>();// tick -> relative seminote bend 
 
@@ -20,6 +20,11 @@ public class BentNoteEvent extends NoteEvent {
 		super(note, velocity, startTick, endTick, tempoCache);
 	}
 	
+	/**
+	 * 
+	 * @param tick
+	 * @param bend seminote relative bend
+	 */
 	public void addBend(long tick, int bend) {
 		bends.put(tick, bend);
 		cacheMin = -1;
@@ -38,6 +43,10 @@ public class BentNoteEvent extends NoteEvent {
 		return entry.getValue();
 	}
 	
+	/**
+	 * 
+	 * @return max seminote relative bend
+	 */
 	public int getMaxBend() {
 		if (cacheMax != -1) return cacheMax;
 		int maxBend = -128;
@@ -50,6 +59,10 @@ public class BentNoteEvent extends NoteEvent {
 		return cacheMax;
 	}
 	
+	/**
+	 * 
+	 * @return min seminote relative bend
+	 */
 	public int getMinBend() {
 		if (cacheMin != -1) return cacheMin;
 		int minBend = 128;
@@ -62,11 +75,19 @@ public class BentNoteEvent extends NoteEvent {
 		return cacheMin;
 	}
 	
+	/**
+	 * 
+	 * @return min seminote absolute bend
+	 */
 	public int getMinNote() {
 		getMinBend();
 		return note.id + cacheMin;
 	}
 	
+	/**
+	 * 
+	 * @return max seminote absolute bend
+	 */
 	public int getMaxNote() {
 		getMaxBend();
 		return note.id + cacheMax;
