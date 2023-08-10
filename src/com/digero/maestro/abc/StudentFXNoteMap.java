@@ -1,11 +1,8 @@
 package com.digero.maestro.abc;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.prefs.Preferences;
 
-import javax.swing.event.ChangeListener;
 import javax.xml.xpath.XPathExpressionException;
 
 import org.w3c.dom.Element;
@@ -20,9 +17,6 @@ public class StudentFXNoteMap extends DrumNoteMap {
 	public static final String FILE_SUFFIX = "studentfxmap.txt";
 	protected static final byte DISABLED_NOTE_ID = (byte) LotroStudentFXInfo.DISABLED.note.id;
 	private static final String MAP_PREFS_KEY = "StudentFXNoteMap.map";
-
-	private byte[] map = null;
-	private List<ChangeListener> listeners = null;
 
 	@Override
 	public String getXmlName() {
@@ -72,26 +66,6 @@ public class StudentFXNoteMap extends DrumNoteMap {
 	@Override
 	protected byte getDefaultMapping(byte noteId) {
 		return DISABLED_NOTE_ID;
-	}
-
-	@Override
-	public void addChangeListener(ChangeListener listener) {
-		if (listeners == null)
-			listeners = new ArrayList<>(2);
-
-		if (!listeners.contains(listener))
-			listeners.add(listener);
-	}
-
-	@Override
-	public void removeChangeListener(ChangeListener listener) {
-		if (listeners != null)
-			listeners.remove(listener);
-	}
-
-	@Override
-	public void discard() {
-		listeners = null;
 	}
 
 	@Override

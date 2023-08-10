@@ -36,7 +36,7 @@ public class DrumNoteMap implements IDiscardable {
 	protected static final byte DISABLED_NOTE_ID = (byte) LotroDrumInfo.DISABLED.note.id;
 	private static final String MAP_PREFS_KEY = "DrumNoteMap.map";
 
-	private byte[] map = null;
+	protected byte[] map = null;
 	private List<ChangeListener> listeners = null;
 
 	public String getXmlName() {
