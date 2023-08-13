@@ -119,20 +119,20 @@
 			</plugin>
 		</plugins>
 	</build>
-	<repositories>
+	<!--<repositories>
 		<repository>
 			<id>beatunes</id>
 			<name>beaTunes Repository</name>
 			<url>https://www.beatunes.com/repo/maven2</url>
 		</repository>
-	</repositories>
+	</repositories>-->
 	<dependencies>
 		<dependency>
 			<groupId>jakarta.xml.bind</groupId>
 			<artifactId>jakarta.xml.bind-api</artifactId>
 			<version>3.0.0</version>
 		</dependency>
-		<dependency>
+		<!--<dependency>
 			<groupId>org.tritonus</groupId>
 			<artifactId>tritonus_share</artifactId>
 			<version>20041204</version>
@@ -151,7 +151,7 @@
 			<groupId>com.jcraft</groupId>
 			<artifactId>jogg</artifactId>
 			<version>0.0.7</version>
-		</dependency>
+		</dependency>-->
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-math3</artifactId>
