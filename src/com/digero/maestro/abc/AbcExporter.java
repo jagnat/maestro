@@ -1470,41 +1470,55 @@ public class AbcExporter {
 	 * @return List of multiple NoteEvents
 	 */
 	private List<NoteEvent> quantizePitchBends(AbcPart part, NoteEvent ne) {
-		// handle pitch bend
+		// Handle pitch bend by subdividing tone into shorter quantized notes.
+		// By the time this method is ran, start and end tick of the bent tone is already quantized.
 		if (ne instanceof BentNoteEvent) {
 			BentNoteEvent be = (BentNoteEvent) ne;
 			int noteID = be.note.id;
 			int startPitch = noteID;
 			List<NoteEvent> benders = new ArrayList<>();
 			NoteEvent current = null;
+			boolean changeAtLastGrid = true;
+			long lastGridTick = 0L;
 			for (long t = ne.getStartTick(); t < ne.getEndTick(); t++) {
 				 Integer entry = be.getBend(t);
 				 if (entry != null) {
 					 noteID = startPitch + entry;
 				 }
 				 if (current == null) {
-					 Note newNote = Note.fromId(noteID);
-					 if (newNote == null) {
-						 System.out.println("Note removed, pitch bend out of range");
+					 current = createBentSubNote(be, noteID, current, t);
+					 if (current == null)
 						 return new ArrayList<>();
-					 }
-					 current = new NoteEvent(newNote, be.velocity, t, be.getEndTick(), be.getTempoCache());
-					 current.setMidiPan(be.midiPan);
 					 benders.add(current);
+					 lastGridTick = t;
+					 changeAtLastGrid = true;
 				 } else {
 					 long qTick = qtm.quantize(t, part);
 					 if (t == qTick) {
 						 // this tick is on the grid
 						 if (current.note.id != noteID) {
-							 current.setEndTick(t);
-							 Note newNote = Note.fromId(noteID);
-							 if (newNote == null) {
-								 System.out.println("Note removed, pitch bend out of range");
+							 current = createBentSubNote(be, noteID, current, t);
+							 if (current == null)
 								 return new ArrayList<>();
-							 }
-							 current = new NoteEvent(newNote, be.velocity, t, be.getEndTick(), be.getTempoCache());
-							 current.setMidiPan(be.midiPan);
 							 benders.add(current);
+							 changeAtLastGrid = true;
+						 } else {
+							 changeAtLastGrid = false;
+						 }
+						 lastGridTick = t;
+					 } else if (!changeAtLastGrid && entry != null && current.note.id != noteID) {
+						 long grid = qtm.getGridSizeTicks(t, part);
+						 if (grid >= 3 && t < lastGridTick+grid/3L) {
+							 /*
+							  * We have a pitch change, and we are less than a 3rd of a gridlength from last gridpoint.
+							  * Last grid point there was no pitch changes.
+							  * So we round this pitch change back to last gridpoint.
+							  */
+							 current = createBentSubNote(be, noteID, current, lastGridTick);
+							 if (current == null)
+								 return new ArrayList<>();
+							 benders.add(current);
+							 changeAtLastGrid = true;
 						 }
 					 }
 				 }
@@ -1515,6 +1529,19 @@ public class AbcExporter {
 		} else {
 			return null;
 		}
+	}
+
+	private NoteEvent createBentSubNote(BentNoteEvent be, int noteID, NoteEvent current, long tick) {
+		if (current != null)
+			current.setEndTick(tick);
+		Note newNote = Note.fromId(noteID);
+		if (newNote == null) {
+			System.out.println("Note removed, pitch bend out of range");
+			return null;
+		}
+		current = new NoteEvent(newNote, be.velocity, tick, be.getEndTick(), be.getTempoCache());
+		current.setMidiPan(be.midiPan);
+		return current;
 	}
 
 	private void breakLongNotes(AbcPart part, List<NoteEvent> events, boolean addTies) {

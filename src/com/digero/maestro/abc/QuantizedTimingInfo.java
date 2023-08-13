@@ -647,4 +647,8 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 			this.infoOdd = infoOdd;
 		}
 	}
+
+	public long getGridSizeTicks(long tick, AbcPart part) {
+		return getTimingInfo(tick, part).getMinNoteLengthTicks();
+	}
 }
