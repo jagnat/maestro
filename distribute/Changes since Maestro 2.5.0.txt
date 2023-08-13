@@ -52,6 +52,7 @@ Version 2.5.0.118
 - Notes that belonged to same bent note will no longer be partly forced octave transposed, now they are transposed together.
 - Parts of bent notes will no longer be quantized to zero duration and discarded.
 - Bent notes are now painted as one note. Also section-editor treats them as one note. So its not possible for example to mute half of it.
+- An improvement to mix timings, note endings will now have even less influence on the timing compared to note starts.
 
 Version 2.5.0.117
 - Ability to customize instrument names for default part naming.

@@ -73,7 +73,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	private TimeSignature timeSignature = TimeSignature.FOUR_FOUR;
 	private boolean tripletTiming = false;
 	private boolean mixTiming = true;
-	private int mixVersion = 1;// TODO: make UI
+	private int mixVersion = 2;// TODO: make UI?
 	private boolean priorityActive = false;
 	private boolean skipSilenceAtStart = true;
 	// private boolean showPruned = false;
@@ -281,8 +281,8 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 																							// decide and it will be
 																							// false.
 
-			if (mixTiming)
-				mixVersion = SaveUtil.parseValue(songEle, "exportSettings/@mixVersion", 1);// default 1 as old projects did not have that available.
+			//if (mixTiming)
+			//	mixVersion = SaveUtil.parseValue(songEle, "exportSettings/@mixVersion", 1);// default 1 as old projects did not have that available.
 
 			priorityActive = SaveUtil.parseValue(songEle, "exportSettings/@combinePriorities", false);
 
@@ -432,7 +432,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		exportSettingsEle.setAttribute("mixTiming", String.valueOf(mixTiming));
 		if (mixTiming) {
 			exportSettingsEle.setAttribute("combinePriorities", String.valueOf(priorityActive));
-			exportSettingsEle.setAttribute("mixVersion", String.valueOf(mixVersion));
+			//exportSettingsEle.setAttribute("mixVersion", String.valueOf(mixVersion));
 		}
 		if (exportSettingsEle.getAttributes().getLength() > 0 || exportSettingsEle.getChildNodes().getLength() > 0)
 			songEle.appendChild(exportSettingsEle);
