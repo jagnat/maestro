@@ -24,6 +24,7 @@ import com.digero.common.midi.MidiConstants;
 import com.digero.common.midi.ExtensionMidiInstrument;
 import com.digero.common.midi.KeySignature;
 import com.digero.common.midi.MidiFactory;
+import com.digero.common.midi.MidiStandard;
 import com.digero.common.midi.MidiUtils;
 import com.digero.common.midi.TimeSignature;
 import com.digero.common.util.Pair;
@@ -43,7 +44,7 @@ public class SequenceInfo implements MidiConstants
 	private final String fileName;
 	private String title;
 	private String composer;
-	public static String standard = "GM";
+	public static MidiStandard standard = MidiStandard.GM;
 	public static boolean hasPorts = false;
 	public static int midiType = -1;// -1 = abc, 0 = type 0, 1 = type 1, 2 = type 2
 	private static boolean[] rolandDrumChannels = new boolean[16];//Which of the channels GS designates as drums
@@ -327,7 +328,7 @@ public class SequenceInfo implements MidiConstants
 		// F0 43 dv md 08 nn 03 pp F7 (dv = device ID, md = model id, pp = patch, nn = default 0)
 
 		
-		standard = "GM";
+		standard = MidiStandard.GM;
 		
 		for (int i = 0; i<16; i++) {
 			rolandDrumChannels[i] = false;
@@ -371,18 +372,18 @@ public class SequenceInfo implements MidiConstants
 					if (message.length == 9 && (message[0] & 0xFF) == 0xF0 && (message[1] & 0xFF) == 0x43
 							&& (message[4] & 0xFF) == 0x00 && (message[5] & 0xFF) == 0x00 && (message[6] & 0xFF) == 0x7E
 							&& (message[7] & 0xFF) == 0x00 && (message[8] & 0xFF) == 0xF7) {
-						if (!"GM".equals(standard) && !"XG".equals(standard)) {
+						if (MidiStandard.GM != standard && MidiStandard.XG != standard) {
 							System.err.println(fileName + ": MIDI XG Reset in a " + standard + " file. This is unusual!");
 						}
 						if (evt.getTick() > lastResetTick) {
 							lastResetTick = evt.getTick();
-							standard = "XG";
-						} else if ("GS".equals(standard) && evt.getTick() == lastResetTick) {
+							standard = MidiStandard.XG;
+						} else if (MidiStandard.GS == standard && evt.getTick() == lastResetTick) {
 							System.err.println("They are at same tick. Statistically bigger chance its a GS, so not switching to XG.");
-						} else if ("GM2".equals(standard) && evt.getTick() == lastResetTick) {
+						} else if (MidiStandard.GM2 == standard && evt.getTick() == lastResetTick) {
 							System.err.println("They are at same tick. Statistically bigger chance its a XG, so switching to that.");
 							lastResetTick = evt.getTick();
-							standard = "XG";
+							standard = MidiStandard.XG;
 						}
 						ExtensionMidiInstrument.getInstance();
 						//System.err.println("Yamaha XG Reset, tick "+evt.getTick());
@@ -390,24 +391,24 @@ public class SequenceInfo implements MidiConstants
 							&& (message[4] & 0xFF) == 0x12
 							&& (message[5] & 0xFF) == 0x40 && (message[6] & 0xFF) == 0x00 && (message[7] & 0xFF) == 0x7F
 							&& (message[8] & 0xFF) == 0x00 && (message[10] & 0xFF) == 0xF7) {
-						if (!"GM".equals(standard) && !"GS".equals(standard)) {
+						if (MidiStandard.GM != standard && MidiStandard.GS != standard) {
 							System.err.println(fileName + ": MIDI GS Reset in a " + standard + " file. This is unusual!");
 						}
 						if (evt.getTick() >= lastResetTick) {
 							lastResetTick = evt.getTick();
-							standard = "GS";
+							standard = MidiStandard.GS;
 						}
 						ExtensionMidiInstrument.getInstance();
 						//System.err.println("Roland GS Reset, tick "+evt.getTick());
 					} else if (message.length == 6 && (message[0] & 0xFF) == 0xF0 && (message[1] & 0xFF) == 0x7E && (message[3] & 0xFF) == 0x09
 							&& (message[4] & 0xFF) == 0x03 && (message[5] & 0xFF) == 0xF7) {
-						if (!"GM".equals(standard) && !"GM2".equals(standard)) {
+						if (MidiStandard.GM != standard && MidiStandard.GM2 != standard) {
 							System.err.println(fileName + ": MIDI GM2 Reset in a " + standard + " file. This is unusual!");
 						}
 						if (evt.getTick() > lastResetTick) {
 							lastResetTick = evt.getTick();
-							standard = "GM2";
-						} else if (evt.getTick() == lastResetTick && !"GM".equals(standard)) {
+							standard = MidiStandard.GM2;
+						} else if (evt.getTick() == lastResetTick && MidiStandard.GM != standard) {
 							System.err.println("They are at same tick. Statistically bigger chance its not a GM2, so not switching standard.");
 						}
 						ExtensionMidiInstrument.getInstance();
@@ -623,7 +624,7 @@ public class SequenceInfo implements MidiConstants
 			}
 		}
 		if (fileName.endsWith(".abc") || fileName.endsWith(".ABC") || fileName.endsWith(".txt") || fileName.endsWith(".TXT") || fileName.endsWith(".Abc") || fileName.endsWith(".Txt")) {
-			standard = "ABC";
+			standard = MidiStandard.ABC;
 		}
 	}
 
@@ -636,7 +637,7 @@ public class SequenceInfo implements MidiConstants
 	 */
 	public static boolean convertToType1(Sequence song)
 	{
-		if (song.getTracks().length == 1 && !"ABC".equals(standard))
+		if (song.getTracks().length == 1 && MidiStandard.ABC != standard)
 		{
 			Track track0 = song.getTracks()[0];
 			Track[] tracks = new Track[CHANNEL_COUNT];
@@ -708,7 +709,7 @@ public class SequenceInfo implements MidiConstants
 	{
 		Track[] tracks = song.getTracks();
 		
-		if ("ABC".equals(standard)) {// || tracks.length <= 1
+		if (MidiStandard.ABC == standard) {// || tracks.length <= 1
 			return;
 		}		
 
@@ -736,23 +737,23 @@ public class SequenceInfo implements MidiConstants
 					int chan = m.getChannel();
 					if (m.getCommand() == ShortMessage.NOTE_ON)
 					{
-						if (chan == DRUM_CHANNEL && "GM".equals(standard))
+						if (chan == DRUM_CHANNEL && MidiStandard.GM == standard)
 						{
 							drums = 1;
 						}
-						else if ("GS".equals(standard) && rolandDrumChannels[chan])
+						else if (MidiStandard.GS == standard && rolandDrumChannels[chan])
 						{
 							GS = 1;
 							if (chan == DRUM_CHANNEL) drumsExt9 = 1;
 							else drumsExtX = 1;
 						}
-						else if ("XG".equals(standard) && yamahaDrumSwitches.get(chan).floorEntry(evt.getTick()) != null && yamahaDrumSwitches.get(chan).floorEntry(evt.getTick()).getValue())
+						else if (MidiStandard.XG == standard && yamahaDrumSwitches.get(chan).floorEntry(evt.getTick()) != null && yamahaDrumSwitches.get(chan).floorEntry(evt.getTick()).getValue())
 						{
 							XG = 1;
 							if (chan == DRUM_CHANNEL) drumsExt9 = 1;
 							else drumsExtX = 1;
 						}
-						else if ("GM2".equals(standard) && mmaDrumSwitches.get(chan).floorEntry(evt.getTick()) != null && mmaDrumSwitches.get(chan).floorEntry(evt.getTick()).getValue())
+						else if (MidiStandard.GM2 == standard && mmaDrumSwitches.get(chan).floorEntry(evt.getTick()) != null && mmaDrumSwitches.get(chan).floorEntry(evt.getTick()).getValue())
 						{
 							GM2 = 1;
 							if (chan == DRUM_CHANNEL) drumsExt9 = 1;
@@ -786,7 +787,7 @@ public class SequenceInfo implements MidiConstants
 				if (notes == 1) {
 					if (drums == 1) {
 						drumTrack = song.createTrack();
-						drumTrack.add(MidiFactory.createTrackNameEvent("Drums"));
+						drumTrack.add(MidiFactory.createTrackNameEvent(ExtensionMidiInstrument.TRACK_NAME_DRUM_GM));
 						//System.err.println("Notes! Create GM Drum track. From "+i);
 					}
 					if (notes9 + notesx > 1) {
@@ -797,27 +798,27 @@ public class SequenceInfo implements MidiConstants
 					if (XG == 1 || GS == 1 || GM2 == 1) {
 						brandDrumTrack = song.createTrack();
 						if (XG == 1) {
-							brandDrumTrack.add(MidiFactory.createTrackNameEvent("XG Drums"));
+							brandDrumTrack.add(MidiFactory.createTrackNameEvent(ExtensionMidiInstrument.TRACK_NAME_DRUM_XG));
 						} else if (GS == 1) {
-							brandDrumTrack.add(MidiFactory.createTrackNameEvent("GS Drums"));
+							brandDrumTrack.add(MidiFactory.createTrackNameEvent(ExtensionMidiInstrument.TRACK_NAME_DRUM_GS));
 						} else if (GM2 == 1) {
-							brandDrumTrack.add(MidiFactory.createTrackNameEvent("GM2 Drums"));
+							brandDrumTrack.add(MidiFactory.createTrackNameEvent(ExtensionMidiInstrument.TRACK_NAME_DRUM_GM2));
 						}
 						//System.err.println("Notes! Create EXT Drum track. From "+i);
 					}
 				} else {
 					if (drums == 1) {
 						drumTrack = song.createTrack();
-						drumTrack.add(MidiFactory.createTrackNameEvent("Drums"));
+						drumTrack.add(MidiFactory.createTrackNameEvent(ExtensionMidiInstrument.TRACK_NAME_DRUM_GM));
 						//System.err.println("Create GM Drum track. From "+i);
 					} else if (drumsExt9 == 1) {
 						brandDrumTrack = song.createTrack();
 						if (XG == 1) {
-							brandDrumTrack.add(MidiFactory.createTrackNameEvent("XG Drums"));
+							brandDrumTrack.add(MidiFactory.createTrackNameEvent(ExtensionMidiInstrument.TRACK_NAME_DRUM_XG));
 						} else if (GS == 1) {
-							brandDrumTrack.add(MidiFactory.createTrackNameEvent("GS Drums"));
+							brandDrumTrack.add(MidiFactory.createTrackNameEvent(ExtensionMidiInstrument.TRACK_NAME_DRUM_GS));
 						} else if (GM2 == 1) {
-							brandDrumTrack.add(MidiFactory.createTrackNameEvent("GM2 Drums"));
+							brandDrumTrack.add(MidiFactory.createTrackNameEvent(ExtensionMidiInstrument.TRACK_NAME_DRUM_GM2));
 						}
 						//System.err.println("Create EXT Drum track. Channel 9. From "+i);
 					}

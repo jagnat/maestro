@@ -92,6 +92,7 @@ import com.digero.common.icons.IconLoader;
 import com.digero.common.midi.KeySignature;
 import com.digero.common.midi.LotroSequencerWrapper;
 import com.digero.common.midi.MidiConstants;
+import com.digero.common.midi.MidiStandard;
 import com.digero.common.midi.NoteFilterSequencerWrapper;
 import com.digero.common.midi.SequencerEvent;
 import com.digero.common.midi.SequencerEvent.SequencerProperty;
@@ -1608,7 +1609,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		zoom.setEnabled(midiLoaded);
 		noteButton.setEnabled(midiLoaded);
 		if (midiLoaded) {
-			midiModeRadioButton.setText("Original (" + SequenceInfo.standard + (SequenceInfo.hasPorts ? "+)" : ")"));
+			midiModeRadioButton.setText("Original (" + ((SequenceInfo.standard == MidiStandard.GM && SequenceInfo.hasPorts) ? MidiStandard.GM_PLUS : SequenceInfo.standard));
 		} else {
 			midiModeRadioButton.setText("Original");
 		}
@@ -2469,7 +2470,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			return false;
 		}
 
-		if (SequenceInfo.standard.equals("ABC")) {
+		if (SequenceInfo.standard == MidiStandard.ABC) {
 			JOptionPane.showMessageDialog(this, "Cannot expand ABC song", "Error", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}

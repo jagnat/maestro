@@ -19,6 +19,7 @@ import com.digero.common.midi.ExtensionMidiInstrument;
 import com.digero.common.midi.MidiConstants;
 import com.digero.common.midi.MidiFactory;
 import com.digero.common.midi.MidiInstrument;
+import com.digero.common.midi.MidiStandard;
 
 /**
  * Takes a midi input and expands each instrument to its own track. Works with
@@ -29,7 +30,7 @@ public class TrackSplitter {
 	private SequenceDataCache sequenceCache = null;
 	private boolean isGM = true;
 
-	public Sequence split(Sequence sequence, SequenceDataCache sequenceCache, String standard,
+	public Sequence split(Sequence sequence, SequenceDataCache sequenceCache, MidiStandard standard,
 			boolean[] rolandDrumChannels, List<TreeMap<Long, Boolean>> yamahaDrumSwitches, boolean[] yamahaDrumChannels,
 			List<TreeMap<Long, Boolean>> mmaDrumSwitches, SortedMap<Integer, Integer> portMap)
 			throws InvalidMidiDataException {
@@ -40,7 +41,7 @@ public class TrackSplitter {
 		float divisionType = sequence.getDivisionType();
 		Sequence expandedSequence = new Sequence(divisionType, resolution);
 
-		isGM = standard.equals("GM");
+		isGM = standard == MidiStandard.GM;
 		boolean hasPorts = sequenceCache.hasPorts;
 
 		Track[] oldTracks = sequence.getTracks();

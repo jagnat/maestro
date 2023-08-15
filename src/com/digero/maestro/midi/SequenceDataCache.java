@@ -20,6 +20,7 @@ import javax.sound.midi.Track;
 import com.digero.common.midi.ExtensionMidiInstrument;
 import com.digero.common.midi.IBarNumberCache;
 import com.digero.common.midi.MidiConstants;
+import com.digero.common.midi.MidiStandard;
 import com.digero.common.midi.MidiUtils;
 import com.digero.common.midi.ITempoCache;
 import com.digero.common.midi.TimeSignature;
@@ -46,12 +47,12 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 	private MapByChannel mapLSB = new MapByChannel(0);
 	private MapByChannel mapPatch = new MapByChannel(0);
 	private int[] brandDrumBanks;// 1 = XG drums, 2 = GS Drums, 3 = normal drums, 4 = GM2 drums
-	private String standard = "GM";
+	private MidiStandard standard = MidiStandard.GM;
 	private boolean[] rolandDrumChannels = null;
 	private boolean[] yamahaDrumChannels = null;
 	public boolean hasPorts = false;
 
-	public SequenceDataCache(Sequence song, String standard, boolean[] rolandDrumChannels,
+	public SequenceDataCache(Sequence song, MidiStandard standard, boolean[] rolandDrumChannels,
 			List<TreeMap<Long, Boolean>> yamahaDrumSwitches, boolean[] yamahaDrumChannels,
 			List<TreeMap<Long, Boolean>> mmaDrumSwitches, SortedMap<Integer, Integer> portMap) {
 		Map<Integer, Long> tempoLengths = new HashMap<>();
@@ -106,7 +107,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 							// System.out.println("Port change on track "+iiTrack+" tick "+tick+" port
 							// "+formatBytes(portChange));
 							portMap.put(iiTrack, port);
-							hasPorts = "GM".equals(standard);
+							hasPorts = MidiStandard.GM == standard;
 						}
 					}
 				}
@@ -129,27 +130,27 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 					int ch = m.getChannel();
 
 					if (cmd == ShortMessage.NOTE_ON) {
-						if (rolandDrumChannels != null && rolandDrumChannels[ch] && "GS".equals(standard)) {
+						if (rolandDrumChannels != null && rolandDrumChannels[ch] && MidiStandard.GS == standard) {
 							brandDrumBanks[iTrack] = 2;// GS Drums
-						} else if (brandDrumBanks[iTrack] != 1 && "XG".equals(standard) && yamahaDrumSwitches != null
+						} else if (brandDrumBanks[iTrack] != 1 && MidiStandard.XG == standard && yamahaDrumSwitches != null
 								&& yamahaDrumSwitches.get(ch).floorEntry(tick) != null
 								&& yamahaDrumSwitches.get(ch).floorEntry(tick).getValue()) {
 							brandDrumBanks[iTrack] = 1;// XG drums
-						} else if (brandDrumBanks[iTrack] != 4 && "GM2".equals(standard) && mmaDrumSwitches != null
+						} else if (brandDrumBanks[iTrack] != 4 && MidiStandard.GM2 == standard && mmaDrumSwitches != null
 								&& mmaDrumSwitches.get(ch).floorEntry(tick) != null
 								&& mmaDrumSwitches.get(ch).floorEntry(tick).getValue()) {
 							brandDrumBanks[iTrack] = 4;// GM2 drums
-						} else if (ch == DRUM_CHANNEL && ("GM".equals(standard) || "ABC".equals(standard))) {
+						} else if (ch == DRUM_CHANNEL && (MidiStandard.GM == standard || MidiStandard.ABC == standard)) {
 							brandDrumBanks[iTrack] = 3;// GM drums on channel #10
 						}
 					} else if (cmd == ShortMessage.PROGRAM_CHANGE) {
 						if (((ch != DRUM_CHANNEL && rolandDrumChannels == null && yamahaDrumChannels == null)
-								|| ((rolandDrumChannels == null || !"GS".equals(standard) || !rolandDrumChannels[ch])
-										&& (yamahaDrumChannels == null || !"XG".equals(standard) || !yamahaDrumChannels[ch])))
-								&& (!"XG".equals(standard) || yamahaDrumSwitches == null
+								|| ((rolandDrumChannels == null || MidiStandard.GS != standard || !rolandDrumChannels[ch])
+										&& (yamahaDrumChannels == null || MidiStandard.XG != standard || !yamahaDrumChannels[ch])))
+								&& (MidiStandard.XG != standard || yamahaDrumSwitches == null
 										|| yamahaDrumSwitches.get(ch).floorEntry(tick) == null
 										|| !yamahaDrumSwitches.get(ch).floorEntry(tick).getValue())
-								&& (!"GM2".equals(standard) || mmaDrumSwitches == null
+								&& (MidiStandard.GM2 != standard || mmaDrumSwitches == null
 										|| mmaDrumSwitches.get(ch).floorEntry(tick) == null
 										|| !mmaDrumSwitches.get(ch).floorEntry(tick).getValue())) {
 							instruments.put(portMap.get(iTrack), ch, tick, m.getData1());
@@ -175,11 +176,11 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 								pitchBendFine.put(ch, tick, m.getData2());
 							break;
 						case BANK_SELECT_MSB:
-							if (ch != DRUM_CHANNEL || !"XG".equals(standard) || m.getData2() == 126 || m.getData2() == 127) {
+							if (ch != DRUM_CHANNEL || MidiStandard.XG != standard || m.getData2() == 126 || m.getData2() == 127) {
 								// Due to XG drum part protect mode being ON, drum channel 9 only can switch
 								// between MSB 126 & 127.
 								mapMSB.put(ch, tick, m.getData2());
-							} else if (ch == DRUM_CHANNEL && "XG".equals(standard) && m.getData2() != 126
+							} else if (ch == DRUM_CHANNEL && MidiStandard.XG == standard && m.getData2() != 126
 									&& m.getData2() != 127) {
 								System.err.println("XG Drum Part Protect Mode prevented bank select MSB.");
 							}
@@ -200,7 +201,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 							&& (message[4] & 0xFF) == 0x08 && (message[8] & 0xFF) == 0xF7) {
 						String bank = message[6] == 1 ? "MSB"
 								: (message[6] == 2 ? "LSB" : (message[6] == 3 ? "Patch" : ""));
-						if ("XG".equals(standard) && !"".equals(bank) && message[5] < 16 && message[5] > -1 && message[7] < 128
+						if (MidiStandard.XG == standard && !"".equals(bank) && message[5] < 16 && message[5] > -1 && message[7] < 128
 								&& message[7] > -1) {
 							switch (bank) {
 							case "MSB":
@@ -240,7 +241,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 			mapPatch.put(i, -1, 0);
 			mapLSB.put(i, -1, 0);
 		}
-		if ("XG".equals(standard) && yamahaDrumChannels != null) {
+		if (MidiStandard.XG == standard && yamahaDrumChannels != null) {
 			// Bank 127 is implicit the default on drum channels in XG.
 			for (int i = 0; i < CHANNEL_COUNT; i++) {
 				if (yamahaDrumChannels[i])
@@ -248,7 +249,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 				else
 					mapMSB.put(i, -1, 0);
 			}
-		} else if ("GM2".equals(standard)) {
+		} else if (MidiStandard.GM2 == standard) {
 			// Bank 120 is implicit the default on drum channel in GM2.
 			// Bank 121 is implicit the default on all other channels in GM2.
 			mapMSB.put(0, -1, 121);
@@ -334,18 +335,18 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 	}
 
 	public String getInstrumentExt(int channel, long tick, boolean drumKit) {
-		int type = 0;
+		MidiStandard type = MidiStandard.GM;
 		boolean rhythmChannel = channel == DRUM_CHANNEL;
-		if ("XG".equals(standard)) {
-			type = ExtensionMidiInstrument.XG;
+		if (MidiStandard.XG == standard) {
+			type = MidiStandard.XG;
 			rhythmChannel = yamahaDrumChannels[channel];
-		} else if ("GS".equals(standard)) {
-			type = ExtensionMidiInstrument.GS;
+		} else if (MidiStandard.GS == standard) {
+			type = MidiStandard.GS;
 			rhythmChannel = rolandDrumChannels[channel];
-		} else if ("GM2".equals(standard)) {
-			type = ExtensionMidiInstrument.GM2;
+		} else if (MidiStandard.GM2 == standard) {
+			type = MidiStandard.GM2;
 		} else {
-			type = ExtensionMidiInstrument.GM;
+			type = MidiStandard.GM;
 		}
 		long patchTick = mapPatch.getEntryTick(channel, tick);
 		if (patchTick == NO_RESULT) {
@@ -576,6 +577,6 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 	}
 
 	public boolean isGM() {
-		return "GM".equals(standard);
+		return MidiStandard.GM == standard;
 	}
 }

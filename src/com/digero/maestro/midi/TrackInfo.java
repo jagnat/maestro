@@ -64,13 +64,13 @@ public class TrackInfo implements MidiConstants
 			// No need? Separated drum tracks already have their name. Type 0 channel tracks can keep their 'Track x', or?
 			if (wasType0) {
 				if (isXGDrumTrack) {
-					name = "XG Drums";
+					name = ExtensionMidiInstrument.TRACK_NAME_DRUM_XG;
 				} else if (isGSDrumTrack) {
-					name = "GS Drums";
+					name = ExtensionMidiInstrument.TRACK_NAME_DRUM_GS;
 				} else if (isGM2DrumTrack) {
-					name = "GM2 Drums";
+					name = ExtensionMidiInstrument.TRACK_NAME_DRUM_GM2;
 				} else {
-					name = "Drums";
+					name = ExtensionMidiInstrument.TRACK_NAME_DRUM_GM;
 				}
 			}
 		}		

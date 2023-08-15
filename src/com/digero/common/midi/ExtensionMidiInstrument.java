@@ -11,15 +11,16 @@ import java.util.HashMap;
 
 public class ExtensionMidiInstrument {
 	
-	public static final String DRUM_KIT_GM2 = "GM2 Drum Kit";
-	public static final String DRUM_KIT_GS  = "GS Drum Kit";
 	public static final String DRUM_KIT_GM  = "Standard Drum Kit";
+	public static final String DRUM_KIT_GS  = "GS Drum Kit";	
 	public static final String DRUM_KIT_XG  = "XG Drum Kit";
+	public static final String DRUM_KIT_GM2 = "GM2 Drum Kit";
 	
-	public static int GM = 0;// MMA
-	public static int GS = 1;// Roland
-	public static int XG = 2;// Yamaha
-	public static int GM2 = 3;// MMA
+	public static final String TRACK_NAME_DRUM_GM  = "Drums";
+	public static final String TRACK_NAME_DRUM_GS  = "GS Drums";	
+	public static final String TRACK_NAME_DRUM_XG  = "XG Drums";
+	public static final String TRACK_NAME_DRUM_GM2 = "GM2 Drums";
+	
 	private static ExtensionMidiInstrument instance = null;
 	private static HashMap<String, String> mapxg = new HashMap<>();
 	private static HashMap<String, String> mapgs = new HashMap<>();
@@ -32,14 +33,14 @@ public class ExtensionMidiInstrument {
 
 		instance = new ExtensionMidiInstrument();
 
-		parse(XG, (byte) 0, "xg.txt", true, false);
-		parse(GS, (byte) 0, "gs.txt", true, true);
-		parse(GS, (byte) 120, "gsKits.txt", false, false);
-		parse(GM2, (byte) 121, "gm2.txt", true, false);
-		parse(GM2, (byte) 120, "gm2-120.txt", false, false);
-		parse(XG, (byte) 127, "xg127.txt", false, false);
-		parse(XG, (byte) 126, "xg126.txt", false, false);
-		parse(XG, (byte) 64, "xg64.txt", false, false);
+		parse(MidiStandard.XG, (byte) 0, "xg.txt", true, false);
+		parse(MidiStandard.GS, (byte) 0, "gs.txt", true, true);
+		parse(MidiStandard.GS, (byte) 120, "gsKits.txt", false, false);
+		parse(MidiStandard.GM2, (byte) 121, "gm2.txt", true, false);
+		parse(MidiStandard.GM2, (byte) 120, "gm2-120.txt", false, false);
+		parse(MidiStandard.XG, (byte) 127, "xg127.txt", false, false);
+		parse(MidiStandard.XG, (byte) 126, "xg126.txt", false, false);
+		parse(MidiStandard.XG, (byte) 64, "xg64.txt", false, false);
 
 		/*
 		 * GM voices: 129 GS voices: 1170 XG voices: 1011 GM2 voices: 136 Total : 2446
@@ -64,29 +65,29 @@ public class ExtensionMidiInstrument {
 	 * 
 	 */
 
-	public String fromId(int extension, byte MSB, byte LSB, byte patch, boolean drumKit, boolean rhythmChannel) {
+	public String fromId(MidiStandard extension, byte MSB, byte LSB, byte patch, boolean drumKit, boolean rhythmChannel) {
 
 		// GS does not have Dulcimer on patch 15 MSB 0 like GM but a Santur, so we are
 		// careful to fetch its actual name.
-		boolean santur = extension == GS && MSB == 0 && patch == 15 && !rhythmChannel;
+		boolean santur = extension == MidiStandard.GS && MSB == 0 && patch == 15 && !rhythmChannel;
 
-		if (extension == GS && rhythmChannel) {
+		if (extension == MidiStandard.GS && rhythmChannel) {
 			// Bank 120 is forced on drum channels in GS.
 			MSB = 120;
 		}
-		if (extension == GS) {
+		if (extension == MidiStandard.GS) {
 			// LSB is used to switch between different synth voice set in GS. Since only
 			// have 1 synth file, just pipe all into LSB 0.
 			// LSB 1 = SC-55, 2 = SC-88, 3 = SC-88Pro, 4 = SC-8850
 			LSB = 0;
 		}
-		if (!drumKit && (extension == GM || (MSB == 0 && LSB == 0 && !santur))) {
+		if (!drumKit && (extension == MidiStandard.GM || (MSB == 0 && LSB == 0 && !santur))) {
 			return MidiInstrument.fromId(patch).name;
-		} else if (MSB == 121 && LSB == 0 && extension == GM2) {
+		} else if (MSB == 121 && LSB == 0 && extension == MidiStandard.GM2) {
 			// LSB 0 on MSB 121 is same as GM midi standard.
 			return MidiInstrument.fromId(patch).name;
 		}
-		if (MSB == 127 && extension == XG) {
+		if (MSB == 127 && extension == MidiStandard.XG) {
 			// As per XG specs, LSB is ignored if MSB is 0x7F.
 			// Note: I wonder why this is not done for 0x7E also..
 			LSB = 0;
@@ -99,20 +100,20 @@ public class ExtensionMidiInstrument {
 		return instrName;
 	}
 
-	private String determineInstrumentName(int extension, byte MSB, byte LSB, byte patch) {
+	private String determineInstrumentName(MidiStandard extension, byte MSB, byte LSB, byte patch) {
 		String instrName = null;
 
-		if (extension == XG) {
+		if (extension == MidiStandard.XG) {
 			instrName = mapxg.get(String.format("%03d%03d%03d", MSB, LSB, patch));
-		} else if (extension == GS) {
+		} else if (extension == MidiStandard.GS) {
 			instrName = mapgs.get(String.format("%03d%03d%03d", MSB, LSB, patch));
-		} else if (extension == GM2) {
+		} else if (extension == MidiStandard.GM2) {
 			instrName = mapgm2.get(String.format("%03d%03d%03d", MSB, LSB, patch));
 		}
 		return instrName;
 	}
 
-	private static void parse(int extension, byte theByte, String fileName, boolean firstColumnPatch,
+	private static void parse(MidiStandard extension, byte theByte, String fileName, boolean firstColumnPatch,
 			boolean theByteIsLSB) {
 		try {
 			InputStream in = instance.getClass().getResourceAsStream(fileName);
@@ -137,7 +138,7 @@ public class ExtensionMidiInstrument {
 		}
 	}
 
-	private static void readLines(int extension, byte theByte, String fileName, boolean firstColumnPatch,
+	private static void readLines(MidiStandard extension, byte theByte, String fileName, boolean firstColumnPatch,
 			boolean theByteIsLSB, BufferedReader theFileReader, String line, int lastPatch, int lookupByte,
 			String regex) throws IOException {
 		while (line != null) {
@@ -169,7 +170,7 @@ public class ExtensionMidiInstrument {
 		}
 	}
 
-	private static void addInstruments(int extension, byte theByte, boolean firstColumnPatch, boolean theByteIsLSB,
+	private static void addInstruments(MidiStandard extension, byte theByte, boolean firstColumnPatch, boolean theByteIsLSB,
 			int lastPatch, int lookupByte, String[] splits) {
 		if (theByteIsLSB) {
 			if (firstColumnPatch) {
@@ -186,18 +187,18 @@ public class ExtensionMidiInstrument {
 		}
 	}
 
-	private static void addInstrument(int extension, byte MSB, byte LSB, byte patch, String name) {
+	private static void addInstrument(MidiStandard extension, byte MSB, byte LSB, byte patch, String name) {
 		// System.err.println(" addInstrument "+name+" ("+MSB+", "+LSB+", "+patch+")");
 		String key = String.format("%03d%03d%03d", MSB, LSB, patch);
-		if (extension == XG) {
+		if (extension == MidiStandard.XG) {
 			if (mapxg.get(key) != null)
 				System.out.println("Warning duplicate entry for (" + MSB + ", " + LSB + ", " + patch + ") in XG map");
 			mapxg.put(key, name);
-		} else if (extension == GS) {
+		} else if (extension == MidiStandard.GS) {
 			if (mapgs.get(key) != null)
 				System.out.println("Warning duplicate entry for (" + MSB + ", " + LSB + ", " + patch + ") in GS map");
 			mapgs.put(key, name);
-		} else if (extension == GM2) {
+		} else if (extension == MidiStandard.GM2) {
 			if (mapgm2.get(key) != null)
 				System.out.println("Warning duplicate entry for (" + MSB + ", " + LSB + ", " + patch + ") in GM2 map");
 			mapgm2.put(key, name);
