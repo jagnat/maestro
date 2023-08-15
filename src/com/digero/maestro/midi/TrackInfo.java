@@ -21,6 +21,7 @@ import javax.sound.midi.ShortMessage;
 import javax.sound.midi.Track;
 
 import com.digero.common.abc.LotroInstrument;
+import com.digero.common.midi.ExtensionMidiInstrument;
 import com.digero.common.midi.KeySignature;
 import com.digero.common.midi.MidiConstants;
 import com.digero.common.midi.MidiInstrument;
@@ -215,14 +216,14 @@ public class TrackInfo implements MidiConstants
 							if (ins != null) {
 								instrumentExtensions.add(ins);
 							} else {
-								instrumentExtensions.add(isXGDrumTrack?"XG Drum Kit":(isGM2DrumTrack?"GM2 Drum Kit":"GS Drum Kit"));
+								instrumentExtensions.add(isXGDrumTrack?ExtensionMidiInstrument.DRUM_KIT_XG:(isGM2DrumTrack?ExtensionMidiInstrument.DRUM_KIT_GM2:ExtensionMidiInstrument.DRUM_KIT_GS));
 							}
 						} else {
 							String ins = sequenceCache.getInstrumentExt(c, tick, isDrumTrack);
 							if (ins != null) {
 								instrumentExtensions.add(ins);
 							} else {
-								instrumentExtensions.add("Standard Drum Kit");
+								instrumentExtensions.add(ExtensionMidiInstrument.DRUM_KIT_GM);
 							}
 						}
 						noteEvents.add(ne);
@@ -490,7 +491,7 @@ public class TrackInfo implements MidiConstants
 
 				names.append(i);
 			}
-			if (first || (names.length() == 0)) return isXGDrumTrack?"XG Drum Kit":(isGM2DrumTrack?"GM2 Drum Kit":(isGSDrumTrack?"GS Drum Kit":"Standard Drum Kit"));
+			if (first || (names.length() == 0)) return isXGDrumTrack?ExtensionMidiInstrument.DRUM_KIT_XG:(isGM2DrumTrack?ExtensionMidiInstrument.DRUM_KIT_GM2:(isGSDrumTrack?ExtensionMidiInstrument.DRUM_KIT_GS:ExtensionMidiInstrument.DRUM_KIT_GM));
 			
 			return names.toString();
 		}

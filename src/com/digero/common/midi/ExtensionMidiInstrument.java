@@ -10,6 +10,12 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 
 public class ExtensionMidiInstrument {
+	
+	public static final String DRUM_KIT_GM2 = "GM2 Drum Kit";
+	public static final String DRUM_KIT_GS  = "GS Drum Kit";
+	public static final String DRUM_KIT_GM  = "Standard Drum Kit";
+	public static final String DRUM_KIT_XG  = "XG Drum Kit";
+	
 	public static int GM = 0;// MMA
 	public static int GS = 1;// Roland
 	public static int XG = 2;// Yamaha

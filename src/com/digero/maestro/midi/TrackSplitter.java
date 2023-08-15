@@ -15,6 +15,7 @@ import javax.sound.midi.Sequence;
 import javax.sound.midi.ShortMessage;
 import javax.sound.midi.Track;
 
+import com.digero.common.midi.ExtensionMidiInstrument;
 import com.digero.common.midi.MidiConstants;
 import com.digero.common.midi.MidiFactory;
 import com.digero.common.midi.MidiInstrument;
@@ -235,14 +236,14 @@ public class TrackSplitter {
 	private String fetchInstrName(long tick, int channel, int port, int track) {
 		if (isGM) {
 			if (channel == MidiConstants.DRUM_CHANNEL)
-				return "Standard Drum Kit";
+				return ExtensionMidiInstrument.DRUM_KIT_GM;
 			int instrumentNumber = sequenceCache.getInstrument(port, channel, tick);
 			return MidiInstrument.fromId(instrumentNumber).toString();
 		} else {
 			String in = sequenceCache.getInstrumentExt(channel, tick, isDrumsTrack(track));
 			if (in == null && isXgGsGm2DrumsTrack(track)) {
-				in = sequenceCache.isXGDrumsTrack(track) ? "XG Drum Kit"
-						: (sequenceCache.isGM2DrumsTrack(track) ? "GM2 Drum Kit" : "GS Drum Kit");
+				in = sequenceCache.isXGDrumsTrack(track) ? ExtensionMidiInstrument.DRUM_KIT_XG
+						: (sequenceCache.isGM2DrumsTrack(track) ? ExtensionMidiInstrument.DRUM_KIT_GM2 : ExtensionMidiInstrument.DRUM_KIT_GS);
 			}
 			return in;
 		}
