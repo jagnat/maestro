@@ -5,7 +5,7 @@ public enum MidiInstrument
 	// Official name list is at: https://www.midi.org/specifications-old/item/gm-level-1-sound-set
 	PIANO("Acoustic Grand Piano"), // 0
 	BRIGHT_PIANO("Bright Acoustic Piano"), // 1
-	ELEC_PIANO("Elec Piano"), // 2
+	ELEC_PIANO("Electric Piano"), // 2
 	HONKY_TONK_PIANO("Honky-tonk Piano"), // 3
 	RHODES_PIANO("Rhodes Piano"), // 4
 	CHORUS_PIANO("Chorus Piano"), // 5
@@ -20,19 +20,19 @@ public enum MidiInstrument
 	TUBULAR_BELLS("Tubular Bells"), // 14
 	DULCIMER("Dulcimer"), // 15
 	HAMMOND_ORGAN("Hammond Organ"), // 16
-	PERC_ORGAN("Perc Organ"), // 17
+	PERC_ORGAN("Percussive Organ"), // 17
 	ROCK_ORGAN("Rock Organ"), // 18
 	CHURCH_ORGAN("Church Organ"), // 19
 	REED_ORGAN("Reed Organ"), // 20
 	ACCORDION("Accordion"), // 21
 	HARMONICA("Harmonica"), // 22
-	TANGO_ACORDN("Tango Acordian"), // 23
+	TANGO_ACORDN("Tango Accordian"), // 23
 	NYLON_GUITAR("Nylon Guitar"), // 24
 	STEEL_STRING_GUITAR("Steel String Guitar"), // 25
 	JAZZ_GUITAR("Jazz Elec. Guitar"), // 26
 	CLEAN_ELEC_GUITAR("Clean Elec. Guitar"), // 27
 	MUTE_ELEC_GUITAR("Mute Elec. Guitar"), // 28
-	OVRDRIVE_GUITAR("Ovrdrive Guitar"), // 29
+	OVRDRIVE_GUITAR("Overdriven Guitar"), // 29
 	DISTORTED_GUITAR("Distorted Guitar"), // 30
 	HARMONICS("Guitar Harmonics"), // 31
 	ACOUSTIC_BASS("Acoustic Bass"), // 32
@@ -70,7 +70,7 @@ public enum MidiInstrument
 	SOPRANO_SAX("Soprano Sax"), // 64
 	ALTO_SAX("Alto Sax"), // 65
 	TENOR_SAX("Tenor Sax"), // 66
-	BARI_SAX("Bari Sax"), // 67
+	BARI_SAX("Baritone Sax"), // 67
 	OBOE("Oboe"), // 68
 	ENGLISH_HORN("English Horn"), // 69
 	BASSOON("Bassoon"), // 70
@@ -79,7 +79,7 @@ public enum MidiInstrument
 	FLUTE("Flute"), // 73
 	RECORDER("Recorder"), // 74
 	PAN_FLUTE("Pan Flute"), // 75
-	BOTTLE_BLOW("Bottle Blow"), // 76
+	BOTTLE_BLOW("Blown Bottle"), // 76
 	SHAKUHACHI("Shakuhachi"), // 77
 	WHISTLE("Whistle"), // 78
 	OCARINA("Ocarina"), // 79
@@ -88,15 +88,15 @@ public enum MidiInstrument
 	CALIOPE("Caliope"), // 82
 	CHIFF_LEAD("Chiff Lead"), // 83
 	CHARANG("Charang"), // 84
-	SOLO_SYNTH_VOX("Solo Synth Vox"), // 85
+	SOLO_SYNTH_VOX("Synth Voice"), // 85
 	BRITE_SAW("Fifths lead"), // 86
 	BRASS_AND_LEAD("Bass & Lead"), // 87
 	FANTASA_PAD("New age Pad"), // 88
 	WARM_PAD("Warm Pad"), // 89
-	POLY_SYNTH_PAD("Poly Synth Pad"), // 90
+	POLY_SYNTH_PAD("Polysynth Pad"), // 90
 	SPACE_VOX_PAD("Choir Pad"), // 91
 	BOW_GLASS_PAD("Bowed Pad"), // 92
-	METAL_PAD("Metal Pad"), // 93
+	METAL_PAD("Metallic Pad"), // 93
 	HALO_PAD("Halo Pad"), // 94
 	SWEEP_PAD("Sweep Pad"), // 95
 	ICE_RAIN("Rain"), // 96
@@ -104,7 +104,7 @@ public enum MidiInstrument
 	CRYSTAL("Crystal"), // 98
 	ATMOSPHERE("Atmosphere"), // 99
 	BRIGHTNESS("Brightness"), // 100
-	GOBLIN("Goblin"), // 101
+	GOBLIN("Goblins"), // 101
 	ECHO_DROPS("Echoes"), // 102
 	STAR_THEME("Sci-fi"), // 103
 	SITAR("Sitar"), // 104
