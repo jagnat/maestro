@@ -17,6 +17,7 @@ import com.digero.common.midi.IBarNumberCache;
 import com.digero.common.midi.ITempoCache;
 import com.digero.common.midi.TimeSignature;
 import com.digero.common.util.Util;
+import com.digero.maestro.midi.BentNoteEvent;
 import com.digero.maestro.midi.NoteEvent;
 import com.digero.maestro.midi.SequenceDataCache;
 import com.digero.maestro.midi.SequenceDataCache.TempoEvent;
@@ -187,15 +188,17 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 		if (!oddsAndEnds)
 			return;
 		
-		int startWeight = 6;
-		int endingWeight = 2;// This must be divisable by endingSustainedWeightFactor
-		int endingSustainedWeightFactor = 2;
-		boolean noDrumEndingScore = false;
+		int startWeight = 12;// Note starts get high weight.
+		int endingWeight = 4;// Note ends get medium weight. This must be divisable by endingSustainedWeightFactor
+		int endingSustainedWeightFactor = 2;// Non-sustained notes, gets ending weight divided by this.
+		int bendWeight = 1;// Pitch bends get the least weight.
+		boolean noDrumEndingScore = false;// If drums note's endings should not get any weight at all.
 		
 		if (mixVersion == 1) {
 			startWeight = 2;
-			endingWeight = 1;// This must be divisable by endingSustainedWeightFactor
+			endingWeight = 1;
 			endingSustainedWeightFactor = 1;
+			bendWeight = 2;
 			noDrumEndingScore = true;
 		}
 		
@@ -314,6 +317,42 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 							sixGridsOdds.set(sixGrid, sixGridsOdds.get(sixGrid)+oddScoreStarts);
 						} else {
 							sixGridsOdds.set(sixGrid, oddScoreStarts);
+						}
+					}
+					
+					if (ne instanceof BentNoteEvent) {
+						// bent notes scores (the bent notes which range is less than 1 octave
+						BentNoteEvent be = (BentNoteEvent) ne;
+						
+						for (Entry<Long, Integer> bend : be.bends.entrySet()) {
+							long tick = bend.getKey();
+							if (tick == be.getStartTick()) 
+								continue;
+							if (tick > tempoChange.tick && (nextTempoChange == null || tick < nextTempoChange.tick)) {
+								// The note starts after current tempo change and either is last tempochange or
+								// note starts before next tempo change
+								long q = tempoChange.tick + Util.roundGrid(tick - tempoChange.tick,
+										tempoChange.info.getMinNoteLengthTicks());
+								long qOdd = tempoChange.tick + Util.roundGrid(tick - tempoChange.tick,
+										tempoChange.infoOdd.getMinNoteLengthTicks());
+								int odd = (int) (Math.abs(tick - q) - Math.abs(tick - qOdd));
+								
+								// determine which sixGrid we are in
+								int sixGrid = (int) ((tick - tempoChange.tick) / sixTicks);
+								
+								if (sixGrid >= maxSixths) 
+									continue;
+								if (sixGrid > highest)
+									highest = sixGrid;
+
+								// Add a point to this sixGrid odd vs. default list.
+								int oddScoreBends = odd * bendWeight * be.combinePrioritiesScoreMultiplier;
+								if (sixGridsOdds.get(sixGrid) != null) {
+									sixGridsOdds.set(sixGrid, sixGridsOdds.get(sixGrid)+oddScoreBends);
+								} else {
+									sixGridsOdds.set(sixGrid, oddScoreBends);
+								}
+							}
 						}
 					}
 					
