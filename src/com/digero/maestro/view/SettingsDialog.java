@@ -639,19 +639,25 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 				updateExportFilenameExample();
 			}
 		});
-
-		JCheckBox alwaysRegenerateCheckBox = new JCheckBox(
-				"Always regenerate filenames using pattern, even if a filename exists");
+		
+		JCheckBox alwaysRegenerateCheckBox = new JCheckBox("Always regenerate filenames using pattern");
 		alwaysRegenerateCheckBox.setSelected(exportTemplateSettings.shouldAlwaysRegenerateFromPattern());
 		alwaysRegenerateCheckBox.setEnabled(exportTemplateSettings.isExportFilenamePatternEnabled());
-		alwaysRegenerateCheckBox.addActionListener(e -> {
+		alwaysRegenerateCheckBox.setToolTipText("<html>Enable this setting to have Maestro always freshly generate filenames using the pattern.<br>"
+				+ "Disable this setting to have Maestro use a filename from a previous export, if available.</html>");
+		alwaysRegenerateCheckBox.addActionListener(e ->
+		{
 			boolean selected = alwaysRegenerateCheckBox.isSelected();
 			exportTemplateSettings.setAlwaysRegenerateFromPattern(selected);
 		});
 
 		JCheckBox enablePatternExportCheckBox = new JCheckBox("Enable custom pattern for generating filenames");
 		enablePatternExportCheckBox.setSelected(exportTemplateSettings.isExportFilenamePatternEnabled());
-		enablePatternExportCheckBox.addActionListener(e -> {
+		enablePatternExportCheckBox.setToolTipText("<html>Select to enable filename generation using patterns.<br>"
+				+ "Define the pattern in the text box below, referencing any variables in the variable list.<br>"
+				+ "An example filename generated from your pattern is shown below the text box.</html>");
+		enablePatternExportCheckBox.addActionListener(e ->
+		{
 			boolean selected = enablePatternExportCheckBox.isSelected();
 			exportTemplateSettings.setExportFilenamePatternEnabled(selected);
 			replaceWhitespaceComboBox.setEnabled(selected);
