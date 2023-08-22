@@ -2292,28 +2292,26 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		
 		String fileName = "mySong.abc";
 
+		// Always regenerate setting from pattern export is highest precedent
 		if (exportFilenameTemplate.shouldRegenerateFilename())
 		{
 			fileName = exportFilenameTemplate.formatName();
 		}
-		else if (exportFile == null)
+		else if (exportFile != null) // else use abc filename if exists already
 		{
-			System.out.println("here1");
-			exportFile = abcSong.getSourceFile();
-			
-			if (exportFile == null && exportFilenameTemplate.isEnabled())
-			{
-				fileName = exportFilenameTemplate.formatName();
-			}
-			
-			if (exportFile == null)
-			{
-				fileName = abcSong.getSequenceInfo().getFileName();
-			}
-			else
-			{
-				fileName = exportFile.getName(); 
-			}
+			fileName = exportFile.getName();
+		}
+		else if (abcSong.getSaveFile() != null) // else use msx filename if exists already
+		{
+			fileName = abcSong.getSaveFile().getName();
+		}
+		else if (exportFilenameTemplate.isEnabled()) // else use pattern if usage is enabled
+		{
+			fileName = exportFilenameTemplate.formatName();
+		}
+		else if (abcSong.getSourceFile() != null) // else default to source file (midi/abc)
+		{
+			fileName = abcSong.getSourceFilename();
 		}
 		
 		int dot = fileName.lastIndexOf('.');
@@ -2410,21 +2408,26 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		
 		String fileName = "mySong.msx";
 
+		// Always regenerate setting from pattern export is highest precedent
 		if (exportFilenameTemplate.shouldRegenerateFilename())
 		{
 			fileName = exportFilenameTemplate.formatName();
 		}
-		else if (saveFile == null)
+		else if (saveFile != null) // else use MSX file if exists already
 		{
-			saveFile = abcSong.getExportFile();
-			if (saveFile == null && exportFilenameTemplate.isEnabled())
-				saveFile = new File(folder, exportFilenameTemplate.formatName());
-			if (saveFile == null)
-				saveFile = abcSong.getSourceFile();
-			if (saveFile == null)
-				saveFile = new File(folder, abcSong.getSequenceInfo().getFileName());
-
 			fileName = saveFile.getName();
+		}
+		else if (abcSong.getExportFile() != null) // else use ABC filename if exists
+		{
+			fileName = abcSong.getExportFile().getName();
+		}
+		else if (exportFilenameTemplate.isEnabled()) // else use pattern if enabled
+		{
+			fileName = exportFilenameTemplate.formatName();
+		}
+		else if (abcSong.getSourceFile() != null) // else use source (midi/abc) file
+		{
+			fileName = abcSong.getSourceFilename();
 		}
 		
 		int dot = fileName.lastIndexOf('.');
