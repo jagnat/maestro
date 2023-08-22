@@ -906,6 +906,11 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		timeSignatureField.addPropertyChangeListener("value", evt -> {
 			if (abcSong != null)
 				abcSong.setTimeSignature((TimeSignature) timeSignatureField.getValue());
+			
+			if (abcSequencer.isRunning()) {
+				// Mix timings, regular timings and swing timings all depend on time signature for laying out the grids
+				refreshPreviewSequence(false);
+			}
 		});
 	}
 
