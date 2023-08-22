@@ -48,11 +48,13 @@ Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 Version 2.5.0.118
 - Made light theme the default
 - Fix that bends that took effect at start of notes, might not have been in effect due to order of midi-events.
-- Improve the quantization of bent notes by doing it later after the grid is computed.
-- Notes that belonged to same bent note will no longer be partly forced octave transposed, now they are transposed together.
-- Parts of bent notes will no longer be quantized to zero duration and discarded.
-- Bent notes are now painted as one note. Also section-editor treats them as one note. So its not possible for example to mute half of it.
-- An improvement to mix timings, note endings will now have even less influence on the timing compared to note starts.
+- Pitch bends that spans less than an octave is now treated differently:
+    Improves the quantization by doing it later after the grid is computed.
+    Notes that belonged to same bent note will no longer be partly forced octave transposed, now they are transposed together.
+    Now painted as one note. Also section-editor treats them as one note. So its not possible for example to mute half of it.
+	Parts of the bent notes will no longer be quantized to zero duration and discarded possible leaving a gap in the bent note.
+- Mix timings upgraded to version 2.
+    Note endings will now have even less influence on the timing compared to note starts. Plus other small improvements.
 
 Version 2.5.0.117
 - Ability to customize instrument names for default part naming.
