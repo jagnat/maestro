@@ -901,17 +901,28 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private void generateTimeSignatureField() {
 		timeSignatureField = new MyFormattedTextField(TimeSignature.FOUR_FOUR, 5);
 		timeSignatureField.setToolTipText("<html>Adjust the time signature of the ABC file.<br><br>"
-				+ "This only affects the display, not the sound of the exported file.<br>"
-				+ "Examples: 4/4, 3/8, 2/2</html>");
+				+ "This mainly affects the display only, but can affect long notes slightly.<br>"
+				+ "Examples: 4/4, 3/4, 3/8, 2/2, 2/4, 6/8</html>");
 		timeSignatureField.addPropertyChangeListener("value", evt -> {
 			if (abcSong != null)
 				abcSong.setTimeSignature((TimeSignature) timeSignatureField.getValue());
 			
 			if (abcSequencer.isRunning()) {
-				// Mix timings, regular timings and swing timings all depend on time signature for laying out the grids
+				// Breaking up of long notes can depend on time signature for bar lines.
 				refreshPreviewSequence(false);
 			}
 		});
+		timeSignatureField.addActionListener(e -> {
+            // This is for when pressing enter on an illegal time signature
+			// To update the UI back to the meter of last legal from AbcSong.
+			// This is ran after propertychange above. (hopefully always)
+			// TODO: This ugly hack could be done better
+            if (abcSong != null) {
+            	if (!abcSong.getTimeSignature().toString().equals(timeSignatureField.getText())) {
+            		timeSignatureField.setValue(abcSong.getTimeSignature());
+            	}
+            }
+        });
 	}
 
 	private void generateKeySignatureField() {
