@@ -2284,36 +2284,45 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		File exportFile = abcSong.getExportFile();
 		File allowOverwriteFile = allowOverwriteExportFile ? exportFile : null;
+		
+		String defaultFolder = Util.getLotroMusicPath(false).getAbsolutePath();
+		String folder = prefs.get("exportDialogFolder", defaultFolder);
+		if (!new File(folder).exists())
+			folder = defaultFolder;
+		
+		String fileName = "mySong.abc";
 
-		if (exportFile == null || exportFilenameTemplate.shouldRegenerateFilename()) {
-			String defaultFolder = Util.getLotroMusicPath(false).getAbsolutePath();
-			String folder = prefs.get("exportDialogFolder", defaultFolder);
-			if (!new File(folder).exists())
-				folder = defaultFolder;
-
-			String fileName = "mySong.abc";
-
-			if (exportFilenameTemplate.isEnabled()) {
-				fileName = exportFilenameTemplate.formatName();
-			} else {
-				exportFile = abcSong.getSourceFile();
-				if (exportFile == null) {
-					fileName = abcSong.getSequenceInfo().getFileName();
-				} else {
-					fileName = exportFile.getName();
-				}
-			}
-
-			int dot = fileName.lastIndexOf('.');
-			if (dot > 0)
-				fileName = fileName.substring(0, dot);
-			else if (dot == 0)
-				fileName = "";
-			fileName = StringCleaner.cleanForFileName(fileName);
-			fileName += ".abc";
-
-			exportFile = new File(folder, fileName);
+		// Always regenerate setting from pattern export is highest precedent
+		if (exportFilenameTemplate.shouldRegenerateFilename())
+		{
+			fileName = exportFilenameTemplate.formatName();
 		}
+		else if (exportFile != null) // else use abc filename if exists already
+		{
+			fileName = exportFile.getName();
+		}
+		else if (abcSong.getSaveFile() != null) // else use msx filename if exists already
+		{
+			fileName = abcSong.getSaveFile().getName();
+		}
+		else if (exportFilenameTemplate.isEnabled()) // else use pattern if usage is enabled
+		{
+			fileName = exportFilenameTemplate.formatName();
+		}
+		else if (abcSong.getSourceFile() != null) // else default to source file (midi/abc)
+		{
+			fileName = abcSong.getSourceFilename();
+		}
+		
+		int dot = fileName.lastIndexOf('.');
+		if (dot > 0)
+			fileName = fileName.substring(0, dot);
+		else if (dot == 0)
+			fileName = "";
+		fileName = StringCleaner.cleanForFileName(fileName);
+		fileName += ".abc";
+
+		exportFile = new File(folder, fileName);
 
 		exportFile = doSaveDialog(exportFile, allowOverwriteFile, ".abc",
 				new ExtensionFileFilter("ABC files (*.abc, *.txt)", "abc", "txt"));
@@ -2386,38 +2395,47 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		File saveFile = abcSong.getSaveFile();
 		File allowOverwriteFile = allowOverwriteSaveFile ? saveFile : null;
+		
+		String defaultFolder;
+		if (abcSong.getExportFile() != null)
+			defaultFolder = abcSong.getExportFile().getAbsoluteFile().getParent();
+		else
+			defaultFolder = Util.getLotroMusicPath(false).getAbsolutePath();
 
-		if (saveFile == null || exportFilenameTemplate.shouldRegenerateFilename()) {
-			String defaultFolder;
-			if (abcSong.getExportFile() != null)
-				defaultFolder = abcSong.getExportFile().getAbsoluteFile().getParent();
-			else
-				defaultFolder = Util.getLotroMusicPath(false).getAbsolutePath();
+		String folder = prefs.get("saveDialogFolder", defaultFolder);
+		if (!new File(folder).exists())
+			folder = defaultFolder;
+		
+		String fileName = "mySong.msx";
 
-			String folder = prefs.get("saveDialogFolder", defaultFolder);
-			if (!new File(folder).exists())
-				folder = defaultFolder;
-
-			String fileName = "mySong.msx";
-
-			if (exportFilenameTemplate.isEnabled()) {
-				fileName = exportFilenameTemplate.formatName();
-			} else {
-				saveFile = abcSong.getExportFile();
-				if (saveFile == null)
-					saveFile = abcSong.getSourceFile();
-				if (saveFile == null)
-					saveFile = new File(folder, abcSong.getSequenceInfo().getFileName());
-				fileName = saveFile.getName();
-			}
-
-			int dot = fileName.lastIndexOf('.');
-			if (dot > 0)
-				fileName = fileName.substring(0, dot);
-			fileName += AbcSong.MSX_FILE_EXTENSION;
-
-			saveFile = new File(folder, fileName);
+		// Always regenerate setting from pattern export is highest precedent
+		if (exportFilenameTemplate.shouldRegenerateFilename())
+		{
+			fileName = exportFilenameTemplate.formatName();
 		}
+		else if (saveFile != null) // else use MSX file if exists already
+		{
+			fileName = saveFile.getName();
+		}
+		else if (abcSong.getExportFile() != null) // else use ABC filename if exists
+		{
+			fileName = abcSong.getExportFile().getName();
+		}
+		else if (exportFilenameTemplate.isEnabled()) // else use pattern if enabled
+		{
+			fileName = exportFilenameTemplate.formatName();
+		}
+		else if (abcSong.getSourceFile() != null) // else use source (midi/abc) file
+		{
+			fileName = abcSong.getSourceFilename();
+		}
+		
+		int dot = fileName.lastIndexOf('.');
+		if (dot > 0)
+			fileName = fileName.substring(0, dot);
+		fileName += AbcSong.MSX_FILE_EXTENSION;
+
+		saveFile = new File(folder, fileName);
 
 		saveFile = doSaveDialog(saveFile, allowOverwriteFile, AbcSong.MSX_FILE_EXTENSION,
 				new ExtensionFileFilter(AbcSong.MSX_FILE_DESCRIPTION_PLURAL + " (*" + AbcSong.MSX_FILE_EXTENSION + ")",
