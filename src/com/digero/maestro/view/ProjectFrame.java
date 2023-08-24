@@ -580,6 +580,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			AbcPart abcPart = partsList2.getSelectedPart();
 			sequencer.getFilter().onAbcPartChanged(abcPart != null);
 			abcSequencer.getFilter().onAbcPartChanged(abcPart != null);
+			System.out.println("partlist2selectlistener");
 			partPanel.setAbcPart(abcPart);
 			if (abcPart != null) {
 				updateButtons(false);
@@ -1790,6 +1791,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 //				partsList.setSelectedIndex(idx);
 //				partsList.ensureIndexIsVisible(idx);
 //				partsList.repaint();
+//				partsList2.regenerateParts();
 				partsList2.selectPart(idx);
 				partsList2.ensureIndexIsVisible(idx);
 				partsList2.repaint();
@@ -1884,19 +1886,22 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	{
 		@Override public void intervalAdded(ListDataEvent e)
 		{
-			partsList2.repaint();
+			System.out.println("intervalAdded");
+			partsList2.regenerateParts();
 			updateButtons(false);
 		}
 
 		@Override public void intervalRemoved(ListDataEvent e)
 		{
-			partsList2.repaint();
+			System.out.println("intervalRemoved");
+			partsList2.regenerateParts();
 			updateButtons(false);
 		}
 
 		@Override public void contentsChanged(ListDataEvent e)
 		{
-			partsList2.repaint();
+			System.out.println("contentsChanged");
+			partsList2.regenerateParts();
 			updateButtons(false);
 		}
 	};

@@ -93,6 +93,9 @@ public class PartsListItem extends JPanel implements IDiscardable, TableLayoutCo
 			muteButton.setText(isMute? "<html><b>M</b></html>" : "M");
 		});
 		
+		muteButton.addChangeListener(e -> {
+		});
+		
 		int col = -1;
 		add(title, ++col + ", 0");
 		add(soloButton, ++col + ", 0");

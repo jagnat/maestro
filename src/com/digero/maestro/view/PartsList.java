@@ -28,8 +28,8 @@ public class PartsList extends JPanel implements
 	private BoxLayout layout;
 	
 	private List<PartsListItem> parts = new ArrayList<PartsListItem>();
-	
-	private int selectedIndex = -1;
+	private AbcPart selectedPart = null;
+	private int selectedIndex = 0;
 	
 	public PartsList()
 	{
@@ -61,13 +61,14 @@ public class PartsList extends JPanel implements
 		
 		item.setListSelectionListener(selectionListener);
 		
+		if (part == selectedPart)
+		{
+			selectedIndex = idx;
+			item.setSelected(true);
+		}
+		
 		parts.add(idx, item);
 		add(item);
-	}
-	
-	private void removePart(int idx)
-	{
-		
 	}
 	
 	public void selectPart(int idx)
@@ -78,6 +79,15 @@ public class PartsList extends JPanel implements
 			item.setSelected(i == idx);
 		}
 		selectedIndex = idx;
+		selectedPart = parts.get(idx).getPart();
+		
+		for (ListSelectionListener listener : listenerList.getListeners(ListSelectionListener.class))
+		{
+			ListSelectionEvent event = new ListSelectionEvent(parts.get(idx).getPart(), idx, idx, false);
+			listener.valueChanged(event);
+		}
+		
+		revalidate();
 		repaint();
 	}
 	
@@ -147,12 +157,6 @@ public class PartsList extends JPanel implements
 		if (i < 0) return;
 		
 		selectPart(i);
-		
-		for (ListSelectionListener listener : listenerList.getListeners(ListSelectionListener.class))
-		{
-			ListSelectionEvent event = new ListSelectionEvent(part, i, i, false);
-			listener.valueChanged(event);
-		}
 	};
 	
 	public Listener<AbcPartEvent> partListener = e -> {
@@ -160,7 +164,9 @@ public class PartsList extends JPanel implements
 		{
 		case TRACK_ENABLED:
 		case INSTRUMENT:
+		case TITLE:
 			System.out.println(e.getProperty().name());
+			regenerateParts();
 			break;
 		default:
 			break;
@@ -176,14 +182,16 @@ public class PartsList extends JPanel implements
 		{
 		case PART_ADDED:
 			e.getPart().addAbcListener(partListener);
+			regenerateParts();
 			System.out.println(e.getProperty().name());
 			break;
 		case BEFORE_PART_REMOVED:
-			e.getPart().addAbcListener(partListener);
+			e.getPart().removeAbcListener(partListener);
 			System.out.println(e.getProperty().name());
 			break;
 		case PART_LIST_ORDER:
 			System.out.println(e.getProperty().name());
+			regenerateParts();
 			break;
 		default:
 			break;
