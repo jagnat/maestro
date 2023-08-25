@@ -7,7 +7,9 @@ import java.awt.BorderLayout;
 import javax.swing.JScrollPane;
 import javax.swing.JLabel;
 import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JTextArea;
 import java.awt.Dimension;
 import javax.swing.BoxLayout;
@@ -29,7 +31,24 @@ public class MultiMergerView extends JFrame {
 	private JLabel lblDest;
 	private JButton btnTest;
 	private JSeparator separator;
-
+	private JTabbedPane tabs;
+	private JPanel contentPaneMerge;
+	
+	private JPanel contentPaneAutoExport;
+	private JPanel folderPanelAuto;
+	private JLabel lblSourceAuto;
+	private JLabel lblDestAuto;
+	private JButton btnDestAuto;
+	private JButton btnSourceAuto;
+	private JButton btnStart;
+	private JCheckBox forceMixTiming;
+	private JScrollPane scrollPaneAutoTxt;
+	private JTextArea txtAutoExport;
+	private JLabel lblMidiAuto;
+	private JButton btnMIDI;
+	private JLabel lblNewLabel_1;
+	private JPanel panel_2;
+	private JLabel lblNewLabel_2;
 
 
 	/**
@@ -41,26 +60,37 @@ public class MultiMergerView extends JFrame {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 500, 400);
 		contentPane = new JPanel();
+		
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 
 		setContentPane(contentPane);
 		contentPane.setLayout(new BorderLayout(0, 0));
 		
+		tabs = new JTabbedPane();
+		
+		contentPane.add(tabs, BorderLayout.CENTER);
+		
+		contentPaneMerge = new JPanel();
+		contentPaneMerge.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPaneMerge.setLayout(new BorderLayout(0, 0));
+		
+		tabs.addTab("ABC Merge Tool", contentPaneMerge);
+		
 		scrollPane = new JScrollPane();
 		scrollPane.setPreferredSize(new Dimension(400, 200));
 		scrollPane.setSize(new Dimension(300, 200));
 		scrollPane.setMinimumSize(new Dimension(300, 200));
-		contentPane.add(scrollPane, BorderLayout.WEST);
+		contentPaneMerge.add(scrollPane, BorderLayout.WEST);
 		
 		JPanel panel_1 = new JPanel();
-		contentPane.add(panel_1, BorderLayout.NORTH);
+		contentPaneMerge.add(panel_1, BorderLayout.NORTH);
 		
 		JLabel lblNewLabel = new JLabel("Convert single part abc files into multi part abc files");
 		panel_1.add(lblNewLabel);
 		
 		JPanel south = new JPanel();
 		south.setLayout(new BorderLayout(0, 0));
-		contentPane.add(south, BorderLayout.SOUTH);
+		contentPaneMerge.add(south, BorderLayout.SOUTH);
 		
 		JSplitPane splitPane = new JSplitPane();
 		south.add(splitPane, BorderLayout.SOUTH);
@@ -86,7 +116,7 @@ public class MultiMergerView extends JFrame {
 		folderPanel.add(lblDest, BorderLayout.SOUTH);
 		
 		JPanel panel = new JPanel();
-		contentPane.add(panel, BorderLayout.EAST);
+		contentPaneMerge.add(panel, BorderLayout.EAST);
 		panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 		
 		btnJoin = new JButton("Join & save");
@@ -105,7 +135,7 @@ public class MultiMergerView extends JFrame {
 		panel.add(btnTest);
 		
 		txtAreaScroll = new JScrollPane();
-		contentPane.add(txtAreaScroll, BorderLayout.CENTER);
+		contentPaneMerge.add(txtAreaScroll, BorderLayout.CENTER);
 		
 		txtArea = new JTextArea();
 		txtArea.setEditable(false);
@@ -114,6 +144,74 @@ public class MultiMergerView extends JFrame {
 		txtArea.setLineWrap(true);
 		txtArea.setColumns(10);
 		txtAreaScroll.setViewportView(txtArea);
+		
+		
+		// Auto Export tool:
+		contentPaneAutoExport = new JPanel();
+		contentPaneAutoExport.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPaneAutoExport.setLayout(new BorderLayout(0, 0));
+		tabs.addTab("Auto export", contentPaneAutoExport);
+		
+		folderPanelAuto = new JPanel();
+		
+		JPanel southAuto = new JPanel();
+		southAuto.setLayout(new BorderLayout(0, 0));
+		contentPaneAutoExport.add(southAuto, BorderLayout.SOUTH);
+		southAuto.add(folderPanelAuto, BorderLayout.NORTH);
+		folderPanelAuto.setLayout(new BorderLayout(0, 0));
+		
+		lblSourceAuto = new JLabel("Source:");
+		folderPanelAuto.add(lblSourceAuto, BorderLayout.NORTH);
+		
+		lblDestAuto = new JLabel("Dest:");
+		folderPanelAuto.add(lblDestAuto, BorderLayout.SOUTH);
+		
+		lblMidiAuto = new JLabel("MIDIs:");
+		folderPanelAuto.add(lblMidiAuto, BorderLayout.CENTER);
+		
+		JPanel splitPaneAuto = new JPanel();
+		southAuto.add(splitPaneAuto, BorderLayout.SOUTH);
+		
+		btnSourceAuto = new JButton("Select folder with MSX Project files");
+		btnSourceAuto.setToolTipText("This is the folder where the project files are.");
+		splitPaneAuto.add(btnSourceAuto);
+		
+		btnDestAuto = new JButton("Select ABC destination folder");
+		btnDestAuto.setToolTipText("This is the folder where you want the exported ABC files to be. Its recommended that it is empty.");
+		btnDestAuto.addActionListener(arg0 -> {
+		});
+		
+		btnMIDI = new JButton("Select folder with MIDIs");
+		splitPaneAuto.add(btnMIDI);
+		splitPaneAuto.add(btnDestAuto);
+		
+		JPanel panelAuto = new JPanel();
+		contentPaneAutoExport.add(panelAuto, BorderLayout.WEST);
+		panelAuto.setLayout(new BoxLayout(panelAuto, BoxLayout.Y_AXIS));
+		
+		btnStart = new JButton("Start Exporting");
+		btnStart.setToolTipText("Export all project files in source folder to abc files in destination folder.");
+		btnStart.setAlignmentX(Component.CENTER_ALIGNMENT);
+		panelAuto.add(btnStart);
+		
+		forceMixTiming = new JCheckBox("Force Mix Timings");
+		forceMixTiming.setSelected(true);
+		forceMixTiming.setToolTipText("Force mix timings even if a project do not have it enabled.");
+		forceMixTiming.setAlignmentX(Component.CENTER_ALIGNMENT);
+		panelAuto.add(forceMixTiming);
+		
+		scrollPaneAutoTxt = new JScrollPane();
+		contentPaneAutoExport.add(scrollPaneAutoTxt, BorderLayout.CENTER);
+		
+		txtAutoExport = new JTextArea();
+		txtAutoExport.setText("Start with selecting source and dest folders. Dest folder must be empty.");
+		scrollPaneAutoTxt.setViewportView(txtAutoExport);
+		
+		panel_2 = new JPanel();
+		contentPaneAutoExport.add(panel_2, BorderLayout.NORTH);
+		
+		lblNewLabel_2 = new JLabel("Auto multi export many msx project files");
+		panel_2.add(lblNewLabel_2);
 	}
 
 	public JScrollPane getScrollPane() {
@@ -160,5 +258,44 @@ public class MultiMergerView extends JFrame {
 	}
 	public JButton getBtnTest() {
 		return btnTest;
+	}
+	public boolean getForceMixTimingSelected() {
+		return forceMixTiming.isSelected();
+	}
+	public void setForceMixTimingSelected(boolean selected) {
+		forceMixTiming.setSelected(selected);
+	}
+	public JButton getBtnStartExport() {
+		return btnStart;
+	}
+	public String getLblSourceAutoText() {
+		return lblSourceAuto.getText();
+	}
+	public void setLblSourceAutoText(String text_3) {
+		lblSourceAuto.setText(text_3);
+	}
+	public String getLblDestAutoText() {
+		return lblDestAuto.getText();
+	}
+	public void setLblDestAutoText(String text_4) {
+		lblDestAuto.setText(text_4);
+	}
+	public JButton getBtnSourceAuto() {
+		return btnSourceAuto;
+	}
+	public JButton getBtnDestAuto() {
+		return btnDestAuto;
+	}
+	public JTextArea getTxtAutoExport() {
+		return txtAutoExport;
+	}
+	public JButton getBtnMIDI() {
+		return btnMIDI;
+	}
+	public String getLblMidiAutoText() {
+		return lblMidiAuto.getText();
+	}
+	public void setLblMidiAutoText(String text_5) {
+		lblMidiAuto.setText(text_5);
 	}
 }

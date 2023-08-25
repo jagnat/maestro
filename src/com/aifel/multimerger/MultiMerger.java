@@ -13,9 +13,11 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.sound.midi.InvalidMidiDataException;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -23,19 +25,38 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileSystemView;
 
+import org.xml.sax.SAXException;
+
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.Border;
 
 import com.digero.common.abc.LotroInstrument;
+import com.digero.common.abc.StringCleaner;
+import com.digero.common.util.ParseException;
+import com.digero.maestro.MaestroMain;
+import com.digero.maestro.abc.AbcConversionException;
+import com.digero.maestro.abc.AbcSong;
+import com.digero.maestro.abc.ExportFilenameTemplate;
+import com.digero.maestro.abc.PartAutoNumberer;
+import com.digero.maestro.abc.PartNameTemplate;
+import com.digero.maestro.util.FileResolver;
+import com.digero.maestro.view.InstrNameSettings;
+import com.digero.maestro.view.MiscSettings;
+import com.digero.maestro.view.SaveAndExportSettings;
 
 public class MultiMerger {
 	
 	private File sourceFolder = new File(System.getProperty("user.home"));
 	private File destFolder = new File(System.getProperty("user.home"));
+	private File sourceFolderAuto = new File(System.getProperty("user.home"));
+	private File destFolderAuto = new File(System.getProperty("user.home"));
+	private File midiFolderAuto = new File(System.getProperty("user.home"));
 	private ActionListener actionSource = getSourceActionListener();
 	private ActionListener actionDest = getDestActionListener();
 	private ActionListener actionJoin = getJoinActionListener();
 	private ActionListener actionTest = getTestActionListener();
+	
+	private Preferences prefs = Preferences.userNodeForPackage(MaestroMain.class);
 		
 	private static final Pattern INFO_PATTERN = Pattern.compile("^([A-Z]):\\s*(.*)\\s*$");
 	private static final int INFO_TYPE = 1;
@@ -45,6 +66,12 @@ public class MultiMerger {
 	
 	JList<File> theList = null; 
 	private String lastExport = null;
+	private PartAutoNumberer partAutoNumberer;
+	private PartNameTemplate partNameTemplate;
+	private ExportFilenameTemplate exportFilenameTemplate;
+	private InstrNameSettings instrNameSettings;
+	private SaveAndExportSettings saveSettings;
+	private MiscSettings miscSettings;
 
 	public static void main(String[] args) {
 		EventQueue.invokeLater(() -> {
@@ -64,6 +91,10 @@ public class MultiMerger {
 		frame.getBtnJoin().addActionListener(actionJoin);
 		frame.getBtnTest().addActionListener(actionTest);
 		frame.getScrollPane().getVerticalScrollBar().setUnitIncrement(22);
+		frame.getBtnStartExport().addActionListener(getStartExportActionListener());
+		frame.getBtnDestAuto().addActionListener(getDestAutoActionListener());
+		frame.getBtnMIDI().addActionListener(getMIDIAutoActionListener());
+		frame.getBtnSourceAuto().addActionListener(getSourceAutoActionListener());
 		/*
 		try
 		{
@@ -78,6 +109,7 @@ public class MultiMerger {
 		}
 		*/
         refresh();
+        refreshAuto ();
 	}
 	
 	private void refresh () {
@@ -299,6 +331,14 @@ public class MultiMerger {
 	    }
 	}
 	
+	static class MsxFileFilter implements FileFilter {
+
+		public boolean accept(File file) {
+	        String name = file.getName().toLowerCase();
+	        return name.endsWith(".msx");
+	    }
+	}
+	
 	private String getLongestCommonSubstring(String str1, String str2){
 		int m = str1.length();
 		int n = str2.length();
@@ -437,4 +477,214 @@ public class MultiMerger {
 			}
 		};
 	}
+	
+	private ActionListener getStartExportActionListener() {
+		return e -> {
+			autoExport();
+		};
+	}
+	
+	private void refreshAuto () {
+        frame.setLblSourceAutoText("Source: "+sourceFolderAuto.getAbsolutePath());
+        frame.setLblDestAutoText("Destination: "+destFolderAuto.getAbsolutePath());
+        frame.setLblMidiAutoText("MIDIs: "+midiFolderAuto.getAbsolutePath());
+        frame.repaint();
+	}
+	
+	private void autoExport() {
+		refreshAuto();
+		frame.getBtnStartExport().setEnabled(false);
+		
+		// Test if dest is empty
+		if (destFolderAuto.listFiles().length != 0) {
+			frame.getTxtAutoExport().setText("Start with selecting source, midi and dest folders.\n\nDestination folder must be empty!\nMIDI folder is optional.\n\nClose Maestro while this app runs.");
+			frame.getBtnStartExport().setEnabled(true);
+			return;
+		}
+		frame.getTxtAutoExport().setText("\n\nKeep Maestro closed while this app runs.\n\nExports in progress");
+		
+		File[] projects = sourceFolderAuto.listFiles(new MsxFileFilter());
+		frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\nFound "+projects.length+" project files.");
+		
+		partAutoNumberer = new PartAutoNumberer(prefs.node("partAutoNumberer"));
+		partNameTemplate = new PartNameTemplate(prefs.node("partNameTemplate"));
+		exportFilenameTemplate = new ExportFilenameTemplate(prefs.node("exportFilenameTemplate"));
+		instrNameSettings = new InstrNameSettings(prefs.node("instrNameSettings"));
+		saveSettings = new SaveAndExportSettings(prefs.node("saveAndExportSettings"));
+		miscSettings = new MiscSettings(prefs.node("miscSettings"), true);
+		
+		for (File project : projects) {
+			exportProject(project);
+		}
+		
+		frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\n\nExports finished.");
+		frame.getBtnStartExport().setEnabled(true);
+	}
+
+	private void exportProject(File project) {
+		frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\nExporting "+project.getName());
+		try {
+			AbcSong abcSong = new AbcSong(project, partAutoNumberer, partNameTemplate, exportFilenameTemplate, instrNameSettings, openFileResolver);
+			
+			if (frame.getForceMixTimingSelected()) {
+				abcSong.setMixTiming(true);
+			}
+			
+			File exportFile = abcSong.getExportFile();
+			String fileName = "mySong.abc";
+
+			// Always regenerate setting from pattern export is highest precedent
+			if (exportFilenameTemplate.shouldRegenerateFilename())
+			{
+				fileName = exportFilenameTemplate.formatName();
+			}
+			else if (exportFile != null) // else use abc filename if exists already
+			{
+				fileName = exportFile.getName();
+			}
+			else if (abcSong.getSaveFile() != null) // else use msx filename if exists already
+			{
+				fileName = abcSong.getSaveFile().getName();
+			}
+			else if (exportFilenameTemplate.isEnabled()) // else use pattern if usage is enabled
+			{
+				fileName = exportFilenameTemplate.formatName();
+			}
+			else if (abcSong.getSourceFile() != null) // else default to source file (midi/abc)
+			{
+				fileName = abcSong.getSourceFilename();
+			}
+			
+			int dot = fileName.lastIndexOf('.');
+			if (dot > 0)
+				fileName = fileName.substring(0, dot);
+			else if (dot == 0)
+				fileName = "";
+			fileName = StringCleaner.cleanForFileName(fileName);
+			fileName += ".abc";
+
+			exportFile = new File(destFolderAuto, fileName);
+			
+			abcSong.exportAbc(exportFile);
+			frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\n  as "+exportFile.getName());
+		} catch (IOException | InvalidMidiDataException | ParseException | SAXException | AbcConversionException e) {
+			String msg = e.getMessage();
+			if (msg != null) {
+				frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\n"+msg);
+			}
+		}		
+	}
+
+	private ActionListener getSourceAutoActionListener () {
+		return new ActionListener()
+		{
+			JFileChooser openFileChooser;
+
+			@Override public void actionPerformed(ActionEvent e)
+			{
+				if (openFileChooser == null)
+				{
+					openFileChooser = new JFileChooser(sourceFolderAuto);
+					openFileChooser.setMultiSelectionEnabled(false);
+					//openFileChooser.setFileFilter(new ExtensionFileFilter("ABC files", "abc", "txt"));
+					openFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				}
+
+				int result = openFileChooser.showOpenDialog(frame);
+				if (result == JFileChooser.APPROVE_OPTION)
+				{
+					sourceFolderAuto = openFileChooser.getSelectedFile();
+					refreshAuto();
+				}
+			}
+		};
+	}
+	
+	private ActionListener getMIDIAutoActionListener () {
+		return new ActionListener()
+		{
+			JFileChooser openFileChooser;
+
+			@Override public void actionPerformed(ActionEvent e)
+			{
+				if (openFileChooser == null)
+				{
+					openFileChooser = new JFileChooser(midiFolderAuto);
+					openFileChooser.setMultiSelectionEnabled(false);
+					//openFileChooser.setFileFilter(new ExtensionFileFilter("ABC files", "abc", "txt"));
+					openFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				}
+
+				int result = openFileChooser.showOpenDialog(frame);
+				if (result == JFileChooser.APPROVE_OPTION)
+				{
+					midiFolderAuto = openFileChooser.getSelectedFile();
+					refreshAuto();
+				}
+			}
+		};
+	}
+	
+	private ActionListener getDestAutoActionListener () {
+		return new ActionListener()
+		{
+			JFileChooser openFileChooser;
+
+			@Override public void actionPerformed(ActionEvent e)
+			{
+				if (openFileChooser == null)
+				{
+					openFileChooser = new JFileChooser(destFolderAuto);
+					openFileChooser.setMultiSelectionEnabled(false);
+					openFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				}
+
+				int result = openFileChooser.showOpenDialog(frame);
+				if (result == JFileChooser.APPROVE_OPTION)
+				{
+					destFolderAuto = openFileChooser.getSelectedFile();
+					refreshAuto();
+				}
+			}
+		};
+	}
+	
+	/** Used when the MIDI file in a Maestro song project can't be loaded. */
+	private FileResolver openFileResolver = new FileResolver() {
+		private File newMidi;
+
+		@Override
+		public File locateFile(File original, String message) {
+			newMidi = new File(midiFolderAuto, original.getName());
+			if (original.equals(newMidi)) {
+				message += "\n\nWould you like to try to locate the file?";
+				return resolveHelper(original, message);
+			}
+			return newMidi;
+		}
+
+		@Override
+		public File resolveFile(File original, String message) {
+			message += "\n\nWould you like to pick a different file?";
+			return resolveHelper(original, message);
+		}
+
+		private File resolveHelper(File original, String message) {
+			int result = JOptionPane.showConfirmDialog(frame, message, "Failed to open file",
+					JOptionPane.OK_CANCEL_OPTION);
+
+			File alternateFile = null;
+			if (result == JOptionPane.OK_OPTION) {
+				JFileChooser jfc = new JFileChooser();
+				if (original != null)
+					jfc.setSelectedFile(original);
+
+				if (jfc.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION)
+					alternateFile = jfc.getSelectedFile();
+			}
+
+			
+			return alternateFile;
+		}
+	};
 }
