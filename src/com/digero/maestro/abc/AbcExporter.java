@@ -1484,6 +1484,12 @@ public class AbcExporter {
 				 Integer entry = be.getBend(t);
 				 if (entry != null) {
 					 noteID = startPitch + entry;
+				 } else {
+					 // Since all bent notes have a bend at start tick,
+					 // and that start tick might have been quantized to lower tick.
+					 // Make sure we grab that initial value here.
+					 entry = be.bends.firstEntry().getValue();
+					 noteID = startPitch + entry;
 				 }
 				 if (current == null) {
 					 current = createBentSubNote(be, noteID, current, t);
