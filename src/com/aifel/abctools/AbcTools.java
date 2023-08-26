@@ -89,6 +89,7 @@ public class AbcTools {
 	}
 
 	AbcTools() {
+		new MaestroMain();
 		frame.getBtnDest().addActionListener(actionDest);
 		frame.getBtnSource().addActionListener(actionSource);
 		frame.getBtnJoin().addActionListener(actionJoin);
@@ -564,6 +565,10 @@ public class AbcTools {
 				abcSong.setMixTiming(true);
 			}
 			
+			abcSong.setSkipSilenceAtStart(saveSettings.skipSilenceAtStart);
+			abcSong.setAllOut(miscSettings.showBadger && miscSettings.allBadger);
+			abcSong.setBadger(miscSettings.showBadger);
+			
 			File exportFile = abcSong.getExportFile();
 			String fileName = "mySong.abc";
 
@@ -599,10 +604,13 @@ public class AbcTools {
 
 			exportFile = new File(destFolderAuto, fileName);
 			String finalName = exportFile.getName();
+			dot = finalName.lastIndexOf('.');
+			if (dot > 0)
+				finalName = finalName.substring(0, dot);
 			int n = 1;
 			while (exportFile.exists()) {
 				n++;
-				exportFile = new File(exportFile.getParentFile(), finalName+" ("+n+")");
+				exportFile = new File(exportFile.getParentFile(), finalName+" ("+n+").abc");
 			}
 			abcSong.exportAbc(exportFile);
 			

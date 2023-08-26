@@ -30,6 +30,18 @@ public class MaestroMain {
 	public static Logger logger = Logger.getLogger("com.digero.maestro");
 
 	private static ServerSocket serverSocket;
+	
+	public MaestroMain() {
+		// ABC Tool calls this to initialize the version.
+		try {
+			Properties props = new Properties();
+			props.load(MaestroMain.class.getResourceAsStream("version.txt"));
+			String versionString = props.getProperty("version.Maestro");
+			if (versionString != null)
+				APP_VERSION = Version.parseVersion(versionString);
+		} catch (IOException ex) {
+		}
+	}
 
 	public static void main(final String[] args) throws Exception {
 		try {
