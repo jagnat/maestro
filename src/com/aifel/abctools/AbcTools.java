@@ -98,7 +98,7 @@ public class AbcTools {
 		frame.getBtnDestAuto().addActionListener(getDestAutoActionListener());
 		frame.getBtnMIDI().addActionListener(getMIDIAutoActionListener());
 		frame.getBtnSourceAuto().addActionListener(getSourceAutoActionListener());
-		frame.getTxtAutoExport().setText("Start with selecting source, midi and dest folders.\n\nDestination folder must be empty!\nMIDI folder is optional.\n\nClose Maestro while this app runs.");
+		frame.getTxtAutoExport().setText("<html>Start with selecting source, midi and dest folders.<br>Destination folder must be empty!<br>MIDI folder is optional.<br>Close Maestro while this app runs.");
 		/*
 		try
 		{
@@ -497,6 +497,8 @@ public class AbcTools {
         frame.repaint();
 	}
 	
+	private volatile String textAuto = "";
+	
 	private void autoExport() {
 		refreshAuto();
 		frame.getBtnStartExport().setEnabled(false);
@@ -505,17 +507,27 @@ public class AbcTools {
 		frame.setBtnMIDIEnabled(false);
 		frame.setBtnSourceAutoEnabled(false);
 		frame.setSaveMSXEnabled(false);
+		frame.setTabsEnabled(false);
 		
 		// Test if dest is empty
 		if (destFolderAuto.listFiles().length != 0) {
-			frame.getTxtAutoExport().setText("Start with selecting source, midi and dest folders.\n\nDestination folder must be empty!\nMIDI folder is optional.\n\nClose Maestro while this app runs.");
+			frame.getTxtAutoExport().setText("<html>Start with selecting source, midi and dest folders.<br><font color='red'>Destination folder must be empty!</font><br>MIDI folder is optional.<br>Close Maestro while this app runs.");
 			frame.getBtnStartExport().setEnabled(true);
+			frame.setForceMixTimingEnabled(true);
+			frame.setBtnDestAutoEnabled(true);
+			frame.setBtnMIDIEnabled(true);
+			frame.setBtnSourceAutoEnabled(true);
+			frame.setSaveMSXEnabled(true);
+			frame.setTabsEnabled(true);
 			return;
 		}
-		frame.getTxtAutoExport().setText("\n\nKeep Maestro closed while this app runs.\n\nExports in progress");
+		textAuto = "<html>Keep Maestro closed while this app runs.<br><br>Exporting in progress";
+		frame.getTxtAutoExport().setText(textAuto+"</html>");
 		
 		File[] projects = sourceFolderAuto.listFiles(new MsxFileFilter());
-		frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\nFound "+projects.length+" project files.");
+		
+		textAuto += "<br>Found "+projects.length+" project files.<br>";
+		frame.getTxtAutoExport().setText(textAuto+"</html>");
 		
 		partAutoNumberer = new PartAutoNumberer(prefs.node("partAutoNumberer"));
 		partNameTemplate = new PartNameTemplate(prefs.node("partNameTemplate"));
@@ -528,19 +540,22 @@ public class AbcTools {
 			exportProject(project);
 		}
 		
-		frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\n\nExports finished.");
+		textAuto += "<br><br>Exports finished.";
+		frame.getTxtAutoExport().setText(textAuto+"</html>");
 		frame.getBtnStartExport().setEnabled(true);
 		frame.setForceMixTimingEnabled(true);
 		frame.setBtnDestAutoEnabled(true);
 		frame.setBtnMIDIEnabled(true);
 		frame.setBtnSourceAutoEnabled(true);
 		frame.setSaveMSXEnabled(true);
+		frame.setTabsEnabled(true);
 	}
 	
 	private volatile boolean projectModified = false;
 
 	private void exportProject(File project) {
-		frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\nExporting "+project.getName());
+		textAuto += "<br>Exporting "+project.getName();
+		frame.getTxtAutoExport().setText(textAuto+"</html>");
 		try {
 			projectModified = false;
 			AbcSong abcSong = new AbcSong(project, partAutoNumberer, partNameTemplate, exportFilenameTemplate, instrNameSettings, openFileResolver);
@@ -591,26 +606,31 @@ public class AbcTools {
 			}
 			abcSong.exportAbc(exportFile);
 			
-			frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\n  as "+exportFile.getName());
+			textAuto += "<br>&nbsp;&nbsp;as "+exportFile.getName();
+			frame.getTxtAutoExport().setText(textAuto+"</html>");
 			
 			if (projectModified && frame.getSaveMSXSelected()) {
 				try {
 					XmlUtil.saveDocument(abcSong.saveToXml(), abcSong.getSaveFile());
 				} catch (FileNotFoundException e) {
-					frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\n  msx saving failed.");
+					textAuto += "<br><font color='red'>&nbsp;&nbsp;msx saving failed.</font>";
+					frame.getTxtAutoExport().setText(textAuto+"</html>");
 					return;
 				} catch (IOException | TransformerException e) {
-					frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\n  msx saving failed.");
+					textAuto += "<br><font color='red'>&nbsp;&nbsp;msx saving failed.</font>";
+					frame.getTxtAutoExport().setText(textAuto+"</html>");
 					return;
 				}
-				frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\n  msx saved.");
+				textAuto += "<br>&nbsp;&nbsp;msx saved.";
+				frame.getTxtAutoExport().setText(textAuto+"</html>");
 			}
 		} catch (IOException | InvalidMidiDataException | ParseException | SAXException | AbcConversionException e) {
 			String msg = e.getMessage();
 			if (msg != null) {
-				frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\n"+msg);
+				textAuto += "<br><font color='red'>"+msg+"</font>";
+				frame.getTxtAutoExport().setText(textAuto+"</html>");
 			}
-		}		
+		}
 	}
 
 	private ActionListener getSourceAutoActionListener () {

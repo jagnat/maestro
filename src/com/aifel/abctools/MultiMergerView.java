@@ -10,6 +10,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JEditorPane;
 import javax.swing.JTextArea;
 import java.awt.Dimension;
 import javax.swing.BoxLayout;
@@ -43,7 +44,7 @@ public class MultiMergerView extends JFrame {
 	private JButton btnStart;
 	private JCheckBox forceMixTiming;
 	private JScrollPane scrollPaneAutoTxt;
-	private JTextArea txtAutoExport;
+	private JEditorPane txtAutoExport;
 	private JLabel lblMidiAuto;
 	private JButton btnMIDI;
 	private JLabel lblNewLabel_1;
@@ -209,7 +210,8 @@ public class MultiMergerView extends JFrame {
 		scrollPaneAutoTxt = new JScrollPane();
 		contentPaneAutoExport.add(scrollPaneAutoTxt, BorderLayout.CENTER);
 		
-		txtAutoExport = new JTextArea();
+		txtAutoExport = new JEditorPane();
+		txtAutoExport.setContentType("text/html");
 		txtAutoExport.setText("Text");
 		scrollPaneAutoTxt.setViewportView(txtAutoExport);
 		
@@ -292,7 +294,7 @@ public class MultiMergerView extends JFrame {
 	public JButton getBtnDestAuto() {
 		return btnDestAuto;
 	}
-	public JTextArea getTxtAutoExport() {
+	public JEditorPane getTxtAutoExport() {
 		return txtAutoExport;
 	}
 	public JButton getBtnMIDI() {
@@ -339,5 +341,11 @@ public class MultiMergerView extends JFrame {
 	}
 	public void setSaveMSXEnabled(boolean enabled_6) {
 		saveMSX.setEnabled(enabled_6);
+	}
+	public boolean getTabsEnabled() {
+		return tabs.isEnabled();
+	}
+	public void setTabsEnabled(boolean enabled_7) {
+		tabs.setEnabled(enabled_7);
 	}
 }
