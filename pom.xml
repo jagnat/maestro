@@ -87,7 +87,7 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>MergeJar</id>
+						<id>ToolJar</id>
 						<goals>
 							<goal>single</goal>
 						</goals>
@@ -98,10 +98,10 @@
 								<index>true</index>
 								<manifest>
 									<addClasspath>true</addClasspath>
-									<mainClass>com.aifel.multimerger.MultiMerger</mainClass>
+									<mainClass>com.aifel.abctools.AbcTools</mainClass>
 								</manifest>
 							</archive>
-							<finalName>AbcMergeTool</finalName>
+							<finalName>AbcTools</finalName>
 							<appendAssemblyId>false</appendAssemblyId>
 						</configuration>
 					</execution>

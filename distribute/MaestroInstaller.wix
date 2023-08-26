@@ -9,8 +9,8 @@
 	<?define AbcPlayerAppName=ABC Player?>
 	<?define AbcPlayerDescription=ABC Player for the Lord of the Rings Online?>
 	<?define AbcPlayerDescriptionLong=Use ABC Player to listen to .abc files as they would sound in The Lord of the Rings Online's player music system.?>
-	<?define AbcMergeToolAppName=ABC Merge Tool?>
-	<?define AbcMergeToolDescription=ABC tool to merge abc files?>
+	<?define AbcMergeToolAppName=ABC Tools?>
+	<?define AbcMergeToolDescription=ABC tools to merge abc files or auto export abc?>
 	<?define ApplicationFolderName=Maestro?>
 
 	<Product Id="*"
@@ -106,8 +106,8 @@
 					<Component Id="AbcPlayer.jar" Guid="{F4B5B9AE-3934-4CE6-8128-9B92A14A477F}">
 						<File Id="AbcPlayer.jar" Source="AbcPlayer.jar" KeyPath="yes" />
 					</Component>
-					<Component Id="AbcMergeTool.jar" Guid="{A358C9C3-9C8A-42D3-B0BC-DC1F7C37FE30}">
-						<File Id="AbcMergeTool.jar" Source="AbcMergeTool.jar" KeyPath="yes" />
+					<Component Id="AbcTools.jar" Guid="{A358C9C3-9C8A-42D3-B0BC-DC1F7C37FE30}">
+						<File Id="AbcTools.jar" Source="AbcTools.jar" KeyPath="yes" />
 					</Component>
 					<Component Id="LotroInstruments.sf2" Guid="{F81F2BC4-906C-46B1-B3B4-14B69EF256E1}">
 						<File Id="LotroInstruments.sf2" Source="LotroInstruments.sf2" KeyPath="yes" />
@@ -227,8 +227,8 @@
 						<RegistryValue Root="HKLM" Key="SOFTWARE\Classes\Applications\Start_AbcPlayer.bat\shell\open\command" Type="string" Value='"[#Start_AbcPlayer.bat]" "%1"' />
 					</Component>
 					<Component Id="bat_file_t" Guid="{D6F78C2D-DE65-4BD0-92F6-64E46779F449}">
-						<File Id="Start_MergeTool.bat" Source="build/Start MergeTool.bat" KeyPath="yes">
-							<Shortcut Id="AbcMergeTool.lnk"
+						<File Id="Start_ABC_Tools.bat" Source="build/Start ABC Tools.bat" KeyPath="yes">
+							<Shortcut Id="AbcTools.lnk"
 								Name="$(var.AbcMergeToolAppName)"
 								Description="$(var.AbcMergeToolDescription)"
 								WorkingDirectory="APPLICATIONFOLDER"
@@ -289,13 +289,13 @@
 			<ComponentRef Id="MaestroStartMenuFolder" />
 		</Feature>
 		
-		<Feature Id="AbcMergeTool"
+		<Feature Id="AbcTools"
 				Level="1"
 				ConfigurableDirectory="APPLICATIONFOLDER"
 				AllowAdvertise="no"
 				Title="$(var.AbcMergeToolAppName)"
-				Description="$(var.AbcMergeToolAppName) lets you merge old single-part abc files into multi-part abc songs.">
-			<ComponentRef Id="AbcMergeTool.jar" />
+				Description="$(var.AbcMergeToolAppName) lets you merge old single-part abc files into multi-part abc songs. Or auto export abc.">
+			<ComponentRef Id="AbcTools.jar" />
 			<ComponentRef Id="bat_file_t" />
 			<ComponentRef Id="MaestroStartMenuFolder" />
 		</Feature>

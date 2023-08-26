@@ -1,4 +1,4 @@
-package com.aifel.multimerger;
+package com.aifel.abctools;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -49,6 +49,7 @@ public class MultiMergerView extends JFrame {
 	private JLabel lblNewLabel_1;
 	private JPanel panel_2;
 	private JLabel lblNewLabel_2;
+	private JCheckBox saveMSX;
 
 
 	/**
@@ -200,17 +201,22 @@ public class MultiMergerView extends JFrame {
 		forceMixTiming.setAlignmentX(Component.CENTER_ALIGNMENT);
 		panelAuto.add(forceMixTiming);
 		
+		saveMSX = new JCheckBox("Save msx if needed");
+		saveMSX.setToolTipText("Save MSX files when midi location has changes.");
+		saveMSX.setAlignmentX(Component.CENTER_ALIGNMENT);
+		panelAuto.add(saveMSX);
+		
 		scrollPaneAutoTxt = new JScrollPane();
 		contentPaneAutoExport.add(scrollPaneAutoTxt, BorderLayout.CENTER);
 		
 		txtAutoExport = new JTextArea();
-		txtAutoExport.setText("Start with selecting source and dest folders. Dest folder must be empty.");
+		txtAutoExport.setText("Text");
 		scrollPaneAutoTxt.setViewportView(txtAutoExport);
 		
 		panel_2 = new JPanel();
 		contentPaneAutoExport.add(panel_2, BorderLayout.NORTH);
 		
-		lblNewLabel_2 = new JLabel("Auto multi export many msx project files");
+		lblNewLabel_2 = new JLabel("Auto multi export msx project files");
 		panel_2.add(lblNewLabel_2);
 	}
 
@@ -303,5 +309,35 @@ public class MultiMergerView extends JFrame {
 	}
 	public void setForceMixTimingEnabled(boolean enabled_2) {
 		forceMixTiming.setEnabled(enabled_2);
+	}
+	public boolean getBtnSourceAutoEnabled() {
+		return btnSourceAuto.isEnabled();
+	}
+	public void setBtnSourceAutoEnabled(boolean enabled_3) {
+		btnSourceAuto.setEnabled(enabled_3);
+	}
+	public boolean getBtnMIDIEnabled() {
+		return btnMIDI.isEnabled();
+	}
+	public void setBtnMIDIEnabled(boolean enabled_4) {
+		btnMIDI.setEnabled(enabled_4);
+	}
+	public boolean getBtnDestAutoEnabled() {
+		return btnDestAuto.isEnabled();
+	}
+	public void setBtnDestAutoEnabled(boolean enabled_5) {
+		btnDestAuto.setEnabled(enabled_5);
+	}
+	public boolean getSaveMSXSelected() {
+		return saveMSX.isSelected();
+	}
+	public void setSaveMSXSelected(boolean selected_1) {
+		saveMSX.setSelected(selected_1);
+	}
+	public boolean getSaveMSXEnabled() {
+		return saveMSX.isEnabled();
+	}
+	public void setSaveMSXEnabled(boolean enabled_6) {
+		saveMSX.setEnabled(enabled_6);
 	}
 }

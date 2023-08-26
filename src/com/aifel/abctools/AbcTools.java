@@ -1,4 +1,4 @@
-package com.aifel.multimerger;
+package com.aifel.abctools;
 
 import java.awt.Component;
 import java.awt.EventQueue;
@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -24,6 +25,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileSystemView;
+import javax.xml.transform.TransformerException;
 
 import org.xml.sax.SAXException;
 
@@ -40,11 +42,12 @@ import com.digero.maestro.abc.ExportFilenameTemplate;
 import com.digero.maestro.abc.PartAutoNumberer;
 import com.digero.maestro.abc.PartNameTemplate;
 import com.digero.maestro.util.FileResolver;
+import com.digero.maestro.util.XmlUtil;
 import com.digero.maestro.view.InstrNameSettings;
 import com.digero.maestro.view.MiscSettings;
 import com.digero.maestro.view.SaveAndExportSettings;
 
-public class MultiMerger {
+public class AbcTools {
 	
 	private File sourceFolder = new File(System.getProperty("user.home"));
 	private File destFolder = new File(System.getProperty("user.home"));
@@ -77,7 +80,7 @@ public class MultiMerger {
 		EventQueue.invokeLater(() -> {
 			try {
 				frame = new MultiMergerView();
-				new MultiMerger();
+				new AbcTools();
 				frame.setVisible(true);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -85,7 +88,7 @@ public class MultiMerger {
 		});
 	}
 
-	MultiMerger() {
+	AbcTools() {
 		frame.getBtnDest().addActionListener(actionDest);
 		frame.getBtnSource().addActionListener(actionSource);
 		frame.getBtnJoin().addActionListener(actionJoin);
@@ -95,6 +98,7 @@ public class MultiMerger {
 		frame.getBtnDestAuto().addActionListener(getDestAutoActionListener());
 		frame.getBtnMIDI().addActionListener(getMIDIAutoActionListener());
 		frame.getBtnSourceAuto().addActionListener(getSourceAutoActionListener());
+		frame.getTxtAutoExport().setText("Start with selecting source, midi and dest folders.\n\nDestination folder must be empty!\nMIDI folder is optional.\n\nClose Maestro while this app runs.");
 		/*
 		try
 		{
@@ -497,6 +501,10 @@ public class MultiMerger {
 		refreshAuto();
 		frame.getBtnStartExport().setEnabled(false);
 		frame.setForceMixTimingEnabled(false);
+		frame.setBtnDestAutoEnabled(false);
+		frame.setBtnMIDIEnabled(false);
+		frame.setBtnSourceAutoEnabled(false);
+		frame.setSaveMSXEnabled(false);
 		
 		// Test if dest is empty
 		if (destFolderAuto.listFiles().length != 0) {
@@ -523,11 +531,18 @@ public class MultiMerger {
 		frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\n\nExports finished.");
 		frame.getBtnStartExport().setEnabled(true);
 		frame.setForceMixTimingEnabled(true);
+		frame.setBtnDestAutoEnabled(true);
+		frame.setBtnMIDIEnabled(true);
+		frame.setBtnSourceAutoEnabled(true);
+		frame.setSaveMSXEnabled(true);
 	}
+	
+	private volatile boolean projectModified = false;
 
 	private void exportProject(File project) {
 		frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\nExporting "+project.getName());
 		try {
+			projectModified = false;
 			AbcSong abcSong = new AbcSong(project, partAutoNumberer, partNameTemplate, exportFilenameTemplate, instrNameSettings, openFileResolver);
 			
 			if (frame.getForceMixTimingSelected()) {
@@ -577,6 +592,19 @@ public class MultiMerger {
 			abcSong.exportAbc(exportFile);
 			
 			frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\n  as "+exportFile.getName());
+			
+			if (projectModified && frame.getSaveMSXSelected()) {
+				try {
+					XmlUtil.saveDocument(abcSong.saveToXml(), abcSong.getSaveFile());
+				} catch (FileNotFoundException e) {
+					frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\n  msx saving failed.");
+					return;
+				} catch (IOException | TransformerException e) {
+					frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\n  msx saving failed.");
+					return;
+				}
+				frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\n  msx saved.");
+			}
 		} catch (IOException | InvalidMidiDataException | ParseException | SAXException | AbcConversionException e) {
 			String msg = e.getMessage();
 			if (msg != null) {
@@ -670,6 +698,7 @@ public class MultiMerger {
 				message += "\n\nWould you like to try to locate the file?";
 				return resolveHelper(original, message);
 			}
+			projectModified = true;
 			return newMidi;
 		}
 
@@ -689,10 +718,11 @@ public class MultiMerger {
 				if (original != null)
 					jfc.setSelectedFile(original);
 
-				if (jfc.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION)
+				if (jfc.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
 					alternateFile = jfc.getSelectedFile();
+					projectModified = true;
+				}
 			}
-
 			
 			return alternateFile;
 		}

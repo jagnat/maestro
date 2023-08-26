@@ -50,7 +50,7 @@
 		<!--copy file="abcmergetool.ico" todir="${build}" /-->
 		<copy file="Start Maestro.bat" todir="${build}" />
 		<copy file="Start AbcPlayer.bat" todir="${build}" />
-		<copy file="Start MergeTool.bat" todir="${build}" />
+		<copy file="Start ABC Tools.bat" todir="${build}" />
 		<copy file="Changes since Maestro 2.5.0.txt" todir="${build}" />
 		<copy todir="${build}">
 			<fileset dir="${target}" includes="*.jar" />
@@ -143,7 +143,7 @@
 			<!--include name="abcmergetool.ico" /-->
 			<include name="Start Maestro.bat" />
 			<include name="Start AbcPlayer.bat" />
-			<include name="Start MergeTool.bat" />
+			<include name="Start ABC Tools.bat" />
 			<include name="Changes since Maestro 2.5.0.txt" />
 		</zip>
 	</target>

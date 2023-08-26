@@ -55,6 +55,8 @@ Version 2.5.0.118
 	Parts of the bent notes will no longer be quantized to zero duration and discarded possible leaving a gap in the bent note.
 - Mix timings upgraded to version 2.
     Note endings will now have even less influence on the timing compared to note starts. Plus other small improvements.
+- Added a tool that can take an folder of msx project files and auto export them all into abc songs.
+- Fixed that if a tempo change was made in tune-editor and the end bar was after the end of the song, mix timings could fail.
 
 Version 2.5.0.117
 - Ability to customize instrument names for default part naming.
