@@ -55,7 +55,7 @@ public class MultiMergerView extends JFrame {
 	 * Create the frame.
 	 */
 	public MultiMergerView() {
-		setTitle("ABC Merge Tool");
+		setTitle("ABC Tools");
 		setMinimumSize(new Dimension(800, 400));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 500, 400);
@@ -150,7 +150,7 @@ public class MultiMergerView extends JFrame {
 		contentPaneAutoExport = new JPanel();
 		contentPaneAutoExport.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPaneAutoExport.setLayout(new BorderLayout(0, 0));
-		tabs.addTab("Auto export", contentPaneAutoExport);
+		tabs.addTab("Auto ABC export", contentPaneAutoExport);
 		
 		folderPanelAuto = new JPanel();
 		
@@ -297,5 +297,11 @@ public class MultiMergerView extends JFrame {
 	}
 	public void setLblMidiAutoText(String text_5) {
 		lblMidiAuto.setText(text_5);
+	}
+	public boolean getForceMixTimingEnabled() {
+		return forceMixTiming.isEnabled();
+	}
+	public void setForceMixTimingEnabled(boolean enabled_2) {
+		forceMixTiming.setEnabled(enabled_2);
 	}
 }

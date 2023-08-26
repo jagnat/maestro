@@ -480,7 +480,9 @@ public class MultiMerger {
 	
 	private ActionListener getStartExportActionListener() {
 		return e -> {
-			autoExport();
+			(new Thread(() -> {
+				autoExport();
+			})).start();
 		};
 	}
 	
@@ -494,6 +496,7 @@ public class MultiMerger {
 	private void autoExport() {
 		refreshAuto();
 		frame.getBtnStartExport().setEnabled(false);
+		frame.setForceMixTimingEnabled(false);
 		
 		// Test if dest is empty
 		if (destFolderAuto.listFiles().length != 0) {
@@ -519,6 +522,7 @@ public class MultiMerger {
 		
 		frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\n\nExports finished.");
 		frame.getBtnStartExport().setEnabled(true);
+		frame.setForceMixTimingEnabled(true);
 	}
 
 	private void exportProject(File project) {
@@ -564,8 +568,14 @@ public class MultiMerger {
 			fileName += ".abc";
 
 			exportFile = new File(destFolderAuto, fileName);
-			
+			String finalName = exportFile.getName();
+			int n = 1;
+			while (exportFile.exists()) {
+				n++;
+				exportFile = new File(exportFile.getParentFile(), finalName+" ("+n+")");
+			}
 			abcSong.exportAbc(exportFile);
+			
 			frame.getTxtAutoExport().setText(frame.getTxtAutoExport().getText()+"\n  as "+exportFile.getName());
 		} catch (IOException | InvalidMidiDataException | ParseException | SAXException | AbcConversionException e) {
 			String msg = e.getMessage();
