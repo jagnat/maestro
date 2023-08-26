@@ -53,6 +53,7 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 		this.tripletTiming = useTripletTiming;
 		this.tickResolution = source.getDataCache().getTickResolution();
 		this.songLengthTicks = source.getDataCache().getSongLengthTicks();
+		
 		final int resolution = source.getDataCache().getTickResolution();
 
 		TimingInfo defaultTiming = new TimingInfo(source.getPrimaryTempoMPQ(), resolution, exportTempoFactor, meter,
@@ -95,7 +96,7 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 			// Add in tune editor tempo changes where there was not a midi tempo change
 			long tick = tuneTempo.getKey();
 			SequenceDataCache.TempoEvent oldTempo = source.getDataCache().getTempoEvents().get(tick);
-			if (oldTempo == null) {
+			if (oldTempo == null && tick < songLengthTicks) {
 				Entry<Long, TempoEvent> prevTempo = source.getDataCache().getTempoEvents().floorEntry(tick);
 				if (prevTempo != null) {
 					int mpq = prevTempo.getValue().tempoMPQ;
@@ -278,7 +279,7 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 
 				// Max possible number of sixGrid before song ending +1
 				int maxSixths = (int) ((this.songLengthTicks - tempoChange.tick + sixTicks) / sixTicks);
-
+				
 				ArrayList<Integer> sixGridsOdds = new ArrayList<>(maxSixths);
 				for (int k = 0; k < maxSixths; k++) {
 					sixGridsOdds.add(null);
