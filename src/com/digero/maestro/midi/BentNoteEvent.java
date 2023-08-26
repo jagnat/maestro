@@ -102,7 +102,8 @@ public class BentNoteEvent extends NoteEvent {
 	 */
 	public List<NoteEvent> split() {
 		List<NoteEvent> splits = new ArrayList<>();
-		Note currNote = Note.fromId(note.id + bends.get(getStartTick()));
+		Entry<Long, Integer> entry = bends.floorEntry(getStartTick());
+		Note currNote = Note.fromId(note.id + entry.getValue());
 		if (currNote == null) return new ArrayList<>();// Too bad, lets cancel
 		NoteEvent curr = new NoteEvent(currNote, velocity, getStartTick(), getEndTick(), getTempoCache());
 		curr.setMidiPan(midiPan);
@@ -113,6 +114,7 @@ public class BentNoteEvent extends NoteEvent {
 			currNote = Note.fromId(note.id + bends.get(tick));
 			if (currNote == null) return new ArrayList<>();// Too bad, lets cancel
 			curr = new NoteEvent(currNote, velocity, tick, getEndTick(), getTempoCache());
+			curr.setMidiPan(midiPan);
 		}
 		splits.add(curr);
 		return splits;
