@@ -16,6 +16,7 @@ import java.awt.Dimension;
 import javax.swing.BoxLayout;
 import java.awt.Component;
 import javax.swing.JSeparator;
+import javax.swing.JProgressBar;
 
 @SuppressWarnings("serial")
 public class MultiMergerView extends JFrame {
@@ -51,6 +52,7 @@ public class MultiMergerView extends JFrame {
 	private JPanel panel_2;
 	private JLabel lblNewLabel_2;
 	private JCheckBox saveMSX;
+	private JProgressBar progressBar;
 
 
 	/**
@@ -186,6 +188,11 @@ public class MultiMergerView extends JFrame {
 		btnMIDI = new JButton("Select folder with MIDIs");
 		splitPaneAuto.add(btnMIDI);
 		splitPaneAuto.add(btnDestAuto);
+		
+		progressBar = new JProgressBar();
+		progressBar.setMaximum(1000);
+		progressBar.setStringPainted(true);
+		southAuto.add(progressBar, BorderLayout.CENTER);
 		
 		JPanel panelAuto = new JPanel();
 		contentPaneAutoExport.add(panelAuto, BorderLayout.WEST);
@@ -347,5 +354,14 @@ public class MultiMergerView extends JFrame {
 	}
 	public void setTabsEnabled(boolean enabled_7) {
 		tabs.setEnabled(enabled_7);
+	}
+	public JProgressBar getProgressBar() {
+		return progressBar;
+	}
+	public int getProgressBarValue() {
+		return progressBar.getValue();
+	}
+	public void setProgressBarValue(int value) {
+		progressBar.setValue(value);
 	}
 }

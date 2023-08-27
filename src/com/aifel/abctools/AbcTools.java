@@ -537,9 +537,17 @@ public class AbcTools {
 		saveSettings = new SaveAndExportSettings(prefs.node("saveAndExportSettings"));
 		miscSettings = new MiscSettings(prefs.node("miscSettings"), true);
 		
+		frame.setProgressBarValue(0);
+		
+		double factor = 1000.0d/projects.length;
+		int no = 0;
 		for (File project : projects) {
 			exportProject(project);
+			no++;
+			frame.setProgressBarValue((int)(no*factor));
 		}
+		
+		frame.setProgressBarValue(1000);
 		
 		textAuto += "<br><br>Exports finished.";
 		frame.getTxtAutoExport().setText(textAuto+"</html>");
@@ -568,6 +576,7 @@ public class AbcTools {
 			abcSong.setSkipSilenceAtStart(saveSettings.skipSilenceAtStart);
 			abcSong.setAllOut(miscSettings.showBadger && miscSettings.allBadger);
 			abcSong.setBadger(miscSettings.showBadger);
+			StringCleaner.cleanABC = saveSettings.convertABCStringsToBasicAscii;
 			
 			File exportFile = abcSong.getExportFile();
 			String fileName = "mySong.abc";
