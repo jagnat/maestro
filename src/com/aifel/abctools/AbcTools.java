@@ -24,6 +24,7 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileSystemView;
 import javax.xml.transform.TransformerException;
 
@@ -522,13 +523,13 @@ public class AbcTools {
 			frame.setTabsEnabled(true);
 			return;
 		}
-		textAuto = "<html>Keep Maestro closed while this app runs.<br><br>Exporting in progress";
-		frame.getTxtAutoExport().setText(textAuto+"</html>");
+		textAuto = "";
+		appendToField("<html>Keep Maestro closed while this app runs.<br><br>Exporting in progress");
+		
 		
 		File[] projects = sourceFolderAuto.listFiles(new MsxFileFilter());
 		
-		textAuto += "<br>Found "+projects.length+" project files.<br>";
-		frame.getTxtAutoExport().setText(textAuto+"</html>");
+		appendToField("<br>Found "+projects.length+" project files.<br>");
 		
 		partAutoNumberer = new PartAutoNumberer(prefs.node("partAutoNumberer"));
 		partNameTemplate = new PartNameTemplate(prefs.node("partNameTemplate"));
@@ -549,8 +550,7 @@ public class AbcTools {
 		
 		frame.setProgressBarValue(1000);
 		
-		textAuto += "<br><br>Exports finished.";
-		frame.getTxtAutoExport().setText(textAuto+"</html>");
+		appendToField("<br><br>Exports finished.");
 		frame.getBtnStartExport().setEnabled(true);
 		frame.setForceMixTimingEnabled(true);
 		frame.setBtnDestAutoEnabled(true);
@@ -560,11 +560,18 @@ public class AbcTools {
 		frame.setTabsEnabled(true);
 	}
 	
+	private void appendToField(String txt) {
+		textAuto += txt;
+		SwingUtilities.invokeLater(() -> {
+	        	frame.getTxtAutoExport().setText(textAuto+"</html>");
+		});
+	}
+	
 	private volatile boolean projectModified = false;
 
 	private void exportProject(File project) {
-		textAuto += "<br>Exporting "+project.getName();
-		frame.getTxtAutoExport().setText(textAuto+"</html>");
+		appendToField("<br>Exporting "+project.getName());
+		
 		try {
 			projectModified = false;
 			AbcSong abcSong = new AbcSong(project, partAutoNumberer, partNameTemplate, exportFilenameTemplate, instrNameSettings, openFileResolver);
@@ -623,29 +630,29 @@ public class AbcTools {
 			}
 			abcSong.exportAbc(exportFile);
 			
-			textAuto += "<br>&nbsp;&nbsp;as "+exportFile.getName();
-			frame.getTxtAutoExport().setText(textAuto+"</html>");
+			appendToField("<br>&nbsp;&nbsp;as "+exportFile.getName());
+			
 			
 			if (projectModified && frame.getSaveMSXSelected()) {
 				try {
 					XmlUtil.saveDocument(abcSong.saveToXml(), abcSong.getSaveFile());
 				} catch (FileNotFoundException e) {
-					textAuto += "<br><font color='red'>&nbsp;&nbsp;msx saving failed.</font>";
-					frame.getTxtAutoExport().setText(textAuto+"</html>");
+					appendToField("<br><font color='red'>&nbsp;&nbsp;msx saving failed.</font>");
+					
 					return;
 				} catch (IOException | TransformerException e) {
-					textAuto += "<br><font color='red'>&nbsp;&nbsp;msx saving failed.</font>";
-					frame.getTxtAutoExport().setText(textAuto+"</html>");
+					appendToField("<br><font color='red'>&nbsp;&nbsp;msx saving failed.</font>");
+					
 					return;
 				}
-				textAuto += "<br>&nbsp;&nbsp;msx saved.";
-				frame.getTxtAutoExport().setText(textAuto+"</html>");
+				appendToField("<br>&nbsp;&nbsp;msx saved.");
+				
 			}
 		} catch (IOException | InvalidMidiDataException | ParseException | SAXException | AbcConversionException e) {
 			String msg = e.getMessage();
 			if (msg != null) {
-				textAuto += "<br><font color='red'>"+msg+"</font>";
-				frame.getTxtAutoExport().setText(textAuto+"</html>");
+				appendToField("<br><font color='red'>"+msg+"</font>");
+				
 			}
 		}
 	}

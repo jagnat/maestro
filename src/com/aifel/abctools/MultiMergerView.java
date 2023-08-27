@@ -48,7 +48,6 @@ public class MultiMergerView extends JFrame {
 	private JEditorPane txtAutoExport;
 	private JLabel lblMidiAuto;
 	private JButton btnMIDI;
-	private JLabel lblNewLabel_1;
 	private JPanel panel_2;
 	private JLabel lblNewLabel_2;
 	private JCheckBox saveMSX;
