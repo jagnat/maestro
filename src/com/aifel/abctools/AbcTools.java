@@ -100,7 +100,12 @@ public class AbcTools {
 		frame.getBtnDestAuto().addActionListener(getDestAutoActionListener());
 		frame.getBtnMIDI().addActionListener(getMIDIAutoActionListener());
 		frame.getBtnSourceAuto().addActionListener(getSourceAutoActionListener());
-		frame.getTxtAutoExport().setText("<html>Start with selecting source, midi and dest folders.<br>Destination folder must be empty!<br>MIDI folder is optional.<br>Close Maestro while this app runs.");
+		
+		frame.getTxtAutoExport().setText("<html>Start with selecting source, midi and dest folders."
+										+"<br>Destination folder must be empty!"
+										+"<br>MIDI folder is optional. It is used when midi cannot be found,"
+										+" then it looks in that folder before asking for location."
+										+"<br>Close Maestro while this app runs.");
 		/*
 		try
 		{
@@ -513,7 +518,11 @@ public class AbcTools {
 		
 		// Test if dest is empty
 		if (destFolderAuto.listFiles().length != 0) {
-			frame.getTxtAutoExport().setText("<html>Start with selecting source, midi and dest folders.<br><font color='red'>Destination folder must be empty!</font><br>MIDI folder is optional.<br>Close Maestro while this app runs.");
+			frame.getTxtAutoExport().setText("<html>Start with selecting source, midi and dest folders.<br>"
+											+"<font color='red'>Destination folder must be empty!</font>"
+											+"<br>MIDI folder is optional. It is used when midi cannot be found,"
+											+" then it looks in that folder before asking for location."
+											+"<br>Close Maestro while this app runs.");
 			frame.getBtnStartExport().setEnabled(true);
 			frame.setForceMixTimingEnabled(true);
 			frame.setBtnDestAutoEnabled(true);
