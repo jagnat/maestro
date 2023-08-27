@@ -25,6 +25,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.filechooser.FileSystemView;
 import javax.xml.transform.TransformerException;
 
@@ -80,6 +81,7 @@ public class AbcTools {
 	public static void main(String[] args) {
 		EventQueue.invokeLater(() -> {
 			try {
+				UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 				frame = new MultiMergerView();
 				new AbcTools();
 				frame.setVisible(true);
