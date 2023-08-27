@@ -521,6 +521,7 @@ public class AbcTools {
 			frame.setBtnSourceAutoEnabled(true);
 			frame.setSaveMSXEnabled(true);
 			frame.setTabsEnabled(true);
+			setProgress(0);
 			return;
 		}
 		textAuto = "";
@@ -538,17 +539,17 @@ public class AbcTools {
 		saveSettings = new SaveAndExportSettings(prefs.node("saveAndExportSettings"));
 		miscSettings = new MiscSettings(prefs.node("miscSettings"), true);
 		
-		frame.setProgressBarValue(0);
+		setProgress(0);
 		
 		double factor = 1000.0d/projects.length;
 		int no = 0;
 		for (File project : projects) {
 			exportProject(project);
 			no++;
-			frame.setProgressBarValue((int)(no*factor));
+			setProgress((int)(no*factor));
 		}
 		
-		frame.setProgressBarValue(1000);
+		setProgress(1000);
 		
 		appendToField("<br><br>Exports finished.");
 		frame.getBtnStartExport().setEnabled(true);
@@ -560,10 +561,16 @@ public class AbcTools {
 		frame.setTabsEnabled(true);
 	}
 	
+	private void setProgress(int progress) {
+		SwingUtilities.invokeLater(() -> {
+			frame.setProgressBarValue(progress);
+		});
+	}
+	
 	private void appendToField(String txt) {
 		textAuto += txt;
 		SwingUtilities.invokeLater(() -> {
-	        	frame.getTxtAutoExport().setText(textAuto+"</html>");
+	        frame.getTxtAutoExport().setText(textAuto+"</html>");
 		});
 	}
 	
