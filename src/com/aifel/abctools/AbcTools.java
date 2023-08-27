@@ -26,6 +26,7 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileSystemView;
 import javax.xml.transform.TransformerException;
 
@@ -79,9 +80,15 @@ public class AbcTools {
 	private MiscSettings miscSettings;
 
 	public static void main(String[] args) {
+		try {
+			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+				| UnsupportedLookAndFeelException e) {
+			e.printStackTrace();
+		}
 		EventQueue.invokeLater(() -> {
 			try {
-				UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+				
 				frame = new MultiMergerView();
 				new AbcTools();
 				frame.setVisible(true);
