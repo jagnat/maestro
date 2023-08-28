@@ -2304,6 +2304,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		
 		String defaultFolder = Util.getLotroMusicPath(false).getAbsolutePath();
 		String folder = prefs.get("exportDialogFolder", defaultFolder);
+		if (exportFile != null) // Use previously exported folder if it exists
+			folder = exportFile.getAbsoluteFile().getParent();
 		if (!new File(folder).exists())
 			folder = defaultFolder;
 		
@@ -2420,6 +2422,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			defaultFolder = Util.getLotroMusicPath(false).getAbsolutePath();
 
 		String folder = prefs.get("saveDialogFolder", defaultFolder);
+		if (saveFile != null)
+			folder = saveFile.getAbsoluteFile().getParent();
 		if (!new File(folder).exists())
 			folder = defaultFolder;
 		
