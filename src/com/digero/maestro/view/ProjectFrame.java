@@ -434,7 +434,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		generatePlayStopButtons(stopIcon, stopIconDisabled, playControlButtonMargin);
 
 		tuneEditorButton = new JButton();
-		tuneEditorButton.setText("T");
+		tuneEditorButton.setText("Tune-editor");
 		tuneEditorButton
 				.setToolTipText("<html><b> Tune Editor </b><br> Edit the tempo or key in specific sections </html>");
 		tuneEditorButton.addActionListener(e -> TuneEditor.show(ProjectFrame.this, abcSong));
