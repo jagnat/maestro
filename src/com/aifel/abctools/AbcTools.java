@@ -438,6 +438,7 @@ public class AbcTools {
 					openFileChooser.setMultiSelectionEnabled(false);
 					//openFileChooser.setFileFilter(new ExtensionFileFilter("ABC files", "abc", "txt"));
 					openFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+					openFileChooser.setDialogTitle("Source folder");
 				}
 
 				int result = openFileChooser.showOpenDialog(frame);
@@ -462,6 +463,7 @@ public class AbcTools {
 					openFileChooser = new JFileChooser(destFolder);
 					openFileChooser.setMultiSelectionEnabled(false);
 					openFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+					openFileChooser.setDialogTitle("Destination folder");
 				}
 
 				int result = openFileChooser.showOpenDialog(frame);
@@ -695,6 +697,7 @@ public class AbcTools {
 					openFileChooser.setMultiSelectionEnabled(false);
 					//openFileChooser.setFileFilter(new ExtensionFileFilter("ABC files", "abc", "txt"));
 					openFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+					openFileChooser.setDialogTitle("Source folder");
 				}
 
 				int result = openFileChooser.showOpenDialog(frame);
@@ -720,6 +723,7 @@ public class AbcTools {
 					openFileChooser.setMultiSelectionEnabled(false);
 					//openFileChooser.setFileFilter(new ExtensionFileFilter("ABC files", "abc", "txt"));
 					openFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+					openFileChooser.setDialogTitle("MIDI folder");
 				}
 
 				int result = openFileChooser.showOpenDialog(frame);
@@ -744,6 +748,7 @@ public class AbcTools {
 					openFileChooser = new JFileChooser(destFolderAuto);
 					openFileChooser.setMultiSelectionEnabled(false);
 					openFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+					openFileChooser.setDialogTitle("Destination folder");
 				}
 
 				int result = openFileChooser.showOpenDialog(frame);
@@ -784,6 +789,7 @@ public class AbcTools {
 			File alternateFile = null;
 			if (result == JOptionPane.OK_OPTION) {
 				JFileChooser jfc = new JFileChooser();
+				jfc.setDialogTitle("Open missing MIDI");
 				if (original != null)
 					jfc.setSelectedFile(original);
 
