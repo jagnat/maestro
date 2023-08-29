@@ -9,7 +9,7 @@
 	<property name="tools" location="tools" />
 	<property name="basename.AbcPlayer" value="AbcPlayer" />
 	<property name="basename.Maestro" value="Maestro" />
-	<property name="basename.AbcMergeTool" value="AbcMergeTool" />
+	<property name="basename.AbcMergeTool" value="AbcTools" />
 	<property file="${src}/com/digero/abcplayer/version.txt" />
 	<!-- For version.AbcPlayer -->
 	<property file="${src}/com/digero/maestro/version.txt" />
