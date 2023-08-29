@@ -4,6 +4,8 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
@@ -14,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -52,11 +55,21 @@ import com.digero.maestro.view.SaveAndExportSettings;
 
 public class AbcTools {
 	
-	private File sourceFolder = new File(System.getProperty("user.home"));
-	private File destFolder = new File(System.getProperty("user.home"));
-	private File sourceFolderAuto = new File(System.getProperty("user.home"));
-	private File destFolderAuto = new File(System.getProperty("user.home"));
-	private File midiFolderAuto = new File(System.getProperty("user.home"));
+	private Preferences toolsPrefs = Preferences.userNodeForPackage(AbcTools.class);
+	private Preferences mergePrefs;
+	private Preferences autoPrefs;
+// @formatter:off
+	private final String DIR_MERGE_SOURCE = "dir_source";
+	private final String DIR_MERGE_DEST   = "dir_destination";
+	private final String DIR_AUTO_SOURCE  = "dir_source";
+	private final String DIR_AUTO_MIDI    = "dir_midi";
+	private final String DIR_AUTO_DEST    = "dir_destination";
+// @formatter:on
+	private File sourceFolder;
+	private File destFolder;
+	private File sourceFolderAuto;
+	private File destFolderAuto;
+	private File midiFolderAuto;
 	private ActionListener actionSource = getSourceActionListener();
 	private ActionListener actionDest = getDestActionListener();
 	private ActionListener actionJoin = getJoinActionListener();
@@ -99,7 +112,36 @@ public class AbcTools {
 	}
 
 	AbcTools() {
+		// Setup folders from stored prefs if available:
+		String myHome = System.getProperty("user.home");
+		mergePrefs = toolsPrefs.node("mergeTool");
+		sourceFolder     = new File(mergePrefs.get(DIR_MERGE_SOURCE, myHome));
+		destFolder       = new File(mergePrefs.get(DIR_MERGE_DEST, myHome));
+		autoPrefs = toolsPrefs.node("autoExport");
+		sourceFolderAuto = new File(autoPrefs.get(DIR_AUTO_SOURCE, myHome));
+		midiFolderAuto   = new File(autoPrefs.get(DIR_AUTO_MIDI, myHome));
+		destFolderAuto   = new File(autoPrefs.get(DIR_AUTO_DEST, myHome));
+		if (!sourceFolder.exists())
+			sourceFolder     = new File(myHome);
+		if (!destFolder.exists())
+			destFolder     = new File(myHome);
+		if (!sourceFolderAuto.exists())
+			sourceFolderAuto     = new File(myHome);
+		if (!midiFolderAuto.exists())
+			midiFolderAuto     = new File(myHome);
+		if (!destFolderAuto.exists())
+			destFolderAuto     = new File(myHome);
+		
+		frame.addWindowListener(new WindowAdapter(){
+			@Override public void windowClosing(WindowEvent e){
+		    	writePrefs();
+		    }
+		});
+		
+		// Setup Maestro version number:
 		new MaestroMain();
+		
+		// Setup action listeners
 		frame.getBtnDest().addActionListener(actionDest);
 		frame.getBtnSource().addActionListener(actionSource);
 		frame.getBtnJoin().addActionListener(actionJoin);
@@ -132,6 +174,20 @@ public class AbcTools {
         refreshAuto ();
 	}
 	
+	protected void writePrefs() {
+		mergePrefs.put(DIR_MERGE_SOURCE, sourceFolder.getAbsolutePath());
+		mergePrefs.put(DIR_MERGE_DEST, destFolder.getAbsolutePath());
+		autoPrefs.put(DIR_AUTO_SOURCE, sourceFolderAuto.getAbsolutePath());
+		autoPrefs.put(DIR_AUTO_MIDI, midiFolderAuto.getAbsolutePath());
+		autoPrefs.put(DIR_AUTO_DEST, destFolderAuto.getAbsolutePath());
+		
+		try {
+			toolsPrefs.flush();
+		} catch (BackingStoreException e) {
+			e.printStackTrace();
+		}
+	}
+
 	private void refresh () {
         Component c = getGui(sourceFolder.listFiles(new AbcFileFilter()),false);
         frame.setLblSourceText("Source: "+sourceFolder.getAbsolutePath());
