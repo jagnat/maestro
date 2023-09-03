@@ -821,19 +821,18 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 
 		if (abcExporter == null) {
 			abcExporter = new AbcExporter(parts, qtm, key, this);
-		} else {
-			if (abcExporter.getTimingInfo() != qtm)
-				abcExporter.setTimingInfo(qtm);
+		}
+		if (abcExporter.getTimingInfo() != qtm)
+			abcExporter.setTimingInfo(qtm);
 
-			if (abcExporter.getKeySignature() != key)
-				abcExporter.setKeySignature(key);
+		if (abcExporter.getKeySignature() != key)
+			abcExporter.setKeySignature(key);
 
-			if (abcExporter.isSkipSilenceAtStart() != skipSilenceAtStart)
-				abcExporter.setSkipSilenceAtStart(skipSilenceAtStart);
+		if (abcExporter.isSkipSilenceAtStart() != skipSilenceAtStart)
+			abcExporter.setSkipSilenceAtStart(skipSilenceAtStart);
 
 			// if (abcExporter.isShowPruned() != showPruned)
 			// abcExporter.setShowPruned(showPruned);
-		}
 
 		return abcExporter;
 	}
