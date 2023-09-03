@@ -45,11 +45,11 @@ Thanks to all who gave feedback of features, bugs plus suggestions.
 
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
-Version 2.5.0.119
+Version 2.5.0.119beta
 - Fix that auto-exporter would not ignore silence at start of song, but always export it no matter the Maestro setting.
 - Fix when opening a MSX, and it starts auto playing, it would not skip silence.
 
-Version 2.5.0.118
+Version 2.5.0.118beta
 - Made light theme the default
 - Fix that bends that took effect at start of notes, might not have been in effect due to order of midi-events.
 - Pitch bends that spans less than an octave is now treated differently:

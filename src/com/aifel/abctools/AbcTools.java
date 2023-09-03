@@ -156,6 +156,7 @@ public class AbcTools {
 										+"<br>Destination folder must be empty!"
 										+"<br>MIDI folder is optional. It is used when midi cannot be found,"
 										+" then it looks in that folder before asking for location."
+										+"<br>When exporting it will use your Maestro settings for filename, partname etc etc."
 										+"<br>Close Maestro while this app runs.");
 		/*
 		try
@@ -589,6 +590,7 @@ public class AbcTools {
 											+"<font color='red'>Destination folder must be empty!</font>"
 											+"<br>MIDI folder is optional. It is used when midi cannot be found,"
 											+" then it looks in that folder before asking for location."
+											+"<br>When exporting it will use your Maestro settings for filename, partname etc etc."
 											+"<br>Close Maestro while this app runs.");
 			frame.getBtnStartExport().setEnabled(true);
 			frame.setForceMixTimingEnabled(true);
