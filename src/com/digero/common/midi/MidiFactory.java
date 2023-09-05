@@ -48,12 +48,12 @@ public class MidiFactory implements MidiConstants
 			throw new RuntimeException(e);
 		}
     }
-
+	
 	public static MidiEvent createProgramChangeEvent(int patch, int channel, long ticks)
 	{
 		try
 		{
-			ShortMessage msg = new ShortMessage();
+			ShortMessage msg = new MyShortMessage();
 			msg.setMessage(ShortMessage.PROGRAM_CHANGE, channel, patch, 0);
 			return new MidiEvent(msg, ticks);
 		}
@@ -84,7 +84,7 @@ public class MidiFactory implements MidiConstants
 	{
 		try
 		{
-			ShortMessage msg = new ShortMessage();
+			ShortMessage msg = new MyShortMessage();
 			msg.setMessage(ShortMessage.NOTE_ON, channel, id, velocity);
 			return new MidiEvent(msg, ticks);
 		}
@@ -103,7 +103,7 @@ public class MidiFactory implements MidiConstants
 	{
 		try
 		{
-			ShortMessage msg = new ShortMessage();
+			ShortMessage msg = new MyShortMessage();
 			msg.setMessage(ShortMessage.NOTE_OFF, channel, id, velocity);
 			return new MidiEvent(msg, ticks);
 		}
@@ -145,7 +145,7 @@ public class MidiFactory implements MidiConstants
 	{
 		try
 		{
-			ShortMessage msg = new ShortMessage();
+			ShortMessage msg = new MyShortMessage();
 			msg.setMessage(ShortMessage.CONTROL_CHANGE, channel, controller, value);
 			return new MidiEvent(msg, ticks);
 		}

@@ -3,6 +3,8 @@ package com.digero.common.midi;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiDevice;
@@ -12,6 +14,7 @@ import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Soundbank;
 import javax.sound.midi.Synthesizer;
 
+//import com.digero.common.midi.synth.LotroSoftSynthesizer;
 import com.sun.media.sound.AudioSynthesizer;
 
 public class SynthesizerFactory {
@@ -27,7 +30,7 @@ public class SynthesizerFactory {
 
 	public static Synthesizer getLotroSynthesizer()
 			throws MidiUnavailableException, InvalidMidiDataException, IOException {
-		Synthesizer synth = MidiSystem.getSynthesizer();
+		Synthesizer synth = MidiSystem.getSynthesizer();//new LotroSoftSynthesizer();
 		if (synth != null)
 			initLotroSynthesizer(synth);
 		return synth;
@@ -43,7 +46,15 @@ public class SynthesizerFactory {
 
 	public static void initLotroSynthesizer(Synthesizer synth)
 			throws MidiUnavailableException, InvalidMidiDataException, IOException {
-		synth.open();
+		Map<String, Object> synthInfo = new HashMap();
+		synthInfo.put("midi channels", 25);
+		synthInfo.put("reverb", false);
+		synthInfo.put("chorus", false);
+		synthInfo.put("max polyphony", 128);
+		synthInfo.put("auto gain control", false);
+		synthInfo.put("latency", 12000L);
+		((com.sun.media.sound.SoftSynthesizer)synth).open(null, synthInfo);
+		//((LotroSoftSynthesizer)synth).open(null, synthInfo);
 		synth.unloadAllInstruments(getLotroSoundbank());
 		synth.loadAllInstruments(getLotroSoundbank());
 	}

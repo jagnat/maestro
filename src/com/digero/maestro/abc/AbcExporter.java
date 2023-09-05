@@ -41,7 +41,7 @@ import com.digero.maestro.midi.TrackInfo;
 
 public class AbcExporter {
 	// Max parts for MIDI preview
-	private static final int MAX_PARTS = MidiConstants.CHANNEL_COUNT - 1; // Channel 0 is no longer reserved for
+	private static final int MAX_PARTS = 24;//MidiConstants.CHANNEL_COUNT - 1; // Channel 0 is no longer reserved for
 																			// metadata, and Track 9 is reserved for
 																			// drums
 	private static final int MAX_RAID = 24; // Max number of parts that in any case can be played in lotro

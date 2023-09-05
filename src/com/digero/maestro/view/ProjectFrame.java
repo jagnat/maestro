@@ -1438,7 +1438,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		}
 		String strAdd4 = "</font> )</html>";
 		if (maxNoteCountTotal > 63) {
-			strAdd4 = "+</font>)</html>";
+			strAdd4 = "</font>)</html>";
 		}
 		// System.err.println(strAdd1+strAdd2+strAdd3+strAdd4);
 
