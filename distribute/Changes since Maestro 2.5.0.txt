@@ -45,6 +45,14 @@ Thanks to all who gave feedback of features, bugs plus suggestions.
 
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
+Version 2.5.0.120beta
+- Semi-fix for polyphony counting too high when skipping in song during playback.
+- Abc Player can now preview 24 part abc songs.
+- Maestro can now make 24 part songs.
+- Max note counter can now go up to 128.
+- Fix for abc playback could pop and click, especially when skipping in songs with many parts.
+    This might still be an issue on a slower PC.
+
 Version 2.5.0.119beta
 - Fix that auto-exporter would not ignore silence at start of song, but always export it no matter the Maestro setting.
 - Fix when opening a MSX, and it starts auto playing, it would not skip silence.

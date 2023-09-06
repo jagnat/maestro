@@ -1406,6 +1406,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 					} else if (evt.getProperty() == SequencerProperty.IS_DRAGGING) {
 						abcSequencer.setDragging(sequencer.isDragging());
 					}
+					maxNoteCountTotal = 0;// Not fool proof for preventing it counts too many notes when skipping
+					maxNoteCount = 0;//      But better than nothing
 				} finally {
 					echoingPosition = false;
 				}
@@ -1434,7 +1436,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		String strAdd2 = " </font>";
 		if (maxNoteCount > 63) {
-			strAdd2 = "+</font>";
+			strAdd2 = "</font>";
 		}
 		String strAdd4 = "</font> )</html>";
 		if (maxNoteCountTotal > 63) {

@@ -30,7 +30,8 @@ public class SynthesizerFactory {
 
 	public static Synthesizer getLotroSynthesizer()
 			throws MidiUnavailableException, InvalidMidiDataException, IOException {
-		Synthesizer synth = MidiSystem.getSynthesizer();//new LotroSoftSynthesizer();
+		Synthesizer synth = MidiSystem.getSynthesizer();
+		//Synthesizer synth = new LotroSoftSynthesizer();
 		if (synth != null)
 			initLotroSynthesizer(synth);
 		return synth;
@@ -44,15 +45,16 @@ public class SynthesizerFactory {
 		return synth;
 	}
 
+	@SuppressWarnings("restriction")
 	public static void initLotroSynthesizer(Synthesizer synth)
 			throws MidiUnavailableException, InvalidMidiDataException, IOException {
 		Map<String, Object> synthInfo = new HashMap();
-		synthInfo.put("midi channels", 25);
-		synthInfo.put("reverb", false);
-		synthInfo.put("chorus", false);
-		synthInfo.put("max polyphony", 128);
-		synthInfo.put("auto gain control", false);
-		synthInfo.put("latency", 12000L);
+		synthInfo.put("midi channels", MidiConstants.CHANNEL_COUNT_ABC);//default is 16
+		synthInfo.put("reverb", false);//default is true
+		synthInfo.put("chorus", false);//default is true
+		synthInfo.put("max polyphony", 128);//default is 64
+		synthInfo.put("auto gain control", true);//default is true. Set to false it can give pops when skipping in song, especially for abc player.
+		synthInfo.put("latency", 124000L);//12000 microseconds is default. But that low with 24 parts will give pops and clicks in playback in abc player.
 		((com.sun.media.sound.SoftSynthesizer)synth).open(null, synthInfo);
 		//((LotroSoftSynthesizer)synth).open(null, synthInfo);
 		synth.unloadAllInstruments(getLotroSoundbank());

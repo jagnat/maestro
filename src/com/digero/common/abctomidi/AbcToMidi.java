@@ -296,8 +296,8 @@ public class AbcToMidi {
 					if (track == null) {
 						trackIndex = seq.getTracks().length;
 						channel = getTrackChannel(trackIndex);
-						if (channel > MidiConstants.CHANNEL_COUNT - 1) {
-							throw new ParseException("Too many parts (max = " + (MidiConstants.CHANNEL_COUNT - 2) + ")",
+						if (channel > MidiConstants.CHANNEL_COUNT_ABC - 1) {
+							throw new ParseException("Too many parts (max = " + (MidiConstants.CHANNEL_COUNT_ABC - 1) + ")",
 									fileName, partStartLine);
 						}
 						track = seq.createTrack();
@@ -869,10 +869,10 @@ public class AbcToMidi {
 	}
 
 	private static int getTrackChannel(int trackNumber) {
-		if (trackNumber < MidiConstants.DRUM_CHANNEL)
-			return trackNumber;
+		if (trackNumber < MidiConstants.DRUM_CHANNEL+1)
+			return trackNumber-1;
 
-		return trackNumber + 1;
+		return trackNumber;
 	}
 
 	// From http://abcnotation.com/abc2mtex/abc.txt:
