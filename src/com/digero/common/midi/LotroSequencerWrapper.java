@@ -116,7 +116,7 @@ public class LotroSequencerWrapper extends NoteFilterSequencerWrapper
 		return lotroSynth != null;
 	}
 
-	@Override protected Receiver createReceiver() throws MidiUnavailableException
+	@Override public Receiver createReceiver() throws MidiUnavailableException
 	{
 		return (lotroSynth != null) ? lotroSynth.getReceiver() : MidiSystem.getReceiver();
 	}

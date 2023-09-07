@@ -54,7 +54,7 @@ public class SequencerWrapper implements MidiConstants, ITempoCache, IDiscardabl
 		transmitter.setReceiver(receiver);
 	}
 
-	protected Receiver createReceiver() throws MidiUnavailableException
+	public Receiver createReceiver() throws MidiUnavailableException
 	{
 		return MidiSystem.getReceiver();
 	}

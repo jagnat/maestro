@@ -31,6 +31,8 @@ import com.digero.common.midi.PanGenerator;
 import com.digero.common.midi.SequencerWrapper;
 import com.digero.common.util.LotroParseException;
 import com.digero.common.util.ParseException;
+import com.digero.maestro.abc.AbcExporter.ExportTrackInfo;
+import com.digero.maestro.midi.SequenceInfo;
 
 public class AbcToMidi {
 	/** This is a static-only class */
@@ -132,6 +134,7 @@ public class AbcToMidi {
 
 		List<MidiEvent> noteOffEvents = new ArrayList<>();
 		int lineNumberForRegions = -1;
+		SequenceInfo.lastTrackInfos = new ArrayList<>();
 		for (FileAndData fileAndData : filesData) {
 			track = null;
 			String fileName = fileAndData.file.getName();
@@ -301,7 +304,8 @@ public class AbcToMidi {
 									fileName, partStartLine);
 						}
 						track = seq.createTrack();
-						track.add(MidiFactory.createProgramChangeEvent(info.getInstrument().midi.id(), channel, 0));
+						track.add(MidiFactory.createLotroChangeEvent(info.getInstrument().midi.id(), channel, 0));
+						SequenceInfo.lastTrackInfos.add(new ExportTrackInfo(0,null,null,channel,info.getInstrument().midi.id()));
 						if (useLotroInstruments) {
 							track.add(MidiFactory.createChannelVolumeEvent(MidiConstants.MAX_VOLUME, channel, 1));
 							track.add(MidiFactory.createReverbControlEvent(AbcConstants.MIDI_REVERB, channel, 1));
@@ -309,6 +313,7 @@ public class AbcToMidi {
 						}
 
 						abcInfo.setPartInstrument(trackNumber, info.getInstrument());
+						
 					}
 
 					Matcher m = NOTE_PATTERN.matcher(line);
@@ -686,6 +691,7 @@ public class AbcToMidi {
 							chordStartTick = noteEndTick;
 						i = m.end();
 					}
+					
 
 					if (tuplet != null)
 						throw new ParseException("Tuplet not finished by end of line", fileName, lineNumber, i);

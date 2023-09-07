@@ -335,6 +335,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 					useLotroInstruments = false;
 				}
+				sequencer.createReceiver();//To make sure its there
 			} else {
 				sequencer = new SequencerWrapper();
 			}

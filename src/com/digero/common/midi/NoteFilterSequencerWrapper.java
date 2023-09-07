@@ -52,7 +52,7 @@ public class NoteFilterSequencerWrapper extends SequencerWrapper
 		return filter.isNoteActive(noteId);
 	}
 	
-	@Override protected Receiver createReceiver() throws MidiUnavailableException 
+	@Override public Receiver createReceiver() throws MidiUnavailableException 
 	{
 		if (prefsNode == null) {
 			prefsNode = prefs.node(prefMIDIHeader);
