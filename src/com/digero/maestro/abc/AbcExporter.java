@@ -221,7 +221,7 @@ public class AbcExporter {
 			Set<Integer> assignedChannels = new HashSet<>();// channels that has been assigned one or two parts onto it.
 
 			Sequence sequence = new Sequence(Sequence.PPQ, qtm.getMidiResolution());
-			System.out.print("My song: "+sequence.hashCode()+"\n");
+
 			// Track 0: Title and meta info
 			Track track0 = sequence.createTrack();
 			track0.add(MidiFactory.createTrackNameEvent(metadata.getSongTitle()));
@@ -692,8 +692,7 @@ public class AbcExporter {
 		track.add(MidiFactory.createTrackNameEvent(part.getTitle()));
 		if (useLotroInstruments && !assignedChannels.contains(channel)) {
 			// Only change the channel voice once
-			boolean success = track.add(MidiFactory.createLotroChangeEvent(part.getInstrument().midi.id(), channel, 0));
-			System.out.println(channel+": "+part.getTitle()+" voice assigned to "+part.getInstrument().toString()+ "   "+success);
+			track.add(MidiFactory.createLotroChangeEvent(part.getInstrument().midi.id(), channel, 0));
 		}
 		if (!assignedChannels.contains(channel)) {
 			if (useLotroInstruments) {

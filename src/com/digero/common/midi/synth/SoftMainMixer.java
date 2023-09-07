@@ -879,17 +879,16 @@ public class SoftMainMixer {
     }
 
     public void processMessage(Object object) {
-        if (object instanceof byte[])
-            processMessage((byte[]) object);
         if (object instanceof MidiMessage)
             processMessage((MidiMessage)object);
+        if (object instanceof byte[])
+            processMessage((byte[]) object);
     }
 
     public void processMessage(MidiMessage message) {
         if (message instanceof ShortMessage) {
             ShortMessage sms = (ShortMessage)message;
-            processMessage(sms.getChannel(), sms.getCommand(),
-                    sms.getData1(), sms.getData2());
+            processMessage(sms.getChannel(), sms.getCommand(), sms.getData1(), sms.getData2());            
             return;
         }
         processMessage(message.getMessage());
@@ -956,19 +955,19 @@ public class SoftMainMixer {
             softchannel.noteOff(data1, data2);
             break;
         case ShortMessage.POLY_PRESSURE:
-            softchannel.setPolyPressure(data1, data2);
+        	softchannel.setPolyPressure(data1, data2);
             break;
         case ShortMessage.CONTROL_CHANGE:
-            softchannel.controlChange(data1, data2);
+        	softchannel.controlChange(data1, data2);
             break;
         case ShortMessage.PROGRAM_CHANGE:
-            softchannel.programChange(data1);
+        	softchannel.programChange(data1);
             break;
         case ShortMessage.CHANNEL_PRESSURE:
             softchannel.setChannelPressure(data1);
             break;
         case ShortMessage.PITCH_BEND:
-            softchannel.setPitchBend(data1 + data2 * 128);
+        	softchannel.setPitchBend(data1 + data2 * 128);
             break;
         default:
             break;

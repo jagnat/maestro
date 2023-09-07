@@ -153,7 +153,6 @@ public class SequencerWrapper implements MidiConstants, ITempoCache, IDiscardabl
 
 		if (fullReset)
 		{
-			System.out.println("Reset Full");
 			Sequence seqSave = sequencer.getSequence();
 			try
 			{
@@ -213,7 +212,6 @@ public class SequencerWrapper implements MidiConstants, ITempoCache, IDiscardabl
 		}
 		else
 		{
-			System.out.println("Reset Soft");
 			// Not a full reset
 			boolean isOpen = sequencer.isOpen();
 			try
@@ -724,10 +722,10 @@ public class SequencerWrapper implements MidiConstants, ITempoCache, IDiscardabl
 			sequencer.setSequence(sequence);
 			
 			if (sequence != null) {
-				System.out.print(transceivers.size()+" transceivers will play song: "+sequence.hashCode()+"\n");
+				/*System.out.print(transceivers.size()+" transceivers will play song: "+sequence.hashCode()+"\n");
 				for (Transceiver t : transceivers) {
 					System.out.println(t.toString());
-				}
+				}*/
 				tempoCache.refresh(sequence);
 			}
 			if (preLoaded != isLoaded())

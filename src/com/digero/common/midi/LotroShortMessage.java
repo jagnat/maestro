@@ -12,13 +12,7 @@ public class LotroShortMessage extends ShortMessage {
             throw new InvalidMidiDataException("channel out of range: " + channel);
         }
         channel2 = channel;
-        /*if (command == ShortMessage.PROGRAM_CHANGE) {
-        	data2 = channel;
-        }*/
         super.setMessage(command, channel & 0xF, data1, data2);
-        /*if (command == ShortMessage.PROGRAM_CHANGE) {
-        	length = 3;
-        }*/
     }
 	
 	@Override public int getChannel() {
@@ -33,14 +27,6 @@ public class LotroShortMessage extends ShortMessage {
         	e.printStackTrace();
             throw new IllegalArgumentException(e.getMessage());
         }
-        Thread.dumpStack();
         return clone;
-    }
-	
-	@Override public byte[] getMessage() {
-        byte[] returnedArray = new byte[length];
-        System.arraycopy(data, 0, returnedArray, 0, length);
-        Thread.dumpStack();
-        return returnedArray;
     }
 }
