@@ -1,6 +1,8 @@
 package com.digero.abcplayer;
 
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.sound.midi.MetaMessage;
 import javax.sound.midi.MidiEvent;
@@ -13,6 +15,7 @@ import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 
+import com.digero.common.midi.MidiConstants;
 import com.digero.common.midi.SynthesizerFactory;
 import com.sun.media.sound.AudioSynthesizer;
 
@@ -33,8 +36,15 @@ public class MidiToWav {
 			if (opened)
 				synth.close();
 
-			AudioInputStream stream = synth.openStream(null, null);
-			SynthesizerFactory.initLotroSynthesizer(synth);
+			Map<String, Object> synthInfo = new HashMap();
+			synthInfo.put("midi channels", MidiConstants.CHANNEL_COUNT_ABC);//default is 16
+			synthInfo.put("reverb", false);//default is true
+			synthInfo.put("chorus", false);//default is true
+			synthInfo.put("max polyphony", 128);//default is 64
+			synthInfo.put("latency", 200000L);//120000 microseconds is default.
+			//TODO: Verify that Java's implementation of this actually can handle 25 channels. Else switch to Gervill.
+			AudioInputStream stream = synth.openStream(null, synthInfo);
+			SynthesizerFactory.initAudioSynthesizer(synth);
 
 			// Play Sequence into AudioSynthesizer Receiver.
 			double total = send(sequence, synth.getReceiver());

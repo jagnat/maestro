@@ -41,7 +41,7 @@ public class SynthesizerFactory {
 			throws MidiUnavailableException, InvalidMidiDataException, IOException {
 		AudioSynthesizer synth = findAudioSynthesizer();
 		if (synth != null)
-			initLotroSynthesizer(synth);
+			initAudioSynthesizer(synth);
 		return synth;
 	}
 
@@ -58,6 +58,21 @@ public class SynthesizerFactory {
 		//((com.sun.media.sound.SoftSynthesizer)synth).open(null, synthInfo);
 		//synth.close();
 		((LotroSoftSynthesizer)synth).open(null, synthInfo);
+		synth.unloadAllInstruments(getLotroSoundbank());
+		synth.loadAllInstruments(getLotroSoundbank());
+	}
+	
+	@SuppressWarnings("restriction")
+	public static void initAudioSynthesizer(Synthesizer synth)
+			throws MidiUnavailableException, InvalidMidiDataException, IOException {
+		Map<String, Object> synthInfo = new HashMap();
+		synthInfo.put("midi channels", MidiConstants.CHANNEL_COUNT_ABC);//default is 16
+		synthInfo.put("reverb", false);//default is true
+		synthInfo.put("chorus", false);//default is true
+		synthInfo.put("max polyphony", 128);//default is 64
+		synthInfo.put("latency", 200000L);//12000 microseconds is default. But that low with 24 parts will give pops and clicks in playback in abc player.
+		//((com.sun.media.sound.SoftSynthesizer)synth).open(null, synthInfo);
+		((AudioSynthesizer)synth).open(null, synthInfo);
 		synth.unloadAllInstruments(getLotroSoundbank());
 		synth.loadAllInstruments(getLotroSoundbank());
 	}
