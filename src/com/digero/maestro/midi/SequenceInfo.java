@@ -44,16 +44,17 @@ public class SequenceInfo implements MidiConstants
 	private final String fileName;
 	private String title;
 	private String composer;
-	public static MidiStandard standard = MidiStandard.GM;
-	public static boolean hasPorts = false;
-	public static int midiType = -1;// -1 = abc, 0 = type 0, 1 = type 1, 2 = type 2
-	private static boolean[] rolandDrumChannels = new boolean[16];//Which of the channels GS designates as drums
-	private static boolean[] yamahaDrumChannels = new boolean[16];//Which of the channels XG designates as drums
-	private static ArrayList<TreeMap<Long, Boolean>> yamahaDrumSwitches = null;//Which channel/tick XG switches to drums outside of designated drum channels
-	private static ArrayList<TreeMap<Long, Boolean>> mmaDrumSwitches = null;//Which channel/tick GM2 switches to drums outside of designated drum channels
+	public MidiStandard standard = MidiStandard.GM;
+	public boolean hasPorts = false;
+	public int midiType = -1;// -1 = abc, 0 = type 0, 1 = type 1, 2 = type 2
+	private boolean[] rolandDrumChannels = new boolean[16];//Which of the channels GS designates as drums
+	private boolean[] yamahaDrumChannels = new boolean[16];//Which of the channels XG designates as drums
+	private ArrayList<TreeMap<Long, Boolean>> yamahaDrumSwitches = null;//Which channel/tick XG switches to drums outside of designated drum channels
+	private ArrayList<TreeMap<Long, Boolean>> mmaDrumSwitches = null;//Which channel/tick GM2 switches to drums outside of designated drum channels
 	private int primaryTempoMPQ;
 	private final List<TrackInfo> trackInfoList;
 	private TreeMap<Integer, Integer> portMap = new TreeMap<>();
+	public static List<ExportTrackInfo> lastTrackInfos = null;
 
 	public static SequenceInfo fromAbc(AbcToMidi.Params params) throws InvalidMidiDataException, ParseException
 	{
@@ -82,7 +83,7 @@ public class SequenceInfo implements MidiConstants
 	{
 		this.fileName = fileName;
 		this.sequence = sequence;
-		SequenceInfo.midiType = type;
+		this.midiType = type;
 		//System.err.println("MIDI Type = "+type);
 		
 		
@@ -149,17 +150,21 @@ public class SequenceInfo implements MidiConstants
 		Pair<List<ExportTrackInfo>, Sequence> result = abcExporter.exportToPreview(useLotroInstruments);
 
 		sequence = result.second;
+		lastTrackInfos = result.first;
+		standard = MidiStandard.PREVIEW;
 		sequenceCache = new SequenceDataCache(sequence, standard, null, null, null, null, portMap);
 		primaryTempoMPQ = sequenceCache.getPrimaryTempoMPQ();
 
+		/*
 		List<TrackInfo> trackInfoList = new ArrayList<>(result.first.size());
 		for (ExportTrackInfo i : result.first)
 		{
 			trackInfoList.add(new TrackInfo(this, i.trackNumber, i.part.getTitle(), i.part.getInstrument(), abcExporter
 					.getTimingInfo().getMeter(), abcExporter.getKeySignature(), i.noteEvents));
 		}
+		*/
 
-		this.trackInfoList = Collections.unmodifiableList(trackInfoList);
+		this.trackInfoList = null;//Collections.unmodifiableList(trackInfoList);
 	}
 
 	public String getFileName()
@@ -635,7 +640,7 @@ public class SequenceInfo implements MidiConstants
 	 * also be separated.
 	 * 
 	 */
-	public static boolean convertToType1(Sequence song)
+	public boolean convertToType1(Sequence song)
 	{
 		if (song.getTracks().length == 1 && MidiStandard.ABC != standard)
 		{
@@ -705,7 +710,7 @@ public class SequenceInfo implements MidiConstants
 	/**
 	 * Ensures that there are no tracks with both drums and notes.
 	 */
-	public static void separateDrumTracks(Sequence song)
+	public void separateDrumTracks(Sequence song)
 	{
 		Track[] tracks = song.getTracks();
 		

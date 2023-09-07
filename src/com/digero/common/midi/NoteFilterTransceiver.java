@@ -1,5 +1,6 @@
 package com.digero.common.midi;
 
+import java.util.Arrays;
 import java.util.BitSet;
 
 import javax.sound.midi.MidiEvent;
@@ -13,7 +14,7 @@ public class NoteFilterTransceiver implements Transceiver, MidiConstants, ICompi
 {
 	private Receiver receiver = null;
 	private boolean hasAbcPart = false;
-	private BitSet[] notesOn = new BitSet[CHANNEL_COUNT];
+	private BitSet[] notesOn = new BitSet[CHANNEL_COUNT_ABC];
 	private BitSet solos = new BitSet();
 
 	public void onAbcPartChanged(boolean hasAbcPart)
@@ -84,7 +85,7 @@ public class NoteFilterTransceiver implements Transceiver, MidiConstants, ICompi
 		if (receiver == null)
 			return;
 
-		for (int c = 0; c < CHANNEL_COUNT; c++)
+		for (int c = 0; c < CHANNEL_COUNT_ABC; c++)
 		{
 			BitSet set = notesOn[c];
 			if (set == null)
@@ -106,26 +107,48 @@ public class NoteFilterTransceiver implements Transceiver, MidiConstants, ICompi
 	{
 		if (receiver == null)
 			return;
-
+		//if (message instanceof LotroShortMessage) System.out.println("So far..");
 		if (hasAbcPart && message instanceof ShortMessage)
 		{
 			ShortMessage m = (ShortMessage) message;
-			int c = m.getChannel();
 			int cmd = m.getCommand();
-			int noteId = m.getData1();
-			int speed = m.getData2();
-			boolean noteOnMsg = (cmd == ShortMessage.NOTE_ON) && speed > 0;
-			boolean noteOffMsg = (cmd == ShortMessage.NOTE_OFF) || (cmd == ShortMessage.NOTE_ON && speed == 0);
-
-			if (!isNoteActive(noteId) && !(isNoteOn(c, noteId) && noteOffMsg))
-				return;
-
-			if (noteOnMsg)
-				setNoteOn(c, noteId, true);
-			else if (noteOffMsg)
-				setNoteOn(c, noteId, false);
+			if (cmd == ShortMessage.NOTE_ON || cmd == ShortMessage.NOTE_OFF) {
+				
+				int c = m.getChannel();				
+				int noteId = m.getData1();
+				int speed = m.getData2();
+				boolean noteOnMsg = (cmd == ShortMessage.NOTE_ON) && speed > 0;
+				boolean noteOffMsg = (cmd == ShortMessage.NOTE_OFF) || (cmd == ShortMessage.NOTE_ON && speed == 0);
+	
+				if (!isNoteActive(noteId) && !(isNoteOn(c, noteId) && noteOffMsg))
+					return;
+	
+				if (noteOnMsg)
+					setNoteOn(c, noteId, true);
+				else if (noteOffMsg)
+					setNoteOn(c, noteId, false);
+			}
 		}
-
+		/*
+		if (message instanceof ShortMessage)
+		{
+			ShortMessage m = (ShortMessage) message;
+			if (m.getCommand() == ShortMessage.PROGRAM_CHANGE)
+			{
+					int c = m.getChannel();
+					System.out.println("NoteFilterTransceiver.send: Channel "+c+" patch "+m.getData1());
+			}
+		}
+		if (message instanceof LotroShortMessage)
+		{
+			LotroShortMessage m = (LotroShortMessage) message;
+			if (m.getCommand() == ShortMessage.PROGRAM_CHANGE)
+			{
+					int c = m.getChannel();
+					System.out.println("++NoteFilterTransceiver.send: Channel "+c+" patch "+m.getData1());
+			}
+		}
+		*/
 		receiver.send(message, timeStamp);
 	}
 }

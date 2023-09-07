@@ -39,6 +39,7 @@ import javax.imageio.ImageIO;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
+import javax.sound.midi.Patch;
 import javax.sound.midi.Sequence;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -1627,7 +1628,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		zoom.setEnabled(midiLoaded);
 		noteButton.setEnabled(midiLoaded);
 		if (midiLoaded) {
-			midiModeRadioButton.setText("Original (" + ((SequenceInfo.standard == MidiStandard.GM && SequenceInfo.hasPorts) ? MidiStandard.GM_PLUS : SequenceInfo.standard)+")");
+			midiModeRadioButton.setText("Original (" + ((abcSong.getSequenceInfo().standard == MidiStandard.GM && abcSong.getSequenceInfo().hasPorts) ? MidiStandard.GM_PLUS : abcSong.getSequenceInfo().standard)+")");
 		} else {
 			midiModeRadioButton.setText("Original");
 		}
@@ -2035,6 +2036,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 			SequenceInfo sequenceInfo = abcSong.getSequenceInfo();
 			sequencer.setSequence(sequenceInfo.getSequence());
+			
 			sequencer.setTickPosition(sequenceInfo.calcFirstNoteTick());
 			midiBarLabel.setBarNumberCache(sequenceInfo.getDataCache());
 
@@ -2223,6 +2225,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			boolean running = abcSequencer.isRunning();
 			abcSequencer.reset(false);
 			abcSequencer.setSequence(previewSequenceInfo.getSequence());
+			
 
 			if (tick < abcPreviewStartTick)
 				tick = abcPreviewStartTick;
@@ -2511,7 +2514,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			return false;
 		}
 
-		if (SequenceInfo.standard == MidiStandard.ABC) {
+		if (abcSong.getSequenceInfo().standard == MidiStandard.ABC) {
 			JOptionPane.showMessageDialog(this, "Cannot expand ABC song", "Error", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}

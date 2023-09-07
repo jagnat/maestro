@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MetaMessage;
 import javax.sound.midi.MidiEvent;
+import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
 
 /**
@@ -53,7 +54,35 @@ public class MidiFactory implements MidiConstants
 	{
 		try
 		{
-			ShortMessage msg = new LotroShortMessage();
+			ShortMessage msg = new ShortMessage();
+			msg.setMessage(ShortMessage.PROGRAM_CHANGE, channel, patch, 0);
+			return new MidiEvent(msg, ticks);
+		}
+		catch (InvalidMidiDataException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public static MidiMessage createAllNotesOff(int channel)
+	{
+		try
+		{
+			LotroShortMessage msg = new LotroShortMessage();
+			msg.setMessage(ShortMessage.CONTROL_CHANGE, channel, 123, 0);
+			return msg;
+		}
+		catch (InvalidMidiDataException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public static MidiEvent createLotroChangeEvent(int patch, int channel, long ticks)
+	{
+		try
+		{
+			LotroShortMessage msg = new LotroShortMessage();
 			msg.setMessage(ShortMessage.PROGRAM_CHANGE, channel, patch, 0);
 			return new MidiEvent(msg, ticks);
 		}
@@ -84,7 +113,7 @@ public class MidiFactory implements MidiConstants
 	{
 		try
 		{
-			ShortMessage msg = new LotroShortMessage();
+			LotroShortMessage msg = new LotroShortMessage();
 			msg.setMessage(ShortMessage.NOTE_ON, channel, id, velocity);
 			return new MidiEvent(msg, ticks);
 		}
@@ -103,7 +132,7 @@ public class MidiFactory implements MidiConstants
 	{
 		try
 		{
-			ShortMessage msg = new LotroShortMessage();
+			LotroShortMessage msg = new LotroShortMessage();
 			msg.setMessage(ShortMessage.NOTE_OFF, channel, id, velocity);
 			return new MidiEvent(msg, ticks);
 		}
@@ -145,7 +174,7 @@ public class MidiFactory implements MidiConstants
 	{
 		try
 		{
-			ShortMessage msg = new LotroShortMessage();
+			LotroShortMessage msg = new LotroShortMessage();
 			msg.setMessage(ShortMessage.CONTROL_CHANGE, channel, controller, value);
 			return new MidiEvent(msg, ticks);
 		}

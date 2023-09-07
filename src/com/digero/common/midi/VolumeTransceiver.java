@@ -14,7 +14,7 @@ public class VolumeTransceiver implements Transceiver, MidiConstants
 
 	private Receiver receiver;
 	private int volume = MAX_VOLUME;
-	private int[] channelVolume = new int[CHANNEL_COUNT];
+	private int[] channelVolume = new int[CHANNEL_COUNT_ABC];
 	private boolean goesToEleven = false;
 
 	public VolumeTransceiver()
@@ -73,7 +73,7 @@ public class VolumeTransceiver implements Transceiver, MidiConstants
 	{
 		if (receiver != null)
 		{
-			for (int c = 0; c < CHANNEL_COUNT; c++)
+			for (int c = 0; c < CHANNEL_COUNT_ABC; c++)
 			{
 				MidiEvent evt = MidiFactory.createChannelVolumeEvent(getActualVolume(c), c, 0);
 				passOn(evt.getMessage(), -1);

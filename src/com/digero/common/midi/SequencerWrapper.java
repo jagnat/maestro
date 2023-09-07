@@ -29,7 +29,7 @@ public class SequencerWrapper implements MidiConstants, ITempoCache, IDiscardabl
 	public static final long UPDATE_FREQUENCY_MICROS = UPDATE_FREQUENCY_MILLIS * 1000;
 
 	protected Sequencer sequencer;
-	private Receiver receiver;
+	protected Receiver receiver;
 	private Transmitter transmitter;
 	private List<Transceiver> transceivers = new ArrayList<>();
 	private long dragTick;
@@ -49,7 +49,7 @@ public class SequencerWrapper implements MidiConstants, ITempoCache, IDiscardabl
 	{
 		sequencer = MidiSystem.getSequencer(false);
 		sequencer.open();
-		transmitter = sequencer.getTransmitter();
+		transmitter = sequencer.getTransmitter();// MIDI OUT CONNECTION
 		receiver = createReceiver();
 		transmitter.setReceiver(receiver);
 	}
@@ -153,6 +153,7 @@ public class SequencerWrapper implements MidiConstants, ITempoCache, IDiscardabl
 
 		if (fullReset)
 		{
+			System.out.println("Reset Full");
 			Sequence seqSave = sequencer.getSequence();
 			try
 			{
@@ -212,6 +213,7 @@ public class SequencerWrapper implements MidiConstants, ITempoCache, IDiscardabl
 		}
 		else
 		{
+			System.out.println("Reset Soft");
 			// Not a full reset
 			boolean isOpen = sequencer.isOpen();
 			try
@@ -219,8 +221,8 @@ public class SequencerWrapper implements MidiConstants, ITempoCache, IDiscardabl
 				if (!isOpen)
 					sequencer.open();
 
-				ShortMessage msg = new ShortMessage();
-				for (int i = 0; i < CHANNEL_COUNT; i++)
+				LotroShortMessage msg = new LotroShortMessage();
+				for (int i = 0; i < CHANNEL_COUNT_ABC; i++)
 				{
 					msg.setMessage(ShortMessage.PROGRAM_CHANGE, i, 0, 0);
 					receiver.send(msg, -1);
@@ -720,8 +722,14 @@ public class SequencerWrapper implements MidiConstants, ITempoCache, IDiscardabl
 			trackActiveCache = null;
 			boolean preLoaded = isLoaded();
 			sequencer.setSequence(sequence);
-			if (sequence != null)
+			
+			if (sequence != null) {
+				System.out.print(transceivers.size()+" transceivers will play song: "+sequence.hashCode()+"\n");
+				for (Transceiver t : transceivers) {
+					System.out.println(t.toString());
+				}
 				tempoCache.refresh(sequence);
+			}
 			if (preLoaded != isLoaded())
 				fireChangeEvent(SequencerProperty.IS_LOADED);
 			fireChangeEvent(SequencerProperty.LENGTH);

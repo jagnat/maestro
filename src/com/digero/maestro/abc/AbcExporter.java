@@ -131,12 +131,14 @@ public class AbcExporter {
 		public final AbcPart part;
 		public final List<NoteEvent> noteEvents;
 		public final Integer channel;
+		public final Integer patch;
 
-		public ExportTrackInfo(int trackNumber, AbcPart part, List<NoteEvent> noteEvents, Integer channel) {
+		public ExportTrackInfo(int trackNumber, AbcPart part, List<NoteEvent> noteEvents, Integer channel, int patch) {
 			this.trackNumber = trackNumber;
 			this.part = part;
 			this.noteEvents = noteEvents;
 			this.channel = channel;
+			this.patch = patch;
 		}
 	}
 
@@ -219,7 +221,7 @@ public class AbcExporter {
 			Set<Integer> assignedChannels = new HashSet<>();// channels that has been assigned one or two parts onto it.
 
 			Sequence sequence = new Sequence(Sequence.PPQ, qtm.getMidiResolution());
-
+			System.out.print("My song: "+sequence.hashCode()+"\n");
 			// Track 0: Title and meta info
 			Track track0 = sequence.createTrack();
 			track0.add(MidiFactory.createTrackNameEvent(metadata.getSongTitle()));
@@ -272,11 +274,20 @@ public class AbcExporter {
 							useLotroInstruments, assignedChannels, null, false, chordsMade);
 					infoList.add(inf);
 					assignedChannels.add(inf.channel);
-					// System.out.println(part.getTitle()+" assigned to channel "+inf.channel+" on
-					// track "+inf.trackNumber);
+					//System.out.println(part.getTitle()+" assigned to channel "+inf.channel+" on track "+inf.trackNumber);
+					/*if (exportStartTick > 0) {
+						track0.add(MidiFactory.createNoteOnEventEx(40,inf.channel,100,0L));
+						track0.add(MidiFactory.createNoteOffEventEx(40,inf.channel,0,100L));
+					}*/
 				}
 			}
 			// System.out.println("Preview done");
+			/*
+			if (exportStartTick > 0) {
+				track0.add(MidiFactory.createNoteOnEventEx(40,9,100,0L));
+				track0.add(MidiFactory.createNoteOffEventEx(40,9,0,100L));
+			}*/
+			
 			return new Pair<>(infoList, sequence);
 		} catch (RuntimeException e) {
 			// Unpack the InvalidMidiDataException if it was the cause
@@ -658,7 +669,7 @@ public class AbcExporter {
 			}
 		}
 
-		return new ExportTrackInfo(trackNumber.first, part, noteEvents, trackNumber.second);
+		return new ExportTrackInfo(trackNumber.first, part, noteEvents, trackNumber.second, part.getInstrument().midi.id());
 	}
 
 	private Pair<Integer, Integer> exportPartToMidi(AbcPart part, Sequence out, List<Chord> chords, int pan,
@@ -681,11 +692,8 @@ public class AbcExporter {
 		track.add(MidiFactory.createTrackNameEvent(part.getTitle()));
 		if (useLotroInstruments && !assignedChannels.contains(channel)) {
 			// Only change the channel voice once
-			track.add(MidiFactory.createProgramChangeEvent(part.getInstrument().midi.id(), channel, 0));
-			if (channel == 0) {
-				// System.out.println(channel+": "+part.getTitle()+" voice assigned to
-				// "+part.getInstrument().toString());
-			}
+			boolean success = track.add(MidiFactory.createLotroChangeEvent(part.getInstrument().midi.id(), channel, 0));
+			System.out.println(channel+": "+part.getTitle()+" voice assigned to "+part.getInstrument().toString()+ "   "+success);
 		}
 		if (!assignedChannels.contains(channel)) {
 			if (useLotroInstruments) {

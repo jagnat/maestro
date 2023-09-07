@@ -82,7 +82,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 
 	private final boolean fromAbcFile;
 	private final boolean fromXmlFile;
-	private SequenceInfo sequenceInfo;
+	private SequenceInfo sequenceInfo;//TODO: Refactor name to sourceSequenceInfo
 	private final PartAutoNumberer partAutoNumberer;
 	private final PartNameTemplate partNameTemplate;
 	private final ExportFilenameTemplate exportFilenameTemplate;

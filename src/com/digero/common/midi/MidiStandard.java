@@ -14,7 +14,10 @@ public enum MidiStandard
 	ABC    ("ABC", "ABC Notation",            "Walshaw",  "Chris Walshaw"),
 	
 	// MIDI 2.0:
-	MIDI2("MIDI2", "MIDI 2.0",                "MMA",      "MIDI Manufacturers Association");// Maestro does not support this yet
+	MIDI2("MIDI2", "MIDI 2.0",                "MMA",      "MIDI Manufacturers Association"),// Maestro does not support this yet
+	
+	// Preview
+	PREVIEW     ("GM_PREVIEW",  "General Midi",            "MMA",      "MIDI Manufacturers Association");
 // @formatter:on
 	
 	public final String shortName;

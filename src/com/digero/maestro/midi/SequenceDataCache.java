@@ -86,191 +86,206 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		 */
 		Track[] tracks = song.getTracks();
 		hasPorts = false;
-		for (int iiTrack = 0; iiTrack < tracks.length; iiTrack++) {
-			Track track = tracks[iiTrack];
-			int port = 0;
-			portMap.put(iiTrack, port);
-
-			for (int jj = 0, sz1 = track.size(); jj < sz1; jj++) {
-				MidiEvent evt = track.get(jj);
-				MidiMessage msg = evt.getMessage();
-				long tick = evt.getTick();
-				if (msg instanceof MetaMessage) {
-					MetaMessage m = (MetaMessage) msg;
-					if (m.getType() == META_PORT_CHANGE) {
-						byte[] portChange = m.getData();
-						if (portChange.length == 1 && tick == 0) {
-							// Support for (non-midi-standard) port assignments used by Cakewalk and
-							// Musescore.
-							// We only support this for GM, and only super well-formed (tick == 0).
-							port = (int) portChange[0];
-							// System.out.println("Port change on track "+iiTrack+" tick "+tick+" port
-							// "+formatBytes(portChange));
-							portMap.put(iiTrack, port);
-							hasPorts = MidiStandard.GM == standard;
-						}
-					}
-				}
-			}
-		}
 		long lastTick = 0;
-		for (int iTrack = 0; iTrack < tracks.length; iTrack++) {
-			Track track = tracks[iTrack];
-
-			for (int j = 0, sz = track.size(); j < sz; j++) {
-				MidiEvent evt = track.get(j);
-				MidiMessage msg = evt.getMessage();
-				long tick = evt.getTick();
-				if (tick > lastTick)
-					lastTick = tick;
-
-				if (msg instanceof ShortMessage) {
-					ShortMessage m = (ShortMessage) msg;
-					int cmd = m.getCommand();
-					int ch = m.getChannel();
-
-					if (cmd == ShortMessage.NOTE_ON) {
-						if (rolandDrumChannels != null && rolandDrumChannels[ch] && MidiStandard.GS == standard) {
-							brandDrumBanks[iTrack] = 2;// GS Drums
-						} else if (brandDrumBanks[iTrack] != 1 && MidiStandard.XG == standard && yamahaDrumSwitches != null
-								&& yamahaDrumSwitches.get(ch).floorEntry(tick) != null
-								&& yamahaDrumSwitches.get(ch).floorEntry(tick).getValue()) {
-							brandDrumBanks[iTrack] = 1;// XG drums
-						} else if (brandDrumBanks[iTrack] != 4 && MidiStandard.GM2 == standard && mmaDrumSwitches != null
-								&& mmaDrumSwitches.get(ch).floorEntry(tick) != null
-								&& mmaDrumSwitches.get(ch).floorEntry(tick).getValue()) {
-							brandDrumBanks[iTrack] = 4;// GM2 drums
-						} else if (ch == DRUM_CHANNEL && (MidiStandard.GM == standard || MidiStandard.ABC == standard)) {
-							brandDrumBanks[iTrack] = 3;// GM drums on channel #10
-						}
-					} else if (cmd == ShortMessage.PROGRAM_CHANGE) {
-						if (((ch != DRUM_CHANNEL && rolandDrumChannels == null && yamahaDrumChannels == null)
-								|| ((rolandDrumChannels == null || MidiStandard.GS != standard || !rolandDrumChannels[ch])
-										&& (yamahaDrumChannels == null || MidiStandard.XG != standard || !yamahaDrumChannels[ch])))
-								&& (MidiStandard.XG != standard || yamahaDrumSwitches == null
-										|| yamahaDrumSwitches.get(ch).floorEntry(tick) == null
-										|| !yamahaDrumSwitches.get(ch).floorEntry(tick).getValue())
-								&& (MidiStandard.GM2 != standard || mmaDrumSwitches == null
-										|| mmaDrumSwitches.get(ch).floorEntry(tick) == null
-										|| !mmaDrumSwitches.get(ch).floorEntry(tick).getValue())) {
-							instruments.put(portMap.get(iTrack), ch, tick, m.getData1());
-						}
-						mapPatch.put(ch, tick, m.getData1());
-					} else if (cmd == ShortMessage.CONTROL_CHANGE) {
-						switch (m.getData1()) {
-						case CHANNEL_VOLUME_CONTROLLER_COARSE:
-							volume.put(ch, tick, m.getData2());
-							break;
-						case REGISTERED_PARAMETER_NUMBER_MSB:
-							rpn[ch] = (rpn[ch] & 0x7F) | ((m.getData2() & 0x7F) << 7);
-							break;
-						case REGISTERED_PARAMETER_NUMBER_LSB:
-							rpn[ch] = (rpn[ch] & (0x7F << 7)) | (m.getData2() & 0x7F);
-							break;
-						case DATA_ENTRY_COARSE:
-							if (rpn[ch] == REGISTERED_PARAM_PITCH_BEND_RANGE)
-								pitchBendCoarse.put(ch, tick, m.getData2());
-							break;
-						case DATA_ENTRY_FINE:
-							if (rpn[ch] == REGISTERED_PARAM_PITCH_BEND_RANGE)
-								pitchBendFine.put(ch, tick, m.getData2());
-							break;
-						case BANK_SELECT_MSB:
-							if (ch != DRUM_CHANNEL || MidiStandard.XG != standard || m.getData2() == 126 || m.getData2() == 127) {
-								// Due to XG drum part protect mode being ON, drum channel 9 only can switch
-								// between MSB 126 & 127.
-								mapMSB.put(ch, tick, m.getData2());
-							} else if (ch == DRUM_CHANNEL && MidiStandard.XG == standard && m.getData2() != 126
-									&& m.getData2() != 127) {
-								System.err.println("XG Drum Part Protect Mode prevented bank select MSB.");
-							}
-							// if(ch==DRUM_CHANNEL) System.err.println("Bank select MSB "+m.getData2()+"
-							// "+tick);
-							break;
-						case BANK_SELECT_LSB:
-							mapLSB.put(ch, tick, m.getData2());
-							// if(ch==DRUM_CHANNEL) System.err.println("Bank select LSB "+m.getData2()+"
-							// "+tick);
-							break;
-						}
-					}
-				} else if (msg instanceof SysexMessage) {
-					SysexMessage sysex = (SysexMessage) msg;
-					byte[] message = sysex.getMessage();
-					if (message.length == 9 && (message[0] & 0xFF) == 0xF0 && (message[1] & 0xFF) == 0x43
-							&& (message[4] & 0xFF) == 0x08 && (message[8] & 0xFF) == 0xF7) {
-						String bank = message[6] == 1 ? "MSB"
-								: (message[6] == 2 ? "LSB" : (message[6] == 3 ? "Patch" : ""));
-						if (MidiStandard.XG == standard && !"".equals(bank) && message[5] < 16 && message[5] > -1 && message[7] < 128
-								&& message[7] > -1) {
-							switch (bank) {
-							case "MSB":
-								// XG Drum Part Protect Mode does not apply to sysex bank changes.
-								mapMSB.put((int) message[5], tick, (int) message[7]);
-								break;
-							case "Patch":
-								mapPatch.put((int) message[5], tick, (int) message[7]);
-								break;
-							case "LSB":
-								mapLSB.put((int) message[5], tick, (int) message[7]);
-								break;
+		if (standard != MidiStandard.PREVIEW) {
+			for (int iiTrack = 0; iiTrack < tracks.length; iiTrack++) {
+				Track track = tracks[iiTrack];
+				int port = 0;
+				portMap.put(iiTrack, port);
+	
+				for (int jj = 0, sz1 = track.size(); jj < sz1; jj++) {
+					MidiEvent evt = track.get(jj);
+					MidiMessage msg = evt.getMessage();
+					long tick = evt.getTick();
+					if (msg instanceof MetaMessage) {
+						MetaMessage m = (MetaMessage) msg;
+						if (m.getType() == META_PORT_CHANGE) {
+							byte[] portChange = m.getData();
+							if (portChange.length == 1 && tick == 0) {
+								// Support for (non-midi-standard) port assignments used by Cakewalk and
+								// Musescore.
+								// We only support this for GM, and only super well-formed (tick == 0).
+								port = (int) portChange[0];
+								// System.out.println("Port change on track "+iiTrack+" tick "+tick+" port
+								// "+formatBytes(portChange));
+								portMap.put(iiTrack, port);
+								hasPorts = MidiStandard.GM == standard;
 							}
 						}
-					}
-				} else if (iTrack == 0 && (divisionType == Sequence.PPQ) && MidiUtils.isMetaTempo(msg)) {
-					TempoEvent te = getTempoEventForTick(tick);
-					long elapsedMicros = MidiUtils.ticks2microsec(tick - te.tick, te.tempoMPQ, tickResolution);
-					tempoLengths.put(te.tempoMPQ, elapsedMicros + Util.valueOf(tempoLengths.get(te.tempoMPQ), 0));
-					tempo.put(tick, new TempoEvent(MidiUtils.getTempoMPQ(msg), tick, te.micros + elapsedMicros));
-
-					if (te.tempoMPQ < minTempoMPQ)
-						minTempoMPQ = te.tempoMPQ;
-					if (te.tempoMPQ > maxTempoMPQ)
-						maxTempoMPQ = te.tempoMPQ;
-				} else if (msg instanceof MetaMessage) {
-					MetaMessage m = (MetaMessage) msg;
-					if (m.getType() == META_TIME_SIGNATURE && timeSignature == null) {
-						timeSignature = new TimeSignature(m);
 					}
 				}
 			}
-		}
-
-		// Setup default banks for extensions:
-		for (int i = 0; i < CHANNEL_COUNT; i++) {
-			mapPatch.put(i, -1, 0);
-			mapLSB.put(i, -1, 0);
-		}
-		if (MidiStandard.XG == standard && yamahaDrumChannels != null) {
-			// Bank 127 is implicit the default on drum channels in XG.
-			for (int i = 0; i < CHANNEL_COUNT; i++) {
-				if (yamahaDrumChannels[i])
-					mapMSB.put(i, -1, 127);
-				else
-					mapMSB.put(i, -1, 0);
+			
+			for (int iTrack = 0; iTrack < tracks.length; iTrack++) {
+				Track track = tracks[iTrack];
+	
+				for (int j = 0, sz = track.size(); j < sz; j++) {
+					MidiEvent evt = track.get(j);
+					MidiMessage msg = evt.getMessage();
+					long tick = evt.getTick();
+					if (tick > lastTick)
+						lastTick = tick;
+	
+					if (msg instanceof ShortMessage) {
+						ShortMessage m = (ShortMessage) msg;
+						int cmd = m.getCommand();
+						int ch = m.getChannel();
+	
+						if (cmd == ShortMessage.NOTE_ON) {
+							if (rolandDrumChannels != null && rolandDrumChannels[ch] && MidiStandard.GS == standard) {
+								brandDrumBanks[iTrack] = 2;// GS Drums
+							} else if (brandDrumBanks[iTrack] != 1 && MidiStandard.XG == standard && yamahaDrumSwitches != null
+									&& yamahaDrumSwitches.get(ch).floorEntry(tick) != null
+									&& yamahaDrumSwitches.get(ch).floorEntry(tick).getValue()) {
+								brandDrumBanks[iTrack] = 1;// XG drums
+							} else if (brandDrumBanks[iTrack] != 4 && MidiStandard.GM2 == standard && mmaDrumSwitches != null
+									&& mmaDrumSwitches.get(ch).floorEntry(tick) != null
+									&& mmaDrumSwitches.get(ch).floorEntry(tick).getValue()) {
+								brandDrumBanks[iTrack] = 4;// GM2 drums
+							} else if (ch == DRUM_CHANNEL && (MidiStandard.GM == standard || MidiStandard.ABC == standard)) {
+								brandDrumBanks[iTrack] = 3;// GM drums on channel #10
+							}
+						} else if (cmd == ShortMessage.PROGRAM_CHANGE) {
+							if (((ch != DRUM_CHANNEL && rolandDrumChannels == null && yamahaDrumChannels == null)
+									|| ((rolandDrumChannels == null || MidiStandard.GS != standard || !rolandDrumChannels[ch])
+											&& (yamahaDrumChannels == null || MidiStandard.XG != standard || !yamahaDrumChannels[ch])))
+									&& (MidiStandard.XG != standard || yamahaDrumSwitches == null
+											|| yamahaDrumSwitches.get(ch).floorEntry(tick) == null
+											|| !yamahaDrumSwitches.get(ch).floorEntry(tick).getValue())
+									&& (MidiStandard.GM2 != standard || mmaDrumSwitches == null
+											|| mmaDrumSwitches.get(ch).floorEntry(tick) == null
+											|| !mmaDrumSwitches.get(ch).floorEntry(tick).getValue())) {
+								instruments.put(portMap.get(iTrack), ch, tick, m.getData1());
+							}
+							mapPatch.put(ch, tick, m.getData1());
+						} else if (cmd == ShortMessage.CONTROL_CHANGE) {
+							switch (m.getData1()) {
+							case CHANNEL_VOLUME_CONTROLLER_COARSE:
+								volume.put(ch, tick, m.getData2());
+								break;
+							case REGISTERED_PARAMETER_NUMBER_MSB:
+								rpn[ch] = (rpn[ch] & 0x7F) | ((m.getData2() & 0x7F) << 7);
+								break;
+							case REGISTERED_PARAMETER_NUMBER_LSB:
+								rpn[ch] = (rpn[ch] & (0x7F << 7)) | (m.getData2() & 0x7F);
+								break;
+							case DATA_ENTRY_COARSE:
+								if (rpn[ch] == REGISTERED_PARAM_PITCH_BEND_RANGE)
+									pitchBendCoarse.put(ch, tick, m.getData2());
+								break;
+							case DATA_ENTRY_FINE:
+								if (rpn[ch] == REGISTERED_PARAM_PITCH_BEND_RANGE)
+									pitchBendFine.put(ch, tick, m.getData2());
+								break;
+							case BANK_SELECT_MSB:
+								if (ch != DRUM_CHANNEL || MidiStandard.XG != standard || m.getData2() == 126 || m.getData2() == 127) {
+									// Due to XG drum part protect mode being ON, drum channel 9 only can switch
+									// between MSB 126 & 127.
+									mapMSB.put(ch, tick, m.getData2());
+								} else if (ch == DRUM_CHANNEL && MidiStandard.XG == standard && m.getData2() != 126
+										&& m.getData2() != 127) {
+									System.err.println("XG Drum Part Protect Mode prevented bank select MSB.");
+								}
+								// if(ch==DRUM_CHANNEL) System.err.println("Bank select MSB "+m.getData2()+"
+								// "+tick);
+								break;
+							case BANK_SELECT_LSB:
+								mapLSB.put(ch, tick, m.getData2());
+								// if(ch==DRUM_CHANNEL) System.err.println("Bank select LSB "+m.getData2()+"
+								// "+tick);
+								break;
+							}
+						}
+					} else if (msg instanceof SysexMessage) {
+						SysexMessage sysex = (SysexMessage) msg;
+						byte[] message = sysex.getMessage();
+						if (message.length == 9 && (message[0] & 0xFF) == 0xF0 && (message[1] & 0xFF) == 0x43
+								&& (message[4] & 0xFF) == 0x08 && (message[8] & 0xFF) == 0xF7) {
+							String bank = message[6] == 1 ? "MSB"
+									: (message[6] == 2 ? "LSB" : (message[6] == 3 ? "Patch" : ""));
+							if (MidiStandard.XG == standard && !"".equals(bank) && message[5] < 16 && message[5] > -1 && message[7] < 128
+									&& message[7] > -1) {
+								switch (bank) {
+								case "MSB":
+									// XG Drum Part Protect Mode does not apply to sysex bank changes.
+									mapMSB.put((int) message[5], tick, (int) message[7]);
+									break;
+								case "Patch":
+									mapPatch.put((int) message[5], tick, (int) message[7]);
+									break;
+								case "LSB":
+									mapLSB.put((int) message[5], tick, (int) message[7]);
+									break;
+								}
+							}
+						}
+					} else if (iTrack == 0 && (divisionType == Sequence.PPQ) && MidiUtils.isMetaTempo(msg)) {
+						TempoEvent te = getTempoEventForTick(tick);
+						long elapsedMicros = MidiUtils.ticks2microsec(tick - te.tick, te.tempoMPQ, tickResolution);
+						tempoLengths.put(te.tempoMPQ, elapsedMicros + Util.valueOf(tempoLengths.get(te.tempoMPQ), 0));
+						tempo.put(tick, new TempoEvent(MidiUtils.getTempoMPQ(msg), tick, te.micros + elapsedMicros));
+	
+						if (te.tempoMPQ < minTempoMPQ)
+							minTempoMPQ = te.tempoMPQ;
+						if (te.tempoMPQ > maxTempoMPQ)
+							maxTempoMPQ = te.tempoMPQ;
+					} else if (msg instanceof MetaMessage) {
+						MetaMessage m = (MetaMessage) msg;
+						if (m.getType() == META_TIME_SIGNATURE && timeSignature == null) {
+							timeSignature = new TimeSignature(m);
+						}
+					}
+				}
 			}
-		} else if (MidiStandard.GM2 == standard) {
-			// Bank 120 is implicit the default on drum channel in GM2.
-			// Bank 121 is implicit the default on all other channels in GM2.
-			mapMSB.put(0, -1, 121);
-			mapMSB.put(1, -1, 121);
-			mapMSB.put(2, -1, 121);
-			mapMSB.put(3, -1, 121);
-			mapMSB.put(4, -1, 121);
-			mapMSB.put(5, -1, 121);
-			mapMSB.put(6, -1, 121);
-			mapMSB.put(7, -1, 121);
-			mapMSB.put(8, -1, 121);
-			mapMSB.put(DRUM_CHANNEL, -1, 120);
-			mapMSB.put(10, -1, 121);
-			mapMSB.put(11, -1, 121);
-			mapMSB.put(12, -1, 121);
-			mapMSB.put(13, -1, 121);
-			mapMSB.put(14, -1, 121);
-			mapMSB.put(15, -1, 121);
-		} else {
+	
+			// Setup default banks for extensions:
 			for (int i = 0; i < CHANNEL_COUNT; i++) {
-				mapMSB.put(i, -1, 0);
+				mapPatch.put(i, -1, 0);
+				mapLSB.put(i, -1, 0);
+			}
+			if (MidiStandard.XG == standard && yamahaDrumChannels != null) {
+				// Bank 127 is implicit the default on drum channels in XG.
+				for (int i = 0; i < CHANNEL_COUNT; i++) {
+					if (yamahaDrumChannels[i])
+						mapMSB.put(i, -1, 127);
+					else
+						mapMSB.put(i, -1, 0);
+				}
+			} else if (MidiStandard.GM2 == standard) {
+				// Bank 120 is implicit the default on drum channel in GM2.
+				// Bank 121 is implicit the default on all other channels in GM2.
+				mapMSB.put(0, -1, 121);
+				mapMSB.put(1, -1, 121);
+				mapMSB.put(2, -1, 121);
+				mapMSB.put(3, -1, 121);
+				mapMSB.put(4, -1, 121);
+				mapMSB.put(5, -1, 121);
+				mapMSB.put(6, -1, 121);
+				mapMSB.put(7, -1, 121);
+				mapMSB.put(8, -1, 121);
+				mapMSB.put(DRUM_CHANNEL, -1, 120);
+				mapMSB.put(10, -1, 121);
+				mapMSB.put(11, -1, 121);
+				mapMSB.put(12, -1, 121);
+				mapMSB.put(13, -1, 121);
+				mapMSB.put(14, -1, 121);
+				mapMSB.put(15, -1, 121);
+			} else {
+				for (int i = 0; i < CHANNEL_COUNT; i++) {
+					mapMSB.put(i, -1, 0);
+				}
+			}
+		} else {
+			for (int iTrack = 0; iTrack < tracks.length; iTrack++) {
+				Track track = tracks[iTrack];
+	
+				for (int j = 0, sz = track.size(); j < sz; j++) {
+					MidiEvent evt = track.get(j);
+					MidiMessage msg = evt.getMessage();
+					long tick = evt.getTick();
+					if (tick > lastTick)
+						lastTick = tick;
+				}
 			}
 		}
 
@@ -499,7 +514,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 
 		@SuppressWarnings("unchecked") //
 		public MapByChannel(int defaultValue) {
-			map = new NavigableMap[CHANNEL_COUNT];
+			map = new NavigableMap[CHANNEL_COUNT_ABC];
 			this.defaultValue = defaultValue;
 		}
 
@@ -542,7 +557,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 
 		@SuppressWarnings("unchecked") //
 		public MapByChannelPort(int defaultValue) {
-			map = new NavigableMap[PORT_COUNT][CHANNEL_COUNT];
+			map = new NavigableMap[PORT_COUNT][CHANNEL_COUNT_ABC];
 			this.defaultValue = defaultValue;
 		}
 
