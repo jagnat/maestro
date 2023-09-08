@@ -962,6 +962,7 @@ public class SoftMainMixer {
             break;
         case ShortMessage.PROGRAM_CHANGE:
         	softchannel.programChange(data1);
+        	//System.out.println("PROGRAM_CHANGE CH "+ch+" to "+data1);
             break;
         case ShortMessage.CHANNEL_PRESSURE:
             softchannel.setChannelPressure(data1);

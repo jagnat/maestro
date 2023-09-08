@@ -13,6 +13,7 @@ import javax.sound.midi.Synthesizer;
 import javax.sound.midi.Transmitter;
 import javax.sound.midi.VoiceStatus;
 
+import com.digero.common.midi.SequencerEvent.SequencerProperty;
 import com.digero.maestro.abc.AbcExporter.ExportTrackInfo;
 import com.digero.maestro.midi.SequenceInfo;
 
@@ -33,75 +34,49 @@ public class LotroSequencerWrapper extends NoteFilterSequencerWrapper
 		}
 	}
 	
-	@Override public void setRunning(boolean isRunning)
-	{
-		
-		//resetNotes();
+	public void injectPatchChanges(boolean doControllers) {
 		List<ExportTrackInfo> infos = SequenceInfo.lastTrackInfos;
 		if (infos != null) {
 			for (ExportTrackInfo info : infos) {
 				receiver.send(MidiFactory.createAllNotesOff(info.channel),-1L);
-				receiver.send(MidiFactory.createLotroChangeEvent(info.patch,info.channel,sequencer.getTickPosition()).getMessage(),-1L);//-1 means realtime
+				receiver.send(MidiFactory.createSustainOff(info.channel),-1L);//-1 means real-time
+				if (doControllers) {
+					// We only do this when stopping to play
+					receiver.send(MidiFactory.createAllControllersOff(info.channel),-1L);
+				}
+				receiver.send(MidiFactory.createLotroChangeEvent(info.patch,info.channel,sequencer.getTickPosition()).getMessage(),-1L);
 			}
 		}
+	}
+	
+	@Override public void setRunning(boolean isRunning)
+	{
 		super.setRunning(isRunning);
+		injectPatchChanges(!isRunning);
 	}
 	
 	@Override public void setPosition(long position) {
 		super.setPosition(position);
-		//resetNotes();
-		List<ExportTrackInfo> infos = SequenceInfo.lastTrackInfos;
-		if (infos != null) {
-			for (ExportTrackInfo info : infos) {
-				receiver.send(MidiFactory.createAllNotesOff(info.channel),-1L);
-				receiver.send(MidiFactory.createLotroChangeEvent(info.patch,info.channel,sequencer.getTickPosition()).getMessage(),-1L);//-1 means realtime
-			}
-		}
+		injectPatchChanges(false);
 	}
 	
-	public void resetNotes()
+	@Override public void setTickPosition(long tick) {
+		super.setTickPosition(tick);
+		injectPatchChanges(false);
+	}
+	
+	public void setTrackMute(int track, boolean mute)
 	{
-		//stop();
-		//setPosition(0);
-		//trackActiveCache = null;
-		boolean fullReset = false;
-		if (fullReset)
-		{
-			try
-			{
-				ShortMessage msg = new ShortMessage();
-				msg.setMessage(ShortMessage.SYSTEM_RESET);
-				receiver.send(msg, -1);
-			}
-			catch (InvalidMidiDataException e)
-			{
-				e.printStackTrace();
-			}
-		}
-		else
-		{
-			// Not a full reset
-			try
-			{
-				LotroShortMessage msg = new LotroShortMessage();
-				for (int i = 0; i < CHANNEL_COUNT_ABC; i++)
-				{
-					msg.setMessage(ShortMessage.PROGRAM_CHANGE, i, 0, 0);
-					receiver.send(msg, -1);
-					msg.setMessage(ShortMessage.CONTROL_CHANGE, i, ALL_CONTROLLERS_OFF, 0);
-					receiver.send(msg, -1);
-				}
-				msg.setMessage(ShortMessage.SYSTEM_RESET);
-				receiver.send(msg, -1);
-			}
-			catch (InvalidMidiDataException e)
-			{
-				// Ignore
-				e.printStackTrace();
-			}
-		}
+		super.setTrackMute(track, mute);
+		injectPatchChanges(false);
 	}
 
+	public void setTrackSolo(int track, boolean solo)
+	{
+		super.setTrackSolo(track, solo);
+		injectPatchChanges(false);
+	}
+	
 	public static String getLoadLotroSynthError()
 	{
 		return loadLotroSynthError;

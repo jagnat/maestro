@@ -69,7 +69,7 @@ public class MidiFactory implements MidiConstants
 		try
 		{
 			LotroShortMessage msg = new LotroShortMessage();
-			msg.setMessage(ShortMessage.CONTROL_CHANGE, channel, 123, 0);
+			msg.setMessage(ShortMessage.CONTROL_CHANGE, channel, MidiConstants.ALL_NOTES_OFF, 0);
 			return msg;
 		}
 		catch (InvalidMidiDataException e)
@@ -228,6 +228,32 @@ public class MidiFactory implements MidiConstants
 		catch (InvalidMidiDataException e)
 		{
 			return null;
+		}
+	}
+
+	public static MidiMessage createSustainOff(Integer channel) {
+		try
+		{
+			LotroShortMessage msg = new LotroShortMessage();
+			msg.setMessage(ShortMessage.CONTROL_CHANGE, channel, MidiConstants.SUSTAIN_OFF, 0);
+			return msg;
+		}
+		catch (InvalidMidiDataException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public static MidiMessage createAllControllersOff(Integer channel) {
+		try
+		{
+			LotroShortMessage msg = new LotroShortMessage();
+			msg.setMessage(ShortMessage.CONTROL_CHANGE, channel, MidiConstants.ALL_CONTROLLERS_OFF, 0);
+			return msg;
+		}
+		catch (InvalidMidiDataException e)
+		{
+			throw new RuntimeException(e);
 		}
 	}
 }

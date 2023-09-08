@@ -693,6 +693,7 @@ public class AbcExporter {
 		if (useLotroInstruments && !assignedChannels.contains(channel)) {
 			// Only change the channel voice once
 			track.add(MidiFactory.createLotroChangeEvent(part.getInstrument().midi.id(), channel, 0));
+			//System.out.println("Channel "+channel+" for "+part.getInstrument());
 		}
 		if (!assignedChannels.contains(channel)) {
 			if (useLotroInstruments) {
