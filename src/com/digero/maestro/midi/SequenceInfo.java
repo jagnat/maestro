@@ -47,8 +47,8 @@ public class SequenceInfo implements MidiConstants
 	public MidiStandard standard = MidiStandard.GM;
 	public boolean hasPorts = false;
 	public int midiType = -1;// -1 = abc, 0 = type 0, 1 = type 1, 2 = type 2
-	private boolean[] rolandDrumChannels = new boolean[16];//Which of the channels GS designates as drums
-	private boolean[] yamahaDrumChannels = new boolean[16];//Which of the channels XG designates as drums
+	private boolean[] rolandDrumChannels = new boolean[CHANNEL_COUNT_ABC];//Which of the channels GS designates as drums
+	private boolean[] yamahaDrumChannels = new boolean[CHANNEL_COUNT_ABC];//Which of the channels XG designates as drums
 	private ArrayList<TreeMap<Long, Boolean>> yamahaDrumSwitches = null;//Which channel/tick XG switches to drums outside of designated drum channels
 	private ArrayList<TreeMap<Long, Boolean>> mmaDrumSwitches = null;//Which channel/tick GM2 switches to drums outside of designated drum channels
 	private int primaryTempoMPQ;
@@ -303,6 +303,12 @@ public class SequenceInfo implements MidiConstants
 	}
 
 	private void determineStandard (Sequence seq, String fileName) {
+		
+		if (fileName.endsWith(".abc") || fileName.endsWith(".ABC") || fileName.endsWith(".txt") || fileName.endsWith(".TXT") || fileName.endsWith(".Abc") || fileName.endsWith(".Txt")) {
+			standard = MidiStandard.ABC;
+			return;
+		}
+		
 		// sysex GM reset:  F0 7E dv 09 01 F7  (dv = device ID)
 		// sysex GM2 reset: F0 7E dv 09 03 F7  (dv = device ID)
 		// sysex Yamaha XG: F0 43 dv md 00 00 7E 00 F7 (dv = device ID, md = model id)
@@ -335,12 +341,12 @@ public class SequenceInfo implements MidiConstants
 		
 		standard = MidiStandard.GM;
 		
-		for (int i = 0; i<16; i++) {
+		for (int i = 0; i<CHANNEL_COUNT_ABC; i++) {
 			rolandDrumChannels[i] = false;
 		}		
 		rolandDrumChannels[DRUM_CHANNEL] = true;
 		
-		for (int i = 0; i<16; i++) {
+		for (int i = 0; i<CHANNEL_COUNT_ABC; i++) {
 			yamahaDrumChannels[i] = false;
 		}		
 		yamahaDrumChannels[DRUM_CHANNEL] = true;
@@ -505,16 +511,16 @@ public class SequenceInfo implements MidiConstants
 			}
 		}
 		yamahaDrumSwitches = new ArrayList<>();
-		for (int i = 0; i<16; i++) {
+		for (int i = 0; i<CHANNEL_COUNT_ABC; i++) {
 			yamahaDrumSwitches.add(new TreeMap<>());
 		}
 		mmaDrumSwitches = new ArrayList<>();
-		for (int i = 0; i<16; i++) {
+		for (int i = 0; i<CHANNEL_COUNT_ABC; i++) {
 			mmaDrumSwitches.add(new TreeMap<>());
 		}
-		Integer[] yamahaBankAndPatchChanges = new Integer[16];
-		Integer[] mmaBankAndPatchChanges = new Integer[16];
-		for (int i = 0; i<16; i++) {
+		Integer[] yamahaBankAndPatchChanges = new Integer[CHANNEL_COUNT_ABC];
+		Integer[] mmaBankAndPatchChanges = new Integer[CHANNEL_COUNT_ABC];
+		for (int i = 0; i<CHANNEL_COUNT_ABC; i++) {
 			if (yamahaDrumChannels[i]) {
 				yamahaBankAndPatchChanges[i] = 2;
 			} else {
@@ -620,16 +626,13 @@ public class SequenceInfo implements MidiConstants
 				}
 			}
 		}
-		for (int i = 0; i<16; i++) {
+		for (int i = 0; i<CHANNEL_COUNT_ABC; i++) {
 			yamahaDrumSwitches.get(i).put(-1L, yamahaDrumChannels[i]);
 			if (i == DRUM_CHANNEL) {
 				mmaDrumSwitches.get(i).put(-1L, true);
 			} else if (i != DRUM_CHANNEL) {
 				mmaDrumSwitches.get(i).put(-1L, false);
 			}
-		}
-		if (fileName.endsWith(".abc") || fileName.endsWith(".ABC") || fileName.endsWith(".txt") || fileName.endsWith(".TXT") || fileName.endsWith(".Abc") || fileName.endsWith(".Txt")) {
-			standard = MidiStandard.ABC;
 		}
 	}
 

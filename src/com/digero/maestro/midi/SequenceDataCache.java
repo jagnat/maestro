@@ -72,7 +72,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		tickResolution = song.getResolution();
 
 		// Keep track of the active registered paramater number for pitch bend range
-		int[] rpn = new int[CHANNEL_COUNT];
+		int[] rpn = new int[CHANNEL_COUNT_ABC];
 		Arrays.fill(rpn, REGISTERED_PARAM_NONE);
 
 		/*
@@ -239,13 +239,13 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 			}
 	
 			// Setup default banks for extensions:
-			for (int i = 0; i < CHANNEL_COUNT; i++) {
+			for (int i = 0; i < CHANNEL_COUNT_ABC; i++) {
 				mapPatch.put(i, -1, 0);
 				mapLSB.put(i, -1, 0);
 			}
 			if (MidiStandard.XG == standard && yamahaDrumChannels != null) {
 				// Bank 127 is implicit the default on drum channels in XG.
-				for (int i = 0; i < CHANNEL_COUNT; i++) {
+				for (int i = 0; i < CHANNEL_COUNT_ABC; i++) {
 					if (yamahaDrumChannels[i])
 						mapMSB.put(i, -1, 127);
 					else
@@ -271,7 +271,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 				mapMSB.put(14, -1, 121);
 				mapMSB.put(15, -1, 121);
 			} else {
-				for (int i = 0; i < CHANNEL_COUNT; i++) {
+				for (int i = 0; i < CHANNEL_COUNT_ABC; i++) {
 					mapMSB.put(i, -1, 0);
 				}
 			}

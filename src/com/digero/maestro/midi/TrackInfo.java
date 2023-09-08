@@ -79,14 +79,14 @@ public class TrackInfo implements MidiConstants
 		instrumentExtensions = new HashSet<>();
 		noteEvents = new ArrayList<>();
 		notesInUse = new TreeSet<>();
-		List<NoteEvent>[] notesOn = new List[CHANNEL_COUNT];
+		List<NoteEvent>[] notesOn = new List[CHANNEL_COUNT_ABC];
 		int notesNotTurnedOff = 0;
 
 		int minVelocity = Integer.MAX_VALUE;
 		int maxVelocity = Integer.MIN_VALUE;
 		
 		
-		int[] pitchBend = new int[CHANNEL_COUNT];
+		int[] pitchBend = new int[CHANNEL_COUNT_ABC];
 		MapByChannel panMap = createPanMap(track);
 		MapByChannel bendMap = createBendMap(track, sequenceCache);
 		
@@ -98,7 +98,7 @@ public class TrackInfo implements MidiConstants
  			MidiMessage msg = evt.getMessage();
  			
 			if (evt.getTick() != tick && !isDrumTrack) {
-				for (int ch = 0; ch < CHANNEL_COUNT; ch++) {
+				for (int ch = 0; ch < CHANNEL_COUNT_ABC; ch++) {
 					int bend = bendMap.get(ch, tick);
 					if (bend != pitchBend[ch]) {
 						List<NoteEvent> bentNotes = new ArrayList<>();
@@ -570,7 +570,7 @@ public class TrackInfo implements MidiConstants
 		@SuppressWarnings("unchecked")//
 		public MapByChannel(int defaultValue)
 		{
-			map = new NavigableMap[CHANNEL_COUNT];
+			map = new NavigableMap[CHANNEL_COUNT_ABC];
 			this.defaultValue = defaultValue;
 		}
 
