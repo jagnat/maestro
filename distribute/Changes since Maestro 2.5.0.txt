@@ -45,6 +45,10 @@ Thanks to all who gave feedback of features, bugs plus suggestions.
 
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
+Version 2.5.0.123
+- Fix Maestro would fail silently at loading a midi with a timesignature that was missing some data, but otherwise was correct.
+- Add any missing EndOfTrack events when loading MIDI.
+
 Version 2.5.0.122beta
 - Fix for loading a 15+ part abc song into Maestro would not work.
 
