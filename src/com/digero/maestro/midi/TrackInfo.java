@@ -259,7 +259,11 @@ public class TrackInfo implements MidiConstants
 				}
 				else if (type == META_TIME_SIGNATURE && timeSignature == null)
 				{
-					timeSignature = new TimeSignature(m);
+					try {
+						timeSignature = new TimeSignature(m);
+					} catch (InvalidMidiDataException e) {
+						// Ignore the illegal message
+					}
 				}
 			}
 		}

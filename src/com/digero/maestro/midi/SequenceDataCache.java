@@ -9,6 +9,7 @@ import java.util.NavigableMap;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MetaMessage;
 import javax.sound.midi.MidiEvent;
 import javax.sound.midi.MidiMessage;
@@ -115,7 +116,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 					}
 				}
 			}
-			
+			TimeSignature backupTimeSignature = null;
 			for (int iTrack = 0; iTrack < tracks.length; iTrack++) {
 				Track track = tracks[iTrack];
 	
@@ -232,11 +233,24 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 					} else if (msg instanceof MetaMessage) {
 						MetaMessage m = (MetaMessage) msg;
 						if (m.getType() == META_TIME_SIGNATURE && timeSignature == null) {
-							timeSignature = new TimeSignature(m);
+							// TimeSignature in this class is used to keep track of source MIDIs meter.
+							// The one in TrackInfo is used to initially populate the meter field and abcsong.
+							// The one in AbcSong is used for output to abc.
+							try {
+								timeSignature = new TimeSignature(m);
+							} catch (InvalidMidiDataException e) {
+								try {
+									backupTimeSignature = new TimeSignature(m, true);
+								} catch (InvalidMidiDataException e2) {
+									// Ignore the illegal time signature
+								}
+							}
 						}
 					}
 				}
 			}
+			// We don't like this illegal meter, but if nothing better came long we use it.
+			if (timeSignature == null) timeSignature = backupTimeSignature;
 	
 			// Setup default banks for extensions:
 			for (int i = 0; i < CHANNEL_COUNT_ABC; i++) {

@@ -34,12 +34,12 @@ public class TimeSignature implements MidiConstants
 		this.thirtySecondNotes = 8;
 	}
 
-	public TimeSignature(MetaMessage midiMessage)
+	public TimeSignature(MetaMessage midiMessage) throws InvalidMidiDataException
 	{
 		byte[] data = midiMessage.getData();
 		if (midiMessage.getType() != META_TIME_SIGNATURE || data.length < 4)
 		{
-			throw new IllegalArgumentException("Midi message is not a time signature event. Length:"+data.length);
+			throw new InvalidMidiDataException("Midi message is not a time signature event. Length:"+data.length);
 		}
 
 		if ((1 << data[1]) > MAX_DENOMINATOR)
@@ -59,6 +59,41 @@ public class TimeSignature implements MidiConstants
 			this.denominator = 1 << data[1];
 			this.metronome = data[2];
 			this.thirtySecondNotes = data[3];
+			
+			/*
+			int unsignedByte3 = data[3] & 0xFF;// convert the byte to unsigned since javas byte is signed but MIDIs is unsigned.
+			System.err.println("MIDI time signature: "+this.numerator+"/"+this.denominator+" - "+unsignedByte3+" 32nd notes per "+this.metronome+" MIDI clocks.");
+			*/
+		}
+	}
+	
+	public TimeSignature(MetaMessage midiMessage, boolean tryHarder) throws InvalidMidiDataException
+	{
+		byte[] data = midiMessage.getData();
+		if (midiMessage.getType() != META_TIME_SIGNATURE || data.length < 2 || data.length == 3)
+		{
+			throw new InvalidMidiDataException("Midi message is not a time signature event. Length:"+data.length);
+		}
+
+		if ((1 << data[1]) > MAX_DENOMINATOR)
+		{
+			this.numerator = 4;
+			this.denominator = 4;
+			this.metronome = 24;
+			this.thirtySecondNotes = 8;
+			/*
+			System.err.println("Orig MIDI time signature: "+data[0]+"/"+(1 << data[1])+" - "+(data[3] & 0xFF)+" 32nd notes per "+data[2]+" MIDI clocks.");
+			System.err.println("New  MIDI time signature: 4/4 - 8 32nd notes per 24 MIDI clocks.");
+			*/
+		}
+		else
+		{
+			this.numerator = data[0];
+			this.denominator = 1 << data[1];
+			// This message is not legal, but since it had the meter
+			// we put the default values for the remaining 2 values.
+			this.metronome = 24;
+			this.thirtySecondNotes = 8;
 			
 			/*
 			int unsignedByte3 = data[3] & 0xFF;// convert the byte to unsigned since javas byte is signed but MIDIs is unsigned.
