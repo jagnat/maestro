@@ -115,6 +115,10 @@ public class SequenceInfo implements MidiConstants
 		{
 			trackInfoList.add(new TrackInfo(this, tracks[i], i, sequenceCache, sequenceCache.isXGDrumsTrack(i), sequenceCache.isGSDrumsTrack(i), wasType0, sequenceCache.isDrumsTrack(i), sequenceCache.isGM2DrumsTrack(i), portMap));
 		}
+		if (!getTimeSignature().equals(sequenceCache.getTimeSignature())) {
+			// If see this output then..
+			System.out.println("Time signature does not match between SequenceInfo ("+getTimeSignature()+") and SequenceDataCache ("+sequenceCache.getTimeSignature()+").");
+		}
 
 		composer = "";
 		/*
@@ -881,7 +885,7 @@ public class SequenceInfo implements MidiConstants
 		Track[] tracks = song.getTracks();
 		List<MidiEvent>[] suspectEvents = new List[tracks.length];
 		long endTick = 0;
-
+		
 		for (int i = 0; i < tracks.length; i++)
 		{
 			Track track = tracks[i];
@@ -925,6 +929,23 @@ public class SequenceInfo implements MidiConstants
 					evt.setTick(endTick);
 					tracks[i].add(evt);
 				}
+			}
+			
+			//insert any missing end of track events
+			boolean okay = false;
+			for(int e = tracks[i].size()-1 ; e >= 0 ; e--) {
+				MidiEvent evt = tracks[i].get(e);
+				if (MidiUtils.isMetaEndOfTrack(evt.getMessage())) {
+					okay = true;
+					break;
+				}
+			}
+			if (!okay) {
+				long trackEndTick = 0L;
+				if (tracks[i].size() > 0) trackEndTick = tracks[i].get(tracks[i].size()-1).getTick();
+				MidiEvent end = MidiFactory.createEndOfTrackEvent(trackEndTick+1);
+				tracks[i].add(end);
+				System.out.println("Track "+i+" was missing an EndOfTrack. It was now inserted.");
 			}
 		}
 
