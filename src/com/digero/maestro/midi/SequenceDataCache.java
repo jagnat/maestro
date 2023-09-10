@@ -239,10 +239,12 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 							try {
 								timeSignature = new TimeSignature(m);
 							} catch (InvalidMidiDataException e) {
-								try {
-									backupTimeSignature = new TimeSignature(m, true);
-								} catch (InvalidMidiDataException e2) {
-									// Ignore the illegal time signature
+								if (backupTimeSignature == null) {
+									try {
+										backupTimeSignature = new TimeSignature(m, true);
+									} catch (InvalidMidiDataException e2) {
+										// Ignore the illegal time signature
+									}
 								}
 							}
 						}

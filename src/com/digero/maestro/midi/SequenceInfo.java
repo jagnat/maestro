@@ -115,10 +115,7 @@ public class SequenceInfo implements MidiConstants
 		{
 			trackInfoList.add(new TrackInfo(this, tracks[i], i, sequenceCache, sequenceCache.isXGDrumsTrack(i), sequenceCache.isGSDrumsTrack(i), wasType0, sequenceCache.isDrumsTrack(i), sequenceCache.isGM2DrumsTrack(i), portMap));
 		}
-		if (!getTimeSignature().equals(sequenceCache.getTimeSignature())) {
-			// If see this output then..
-			System.out.println("Time signature does not match between SequenceInfo ("+getTimeSignature()+") and SequenceDataCache ("+sequenceCache.getTimeSignature()+").");
-		}
+		
 
 		composer = "";
 		/*
@@ -141,6 +138,10 @@ public class SequenceInfo implements MidiConstants
 		}
 
 		this.trackInfoList = Collections.unmodifiableList(trackInfoList);
+		if (!getTimeSignature().equals(sequenceCache.getTimeSignature())) {
+			// If see this output then..
+			System.out.println("Time signature does not match between SequenceInfo ("+getTimeSignature()+") and SequenceDataCache ("+sequenceCache.getTimeSignature()+").");
+		}
 	}
 
 	private SequenceInfo(AbcExporter abcExporter, boolean useLotroInstruments) throws InvalidMidiDataException,
@@ -238,7 +239,7 @@ public class SequenceInfo implements MidiConstants
 			if (track.getTimeSignature() != null)
 				return track.getTimeSignature();
 		}
-		return TimeSignature.FOUR_FOUR;
+		return sequenceCache.getTimeSignature();
 	}
 
 	public SequenceDataCache getDataCache()

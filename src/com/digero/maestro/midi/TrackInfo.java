@@ -98,6 +98,7 @@ public class TrackInfo implements MidiConstants
  			MidiMessage msg = evt.getMessage();
  			
 			if (evt.getTick() != tick && !isDrumTrack) {
+				// Moving to new tick, lets process the last tick
 				for (int ch = 0; ch < CHANNEL_COUNT_ABC; ch++) {
 					int bend = bendMap.get(ch, tick);
 					if (bend != pitchBend[ch]) {
@@ -367,6 +368,7 @@ public class TrackInfo implements MidiConstants
 		return panMap;
 	}
 
+	@Deprecated
 	public TrackInfo(SequenceInfo parent, int trackNumber, String name, LotroInstrument instrument,
 			TimeSignature timeSignature, KeySignature keySignature, List<NoteEvent> noteEvents)
 	{
