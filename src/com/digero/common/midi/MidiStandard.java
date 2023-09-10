@@ -4,20 +4,17 @@ public enum MidiStandard
 {
 // @formatter:off
 	// MIDI 1.0:
-	GM     ("GM",  "General Midi",            "MMA",      "MIDI Manufacturers Association"),
-	GS     ("GS",  "General Sound",           "Roland",   "Roland Corporation"),
-	XG     ("XG",  "Extended General MIDI",   "Yamaha",   "Yamaha Corporation"),
-	GM2    ("GM2", "General Midi Level 2",    "MMA",      "MIDI Manufacturers Association"),
-	GM_PLUS("GM+", "General Midi with Ports", "Cakewalk", "BandLab"),// Plus many other MIDI editors, this is only used in ProjectFrame for displaying Original source type
-	
+	GM     ("GM",   "General Midi",            "MMA",      "MIDI Manufacturers Association"),
+	GS     ("GS",   "General Sound",           "Roland",   "Roland Corporation"),
+	XG     ("XG",   "Extended General MIDI",   "Yamaha",   "Yamaha Corporation"),
+	GM2    ("GM2",  "General Midi Level 2",    "MMA",      "MIDI Manufacturers Association"),
+	GM_PLUS("GM+",  "General Midi with Ports", "Cakewalk", "BandLab"),// Plus many other MIDI editors, this is only used in ProjectFrame for displaying Original source type	
 	// ABC
-	ABC    ("ABC", "ABC Notation",            "Walshaw",  "Chris Walshaw"),
-	
+	ABC    ("ABC",  "ABC Notation",            "Walshaw",  "Chris Walshaw"),	
 	// MIDI 2.0:
-	MIDI2("MIDI2", "MIDI 2.0",                "MMA",      "MIDI Manufacturers Association"),// Maestro does not support this yet
-	
+	MIDI2("MIDI2",  "MIDI 2.0",                "MMA",      "MIDI Manufacturers Association"),// Maestro does not support this yet	
 	// Preview
-	PREVIEW     ("GM_PREVIEW",  "General Midi",            "MMA",      "MIDI Manufacturers Association");
+	PREVIEW("GM_PV","General Midi Preview",    "MMA",      "MIDI Manufacturers Association");
 // @formatter:on
 	
 	public final String shortName;
