@@ -1,5 +1,6 @@
 package com.digero.maestro.midi;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +26,7 @@ import com.digero.common.midi.MidiStandard;
 import com.digero.common.midi.MidiUtils;
 import com.digero.common.midi.ITempoCache;
 import com.digero.common.midi.TimeSignature;
+import com.digero.common.util.Pair;
 import com.digero.common.util.Util;
 import com.digero.maestro.abc.TimingInfo;
 
@@ -77,6 +79,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		// Keep track of the active Registered Parameter Number for pitch bend range
 		int[] rpn = new int[CHANNEL_COUNT_ABC];
 		Arrays.fill(rpn, REGISTERED_PARAM_NONE);
+		List<Pair<Integer, Long>> resetControllers = new ArrayList();
 
 		/*
 		 * We need to be able to know which tracks have drum notes. We also need to know
@@ -191,6 +194,10 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 									pitchBendFine.put(ch, tick, pitchBendFine.get(ch, tick) - 1);
 									System.out.println("DATA_BUTTON_DECREMENT for pitch bend detected.");
 								}
+								break;
+							case RESET_ALL_CONTROLLERS:
+								Pair<Integer, Long> entry = new Pair<>(ch, tick);
+								//resetControllers.add(entry); OMNI mode is ON for us, so we do not respect this instruction.
 								break;
 							case BANK_SELECT_MSB:
 								if (ch != DRUM_CHANNEL || MidiStandard.XG != standard || m.getData2() == 126 || m.getData2() == 127) {
@@ -319,8 +326,8 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 			}
 		}
 		
-		bendMap = createBendMap(tracks);
-		panMap = createPanMap(tracks);
+		bendMap = createBendMap(tracks, resetControllers);
+		panMap = createPanMap(tracks, resetControllers);
 
 		// Account for the duration of the final tempo
 		TempoEvent te = getTempoEventForTick(lastTick);
@@ -356,12 +363,13 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 	
 	/**
 	 * Create a map of bends in entire song
+	 * @param resetControllers 
 	 * 
 	 * @param track
 	 * @param sequenceCache
 	 * @return
 	 */
-	private MapByChannel createBendMap(Track[] tracks) {
+	private MapByChannel createBendMap(Track[] tracks, List<Pair<Integer, Long>> resetControllers) {
 		MapByChannel bendMap = new MapByChannel(0);
 		for (int i = 0 ; i < tracks.length ; i++) {
 			Track track = tracks[i];
@@ -389,6 +397,9 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 				}
 			}
 		}
+		for (Pair<Integer, Long> reset : resetControllers) {
+			bendMap.put(reset.first, reset.second, 0);
+		}
 		return bendMap;
 	}
 
@@ -398,7 +409,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 	 * @param track
 	 * @return
 	 */
-	private MapByChannel createPanMap(Track[] tracks) {
+	private MapByChannel createPanMap(Track[] tracks, List<Pair<Integer, Long>> resetControllers) {
 		MapByChannel panMap = new MapByChannel(PAN_CENTER);
 		for (int i = 0 ; i < tracks.length ; i++) {
 			Track track = tracks[i];
@@ -415,6 +426,9 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 					}
 				}
 			}
+		}
+		for (Pair<Integer, Long> reset : resetControllers) {
+			panMap.put(reset.first, reset.second, PAN_CENTER);
 		}
 		return panMap;
 	}

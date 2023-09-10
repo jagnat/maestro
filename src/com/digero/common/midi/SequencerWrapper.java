@@ -224,7 +224,7 @@ public class SequencerWrapper implements MidiConstants, ITempoCache, IDiscardabl
 				{
 					msg.setMessage(ShortMessage.PROGRAM_CHANGE, i, 0, 0);
 					receiver.send(msg, -1);
-					msg.setMessage(ShortMessage.CONTROL_CHANGE, i, ALL_CONTROLLERS_OFF, 0);
+					msg.setMessage(ShortMessage.CONTROL_CHANGE, i, RESET_ALL_CONTROLLERS, 0);
 					receiver.send(msg, -1);
 				}
 				msg.setMessage(ShortMessage.SYSTEM_RESET);

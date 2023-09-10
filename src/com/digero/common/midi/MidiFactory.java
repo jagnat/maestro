@@ -248,7 +248,7 @@ public class MidiFactory implements MidiConstants
 		try
 		{
 			LotroShortMessage msg = new LotroShortMessage();
-			msg.setMessage(ShortMessage.CONTROL_CHANGE, channel, MidiConstants.ALL_CONTROLLERS_OFF, 0);
+			msg.setMessage(ShortMessage.CONTROL_CHANGE, channel, MidiConstants.RESET_ALL_CONTROLLERS, 0);
 			return msg;
 		}
 		catch (InvalidMidiDataException e)
