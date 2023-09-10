@@ -74,7 +74,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		divisionType = song.getDivisionType();
 		tickResolution = song.getResolution();
 
-		// Keep track of the active registered paramater number for pitch bend range
+		// Keep track of the active Registered Parameter Number for pitch bend range
 		int[] rpn = new int[CHANNEL_COUNT_ABC];
 		Arrays.fill(rpn, REGISTERED_PARAM_NONE);
 
@@ -179,6 +179,18 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 							case DATA_ENTRY_FINE:
 								if (rpn[ch] == REGISTERED_PARAM_PITCH_BEND_RANGE)
 									pitchBendFine.put(ch, tick, m.getData2());
+								break;
+							case DATA_BUTTON_INCREMENT:
+								if (rpn[ch] == REGISTERED_PARAM_PITCH_BEND_RANGE) {
+									pitchBendFine.put(ch, tick, pitchBendFine.get(ch, tick) + 1);
+									System.out.println("DATA_BUTTON_INCREMENT for pitch bend detected.");
+								}
+								break;
+							case DATA_BUTTON_DECREMENT:
+								if (rpn[ch] == REGISTERED_PARAM_PITCH_BEND_RANGE) {
+									pitchBendFine.put(ch, tick, pitchBendFine.get(ch, tick) - 1);
+									System.out.println("DATA_BUTTON_DECREMENT for pitch bend detected.");
+								}
 								break;
 							case BANK_SELECT_MSB:
 								if (ch != DRUM_CHANNEL || MidiStandard.XG != standard || m.getData2() == 126 || m.getData2() == 127) {
@@ -366,7 +378,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 					long tick = evt.getTick();
 									
 					if (cmd == ShortMessage.PITCH_BEND) {
-						double pct = 2 * (((m.getData1() | (m.getData2() << 7)) / (double) (1 << 14)) - 0.5);
+						double pct = 2.0d * (((m.getData1() | (m.getData2() << 7)) / (double) (1 << 14)) - 0.5d);
 						int bend = (int) Math.round(pct * getPitchBendRange(c, tick));
 						
 						if (bend != bendMap.get(c, tick))

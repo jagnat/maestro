@@ -49,6 +49,8 @@ Version 2.5.0.123
 - Fix Maestro would fail silently at loading a midi with a timesignature that was missing some data, but otherwise was correct.
 - Add any missing EndOfTrack events when loading MIDI.
 - Fixed that a pitchbend or panning message on one track could end up not affecting another track, even though they were on same channel.
+- Allow MIDIs to adjust pitch bend using data button increment/decrement instead of setting only absolute values.
+    This is a very rarely used method, but now Maestro supports it anyway.
 
 Version 2.5.0.122beta
 - Fix for loading a 15+ part abc song into Maestro would not work.
