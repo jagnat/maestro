@@ -28,18 +28,21 @@ import com.digero.common.midi.MidiInstrument;
 import com.digero.common.midi.Note;
 import com.digero.common.midi.TimeSignature;
 
+/**
+ * Create NoteEvents from MIDI note ON/OFF messages
+ */
 public class TrackInfo implements MidiConstants
 {
 	private SequenceInfo sequenceInfo;
 
 	private int trackNumber;
 	private String name;
-	private TimeSignature timeSignature = null;
+	private TimeSignature timeSignature = null;// The first one in this track
 	private KeySignature keySignature = null;
 	private Set<Integer> instruments;
 	private Set<String> instrumentExtensions;
 	private List<NoteEvent> noteEvents;
-	private SortedSet<Integer> notesInUse;
+	private SortedSet<Integer> notesInUse;// Used for knowing which drum sounds to display in DrumPanel
 	private boolean isDrumTrack;
 	private boolean isXGDrumTrack;
 	private boolean isGSDrumTrack;
@@ -87,8 +90,8 @@ public class TrackInfo implements MidiConstants
 		
 		
 		int[] pitchBend = new int[CHANNEL_COUNT_ABC];
-		MapByChannel panMap = createPanMap(track);
-		MapByChannel bendMap = createBendMap(track, sequenceCache);
+		
+		
 		
 		List<BentNoteEvent> allBentNotes = new ArrayList<>();
 		
@@ -100,25 +103,27 @@ public class TrackInfo implements MidiConstants
 			if (evt.getTick() != tick && !isDrumTrack) {
 				// Moving to new tick, lets process the last tick
 				for (int ch = 0; ch < CHANNEL_COUNT_ABC; ch++) {
-					int bend = bendMap.get(ch, tick);
+					int bend = sequenceCache.getBendMap().get(ch, tick);
 					if (bend != pitchBend[ch]) {
 						List<NoteEvent> bentNotes = new ArrayList<>();
-						for (NoteEvent ne : notesOn[ch]) {							
-							if (!(ne instanceof BentNoteEvent)) {
-								// This note is playing while this bend happens
-								// Lets convert it to a BentNoteEvent
-								BentNoteEvent be = new BentNoteEvent(ne.note, ne.velocity, ne.getStartTick(), ne.getEndTick(), ne.getTempoCache());
-								allBentNotes.add(be);
-								be.setMidiPan(ne.midiPan);
-								be.addBend(ne.getStartTick(), 0);// we need this initial bend in NoteGraph class
-								noteEvents.remove(ne);
-								ne = be;
-								noteEvents.add(ne);
+						if (notesOn[ch] != null) {
+							for (NoteEvent ne : notesOn[ch]) {
+								if (!(ne instanceof BentNoteEvent)) {
+									// This note is playing while this bend happens
+									// Lets convert it to a BentNoteEvent
+									BentNoteEvent be = new BentNoteEvent(ne.note, ne.velocity, ne.getStartTick(), ne.getEndTick(), ne.getTempoCache());
+									allBentNotes.add(be);
+									be.setMidiPan(ne.midiPan);
+									be.addBend(ne.getStartTick(), 0);// we need this initial bend in NoteGraph class
+									noteEvents.remove(ne);
+									ne = be;
+									noteEvents.add(ne);
+								}
+								((BentNoteEvent)ne).addBend(tick, bend);
+								bentNotes.add(ne);
 							}
-							((BentNoteEvent)ne).addBend(tick, bend);
-							bentNotes.add(ne);
+							notesOn[ch] = bentNotes;
 						}
-						notesOn[ch] = bentNotes;
 						pitchBend[ch] = bend;
 					}
 				}
@@ -181,14 +186,14 @@ public class TrackInfo implements MidiConstants
 						}
 
 						NoteEvent ne = new NoteEvent(note, velocity, tick, tick, sequenceCache);
-						if (bendMap.get(c, tick) != 0) {
+						if (!isDrumTrack && sequenceCache.getBendMap().get(c, tick) != 0) {
 							// pitch bend active in channel already when note starts
 							BentNoteEvent be = new BentNoteEvent(note, velocity, tick, tick, sequenceCache);
 							allBentNotes.add(be);
-							be.addBend(tick, bendMap.get(c, tick));
+							be.addBend(tick, sequenceCache.getBendMap().get(c, tick));
 							ne = be;
 						}
-						ne.setMidiPan(panMap.get(c, tick));// We don't set this in constructor as only MIDI notes will get this set, abc notes not.
+						ne.setMidiPan(sequenceCache.getPanMap().get(c, tick));// We don't set this in NoteEvent constructor as only MIDI notes will get this set, abc notes not.
 						
 						Iterator<NoteEvent> onIter = notesOn[c].iterator();
 						while (onIter.hasNext())
@@ -310,104 +315,6 @@ public class TrackInfo implements MidiConstants
 		instruments = Collections.unmodifiableSet(instruments);
 	}
 	
-	private MapByChannel createBendMap(Track track, SequenceDataCache sequenceCache) {
-		MapByChannel bendMap = new MapByChannel(0);
-		//int totalEffectiveBends = 0;
-		for (int j = 0, sz = track.size(); j < sz; j++)
-		{
-			MidiEvent evt = track.get(j);
-			MidiMessage msg = evt.getMessage();
-			
-			if (msg instanceof ShortMessage)
-			{
-				ShortMessage m = (ShortMessage) msg;
-				int cmd = m.getCommand();
-				int c = m.getChannel();
-				long tick = evt.getTick();
-				
-				/*if (isXGDrumTrack || isGSDrumTrack) {
-					//
-				} else if (noteEvents.isEmpty() && cmd == ShortMessage.NOTE_ON)
-					isDrumTrack = (c == DRUM_CHANNEL);
-				else if (isDrumTrack != (c == DRUM_CHANNEL) && cmd == ShortMessage.NOTE_ON)
-					System.err.println("Track "+trackNumber+" contains both notes and drums.."+(name!=null?name:""));
-				*/				
-
-				
-				if (cmd == ShortMessage.PITCH_BEND && !isDrumTrack) {
-					double pct = 2 * (((m.getData1() | (m.getData2() << 7)) / (double) (1 << 14)) - 0.5);
-					int bend = (int) Math.round(pct * sequenceCache.getPitchBendRange(m.getChannel(), tick));
-					
-					if (bend != bendMap.get(c, tick))
-					{
-						//totalEffectiveBends++;
-						bendMap.put(c, evt.getTick(), bend);
-					}
-				}
-			}
-		}
-		//if (totalEffectiveBends>0) System.out.println("Total bends in track "+trackNumber+" is "+totalEffectiveBends);
-		return bendMap;
-	}
-
-	private MapByChannel createPanMap(Track track) {
-		MapByChannel panMap = new MapByChannel(PAN_CENTER);
-		for (int j = 0, sz = track.size(); j < sz; j++)
-		{
-			MidiEvent evt = track.get(j);
-			MidiMessage msg = evt.getMessage();
-			
-			if (msg instanceof ShortMessage) {
-				ShortMessage m = (ShortMessage) msg;
-				int cmd = m.getCommand();
-				if (cmd == ShortMessage.CONTROL_CHANGE && m.getData1() == PAN_CONTROL) {
-					panMap.put(m.getChannel(), evt.getTick(), m.getData2());
-				}
-			}
-		}
-		return panMap;
-	}
-
-	@Deprecated
-	public TrackInfo(SequenceInfo parent, int trackNumber, String name, LotroInstrument instrument,
-			TimeSignature timeSignature, KeySignature keySignature, List<NoteEvent> noteEvents)
-	{
-		this.sequenceInfo = parent;
-		this.trackNumber = trackNumber;
-		this.name = name;
-		this.timeSignature = timeSignature;
-		this.keySignature = keySignature;
-		this.instruments = new HashSet<>();
-		this.instruments.add(instrument.midi.id());
-		this.noteEvents = noteEvents;
-		this.notesInUse = new TreeSet<>();
-
-		int minVelocity = Integer.MAX_VALUE;
-		int maxVelocity = Integer.MIN_VALUE;
-		for (NoteEvent ne : noteEvents)
-		{
-			this.notesInUse.add(ne.note.id);
-
-			if (ne.velocity > maxVelocity)
-				maxVelocity = ne.velocity;
-			if (ne.velocity < minVelocity)
-				minVelocity = ne.velocity;
-		}
-		if (minVelocity == Integer.MAX_VALUE)
-			minVelocity = 0;
-		if (maxVelocity == Integer.MIN_VALUE)
-			maxVelocity = MidiConstants.MAX_VOLUME;
-
-		this.minVelocity = minVelocity;
-		this.maxVelocity = maxVelocity;
-
-		this.isDrumTrack = false;
-
-		this.noteEvents = Collections.unmodifiableList(this.noteEvents);
-		this.notesInUse = Collections.unmodifiableSortedSet(this.notesInUse);
-		this.instruments = Collections.unmodifiableSet(this.instruments);
-	}
-
 	public SequenceInfo getSequenceInfo()
 	{
 		return sequenceInfo;
@@ -563,41 +470,5 @@ public class TrackInfo implements MidiConstants
 	public int getMaxVelocity()
 	{
 		return maxVelocity;
-	}
-	
-	/**
-	 * Map by channel
-	 */
-	private static class MapByChannel
-	{
-		private NavigableMap<Long, Integer>[] map;
-		private int defaultValue;
-
-		@SuppressWarnings("unchecked")//
-		public MapByChannel(int defaultValue)
-		{
-			map = new NavigableMap[CHANNEL_COUNT_ABC];
-			this.defaultValue = defaultValue;
-		}
-
-		public void put(int channel, long tick, Integer value)
-		{
-			if (map[channel] == null)
-				map[channel] = new TreeMap<>();
-
-			map[channel].put(tick, value);
-		}
-
-		public int get(int channel, long tick)
-		{
-			if (map[channel] == null)
-				return defaultValue;
-
-			Entry<Long, Integer> entry = map[channel].floorEntry(tick);
-			if (entry == null) // No changes before this tick
-				return defaultValue;
-
-			return entry.getValue();
-		}		
 	}
 }

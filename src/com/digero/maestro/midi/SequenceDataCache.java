@@ -44,10 +44,12 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 	private MapByChannel volume = new MapByChannel(DEFAULT_CHANNEL_VOLUME);
 	private MapByChannel pitchBendCoarse = new MapByChannel(DEFAULT_PITCH_BEND_RANGE_SEMITONES);
 	private MapByChannel pitchBendFine = new MapByChannel(DEFAULT_PITCH_BEND_RANGE_CENTS);
+	private final MapByChannel bendMap;
+	private final MapByChannel panMap;
 	private MapByChannel mapMSB = new MapByChannel(0);
 	private MapByChannel mapLSB = new MapByChannel(0);
 	private MapByChannel mapPatch = new MapByChannel(0);
-	private int[] brandDrumBanks;// 1 = XG drums, 2 = GS Drums, 3 = normal drums, 4 = GM2 drums
+	private int[] brandDrumBanks;// 0 = not drum track, 1 = XG drums, 2 = GS Drums, 3 = normal drums, 4 = GM2 drums
 	private MidiStandard standard = MidiStandard.GM;
 	private boolean[] rolandDrumChannels = null;
 	private boolean[] yamahaDrumChannels = null;
@@ -304,6 +306,9 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 				}
 			}
 		}
+		
+		bendMap = createBendMap(tracks);
+		panMap = createPanMap(tracks);
 
 		// Account for the duration of the final tempo
 		TempoEvent te = getTempoEventForTick(lastTick);
@@ -335,6 +340,71 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		}
 		str.append("[ ").append(sb).append("]");
 		return str.toString();
+	}
+	
+	/**
+	 * Create a map of bends in entire song
+	 * 
+	 * @param track
+	 * @param sequenceCache
+	 * @return
+	 */
+	private MapByChannel createBendMap(Track[] tracks) {
+		MapByChannel bendMap = new MapByChannel(0);
+		for (int i = 0 ; i < tracks.length ; i++) {
+			Track track = tracks[i];
+			for (int j = 0, sz = track.size(); j < sz; j++)
+			{
+				MidiEvent evt = track.get(j);
+				MidiMessage msg = evt.getMessage();
+				
+				if (msg instanceof ShortMessage)
+				{
+					ShortMessage m = (ShortMessage) msg;
+					int cmd = m.getCommand();
+					int c = m.getChannel();
+					long tick = evt.getTick();
+									
+					if (cmd == ShortMessage.PITCH_BEND) {
+						double pct = 2 * (((m.getData1() | (m.getData2() << 7)) / (double) (1 << 14)) - 0.5);
+						int bend = (int) Math.round(pct * getPitchBendRange(c, tick));
+						
+						if (bend != bendMap.get(c, tick))
+						{
+							bendMap.put(c, evt.getTick(), bend);
+						}
+					}
+				}
+			}
+		}
+		return bendMap;
+	}
+
+	/**
+	 * Create a map of pan in entire song
+	 * 
+	 * @param track
+	 * @return
+	 */
+	private MapByChannel createPanMap(Track[] tracks) {
+		MapByChannel panMap = new MapByChannel(PAN_CENTER);
+		for (int i = 0 ; i < tracks.length ; i++) {
+			Track track = tracks[i];
+			for (int j = 0, sz = track.size(); j < sz; j++)
+			{
+				MidiEvent evt = track.get(j);
+				MidiMessage msg = evt.getMessage();
+				
+				if (msg instanceof ShortMessage) {
+					ShortMessage m = (ShortMessage) msg;
+					int cmd = m.getCommand();
+					if (cmd == ShortMessage.CONTROL_CHANGE && m.getData1() == PAN_CONTROL) {
+						panMap.put(m.getChannel(), evt.getTick(), m.getData2());
+					}
+				}
+			}
+		}
+		return panMap;
 	}
 
 	public boolean isXGDrumsTrack(int track) {
@@ -520,11 +590,19 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		}
 		return prev;
 	}
+	
+	public MapByChannel getBendMap() {
+		return bendMap;
+	}
+	
+	public MapByChannel getPanMap() {
+		return panMap;
+	}
 
 	/**
 	 * Map by channel
 	 */
-	private static class MapByChannel {
+	protected static class MapByChannel {
 		private NavigableMap<Long, Integer>[] map;
 		private int defaultValue;
 
