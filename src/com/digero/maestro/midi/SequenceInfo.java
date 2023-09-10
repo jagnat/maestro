@@ -56,6 +56,14 @@ public class SequenceInfo implements MidiConstants
 	private TreeMap<Integer, Integer> portMap = new TreeMap<>();
 	public static List<ExportTrackInfo> lastTrackInfos = null;
 
+	/**
+	 * Create instance of this class while creating MIDI sequence from abc file.
+	 * 
+	 * @param params
+	 * @return
+	 * @throws InvalidMidiDataException
+	 * @throws ParseException
+	 */
 	public static SequenceInfo fromAbc(AbcToMidi.Params params) throws InvalidMidiDataException, ParseException
 	{
 		if (params.abcInfo == null)
@@ -67,12 +75,30 @@ public class SequenceInfo implements MidiConstants
 		return sequenceInfo;
 	}
 
+	/**
+	 * Create instance of this class while creating sequence from MIDI file
+	 * 
+	 * @param midiFile
+	 * @return
+	 * @throws InvalidMidiDataException
+	 * @throws IOException
+	 * @throws ParseException
+	 */
 	public static SequenceInfo fromMidi(File midiFile) throws InvalidMidiDataException, IOException, ParseException
 	{
 		MidiFileFormat midiFileFormat = MidiSystem.getMidiFileFormat(midiFile);
 		return new SequenceInfo(midiFile.getName(), ConvertPPQ.convert(MidiSystem.getSequence(midiFile)), midiFileFormat.getType());
 	}
 
+	/**
+	 * Create instance of this class while creating preview MIDI file
+	 * 
+	 * @param abcExporter
+	 * @param useLotroInstruments
+	 * @return
+	 * @throws InvalidMidiDataException
+	 * @throws AbcConversionException
+	 */
 	public static SequenceInfo fromAbcParts(AbcExporter abcExporter, boolean useLotroInstruments)
 			throws InvalidMidiDataException, AbcConversionException
 	{
@@ -144,6 +170,14 @@ public class SequenceInfo implements MidiConstants
 		}
 	}
 
+	/**
+	 * This constructor ignores most of the data, as preview is only used for playback
+	 * 
+	 * @param abcExporter
+	 * @param useLotroInstruments
+	 * @throws InvalidMidiDataException
+	 * @throws AbcConversionException
+	 */
 	private SequenceInfo(AbcExporter abcExporter, boolean useLotroInstruments) throws InvalidMidiDataException,
 			AbcConversionException
 	{
@@ -160,16 +194,7 @@ public class SequenceInfo implements MidiConstants
 		sequenceCache = new SequenceDataCache(sequence, standard, null, null, null, null, portMap);
 		primaryTempoMPQ = sequenceCache.getPrimaryTempoMPQ();
 
-		/*
-		List<TrackInfo> trackInfoList = new ArrayList<>(result.first.size());
-		for (ExportTrackInfo i : result.first)
-		{
-			trackInfoList.add(new TrackInfo(this, i.trackNumber, i.part.getTitle(), i.part.getInstrument(), abcExporter
-					.getTimingInfo().getMeter(), abcExporter.getKeySignature(), i.noteEvents));
-		}
-		*/
-
-		this.trackInfoList = null;//Collections.unmodifiableList(trackInfoList);
+		this.trackInfoList = null;
 	}
 
 	public String getFileName()
@@ -307,6 +332,15 @@ public class SequenceInfo implements MidiConstants
 		return lastNoteTick;
 	}
 
+	/**
+	 * Determine which MIDI variant we are dealing with.
+	 * 
+	 * Also figure out which channels GS, GM2 or XG has marked as drum channels.
+	 * And if there are switches to drums in middle of some tracks.
+	 * 
+	 * @param seq
+	 * @param fileName
+	 */
 	private void determineStandard (Sequence seq, String fileName) {
 		
 		if (fileName.endsWith(".abc") || fileName.endsWith(".ABC") || fileName.endsWith(".txt") || fileName.endsWith(".TXT") || fileName.endsWith(".Abc") || fileName.endsWith(".Txt")) {
@@ -523,8 +557,17 @@ public class SequenceInfo implements MidiConstants
 		for (int i = 0; i<CHANNEL_COUNT_ABC; i++) {
 			mmaDrumSwitches.add(new TreeMap<>());
 		}
+		
+		/**
+		 * yamahaBankAndPatchChanges & mmaBankAndPatchChanges:
+		 * 
+		 * 0 = chromatic voice
+		 * 1 = Has switched to drums, but patch not selected yet.
+		 * 2 = drum
+		 */
 		Integer[] yamahaBankAndPatchChanges = new Integer[CHANNEL_COUNT_ABC];
 		Integer[] mmaBankAndPatchChanges = new Integer[CHANNEL_COUNT_ABC];
+		
 		for (int i = 0; i<CHANNEL_COUNT_ABC; i++) {
 			if (yamahaDrumChannels[i]) {
 				yamahaBankAndPatchChanges[i] = 2;
@@ -543,8 +586,7 @@ public class SequenceInfo implements MidiConstants
 		 * This time we find where there is changes from rhythm to chromatic voices and the other way around.
 		 * We need that for determining how to seperate drum tracks and which tracks to mark as drum tracks.
 		 * 
-		 */
-		
+		 */		
 		for (PatchEntry entry : bankAndPatchTrack.values())
 		{
 			List<MidiEvent> masterList = new ArrayList<>();
@@ -878,6 +920,12 @@ public class SequenceInfo implements MidiConstants
 		}		
 	}
 	
+	/**
+	 * This method will move meta messages to the last non-meta message tick.
+	 * It will also add any missing End Of Track messages
+	 * 
+	 * @param song
+	 */
 	@SuppressWarnings("unchecked")//
 	public static void fixupTrackLength(Sequence song)
 	{
@@ -955,6 +1003,10 @@ public class SequenceInfo implements MidiConstants
 //		System.out.println("After: " + Util.formatDuration(song.getMicrosecondLength()));
 	}
 	
+	/**
+	 * 
+	 * @return the result from splitting tracks with multiple instruments into 1 track per instrument. 
+	 */
 	public Sequence split () {
 		TrackSplitter splitter = new TrackSplitter();
 		Sequence sequence2 = null;

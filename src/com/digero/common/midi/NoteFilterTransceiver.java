@@ -1,6 +1,5 @@
 package com.digero.common.midi;
 
-import java.util.Arrays;
 import java.util.BitSet;
 
 import javax.sound.midi.MidiEvent;

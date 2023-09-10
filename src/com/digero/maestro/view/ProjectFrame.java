@@ -39,7 +39,6 @@ import javax.imageio.ImageIO;
 import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.MidiUnavailableException;
-import javax.sound.midi.Patch;
 import javax.sound.midi.Sequence;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;

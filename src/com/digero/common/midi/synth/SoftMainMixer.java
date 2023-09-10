@@ -39,8 +39,6 @@ import javax.sound.midi.ShortMessage;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 
-import com.digero.common.abc.LotroInstrument;
-import com.digero.common.midi.LotroShortMessage;
 import com.sun.media.sound.*;
 /**
  * Software synthesizer main audio mixer.
