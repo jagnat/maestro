@@ -3,10 +3,12 @@ package com.digero.maestro.midi;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -26,7 +28,7 @@ import com.digero.common.midi.MidiStandard;
 import com.digero.common.midi.MidiUtils;
 import com.digero.common.midi.ITempoCache;
 import com.digero.common.midi.TimeSignature;
-import com.digero.common.util.Pair;
+import com.digero.common.util.Triple;
 import com.digero.common.util.Util;
 import com.digero.maestro.abc.TimingInfo;
 
@@ -79,7 +81,6 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		// Keep track of the active Registered Parameter Number for pitch bend range
 		int[] rpn = new int[CHANNEL_COUNT_ABC];
 		Arrays.fill(rpn, REGISTERED_PARAM_NONE);
-		List<Pair<Integer, Long>> resetControllers = new ArrayList();
 
 		/*
 		 * We need to be able to know which tracks have drum notes. We also need to know
@@ -90,11 +91,15 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		 * This among other things we will find out by iterating through all MidiEvents.
 		 * 
 		 */
+		List<Triple<Integer, Long, Double>> rawBendMap = new ArrayList<>();
+		panMap = new MapByChannel(PAN_CENTER);
 		Track[] tracks = song.getTracks();
 		hasPorts = false;
 		long lastTick = 0;
 		if (standard != MidiStandard.PREVIEW) {
 			for (int iiTrack = 0; iiTrack < tracks.length; iiTrack++) {
+				// Build a map of ports, this is done before main iteration
+				// due to that patch changes need to know this.
 				Track track = tracks[iiTrack];
 				int port = 0;
 				portMap.put(iiTrack, port);
@@ -103,6 +108,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 					MidiEvent evt = track.get(jj);
 					MidiMessage msg = evt.getMessage();
 					long tick = evt.getTick();
+					if (tick > 0L) break;
 					if (msg instanceof MetaMessage) {
 						MetaMessage m = (MetaMessage) msg;
 						if (m.getType() == META_PORT_CHANGE) {
@@ -116,6 +122,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 								// "+formatBytes(portChange));
 								portMap.put(iiTrack, port);
 								hasPorts = MidiStandard.GM == standard;
+								break;
 							}
 						}
 					}
@@ -195,9 +202,8 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 									System.out.println("DATA_BUTTON_DECREMENT for pitch bend detected.");
 								}
 								break;
-							case RESET_ALL_CONTROLLERS:
-								Pair<Integer, Long> entry = new Pair<>(ch, tick);
-								//resetControllers.add(entry); OMNI mode is ON for us, so we do not respect this instruction.
+							case PAN_CONTROL:
+								panMap.put(ch, tick, m.getData2());
 								break;
 							case BANK_SELECT_MSB:
 								if (ch != DRUM_CHANNEL || MidiStandard.XG != standard || m.getData2() == 126 || m.getData2() == 127) {
@@ -208,15 +214,19 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 										&& m.getData2() != 127) {
 									System.err.println("XG Drum Part Protect Mode prevented bank select MSB.");
 								}
-								// if(ch==DRUM_CHANNEL) System.err.println("Bank select MSB "+m.getData2()+"
-								// "+tick);
+								// if(ch==DRUM_CHANNEL) System.err.println("Bank select MSB "+m.getData2()+" "+tick);
 								break;
 							case BANK_SELECT_LSB:
 								mapLSB.put(ch, tick, m.getData2());
-								// if(ch==DRUM_CHANNEL) System.err.println("Bank select LSB "+m.getData2()+"
-								// "+tick);
+								// if(ch==DRUM_CHANNEL) System.err.println("Bank select LSB "+m.getData2()+" "+tick);
 								break;
 							}
+						} else if (cmd == ShortMessage.PITCH_BEND) {
+							double pct = 2.0d * (((m.getData1() | (m.getData2() << 7)) / (double) (1 << 14)) - 0.5d);
+							rawBendMap.add(new Triple<Integer, Long, Double>(ch, tick, pct));
+							// Notice we put in the bend even if its a repeat of same bend.
+							// Reason is that later on another track there might get put some
+							// bends in between them.
 						}
 					} else if (msg instanceof SysexMessage) {
 						SysexMessage sysex = (SysexMessage) msg;
@@ -318,7 +328,6 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 	
 				for (int j = 0, sz = track.size(); j < sz; j++) {
 					MidiEvent evt = track.get(j);
-					MidiMessage msg = evt.getMessage();
 					long tick = evt.getTick();
 					if (tick > lastTick)
 						lastTick = tick;
@@ -326,13 +335,19 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 			}
 		}
 		
-		bendMap = createBendMap(tracks, resetControllers);
-		panMap = createPanMap(tracks, resetControllers);
-
 		// Account for the duration of the final tempo
 		TempoEvent te = getTempoEventForTick(lastTick);
 		long elapsedMicros = MidiUtils.ticks2microsec(lastTick - te.tick, te.tempoMPQ, tickResolution);
 		tempoLengths.put(te.tempoMPQ, elapsedMicros + Util.valueOf(tempoLengths.get(te.tempoMPQ), 0));
+		
+		// Convert the bend ranges into seminote integers.
+		// We do this after the main iteration so that the
+		// getPitchBendRange has been fully built.
+		bendMap = new MapByChannel(0);
+		for (Triple<Integer, Long, Double> raw : rawBendMap) {
+			int bend = (int) Math.round(raw.third * getPitchBendRange(raw.first, raw.second));
+			bendMap.put(raw.first, raw.second, bend);
+		}
 
 		Entry<Integer, Long> max = null;
 		for (Entry<Integer, Long> entry : tempoLengths.entrySet()) {
@@ -361,78 +376,6 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		return str.toString();
 	}
 	
-	/**
-	 * Create a map of bends in entire song
-	 * @param resetControllers 
-	 * 
-	 * @param track
-	 * @param sequenceCache
-	 * @return
-	 */
-	private MapByChannel createBendMap(Track[] tracks, List<Pair<Integer, Long>> resetControllers) {
-		MapByChannel bendMap = new MapByChannel(0);
-		for (int i = 0 ; i < tracks.length ; i++) {
-			Track track = tracks[i];
-			for (int j = 0, sz = track.size(); j < sz; j++)
-			{
-				MidiEvent evt = track.get(j);
-				MidiMessage msg = evt.getMessage();
-				
-				if (msg instanceof ShortMessage)
-				{
-					ShortMessage m = (ShortMessage) msg;
-					int cmd = m.getCommand();
-					int c = m.getChannel();
-					long tick = evt.getTick();
-									
-					if (cmd == ShortMessage.PITCH_BEND) {
-						double pct = 2.0d * (((m.getData1() | (m.getData2() << 7)) / (double) (1 << 14)) - 0.5d);
-						int bend = (int) Math.round(pct * getPitchBendRange(c, tick));
-						
-						if (bend != bendMap.get(c, tick))
-						{
-							bendMap.put(c, evt.getTick(), bend);
-						}
-					}
-				}
-			}
-		}
-		for (Pair<Integer, Long> reset : resetControllers) {
-			bendMap.put(reset.first, reset.second, 0);
-		}
-		return bendMap;
-	}
-
-	/**
-	 * Create a map of pan in entire song
-	 * 
-	 * @param track
-	 * @return
-	 */
-	private MapByChannel createPanMap(Track[] tracks, List<Pair<Integer, Long>> resetControllers) {
-		MapByChannel panMap = new MapByChannel(PAN_CENTER);
-		for (int i = 0 ; i < tracks.length ; i++) {
-			Track track = tracks[i];
-			for (int j = 0, sz = track.size(); j < sz; j++)
-			{
-				MidiEvent evt = track.get(j);
-				MidiMessage msg = evt.getMessage();
-				
-				if (msg instanceof ShortMessage) {
-					ShortMessage m = (ShortMessage) msg;
-					int cmd = m.getCommand();
-					if (cmd == ShortMessage.CONTROL_CHANGE && m.getData1() == PAN_CONTROL) {
-						panMap.put(m.getChannel(), evt.getTick(), m.getData2());
-					}
-				}
-			}
-		}
-		for (Pair<Integer, Long> reset : resetControllers) {
-			panMap.put(reset.first, reset.second, PAN_CENTER);
-		}
-		return panMap;
-	}
-
 	public boolean isXGDrumsTrack(int track) {
 		if (track >= brandDrumBanks.length)
 			return false;
@@ -654,6 +597,13 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 				return defaultValue;
 
 			return entry.getValue();
+		}
+		
+		public Set<Entry<Long, Integer>> getEntries(int channel, long fromTick, long toTick) {
+			if (map[channel] == null)
+				return new HashSet<>();
+			SortedMap<Long, Integer> subMap = map[channel].subMap(fromTick, toTick);
+			return subMap.entrySet();
 		}
 
 		public long getEntryTick(int channel, long tick) {
