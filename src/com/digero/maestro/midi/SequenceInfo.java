@@ -60,7 +60,7 @@ public class SequenceInfo implements MidiConstants
 	 * Create instance of this class while creating MIDI sequence from abc file.
 	 * 
 	 * @param params
-	 * @return
+	 * @return instance of SequenceInfo
 	 * @throws InvalidMidiDataException
 	 * @throws ParseException
 	 */
@@ -368,10 +368,10 @@ public class SequenceInfo implements MidiConstants
 		// If ON then only MSB 126/127 on chan #10. (unless by sysex bank change). XG Reset is counted as protect ON.
 		// Ignoring this sysex as I have tested 130,000 midi files and none of them had this, so its super rare.
 		
-		// sysex XG bank change:
+		// sysex XG MSB bank change:
 		// F0 43 dv md 08 nn 01 bb F7 (dv = device ID, md = model id, bb = MSB, nn = 0=non-chan#10 7F=chan#10) [However the real nn is just channel number]
 		
-		// sysex XG bank change:
+		// sysex XG LSB bank change:
 		// F0 43 dv md 08 nn 02 bb F7 (dv = device ID, md = model id, bb = LSB, nn = default 0)
 		
 		// sysex XG program change:
