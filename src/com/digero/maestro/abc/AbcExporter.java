@@ -1203,7 +1203,7 @@ public class AbcExporter {
 		List<NoteEvent> extraEvents = new ArrayList<>();
 		while (neIter.hasNext()) {
 			NoteEvent ne = neIter.next();
-
+			if (addTies) assert ne.note != Note.REST : "Rest detected!";
 			ne.setStartTick(qtm.quantize(ne.getStartTick(), part));
 			long ending = qtm.quantize(ne.getEndTick(), part);
 			ne.setEndTick(ending);
@@ -1215,32 +1215,35 @@ public class AbcExporter {
 				else
 					ne.setLengthTicks(qtm.getTimingInfo(ne.getStartTick(), part).getMinNoteLengthTicks());
 			}
-			if (ne.getEndTick() > lastEnding) {
-				lastEnding = ne.getEndTick();
-				lastEvent = ne;
-			}
+			
 			List<NoteEvent> bentNotes = quantizePitchBends(part, ne);
 						
 			if (bentNotes != null) {
 				neIter.remove();
 				for(NoteEvent bent : bentNotes) {
+					assert bent.note != Note.REST;
 					if (!addTies && qtm.getPrimaryExportTempoBPM() >= 50 && part.delay != 0) {
 						// Make delay on instrument be audible in preview
 						long delayMicros = (long)(part.delay * 1000 * qtm.getExportTempoFactor());
 						bent.setEndTick(qtm.microsToTick(qtm.tickToMicros(bent.getEndTick())+delayMicros));
 						bent.setStartTick(qtm.microsToTick(qtm.tickToMicros(bent.getStartTick())+delayMicros));
 					}
+					if (bent.getEndTick() > lastEnding) {
+						lastEnding = bent.getEndTick();
+						lastEvent = bent;
+					}
 				}
 				extraEvents.addAll(bentNotes);
-				if (bentNotes.size() > 0) {
-					lastEvent = bentNotes.get(bentNotes.size()-1);
-				}
 			} else {
 				if (!addTies && qtm.getPrimaryExportTempoBPM() >= 50 && part.delay != 0) {
 					// Make delay on instrument be audible in preview
 					long delayMicros = (long)(part.delay * 1000 * qtm.getExportTempoFactor());
 					ne.setEndTick(qtm.microsToTick(qtm.tickToMicros(ne.getEndTick())+delayMicros));
 					ne.setStartTick(qtm.microsToTick(qtm.tickToMicros(ne.getStartTick())+delayMicros));
+				}
+				if (ne.getEndTick() > lastEnding) {
+					lastEnding = ne.getEndTick();
+					lastEvent = ne;
 				}
 			}
 		}
@@ -1252,8 +1255,7 @@ public class AbcExporter {
 		// Add initial rest if necessary
 		long quantizedStartTick = qtm.quantize(songStartTick, part);
 		if (events.get(0).getStartTick() > quantizedStartTick) {
-			events.add(0, new NoteEvent(Note.REST, Dynamics.DEFAULT.midiVol, quantizedStartTick,
-					events.get(0).getStartTick(), qtm));
+			events.add(0, new NoteEvent(Note.REST, Dynamics.DEFAULT.midiVol, quantizedStartTick, events.get(0).getStartTick(), qtm));
 		}
 
 		// Add a rest at the end if necessary
@@ -1264,12 +1266,11 @@ public class AbcExporter {
 				if (lastEvent.note == Note.REST) {
 					lastEvent.setEndTick(quantizedEndTick);
 				} else {
-					events.add(new NoteEvent(Note.REST, Dynamics.DEFAULT.midiVol, lastEvent.getEndTick(),
-							quantizedEndTick, qtm));
+					events.add(new NoteEvent(Note.REST, Dynamics.DEFAULT.midiVol, lastEvent.getEndTick(), quantizedEndTick, qtm));
 				}
 			}
 		}
-
+		
 		// Remove duplicate notes
 		List<NoteEvent> notesOn = new ArrayList<>();
 		neIter = events.iterator();
@@ -1311,9 +1312,9 @@ public class AbcExporter {
 			}
 			notesOn.add(ne);
 		}
-
+		
 		breakLongNotes(part, events, addTies);
-
+				
 		List<Chord> chords = new ArrayList<>(events.size() / 2);
 		List<NoteEvent> tmpEvents = new ArrayList<>();
 
@@ -1325,7 +1326,9 @@ public class AbcExporter {
 
 			if (curChord.getStartTick() == ne.getStartTick()) {
 				// This note starts at the same time as the rest of the notes in the chord
+				if (addTies) assert !curChord.isRest();
 				curChord.addAlways(ne);
+				//if (addTies) assert curChord.hasRestAndNotes() : "addTies is true!";
 			} else {
 				List<NoteEvent> deadnotes = curChord.prune(part.getInstrument().sustainable,
 						part.getInstrument() == LotroInstrument.BASIC_DRUM);
@@ -1361,7 +1364,7 @@ public class AbcExporter {
 							// note
 							if (ins == i)
 								reprocessCurrentNote = true;
-
+							if (addTies) assert next.note != Note.REST;
 							events.add(ins, next);
 						}
 					}
@@ -1402,15 +1405,18 @@ public class AbcExporter {
 							nextChord.getStartTick(), qtm));
 					breakLongNotes(part, tmpEvents, addTies);
 
-					for (NoteEvent restEvent : tmpEvents)
+					for (NoteEvent restEvent : tmpEvents) {
 						chords.add(new Chord(restEvent));
+					}
 				}
 
 				chords.add(nextChord);
+				if (addTies) assert !nextChord.hasRestAndNotes();
+				if (addTies) assert !curChord.hasRestAndNotes();
 				curChord = nextChord;
 			}
 		}
-
+		
 		boolean reprocessCurrentNote = true;
 		if (addTies) {
 			while (reprocessCurrentNote) {
@@ -1456,7 +1462,7 @@ public class AbcExporter {
 			removeNotes(events, deadnotes, part);// we need to set the pruned flag for last chord too.
 			curChord.recalcEndTick();
 		}
-
+		if (addTies) assert !curChord.hasRestAndNotes();
 		return chords;
 	}
 	
@@ -1483,6 +1489,7 @@ public class AbcExporter {
 		if (ne instanceof BentNoteEvent) {
 			BentNoteEvent be = (BentNoteEvent) ne;
 			int noteID = be.note.id;
+			assert be.note != Note.REST;
 			int startPitch = noteID;
 			List<NoteEvent> benders = new ArrayList<>();
 			NoteEvent current = null;
@@ -1553,6 +1560,7 @@ public class AbcExporter {
 			System.out.println("Note removed, pitch bend out of range");
 			return null;
 		}
+		assert newNote != Note.REST;
 		current = new NoteEvent(newNote, be.velocity, tick, be.getEndTick(), be.getTempoCache());
 		current.setMidiPan(be.midiPan);
 		return current;
