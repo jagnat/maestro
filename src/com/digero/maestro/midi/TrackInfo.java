@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -20,7 +19,6 @@ import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
 import javax.sound.midi.Track;
 
-import com.digero.common.abc.LotroInstrument;
 import com.digero.common.midi.ExtensionMidiInstrument;
 import com.digero.common.midi.KeySignature;
 import com.digero.common.midi.MidiConstants;
@@ -101,30 +99,39 @@ public class TrackInfo implements MidiConstants
  			MidiMessage msg = evt.getMessage();
  			
 			if (evt.getTick() != tick && !isDrumTrack) {
-				// Moving to new tick, lets process the last tick
+				// Moving to new tick, lets process bends since the last tick
 				for (int ch = 0; ch < CHANNEL_COUNT_ABC; ch++) {
-					int bend = sequenceCache.getBendMap().get(ch, tick);
-					if (bend != pitchBend[ch]) {
-						List<NoteEvent> bentNotes = new ArrayList<>();
-						if (notesOn[ch] != null) {
-							for (NoteEvent ne : notesOn[ch]) {
-								if (!(ne instanceof BentNoteEvent)) {
-									// This note is playing while this bend happens
-									// Lets convert it to a BentNoteEvent
-									BentNoteEvent be = new BentNoteEvent(ne.note, ne.velocity, ne.getStartTick(), ne.getEndTick(), ne.getTempoCache());
-									allBentNotes.add(be);
-									be.setMidiPan(ne.midiPan);
-									be.addBend(ne.getStartTick(), 0);// we need this initial bend in NoteGraph class
-									noteEvents.remove(ne);
-									ne = be;
-									noteEvents.add(ne);
+					// Lets get all bends that happened since last tick, excluding the current tick
+					Set<Entry<Long, Integer>> entries = sequenceCache.getBendMap().getEntries(ch, tick, evt.getTick());
+					for (Entry<Long, Integer> entry : entries) {
+						int bend = entry.getValue();
+						long bendTick = entry.getKey();
+						if (bend != pitchBend[ch]) {
+							List<NoteEvent> bentNotes = new ArrayList<>();
+							if (notesOn[ch] != null) {
+								for (NoteEvent ne : notesOn[ch]) {
+									if (!(ne instanceof BentNoteEvent)) {
+										// This note is playing while this bend happens
+										// Lets convert it to a BentNoteEvent
+										BentNoteEvent be = new BentNoteEvent(ne.note, ne.velocity, ne.getStartTick(), ne.getEndTick(), ne.getTempoCache());
+										allBentNotes.add(be);
+										be.setMidiPan(ne.midiPan);
+										be.addBend(ne.getStartTick(), 0);// we need this initial bend in NoteGraph class
+										noteEvents.remove(ne);
+										ne = be;
+										noteEvents.add(ne);
+									}
+									if (((BentNoteEvent)ne).getBend(bendTick) != bend) {
+										// The if statement prevents double bend commands,
+										// which will make an extra split. 
+										((BentNoteEvent)ne).addBend(bendTick, bend);
+									}
+									bentNotes.add(ne);
 								}
-								((BentNoteEvent)ne).addBend(tick, bend);
-								bentNotes.add(ne);
+								notesOn[ch] = bentNotes;
 							}
-							notesOn[ch] = bentNotes;
+							pitchBend[ch] = bend;
 						}
-						pitchBend[ch] = bend;
 					}
 				}
 			}
