@@ -11,11 +11,6 @@ import java.util.HashMap;
 
 public class ExtensionMidiInstrument {
 	
-	public static final String DRUM_KIT_GM  = "Standard Drum Kit";
-	public static final String DRUM_KIT_GS  = "GS Drum Kit";	
-	public static final String DRUM_KIT_XG  = "XG Drum Kit";
-	public static final String DRUM_KIT_GM2 = "GM2 Drum Kit";
-	
 	public static final String TRACK_NAME_DRUM_GM  = "Drums";
 	public static final String TRACK_NAME_DRUM_GS  = "GS Drums";	
 	public static final String TRACK_NAME_DRUM_XG  = "XG Drums";
@@ -58,15 +53,25 @@ public class ExtensionMidiInstrument {
 		return instance;
 	}
 
-	/*
+	
+	/**
+	 * Determine name of voice.
 	 * 
-	 * Abbreviations that are not expanded: KSP: Keyboard Stereo Panning (in GS/GM2
-	 * language this is called 'Wide')
-	 * 
+	 * @param extension
+	 * @param MSB
+	 * @param LSB
+	 * @param patch
+	 * @param rhythmChannel rhythmic non-chromatic channel.
+	 * @return string with instrument name
 	 */
-
 	public String fromId(MidiStandard extension, byte MSB, byte LSB, byte patch, boolean drumKit, boolean rhythmChannel) {
-
+		/*
+		 * 
+		 * Abbreviations that are not expanded: KSP: Keyboard Stereo Panning (in GS/GM2
+		 * language this is called 'Wide')
+		 * 
+		 */
+		
 		// GS does not have Dulcimer on patch 15 MSB 0 like GM but a Santur, so we are
 		// careful to fetch its actual name.
 		boolean santur = extension == MidiStandard.GS && MSB == 0 && patch == 15 && !rhythmChannel;
@@ -96,6 +101,8 @@ public class ExtensionMidiInstrument {
 		String instrName = determineInstrumentName(extension, MSB, LSB, patch);
 		if (instrName == null && !drumKit) {
 			return MidiInstrument.fromId(patch).name;
+		} else if (instrName == null) {
+			return MidiInstrument.STANDARD_DRUM_KIT;
 		}
 		return instrName;
 	}

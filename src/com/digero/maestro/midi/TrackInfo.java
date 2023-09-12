@@ -74,7 +74,7 @@ public class TrackInfo implements MidiConstants
 					name = ExtensionMidiInstrument.TRACK_NAME_DRUM_GM;
 				}
 			}
-		}		
+		}
 		
 		instruments = new HashSet<>();
 		instrumentExtensions = new HashSet<>();
@@ -220,24 +220,9 @@ public class TrackInfo implements MidiConstants
 						if (velocity < minVelocity)
 							minVelocity = velocity;
 
-						if (!isDrumTrack)
-						{
+						instrumentExtensions.add(sequenceCache.getInstrumentExt(c, tick, isDrumTrack));
+						if (!isDrumTrack) {
 							instruments.add(sequenceCache.getInstrument(portMap.get(trackNumber), c, tick));
-							instrumentExtensions.add(sequenceCache.getInstrumentExt(c, tick, isDrumTrack));
-						} else if (isXGDrumTrack || isGSDrumTrack || isGM2DrumTrack) {
-							String ins = sequenceCache.getInstrumentExt(c, tick, isDrumTrack);
-							if (ins != null) {
-								instrumentExtensions.add(ins);
-							} else {
-								instrumentExtensions.add(isXGDrumTrack?ExtensionMidiInstrument.DRUM_KIT_XG:(isGM2DrumTrack?ExtensionMidiInstrument.DRUM_KIT_GM2:ExtensionMidiInstrument.DRUM_KIT_GS));
-							}
-						} else {
-							String ins = sequenceCache.getInstrumentExt(c, tick, isDrumTrack);
-							if (ins != null) {
-								instrumentExtensions.add(ins);
-							} else {
-								instrumentExtensions.add(ExtensionMidiInstrument.DRUM_KIT_GM);
-							}
 						}
 						noteEvents.add(ne);
 						notesInUse.add(ne.note.id);
@@ -411,7 +396,7 @@ public class TrackInfo implements MidiConstants
 
 				names.append(i);
 			}
-			if (first || (names.length() == 0)) return isXGDrumTrack?ExtensionMidiInstrument.DRUM_KIT_XG:(isGM2DrumTrack?ExtensionMidiInstrument.DRUM_KIT_GM2:(isGSDrumTrack?ExtensionMidiInstrument.DRUM_KIT_GS:ExtensionMidiInstrument.DRUM_KIT_GM));
+			if (names.length() == 0) return MidiInstrument.STANDARD_DRUM_KIT;
 			
 			return names.toString();
 		}

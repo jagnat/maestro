@@ -237,15 +237,11 @@ public class TrackSplitter {
 	private String fetchInstrName(long tick, int channel, int port, int track) {
 		if (isGM) {
 			if (channel == MidiConstants.DRUM_CHANNEL)
-				return ExtensionMidiInstrument.DRUM_KIT_GM;
+				return MidiInstrument.STANDARD_DRUM_KIT;
 			int instrumentNumber = sequenceCache.getInstrument(port, channel, tick);
 			return MidiInstrument.fromId(instrumentNumber).toString();
 		} else {
 			String in = sequenceCache.getInstrumentExt(channel, tick, isDrumsTrack(track));
-			if (in == null && isXgGsGm2DrumsTrack(track)) {
-				in = sequenceCache.isXGDrumsTrack(track) ? ExtensionMidiInstrument.DRUM_KIT_XG
-						: (sequenceCache.isGM2DrumsTrack(track) ? ExtensionMidiInstrument.DRUM_KIT_GM2 : ExtensionMidiInstrument.DRUM_KIT_GS);
-			}
 			return in;
 		}
 	}

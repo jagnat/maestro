@@ -133,6 +133,7 @@ public enum MidiInstrument
 	GUN_SHOT("Gun Shot"), // 127
 	INVALID("Unknown");
 
+	public static final String STANDARD_DRUM_KIT  = "Standard Drum Kit";
 	private static final MidiInstrument[] values = values();
 
 	public static MidiInstrument fromId(int id)

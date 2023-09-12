@@ -24,6 +24,7 @@ import javax.sound.midi.Track;
 import com.digero.common.midi.ExtensionMidiInstrument;
 import com.digero.common.midi.IBarNumberCache;
 import com.digero.common.midi.MidiConstants;
+import com.digero.common.midi.MidiInstrument;
 import com.digero.common.midi.MidiStandard;
 import com.digero.common.midi.MidiUtils;
 import com.digero.common.midi.ITempoCache;
@@ -46,8 +47,8 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 
 	private MapByChannelPort instruments = new MapByChannelPort(DEFAULT_INSTRUMENT);
 	private MapByChannel volume = new MapByChannel(DEFAULT_CHANNEL_VOLUME);
-	private MapByChannel pitchBendCoarse = new MapByChannel(DEFAULT_PITCH_BEND_RANGE_SEMITONES);
-	private MapByChannel pitchBendFine = new MapByChannel(DEFAULT_PITCH_BEND_RANGE_CENTS);
+	private MapByChannel pitchBendRangeCoarse = new MapByChannel(DEFAULT_PITCH_BEND_RANGE_SEMITONES);
+	private MapByChannel pitchBendRangeFine = new MapByChannel(DEFAULT_PITCH_BEND_RANGE_CENTS);
 	private final MapByChannel bendMap;
 	private final MapByChannel panMap;
 	private MapByChannel mapMSB = new MapByChannel(0);
@@ -184,21 +185,21 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 								break;
 							case DATA_ENTRY_COARSE:
 								if (rpn[ch] == REGISTERED_PARAM_PITCH_BEND_RANGE)
-									pitchBendCoarse.put(ch, tick, m.getData2());
+									pitchBendRangeCoarse.put(ch, tick, m.getData2());
 								break;
 							case DATA_ENTRY_FINE:
 								if (rpn[ch] == REGISTERED_PARAM_PITCH_BEND_RANGE)
-									pitchBendFine.put(ch, tick, m.getData2());
+									pitchBendRangeFine.put(ch, tick, m.getData2());
 								break;
 							case DATA_BUTTON_INCREMENT:
 								if (rpn[ch] == REGISTERED_PARAM_PITCH_BEND_RANGE) {
-									pitchBendFine.put(ch, tick, pitchBendFine.get(ch, tick) + 1);
+									pitchBendRangeFine.put(ch, tick, pitchBendRangeFine.get(ch, tick) + 1);
 									System.out.println("DATA_BUTTON_INCREMENT for pitch bend detected.");
 								}
 								break;
 							case DATA_BUTTON_DECREMENT:
 								if (rpn[ch] == REGISTERED_PARAM_PITCH_BEND_RANGE) {
-									pitchBendFine.put(ch, tick, pitchBendFine.get(ch, tick) - 1);
+									pitchBendRangeFine.put(ch, tick, pitchBendRangeFine.get(ch, tick) - 1);
 									System.out.println("DATA_BUTTON_DECREMENT for pitch bend detected.");
 								}
 								break;
@@ -345,8 +346,8 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		// getPitchBendRange has been fully built.
 		bendMap = new MapByChannel(0);
 		for (Triple<Integer, Long, Double> raw : rawBendMap) {
-			int bend = (int) Math.round(raw.third * getPitchBendRange(raw.first, raw.second));
-			bendMap.put(raw.first, raw.second, bend);
+			int semiToneBend = (int) Math.round(raw.third * getPitchBendRange(raw.first, raw.second));
+			bendMap.put(raw.first, raw.second, semiToneBend);
 		}
 
 		Entry<Integer, Long> max = null;
@@ -404,6 +405,13 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		return instruments.get(port, channel, tick);
 	}
 
+	/**
+	 * 
+	 * @param channel
+	 * @param tick
+	 * @param drumKit channel is set to drums/rhythmic.
+	 * @return string with name of voice instrument
+	 */
 	public String getInstrumentExt(int channel, long tick, boolean drumKit) {
 		MidiStandard type = MidiStandard.GM;
 		boolean rhythmChannel = channel == DRUM_CHANNEL;
@@ -420,15 +428,18 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		}
 		long patchTick = mapPatch.getEntryTick(channel, tick);
 		if (patchTick == NO_RESULT) {
-			return null;
+			// No voice changes yet on this channel, return default.
+			// Should we instead set LMB, LSB and patch to zero and let fromId handle it?
+			if (drumKit) {
+				return MidiInstrument.STANDARD_DRUM_KIT;
+			} else {
+				return MidiInstrument.PIANO.toString();
+			}
 		}
 
 		String value = ExtensionMidiInstrument.getInstance().fromId(type, (byte) mapMSB.get(channel, patchTick),
 				(byte) mapLSB.get(channel, patchTick), (byte) mapPatch.get(channel, tick), drumKit, rhythmChannel);
-		// if (value == null && drumKit) {
-		// System.out.println(mapMSB.get(channel, patchTick)+","+ mapLSB.get(channel,
-		// patchTick)+","+mapPatch.get(channel, tick)+" "+ rhythmChannel);
-		// }
+		
 		return value;
 	}
 
@@ -437,7 +448,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 	}
 
 	public double getPitchBendRange(int channel, long tick) {
-		return pitchBendCoarse.get(channel, tick) + (pitchBendFine.get(channel, tick) / 100.0);
+		return pitchBendRangeCoarse.get(channel, tick) + (pitchBendRangeFine.get(channel, tick) / 100.0);
 	}
 
 	public long getSongLengthTicks() {
