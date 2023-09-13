@@ -765,7 +765,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	}
 
 	private void generatePartsList() {
-		partsList = new PartsList();
+		partsList = new PartsList(abcSequencer);
 		partsList.addListSelectionListener(e -> {
 			AbcPart abcPart = partsList.getSelectedPart();
 			sequencer.getFilter().onAbcPartChanged(abcPart != null);

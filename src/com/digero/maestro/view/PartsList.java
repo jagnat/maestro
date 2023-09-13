@@ -10,6 +10,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import com.digero.common.midi.SequencerWrapper;
 import com.digero.common.util.IDiscardable;
 import com.digero.common.util.Listener;
 import com.digero.maestro.abc.AbcPart;
@@ -31,8 +32,11 @@ public class PartsList extends JPanel implements
 	private AbcPart selectedPart = null;
 	private int selectedIndex = -1;
 	
-	public PartsList()
+	private SequencerWrapper abcSequencer; 
+	
+	public PartsList(SequencerWrapper abcSequencer)
 	{
+		this.abcSequencer = abcSequencer;
 		layout = new BoxLayout(this, BoxLayout.Y_AXIS);
 		setLayout(layout);
 		setBackground(new JList<AbcPartMetadataSource>().getBackground());
@@ -168,18 +172,20 @@ public class PartsList extends JPanel implements
 	public Listener<PartsListItem.PartsListItemEvent> itemListener = e -> {
 		PartsListItem item = (PartsListItem) e.getSource();
 		AbcPart part = item.getPart();
+		int abcTrackNo = part.getPreviewSequenceTrackNumber();
 		switch(e.getType()) {
 		case SELECTION:
 			selectPart(getIndexOfPart(part));
 			break;
 		case MUTE:
-			System.out.println("mute");
+			if (abcTrackNo >= 0) {
+				abcSequencer.setTrackMute(abcTrackNo, part.isMuted());
+			}
 			break;
 		case SOLO:
 			System.out.println("solo");
-			if (part.isSoloed())
-			{
-				
+			if (abcTrackNo >= 0) {
+				abcSequencer.setTrackSolo(abcTrackNo, part.isSoloed());
 			}
 			break;
 		default:

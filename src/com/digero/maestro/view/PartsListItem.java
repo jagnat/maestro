@@ -94,7 +94,7 @@ public class PartsListItem extends JPanel implements IDiscardable, TableLayoutCo
 		Dimension buttonSize = new Dimension(h, h);
 		
 		String soloText = part.isSoloed() ? "<html><b>S</b></html>" : "<html>S</html>";
-		Color soloColor = part.isMuted() ? Color.decode("#7e7eff") : new JButton().getBackground();
+		Color soloColor = part.isSoloed() ? Color.decode("#7e7eff") : new JButton().getBackground();
 		soloButton = new JButton(soloText);
 		soloButton.setBackground(soloColor);
 		soloButton.setPreferredSize(buttonSize);
@@ -105,6 +105,7 @@ public class PartsListItem extends JPanel implements IDiscardable, TableLayoutCo
 			part.setSoloed(isSolo);
 			PartsListItemEvent ev = new PartsListItemEvent(PartsListItem.this, PartsListItemEvent.EventType.SOLO);
         	itemListener.onEvent(ev);
+        	// TODO: ctrl-click to unsolo everything but the button clicked
         	if ((e.getModifiers() & ActionEvent.CTRL_MASK) != 0)
         	{
         	}
@@ -113,13 +114,13 @@ public class PartsListItem extends JPanel implements IDiscardable, TableLayoutCo
         	}
 			soloButton.setBackground(isSolo? Color.decode("#7e7eff") : new JButton().getBackground());
 			soloButton.setText(isSolo? "<html><b>S</b></html>" : "<html>S</html>");
-			muteButton.setEnabled(!isSolo);
 		});
 		
 		
 		String muteText = part.isMuted()? "<html><b>M</b></html>" : "<html>M</html>";
+		Color muteColor = part.isMuted() ? Color.decode("#ff7777") : new JButton().getBackground();
 		muteButton = new JButton(muteText);
-		
+		muteButton.setBackground(muteColor);
 		muteButton.setPreferredSize(buttonSize);
 		muteButton.setMargin( new Insets(0, 0, 0, 0));
 		
