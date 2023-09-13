@@ -9,8 +9,8 @@ public class TimingInfo
 	public static final long ONE_MINUTE_MICROS = 60 * ONE_SECOND_MICROS;
 	//public static final long SHORTEST_NOTE_MICROS = 60001;
 	public static final long LONGEST_NOTE_MICROS = ONE_MINUTE_MICROS / 12;// reduced to 5s from 6s due to some samples are shorter than 6s.
-	public static final int MAX_TEMPO_BPM = (int) (ONE_MINUTE_MICROS / getShortestNoteMicros(125));
-	public static final int MIN_TEMPO_BPM = (int) ((ONE_MINUTE_MICROS + (ONE_MINUTE_MICROS /10) / 2) / (ONE_MINUTE_MICROS /10)); // Round up
+	public static final int MAX_TEMPO_BPM = (int) (ONE_MINUTE_MICROS / getShortestNoteMicros(125));// Maximum 1000 bpm (In which case 'beat' here is 60ms)
+	public static final int MIN_TEMPO_BPM = (int) ((ONE_MINUTE_MICROS + (ONE_MINUTE_MICROS /10) / 2) / (ONE_MINUTE_MICROS /10)); // Round up   (1m 3s)/6s = 10.5 -> 10
 
 	private final int tempoMPQ;
 	private final int resolutionPPQ;
