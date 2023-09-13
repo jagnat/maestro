@@ -429,7 +429,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		long patchTick = mapPatch.getEntryTick(channel, tick);
 		if (patchTick == NO_RESULT) {
 			// No voice changes yet on this channel, return default.
-			// Should we instead set LMB, LSB and patch to zero and let fromId handle it?
+			// TODO: Should we instead set LMB, LSB and patch to zero and let fromId handle it?
 			if (drumKit) {
 				return MidiInstrument.STANDARD_DRUM_KIT;
 			} else {

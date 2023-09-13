@@ -57,7 +57,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	public static final String MSX_FILE_DESCRIPTION_PLURAL = MaestroMain.APP_NAME + " Songs";
 	public static final String MSX_FILE_EXTENSION_NO_DOT = "msx";
 	public static final String MSX_FILE_EXTENSION = "." + MSX_FILE_EXTENSION_NO_DOT;
-	public static final Version SONG_FILE_VERSION = new Version(1, 0, 117);
+	public static final Version SONG_FILE_VERSION = new Version(2, 5, 0, 123);
 
 	private String title = "";
 	private String composer = "";
@@ -228,7 +228,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 			}
 			Version fileVersion = SaveUtil.parseValue(songEle, "@fileVersion", SONG_FILE_VERSION);
 
-			if (fileVersion.getRevision() > SONG_FILE_VERSION.getRevision() && getFrames().length > 0) {
+			if (isFileNewer(fileVersion) && getFrames().length > 0) {
 				JOptionPane.showMessageDialog(getFrames()[0],
 						"This project may contain new features that this Maestro cannot use. It is suggested to upgrade this Maestro to load this project.",
 						"Warning", JOptionPane.WARNING_MESSAGE);
@@ -293,6 +293,17 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 			e.printStackTrace();
 			throw new ParseException("XPath error: " + e.getMessage(), null);
 		}
+	}
+
+	private boolean isFileNewer(Version fileVersion) {
+		if (fileVersion.getMajor() == 1 && fileVersion.getMinor() == 0) {
+			// Convert the msx 1.0.X format into Maestro version format.
+			fileVersion = new Version(2, 5, 0, fileVersion.getRevision());
+		}
+		if (fileVersion.compareTo(SONG_FILE_VERSION) > 0) {
+			return true;
+		}
+		return false;
 	}
 
 	private void tryToLoadFromFile(FileResolver fileResolver, boolean isAbc) {
