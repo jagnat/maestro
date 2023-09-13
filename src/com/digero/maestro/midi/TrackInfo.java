@@ -53,6 +53,7 @@ public class TrackInfo implements MidiConstants
 			throws InvalidMidiDataException
 	{
 		this.sequenceInfo = parent;
+		//TempoCache tempoCache = new TempoCache(parent.getSequence());
 		this.trackNumber = trackNumber;
 		
 		this.isXGDrumTrack = isXGDrumTrack;
@@ -161,14 +162,20 @@ public class TrackInfo implements MidiConstants
 					if (velocity > 127)
 						velocity = 127;
 					
-					/*if (trackNumber == 2) {
+					/*
+					long time = MidiUtils.tick2microsecond(parent.getSequence(), tick, tempoCache);
+					if (trackNumber == 2 && time > 360000000L && velocity == 0) {
 						System.err.println();
 						System.err.println("Tick: "+evt.getTick());
 						System.err.println(cmd==ShortMessage.NOTE_ON?"NOTE ON":(cmd==ShortMessage.NOTE_OFF?"NOTE OFF":cmd));
 						System.err.println("Channel: "+c);
-						System.err.println("Velocity: "+velocity);
+						System.err.println("Velocity: "+m.getData2());
+						System.err.println("CH Volume: "+sequenceCache.getVolume(c, tick));
 						System.err.println("Pitch: "+noteId);
-					}*/
+						System.err.println("Bytes: "+m.getLength());
+						System.err.println("Time: "+Util.formatDuration(time));
+					}
+					*/
 					
 					// If this Note ON was preceded by a similar Note ON without a Note OFF, lets turn it off
 					// If its a Note OFF or Note ON with zero velocity, lets do same.

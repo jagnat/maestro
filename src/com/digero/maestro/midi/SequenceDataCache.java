@@ -175,7 +175,8 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 						} else if (cmd == ShortMessage.CONTROL_CHANGE) {
 							switch (m.getData1()) {
 							case CHANNEL_VOLUME_CONTROLLER_COARSE:
-								volume.put(ch, tick, m.getData2());
+								//if (m.getData2() != 0)  TODO: uncomment this to see hidden notes in MIDIs. :)
+									volume.put(ch, tick, m.getData2());
 								break;
 							case REGISTERED_PARAMETER_NUMBER_MSB:
 								rpn[ch] = (rpn[ch] & 0x7F) | ((m.getData2() & 0x7F) << 7);
