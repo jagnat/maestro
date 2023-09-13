@@ -161,10 +161,10 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 						String.valueOf(QuantizedTimingInfo.COMBINE_PRIORITY_MULTIPLIER));// Hardcoded to 4 for now,
 																							// change QTM and UI if
 																							// messing with this
-
-			trackEle.setAttribute("playLeft", String.valueOf(playLeft[t]));
-			trackEle.setAttribute("playCenter", String.valueOf(playCenter[t]));
-			trackEle.setAttribute("playRight", String.valueOf(playRight[t]));
+			
+			if (!playLeft[t])   trackEle.setAttribute("playLeft", String.valueOf(playLeft[t]));
+			if (!playCenter[t]) trackEle.setAttribute("playCenter", String.valueOf(playCenter[t]));
+			if (!playRight[t])  trackEle.setAttribute("playRight", String.valueOf(playRight[t]));
 
 			TreeMap<Integer, PartSection> tree = sections.get(t);
 			if (tree != null) {
