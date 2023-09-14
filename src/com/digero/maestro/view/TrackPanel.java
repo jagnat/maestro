@@ -210,8 +210,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 
 			@Override public void mousePressed(MouseEvent e)
 			{
-				boolean soloMouseAction = SwingUtilities.isRightMouseButton(e) || SwingUtilities.isMiddleMouseButton(e);
-				boolean previewAllParts = e.isControlDown() || SwingUtilities.isMiddleMouseButton(e);
+				boolean soloMouseAction = SwingUtilities.isRightMouseButton(e);
+				boolean previewAllParts = e.isControlDown();
 				if (soloMouseAction)
 				{
 					int trackNumber = trackInfo.getTrackNumber();
@@ -272,7 +272,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			@Override public void mouseReleased(MouseEvent e)
 			{
 				
-				if (SwingUtilities.isRightMouseButton(e) || SwingUtilities.isMiddleMouseButton(e))
+				if (SwingUtilities.isRightMouseButton(e))
 				{
 					if (abcSequencer != null)
 					{
