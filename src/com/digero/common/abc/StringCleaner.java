@@ -12,6 +12,8 @@ public class StringCleaner {
 		String after = replaceUmlaut(before);
 		after = convertCyrillic(after);
 	    after = convertToBasicAscii(after);
+	    after = after.replace('/', ' ');
+	    after = after.replace('\\', ' ');
 	    after = after.replace('.', ' ').trim();// lotro do not like when there is more than one dot
 	    //after = String.join("_", after.split(":*?\"<>|"));// Need to be converted to proper regex
 	    //System.out.println("New file : "+after);
