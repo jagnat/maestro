@@ -62,9 +62,6 @@ public class PartsListItem extends JPanel implements IDiscardable, TableLayoutCo
 	private JButton soloButton;
 	private JButton muteButton;
 	
-//	private boolean isSolo = false;
-//	private boolean isMute = false;
-	
 	private AbcPart part;
 	
 	private Color selectedFg, selectedBg, unselectedFg, unselectedBg;
@@ -123,7 +120,6 @@ public class PartsListItem extends JPanel implements IDiscardable, TableLayoutCo
 		muteButton.setBackground(muteColor);
 		muteButton.setPreferredSize(buttonSize);
 		muteButton.setMargin( new Insets(0, 0, 0, 0));
-		
 		muteButton.setFocusable(false);
 		muteButton.addActionListener(e -> {
 			boolean isMute = !part.isMuted();
@@ -150,6 +146,35 @@ public class PartsListItem extends JPanel implements IDiscardable, TableLayoutCo
             }
 
         });
+	}
+	
+	private PartsListItem(String titleTxt)
+	{
+		title = new JLabel(titleTxt);
+		title.setBorder(BorderFactory.createEmptyBorder(0, 3, 0, 0));
+		
+		int h = title.getPreferredSize().height + 4;
+		Dimension buttonSize = new Dimension(h, h);
+		soloButton = new JButton("<html><b>S</b></html>");
+		soloButton.setPreferredSize(buttonSize);
+		soloButton.setMargin( new Insets(0, 0, 0, 0));
+		soloButton.setFocusable(false);
+		
+		muteButton = new JButton("<html><b>M</b></html>");
+		muteButton.setPreferredSize(buttonSize);
+		muteButton.setMargin( new Insets(0, 0, 0, 0));
+		muteButton.setFocusable(false);
+		
+		int col = -1;
+		add(title, ++col + ", 0");
+		add(soloButton, ++col + ", 0");
+		add(muteButton, ++col + ", 0");
+	}
+	
+	public static Dimension getProtoDimension()
+	{
+		final PartsListItem item = new PartsListItem("000. Lonely Mountain Bassoon*");
+		return item.getPreferredSize();
 	}
 	
 	public void setItemListener(Listener<PartsListItemEvent> l)

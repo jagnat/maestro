@@ -1,5 +1,6 @@
 package com.digero.maestro.view;
 
+import java.awt.Dimension;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +12,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
 import com.digero.common.midi.SequencerWrapper;
+import com.digero.common.midi.SequencerEvent.SequencerProperty;
 import com.digero.common.util.IDiscardable;
 import com.digero.common.util.Listener;
 import com.digero.maestro.abc.AbcPart;
@@ -32,7 +34,9 @@ public class PartsList extends JPanel implements
 	private AbcPart selectedPart = null;
 	private int selectedIndex = -1;
 	
-	private SequencerWrapper abcSequencer; 
+	private SequencerWrapper abcSequencer;
+	
+	private final Dimension rowDimension;
 	
 	public PartsList(SequencerWrapper abcSequencer)
 	{
@@ -41,10 +45,21 @@ public class PartsList extends JPanel implements
 		setLayout(layout);
 		setBackground(new JList<AbcPartMetadataSource>().getBackground());
 		
+		rowDimension = PartsListItem.getProtoDimension();
+		rowDimension.height = 8 * rowDimension.height; // min size should fit 8 rows
+		this.setMinimumSize(rowDimension);
+		
+		this.abcSequencer.addChangeListener(e -> {
+			if (e.getProperty() == SequencerProperty.SEQUENCE) {
+				updateTrackNumbers();
+				System.out.println("sequence changed");
+			}
+		});
+		
 		model = new DefaultListModel<AbcPart>();
 	}
 	
-	public void regenerateParts()
+	public void updateParts()
 	{
 		parts = new ArrayList<PartsListItem>();
 		removeAll();
@@ -81,6 +96,14 @@ public class PartsList extends JPanel implements
 		add(item);
 	}
 	
+	private void updateTrackNumbers()
+	{
+		for (PartsListItem item : parts)
+		{
+			updatePartSoloMute(item.getPart());
+		}
+	}
+	
 	public void selectPart(int idx)
 	{
 		if (idx < 0)
@@ -110,7 +133,7 @@ public class PartsList extends JPanel implements
 	
 	public void init()
 	{
-		regenerateParts();
+		updateParts();
 	}
 
 	@Override
@@ -168,25 +191,30 @@ public class PartsList extends JPanel implements
 		
 	}
 	
+	private void updatePartSoloMute(AbcPart part) {
+		if (part == null) {
+			return;
+		}
+		
+		int trackNo = part.getPreviewSequenceTrackNumber();
+		
+		if (trackNo >= 0) {
+			abcSequencer.setTrackMute(trackNo, part.isMuted());
+			abcSequencer.setTrackSolo(trackNo, part.isSoloed());
+		}
+	}
+	
 	// Listens to the PartsListItems for selection and solo/mute events
 	public Listener<PartsListItem.PartsListItemEvent> itemListener = e -> {
 		PartsListItem item = (PartsListItem) e.getSource();
 		AbcPart part = item.getPart();
-		int abcTrackNo = part.getPreviewSequenceTrackNumber();
 		switch(e.getType()) {
 		case SELECTION:
 			selectPart(getIndexOfPart(part));
 			break;
-		case MUTE:
-			if (abcTrackNo >= 0) {
-				abcSequencer.setTrackMute(abcTrackNo, part.isMuted());
-			}
-			break;
 		case SOLO:
-			System.out.println("solo");
-			if (abcTrackNo >= 0) {
-				abcSequencer.setTrackSolo(abcTrackNo, part.isSoloed());
-			}
+		case MUTE:
+			updatePartSoloMute(part);
 			break;
 		default:
 			break;
@@ -198,7 +226,7 @@ public class PartsList extends JPanel implements
 		case TRACK_ENABLED:
 		case INSTRUMENT:
 		case TITLE:
-			regenerateParts();
+			updateParts();
 			break;
 		default:
 			break;
@@ -214,13 +242,13 @@ public class PartsList extends JPanel implements
 		{
 		case PART_ADDED:
 			e.getPart().addAbcListener(partListener);
-			regenerateParts();
+			updateParts();
 			break;
 		case BEFORE_PART_REMOVED:
 			e.getPart().removeAbcListener(partListener);
 			break;
 		case PART_LIST_ORDER:
-			regenerateParts();
+			updateParts();
 			break;
 		default:
 			break;

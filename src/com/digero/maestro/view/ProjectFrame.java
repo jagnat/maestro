@@ -368,39 +368,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		exportSuccessfulLabel.setVisible(false);
 
 		generatePartsList();
-		// Using this class as prototype cell content will set the Jlist width to be at
-		// least big enough to display LM bassoon,
-		// and since this list determines the width of the flowlayout where the delete
-		// button is also, it should give space.
-		class ProtoClass implements AbcPartMetadataSource {
 
-			@Override
-			public String getTitle() {
-				return null;
-			}
-
-			@Override
-			public int getPartNumber() {
-				return 0;
-			}
-
-			@Override
-			public LotroInstrument getInstrument() {
-				return null;
-			}
-
-			@Override
-			public String toString() {
-				return "00. " + LotroInstrument.LONELY_MOUNTAIN_BASSOON + "*";
-			}
-
-		}
-
-		// partsList.setPrototypeCellValue(new ProtoClass());// This call is attempt of fix for no delete button on MacOS
-		// 													// part 1
-		// partsList.setVisibleRowCount(8);
-
-		JScrollPane partsListScrollPane = wrapPartsList();
+		JScrollPane partsListScrollPane = wrapPartsList(); 
 
 		generateNewPartButton();
 
@@ -761,7 +730,11 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				getRootPane().requestFocus();
 			}
 		});
-		return new JScrollPane(partListWrapperPanel, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		JScrollPane scrollPane = new JScrollPane(partListWrapperPanel, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		Dimension sz = scrollPane.getMinimumSize();
+		sz.width = PartsListItem.getProtoDimension().width;
+		scrollPane.setPreferredSize(sz);
+		return scrollPane;
 	}
 
 	private void generatePartsList() {
@@ -1867,19 +1840,19 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private ListDataListener partsListListener = new ListDataListener() {
 		@Override
 		public void intervalAdded(ListDataEvent e) {
-			partsList.regenerateParts();
+			partsList.updateParts();
 			updateButtons(false);
 		}
 
 		@Override
 		public void intervalRemoved(ListDataEvent e) {
-			partsList.regenerateParts();
+			partsList.updateParts();
 			updateButtons(false);
 		}
 
 		@Override
 		public void contentsChanged(ListDataEvent e) {
-			partsList.regenerateParts();
+			partsList.updateParts();
 			updateButtons(false);
 		}
 	};
@@ -1945,7 +1918,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		partPanel.setNote("");
 		partPanel.noteVisible(false);
 		
-		partsList.regenerateParts();
+		partsList.updateParts();
 
 		allowOverwriteSaveFile = false;
 		allowOverwriteExportFile = false;
