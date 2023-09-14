@@ -44,13 +44,15 @@ Thanks to all who gave feedback of features, bugs plus suggestions.
 
 
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
-================
+
 Version 2.5.0.123
 - Fix Maestro would fail silently at loading a midi with a timesignature that was missing some data, but otherwise was correct.
 - Add any missing EndOfTrack events when loading MIDI.
 - Fixed that a pitchbend or panning message on one track could end up not affecting another track, even though they were on same channel.
 - Allow MIDIs to adjust pitch bend range using data button increment/decrement instead of setting only absolute values.
     This is a very rarely used method, but now Maestro supports it anyway.
+- Add solo/mute buttons for ABC preview to the parts list.
+- Add ability to ctrl-right-click or middle-mouse-click a track to solo all parts which use that track.
 
 Version 2.5.0.122beta
 - Fix for loading a 15+ part abc song into Maestro would not work.
