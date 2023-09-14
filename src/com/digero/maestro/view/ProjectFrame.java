@@ -42,7 +42,6 @@ import javax.sound.midi.MidiUnavailableException;
 import javax.sound.midi.Sequence;
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
-import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.InputMap;
 import javax.swing.JButton;
@@ -52,7 +51,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -65,7 +63,6 @@ import javax.swing.JSplitPane;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
-import javax.swing.ListSelectionModel;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -86,7 +83,6 @@ import javax.xml.transform.TransformerException;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-import com.digero.common.abc.LotroInstrument;
 import com.digero.common.abc.StringCleaner;
 import com.digero.common.icons.IconLoader;
 import com.digero.common.midi.KeySignature;
@@ -118,7 +114,6 @@ import com.digero.maestro.abc.AbcExporter;
 import com.digero.maestro.abc.AbcPart;
 import com.digero.maestro.abc.AbcPartEvent;
 import com.digero.maestro.abc.AbcPartEvent.AbcPartProperty;
-import com.digero.maestro.abc.AbcPartMetadataSource;
 import com.digero.maestro.abc.AbcSong;
 import com.digero.maestro.abc.AbcSongEvent;
 import com.digero.maestro.abc.ExportFilenameTemplate;
@@ -2066,9 +2061,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		}
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private void setPartsListModel() {
-		// Not pretty..
+		// Not really used as a model anymore since switching to PartsList rather than JList
 		partsList.setModel(abcSong.getParts().getListModel());
 	}
 

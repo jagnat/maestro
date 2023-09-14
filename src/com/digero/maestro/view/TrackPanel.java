@@ -220,6 +220,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 						{
 							for (AbcPart part : abcPart.getAbcSong().getParts())
 							{
+								// TODO: This only solos the first part that has the track selected.
+								// Should we change this behavior so right-clicking solos all parts which have the track selected?
 								if (part.isTrackEnabled(trackNumber))
 								{
 									soloAbcTrack = part.getPreviewSequenceTrackNumber();
@@ -229,7 +231,17 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 						}
 
 						if (soloAbcTrack >= 0)
+						{
+							// Un-solo any other parts that may be soloed
+							for (AbcPart part : abcPart.getAbcSong().getParts())
+							{
+								int trackNo = part.getPreviewSequenceTrackNumber();
+								if (trackNo != soloAbcTrack && trackNo >= 0 && abcSequencer.getTrackSolo(trackNo)) {
+									abcSequencer.setTrackSolo(trackNo, false);
+								}
+							}
 							abcSequencer.setTrackSolo(soloAbcTrack, true);
+						}
 					}
 					else
 					{
@@ -244,7 +256,19 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 				if (e.getButton() == MouseEvent.BUTTON3)
 				{
 					if (abcSequencer != null && soloAbcTrack >= 0)
-						abcSequencer.setTrackSolo(soloAbcTrack, false);
+					{
+						// Restore solo/mute state from abcpart state for solo/mute buttons
+						for (AbcPart part : abcPart.getAbcSong().getParts())
+						{
+							int trackNo = part.getPreviewSequenceTrackNumber();
+							if (trackNo >= 0) {
+								if (part.isSoloed() != abcSequencer.getTrackSolo(trackNo))
+									abcSequencer.setTrackSolo(trackNo, part.isSoloed());
+								if (part.isMuted() != abcSequencer.getTrackMute(trackNo))
+									abcSequencer.setTrackMute(trackNo, part.isMuted());
+							}
+						}
+					}
 					soloAbcTrack = -1;
 
 					if (soloMidiTrack >= 0)
@@ -606,31 +630,37 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		}
 
 		noteGraph.setShowingAbcNotesOn(trackActive);
-
-		if (!trackActive)
+		
+		if (trackEnabled)
 		{
-			noteGraph.setNoteColor(ColorTable.NOTE_OFF);
-			noteGraph.setBadNoteColor(ColorTable.NOTE_BAD_OFF);
-			setBackground(ColorTable.GRAPH_BACKGROUND_OFF.get());
-		}
-		else if (trackEnabled)
-		{
-			noteGraph.setNoteColor(ColorTable.NOTE_ENABLED);
-			noteGraph.setBadNoteColor(ColorTable.NOTE_BAD_ENABLED);
 			setBackground(ColorTable.GRAPH_BACKGROUND_ENABLED.get());
 		}
 		else if (trackSolo)
 		{
-			noteGraph.setNoteColor(ColorTable.NOTE_DISABLED);
-			noteGraph.setBadNoteColor(ColorTable.NOTE_BAD_DISABLED);
-			setBackground(ColorTable.GRAPH_BACKGROUND_ENABLED.get());
+			setBackground(ColorTable.GRAPH_BACKGROUND_SOLO.get());
 		}
 		else
+		{
+			setBackground(ColorTable.GRAPH_BACKGROUND_OFF.get());
+		}
+		
+		// Set note colors - always based on whether track is playing or not,
+		// except show greyed out notes for drum tracks in midi mode if a non-drum part is selected - necessary?
+		if (trackEnabled && trackActive)
+		{
+			noteGraph.setNoteColor(ColorTable.NOTE_ENABLED);
+			noteGraph.setBadNoteColor(ColorTable.NOTE_BAD_ENABLED);
+		}
+		else if (!trackActive)
+		{
+			noteGraph.setNoteColor(ColorTable.NOTE_OFF);
+			noteGraph.setBadNoteColor(ColorTable.NOTE_BAD_OFF);
+		}
+		else // disabled (lighter colored) notes for playing tracks not in the current part
 		{
 			boolean pseudoOff = !abcPreviewMode && (abcPart.isDrumPart() != trackInfo.isDrumTrack());
 			noteGraph.setNoteColor(pseudoOff ? ColorTable.NOTE_OFF : ColorTable.NOTE_DISABLED);
 			noteGraph.setBadNoteColor(pseudoOff ? ColorTable.NOTE_BAD_OFF : ColorTable.NOTE_BAD_DISABLED);
-			setBackground(ColorTable.GRAPH_BACKGROUND_DISABLED.get());
 		}
 
 		if (trackEnabled)
