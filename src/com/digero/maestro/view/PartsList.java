@@ -52,7 +52,6 @@ public class PartsList extends JPanel implements
 		this.abcSequencer.addChangeListener(e -> {
 			if (e.getProperty() == SequencerProperty.SEQUENCE) {
 				updateTrackNumbers();
-				System.out.println("sequence changed");
 			}
 		});
 		
