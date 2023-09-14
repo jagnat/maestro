@@ -45,7 +45,7 @@ Thanks to all who gave feedback of features, bugs plus suggestions.
 
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 
-Version 2.5.0.123
+Version 3.0.0
 - Fix Maestro would fail silently at loading a midi with a timesignature that was missing some data, but otherwise was correct.
 - Add any missing EndOfTrack events when loading MIDI.
 - Fixed that a pitchbend or panning message on one track could end up not affecting another track, even though they were on same channel.
