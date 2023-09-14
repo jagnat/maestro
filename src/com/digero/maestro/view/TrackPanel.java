@@ -31,6 +31,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import com.digero.common.abc.LotroInstrument;
 import com.digero.common.midi.MidiConstants;
@@ -202,45 +203,62 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		noteGraph = new TrackNoteGraph(seq, trackInfo);
 		noteGraph.addMouseListener(new MouseAdapter()
 		{
-			private int soloAbcTrack = -1;
+			// soloAbcTracks will contain one track if only right click is used
+			// if ctrl-right click is used, it will contain all abc preview tracks that have the midi track enabled
+			private ArrayList<Integer> soloAbcTracks = new ArrayList<Integer>();
 			private int soloMidiTrack = -1;
 
 			@Override public void mousePressed(MouseEvent e)
 			{
-				if (e.getButton() == MouseEvent.BUTTON3)
+				boolean soloMouseAction = SwingUtilities.isRightMouseButton(e) || SwingUtilities.isMiddleMouseButton(e);
+				boolean previewAllParts = e.isControlDown() || SwingUtilities.isMiddleMouseButton(e);
+				if (soloMouseAction)
 				{
 					int trackNumber = trackInfo.getTrackNumber();
 					if (isAbcPreviewMode())
 					{
-						if (abcPart.isTrackEnabled(trackNumber))
+						if (abcPart.isTrackEnabled(trackNumber) && !previewAllParts)
 						{
-							soloAbcTrack = abcPart.getPreviewSequenceTrackNumber();
+							int previewTrack = abcPart.getPreviewSequenceTrackNumber();
+							if (previewTrack >= 0)
+							{
+								soloAbcTracks.add(previewTrack);
+							}
 						}
 						else
 						{
 							for (AbcPart part : abcPart.getAbcSong().getParts())
 							{
+								int previewTrack = part.getPreviewSequenceTrackNumber();
 								// TODO: This only solos the first part that has the track selected.
 								// Should we change this behavior so right-clicking solos all parts which have the track selected?
-								if (part.isTrackEnabled(trackNumber))
+								if (part.isTrackEnabled(trackNumber) && previewTrack >= 0)
 								{
-									soloAbcTrack = part.getPreviewSequenceTrackNumber();
-									break;
+									soloAbcTracks.add(previewTrack);
+									if (!previewAllParts)
+										break;
 								}
 							}
 						}
 
-						if (soloAbcTrack >= 0)
+						if (!soloAbcTracks.isEmpty())
 						{
 							// Un-solo any other parts that may be soloed
 							for (AbcPart part : abcPart.getAbcSong().getParts())
 							{
-								int trackNo = part.getPreviewSequenceTrackNumber();
-								if (trackNo != soloAbcTrack && trackNo >= 0 && abcSequencer.getTrackSolo(trackNo)) {
-									abcSequencer.setTrackSolo(trackNo, false);
+								int previewTrack = part.getPreviewSequenceTrackNumber();
+								if (!soloAbcTracks.contains(previewTrack) && previewTrack >= 0 && abcSequencer.getTrackSolo(previewTrack)) {
+									abcSequencer.setTrackSolo(previewTrack, false);
 								}
 							}
-							abcSequencer.setTrackSolo(soloAbcTrack, true);
+							
+							for (int previewTrack : soloAbcTracks)
+							{
+								if (!abcSequencer.getTrackSolo(previewTrack))
+								{
+									abcSequencer.setTrackSolo(previewTrack, true);
+								}
+							}
 						}
 					}
 					else
@@ -253,9 +271,10 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 
 			@Override public void mouseReleased(MouseEvent e)
 			{
-				if (e.getButton() == MouseEvent.BUTTON3)
+				
+				if (SwingUtilities.isRightMouseButton(e) || SwingUtilities.isMiddleMouseButton(e))
 				{
-					if (abcSequencer != null && soloAbcTrack >= 0)
+					if (abcSequencer != null)
 					{
 						// Restore solo/mute state from abcpart state for solo/mute buttons
 						for (AbcPart part : abcPart.getAbcSong().getParts())
@@ -268,8 +287,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 									abcSequencer.setTrackMute(trackNo, part.isMuted());
 							}
 						}
+						soloAbcTracks = new ArrayList<Integer>();
 					}
-					soloAbcTrack = -1;
 
 					if (soloMidiTrack >= 0)
 						seq.setTrackSolo(soloMidiTrack, false);
