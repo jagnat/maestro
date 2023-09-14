@@ -31,6 +31,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import com.digero.common.abc.LotroInstrument;
 import com.digero.common.midi.MidiConstants;
@@ -202,34 +203,63 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		noteGraph = new TrackNoteGraph(seq, trackInfo);
 		noteGraph.addMouseListener(new MouseAdapter()
 		{
-			private int soloAbcTrack = -1;
+			// soloAbcTracks will contain one track if only right click is used
+			// if ctrl-right click is used, it will contain all abc preview tracks that have the midi track enabled
+			private ArrayList<Integer> soloAbcTracks = new ArrayList<Integer>();
 			private int soloMidiTrack = -1;
 
 			@Override public void mousePressed(MouseEvent e)
 			{
-				if (e.getButton() == MouseEvent.BUTTON3)
+				boolean soloMouseAction = SwingUtilities.isRightMouseButton(e);
+				boolean previewAllParts = e.isControlDown();
+				if (soloMouseAction)
 				{
 					int trackNumber = trackInfo.getTrackNumber();
 					if (isAbcPreviewMode())
 					{
-						if (abcPart.isTrackEnabled(trackNumber))
+						if (abcPart.isTrackEnabled(trackNumber) && !previewAllParts)
 						{
-							soloAbcTrack = abcPart.getPreviewSequenceTrackNumber();
+							int previewTrack = abcPart.getPreviewSequenceTrackNumber();
+							if (previewTrack >= 0)
+							{
+								soloAbcTracks.add(previewTrack);
+							}
 						}
 						else
 						{
 							for (AbcPart part : abcPart.getAbcSong().getParts())
 							{
-								if (part.isTrackEnabled(trackNumber))
+								int previewTrack = part.getPreviewSequenceTrackNumber();
+								// TODO: This only solos the first part that has the track selected.
+								// Should we change this behavior so right-clicking solos all parts which have the track selected?
+								if (part.isTrackEnabled(trackNumber) && previewTrack >= 0)
 								{
-									soloAbcTrack = part.getPreviewSequenceTrackNumber();
-									break;
+									soloAbcTracks.add(previewTrack);
+									if (!previewAllParts)
+										break;
 								}
 							}
 						}
 
-						if (soloAbcTrack >= 0)
-							abcSequencer.setTrackSolo(soloAbcTrack, true);
+						if (!soloAbcTracks.isEmpty())
+						{
+							// Un-solo any other parts that may be soloed
+							for (AbcPart part : abcPart.getAbcSong().getParts())
+							{
+								int previewTrack = part.getPreviewSequenceTrackNumber();
+								if (!soloAbcTracks.contains(previewTrack) && previewTrack >= 0 && abcSequencer.getTrackSolo(previewTrack)) {
+									abcSequencer.setTrackSolo(previewTrack, false);
+								}
+							}
+							
+							for (int previewTrack : soloAbcTracks)
+							{
+								if (!abcSequencer.getTrackSolo(previewTrack))
+								{
+									abcSequencer.setTrackSolo(previewTrack, true);
+								}
+							}
+						}
 					}
 					else
 					{
@@ -241,11 +271,24 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 
 			@Override public void mouseReleased(MouseEvent e)
 			{
-				if (e.getButton() == MouseEvent.BUTTON3)
+				
+				if (SwingUtilities.isRightMouseButton(e))
 				{
-					if (abcSequencer != null && soloAbcTrack >= 0)
-						abcSequencer.setTrackSolo(soloAbcTrack, false);
-					soloAbcTrack = -1;
+					if (abcSequencer != null)
+					{
+						// Restore solo/mute state from abcpart state for solo/mute buttons
+						for (AbcPart part : abcPart.getAbcSong().getParts())
+						{
+							int trackNo = part.getPreviewSequenceTrackNumber();
+							if (trackNo >= 0) {
+								if (part.isSoloed() != abcSequencer.getTrackSolo(trackNo))
+									abcSequencer.setTrackSolo(trackNo, part.isSoloed());
+								if (part.isMuted() != abcSequencer.getTrackMute(trackNo))
+									abcSequencer.setTrackMute(trackNo, part.isMuted());
+							}
+						}
+						soloAbcTracks = new ArrayList<Integer>();
+					}
 
 					if (soloMidiTrack >= 0)
 						seq.setTrackSolo(soloMidiTrack, false);
@@ -606,31 +649,37 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		}
 
 		noteGraph.setShowingAbcNotesOn(trackActive);
-
-		if (!trackActive)
+		
+		if (trackEnabled)
 		{
-			noteGraph.setNoteColor(ColorTable.NOTE_OFF);
-			noteGraph.setBadNoteColor(ColorTable.NOTE_BAD_OFF);
-			setBackground(ColorTable.GRAPH_BACKGROUND_OFF.get());
-		}
-		else if (trackEnabled)
-		{
-			noteGraph.setNoteColor(ColorTable.NOTE_ENABLED);
-			noteGraph.setBadNoteColor(ColorTable.NOTE_BAD_ENABLED);
 			setBackground(ColorTable.GRAPH_BACKGROUND_ENABLED.get());
 		}
 		else if (trackSolo)
 		{
-			noteGraph.setNoteColor(ColorTable.NOTE_DISABLED);
-			noteGraph.setBadNoteColor(ColorTable.NOTE_BAD_DISABLED);
-			setBackground(ColorTable.GRAPH_BACKGROUND_ENABLED.get());
+			setBackground(ColorTable.GRAPH_BACKGROUND_SOLO.get());
 		}
 		else
+		{
+			setBackground(ColorTable.GRAPH_BACKGROUND_OFF.get());
+		}
+		
+		// Set note colors - always based on whether track is playing or not,
+		// except show greyed out notes for drum tracks in midi mode if a non-drum part is selected - necessary?
+		if (trackEnabled && trackActive)
+		{
+			noteGraph.setNoteColor(ColorTable.NOTE_ENABLED);
+			noteGraph.setBadNoteColor(ColorTable.NOTE_BAD_ENABLED);
+		}
+		else if (!trackActive)
+		{
+			noteGraph.setNoteColor(ColorTable.NOTE_OFF);
+			noteGraph.setBadNoteColor(ColorTable.NOTE_BAD_OFF);
+		}
+		else // disabled (lighter colored) notes for playing tracks not in the current part
 		{
 			boolean pseudoOff = !abcPreviewMode && (abcPart.isDrumPart() != trackInfo.isDrumTrack());
 			noteGraph.setNoteColor(pseudoOff ? ColorTable.NOTE_OFF : ColorTable.NOTE_DISABLED);
 			noteGraph.setBadNoteColor(pseudoOff ? ColorTable.NOTE_BAD_OFF : ColorTable.NOTE_BAD_DISABLED);
-			setBackground(ColorTable.GRAPH_BACKGROUND_DISABLED.get());
 		}
 
 		if (trackEnabled)

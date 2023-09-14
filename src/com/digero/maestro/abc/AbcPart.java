@@ -75,6 +75,8 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	private int typeNumber = 0;// -1 for when instr do not match or string dont start with instr, 0 when instr
 								// match but no number, positive number when it has number.
 	private final InstrNameSettings instrNameSettings;
+	private boolean muted = false;
+	private boolean soloed = false;
 
 	public AbcPart(AbcSong abcSong) {
 		this.abcSong = abcSong;
@@ -1129,6 +1131,22 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			this.partNumber = partNumber;
 			fireChangeEvent(AbcPartProperty.PART_NUMBER);
 		}
+	}
+	
+	public boolean isMuted() {
+		return muted;
+	}
+	
+	public void setMuted(boolean muted) {
+		this.muted = muted;
+	}
+	
+	public boolean isSoloed() {
+		return soloed;
+	}
+	
+	public void setSoloed(boolean soloed) {
+		this.soloed = soloed;
 	}
 
 	public void addAbcListener(Listener<AbcPartEvent> l) {
