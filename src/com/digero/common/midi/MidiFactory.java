@@ -7,6 +7,7 @@ import javax.sound.midi.MetaMessage;
 import javax.sound.midi.MidiEvent;
 import javax.sound.midi.MidiMessage;
 import javax.sound.midi.ShortMessage;
+import javax.sound.midi.SysexMessage;
 
 /**
  * Provides static methods to create MidiEvents.
@@ -196,5 +197,26 @@ public class MidiFactory implements MidiConstants {
 		} catch (InvalidMidiDataException e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	public static MidiMessage createDeviceVolumeMessage(int MSB_VOL)
+	{
+		if (MSB_VOL < 0 || MSB_VOL > Byte.MAX_VALUE)
+			throw new IllegalArgumentException();
+
+		byte EOX = (byte) 247;
+		byte LSB_VOL_MIN = (byte) 0;
+		byte DEVICE_CONTROL = (byte) 4;
+		byte MASTER_VOLUME = (byte) 1;
+		byte ALL_DEVICES = (byte) 127;
+		byte[] data = {(byte) SysexMessage.SYSTEM_EXCLUSIVE, SYSEX_UNIVERSAL_REALTIME, ALL_DEVICES, DEVICE_CONTROL, MASTER_VOLUME,
+				LSB_VOL_MIN, (byte) MSB_VOL, EOX};
+		MidiMessage msg = null;
+		try {
+			msg = new SysexMessage(data, data.length);
+		} catch (InvalidMidiDataException e) {
+			e.printStackTrace();
+		}
+		return msg;
 	}
 }

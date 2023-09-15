@@ -48,7 +48,11 @@ Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 
 Version 3.0.1
 - Support for midi expression messages. This will in some MIDIs give increased dynamic range on note volumes.
-    MSX project files saved with an older Maestro will not use this new volume system.
+    MSX project files saved with an older Maestro will not use this new note volume system.
+    Not even if you save them again, starting fresh or editing the MSX file manually is the only way.
+- Channel volume and expression messages are no longer filtered in MIDI file playback.
+    Known issue: When sliding the Maestro volume slider fast, the sound might pop and crackle a bit.
+- Maestro now remembers where you put the panel divider between the notegraphs and the part list.
 
 Version 3.0.0
 - Fix Maestro would fail silently at loading a midi with a timesignature that was missing some data, but otherwise was correct.
