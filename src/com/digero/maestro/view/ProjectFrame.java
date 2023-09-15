@@ -2195,7 +2195,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			// abcSong.setShowPruned(saveSettings.showPruned);
 			AbcExporter exporter = abcSong.getAbcExporter();
 			exporter.stereoPan = prefs.getInt("stereoPan", 100);
-			SequenceInfo previewSequenceInfo = SequenceInfo.fromAbcParts(exporter, !failedToLoadLotroInstruments);
+			SequenceInfo previewSequenceInfo = SequenceInfo.fromAbcParts(exporter, !failedToLoadLotroInstruments, false);
 
 			long tick = sequencer.getTickPosition();
 			abcPreviewStartTick = exporter.getExportStartTick();

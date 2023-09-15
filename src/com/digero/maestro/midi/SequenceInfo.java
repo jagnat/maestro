@@ -66,11 +66,11 @@ public class SequenceInfo implements MidiConstants
 	 * @throws InvalidMidiDataException
 	 * @throws ParseException
 	 */
-	public static SequenceInfo fromAbc(AbcToMidi.Params params, MiscSettings miscSettings) throws InvalidMidiDataException, ParseException
+	public static SequenceInfo fromAbc(AbcToMidi.Params params, MiscSettings miscSettings, boolean oldVelocities) throws InvalidMidiDataException, ParseException
 	{
 		if (params.abcInfo == null)
 			params.abcInfo = new AbcInfo();
-		SequenceInfo sequenceInfo = new SequenceInfo(params.filesData.get(0).file.getName(), AbcToMidi.convert(params), -1, miscSettings);
+		SequenceInfo sequenceInfo = new SequenceInfo(params.filesData.get(0).file.getName(), AbcToMidi.convert(params), -1, miscSettings, oldVelocities);
 		sequenceInfo.title = params.abcInfo.getTitle();
 		sequenceInfo.composer = params.abcInfo.getComposer();
 		sequenceInfo.primaryTempoMPQ = (int) Math.round(MidiUtils.convertTempo(params.abcInfo.getPrimaryTempoBPM()));
@@ -87,10 +87,10 @@ public class SequenceInfo implements MidiConstants
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	public static SequenceInfo fromMidi(File midiFile, MiscSettings miscSettings) throws InvalidMidiDataException, IOException, ParseException
+	public static SequenceInfo fromMidi(File midiFile, MiscSettings miscSettings, boolean oldVelocities) throws InvalidMidiDataException, IOException, ParseException
 	{
 		MidiFileFormat midiFileFormat = MidiSystem.getMidiFileFormat(midiFile);
-		return new SequenceInfo(midiFile.getName(), ConvertPPQ.convert(MidiSystem.getSequence(midiFile)), midiFileFormat.getType(), miscSettings);
+		return new SequenceInfo(midiFile.getName(), ConvertPPQ.convert(MidiSystem.getSequence(midiFile)), midiFileFormat.getType(), miscSettings, oldVelocities);
 	}
 
 	/**
@@ -102,13 +102,13 @@ public class SequenceInfo implements MidiConstants
 	 * @throws InvalidMidiDataException
 	 * @throws AbcConversionException
 	 */
-	public static SequenceInfo fromAbcParts(AbcExporter abcExporter, boolean useLotroInstruments)
+	public static SequenceInfo fromAbcParts(AbcExporter abcExporter, boolean useLotroInstruments, boolean oldVelocities)
 			throws InvalidMidiDataException, AbcConversionException
 	{
 		return new SequenceInfo(abcExporter, useLotroInstruments);
 	}
 
-	private SequenceInfo(String fileName, Sequence sequence, int type, MiscSettings miscSettings) throws InvalidMidiDataException, ParseException
+	private SequenceInfo(String fileName, Sequence sequence, int type, MiscSettings miscSettings, boolean oldVelocities) throws InvalidMidiDataException, ParseException
 	{
 		this.fileName = fileName;
 		this.sequence = sequence;
@@ -142,7 +142,7 @@ public class SequenceInfo implements MidiConstants
 		List<TrackInfo> trackInfoList = new ArrayList<>(tracks.length);
 		for (int i = 0; i < tracks.length; i++)
 		{
-			trackInfoList.add(new TrackInfo(this, tracks[i], i, sequenceCache, sequenceCache.isXGDrumsTrack(i), sequenceCache.isGSDrumsTrack(i), wasType0, sequenceCache.isDrumsTrack(i), sequenceCache.isGM2DrumsTrack(i), portMap, miscSettings));
+			trackInfoList.add(new TrackInfo(this, tracks[i], i, sequenceCache, sequenceCache.isXGDrumsTrack(i), sequenceCache.isGSDrumsTrack(i), wasType0, sequenceCache.isDrumsTrack(i), sequenceCache.isGM2DrumsTrack(i), portMap, miscSettings, oldVelocities));
 		}
 		
 

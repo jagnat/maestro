@@ -50,7 +50,7 @@ public class TrackInfo implements MidiConstants
 	private final int maxVelocity;
 	
 	@SuppressWarnings("unchecked")//
-	TrackInfo(SequenceInfo parent, Track track, int trackNumber, SequenceDataCache sequenceCache, boolean isXGDrumTrack, boolean isGSDrumTrack, boolean wasType0, boolean isDrumsTrack, boolean isGM2DrumTrack, TreeMap<Integer, Integer> portMap, MiscSettings miscSettings)
+	TrackInfo(SequenceInfo parent, Track track, int trackNumber, SequenceDataCache sequenceCache, boolean isXGDrumTrack, boolean isGSDrumTrack, boolean wasType0, boolean isDrumsTrack, boolean isGM2DrumTrack, TreeMap<Integer, Integer> portMap, MiscSettings miscSettings, boolean oldVelocities)
 			throws InvalidMidiDataException
 	{
 		this.sequenceInfo = parent;
@@ -159,9 +159,22 @@ public class TrackInfo implements MidiConstants
 				if (cmd == ShortMessage.NOTE_ON || cmd == ShortMessage.NOTE_OFF)
 				{
 					int noteId = m.getData1();
-					int velocity = m.getData2() * sequenceCache.getVolume(c, tick) / DEFAULT_CHANNEL_VOLUME;
-					if (velocity > 127)
-						velocity = 127;
+					int velocity = m.getData2();
+					if (oldVelocities) {
+						// Order of math expression here is important, so I added parenthesizes:
+						velocity = (velocity * sequenceCache.getChannelVolume(c, tick)) / DEFAULT_CHANNEL_VOLUME;
+						if (velocity > 127)
+							velocity = 127;
+					} else {
+						int ch_vol = sequenceCache.getChannelVolume(c, tick);
+						int expr = sequenceCache.getExpression(c, tick);
+						velocity *= (ch_vol / (double) MAX_VOLUME) * (expr / (double) MAX_EXPRESSION);
+						if (velocity == 0 && m.getData2() > 0 && ch_vol > 0 && expr > 0) {
+							// Do not allow very low expression and volume to reduce velocity to zero.
+							velocity = 1;
+						}
+					}
+					
 					
 					/*
 					long time = MidiUtils.tick2microsecond(parent.getSequence(), tick, tempoCache);

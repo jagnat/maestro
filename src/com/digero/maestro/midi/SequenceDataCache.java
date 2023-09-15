@@ -46,7 +46,8 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 	private static final int NO_RESULT = -250;
 
 	private MapByChannelPort instruments = new MapByChannelPort(DEFAULT_INSTRUMENT);
-	private MapByChannel volume = new MapByChannel(DEFAULT_CHANNEL_VOLUME);
+	private MapByChannel channelVolume = new MapByChannel(DEFAULT_CHANNEL_VOLUME);
+	private MapByChannel expression = new MapByChannel(DEFAULT_EXPRESSION);
 	private MapByChannel pitchBendRangeCoarse = new MapByChannel(DEFAULT_PITCH_BEND_RANGE_SEMITONES);
 	private MapByChannel pitchBendRangeFine = new MapByChannel(DEFAULT_PITCH_BEND_RANGE_CENTS);
 	private final MapByChannel bendMap;
@@ -176,7 +177,10 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 							switch (m.getData1()) {
 							case CHANNEL_VOLUME_CONTROLLER_COARSE:
 								//if (m.getData2() != 0)  TODO: uncomment this to see hidden notes in MIDIs. :)
-									volume.put(ch, tick, m.getData2());
+									channelVolume.put(ch, tick, m.getData2());
+								break;
+							case CHANNEL_EXPRESSION_CONTROLLER:
+								expression.put(ch, tick, m.getData2());
 								break;
 							case REGISTERED_PARAMETER_NUMBER_MSB:
 								rpn[ch] = (rpn[ch] & 0x7F) | ((m.getData2() & 0x7F) << 7);
@@ -444,8 +448,24 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		return value;
 	}
 
-	public int getVolume(int channel, long tick) {
-		return volume.get(channel, tick);
+	/**
+	 * 
+	 * @param channel
+	 * @param tick
+	 * @return volume from 0 to 127. 100 is default.
+	 */
+	public int getChannelVolume(int channel, long tick) {
+		return channelVolume.get(channel, tick);
+	}
+	
+	/**
+	 * 
+	 * @param channel
+	 * @param tick
+	 * @return expression from 0 to 127. 127 is default.
+	 */
+	public int getExpression(int channel, long tick) {
+		return expression.get(channel, tick);
 	}
 
 	public double getPitchBendRange(int channel, long tick) {

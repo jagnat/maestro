@@ -58,7 +58,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	public static final String MSX_FILE_DESCRIPTION_PLURAL = MaestroMain.APP_NAME + " Songs";
 	public static final String MSX_FILE_EXTENSION_NO_DOT = "msx";
 	public static final String MSX_FILE_EXTENSION = "." + MSX_FILE_EXTENSION_NO_DOT;
-	public static final Version SONG_FILE_VERSION = new Version(3, 0, 0, 300);// Keep build above 117 to make earlier Maestro releases know msx is made by newer version.
+	public static final Version SONG_FILE_VERSION = new Version(3, 0, 1, 300);// Keep build above 117 to make earlier Maestro releases know msx is made by newer version.
 
 	private String title = "";
 	private String composer = "";
@@ -93,6 +93,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	private File sourceFile; // The MIDI or ABC file that this song was loaded from
 	private File exportFile; // The ABC export file
 	private File saveFile; // The XML Maestro song file
+	private boolean usingOldVelocities = false;
 
 	private final ListModelWrapper<AbcPart> parts = new ListModelWrapper<>(new DefaultListModel<>());
 
@@ -156,7 +157,8 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	}
 
 	private void initFromMidi(File file, MiscSettings miscSettings) throws IOException, InvalidMidiDataException, ParseException {
-		sequenceInfo = SequenceInfo.fromMidi(file, miscSettings);
+		usingOldVelocities = false;
+		sequenceInfo = SequenceInfo.fromMidi(file, miscSettings, usingOldVelocities);
 		title = sequenceInfo.getTitle();
 		composer = sequenceInfo.getComposer();
 		keySignature = (ICompileConstants.SHOW_KEY_FIELD) ? sequenceInfo.getKeySignature() : KeySignature.C_MAJOR;
@@ -171,7 +173,8 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		params.abcInfo = abcInfo;
 		params.useLotroInstruments = false;
 		// params.stereo = false;
-		sequenceInfo = SequenceInfo.fromAbc(params, miscSettings);
+		usingOldVelocities = true;// The abc volumes are tuned to old volume scheme
+		sequenceInfo = SequenceInfo.fromAbc(params, miscSettings, usingOldVelocities);
 		exportFile = file;
 
 		title = sequenceInfo.getTitle();
@@ -234,6 +237,8 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 						"This project may contain new features that this Maestro cannot use. It is suggested to upgrade this Maestro to load this project.",
 						"Warning", JOptionPane.WARNING_MESSAGE);
 			}
+			
+			usingOldVelocities = SaveUtil.parseValue(songEle, "importSettings/@useOldVelocities", true);//must be before tryToLoadFromFile
 
 			sourceFile = SaveUtil.parseValue(songEle, "sourceFile", (File) null);
 			if (sourceFile == null) {
@@ -316,14 +321,15 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 				params.abcInfo = abcInfo;
 				params.useLotroInstruments = false;
 				// params.stereo = false;
-				sequenceInfo = SequenceInfo.fromAbc(params, miscSettings);
+				usingOldVelocities = true;// The abc volumes are tuned to old volume scheme
+				sequenceInfo = SequenceInfo.fromAbc(params, miscSettings, usingOldVelocities);
 
 				tripletTiming = abcInfo.hasTriplets();
 				mixTiming = abcInfo.hasMixTimings();
 				priorityActive = false;
 				transcriber = abcInfo.getTranscriber();
 			} else {
-				sequenceInfo = SequenceInfo.fromMidi(sourceFile, miscSettings);
+				sequenceInfo = SequenceInfo.fromMidi(sourceFile, miscSettings, usingOldVelocities);
 			}
 
 			title = sequenceInfo.getTitle();
@@ -413,6 +419,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 			SaveUtil.appendChildTextElement(songEle, "note", note);
 
 
+		appendImportSettings(doc, songEle);
 		appendExportSettings(doc, songEle);
 
 
@@ -448,6 +455,13 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		}
 		if (exportSettingsEle.getAttributes().getLength() > 0 || exportSettingsEle.getChildNodes().getLength() > 0)
 			songEle.appendChild(exportSettingsEle);
+	}
+	
+	private void appendImportSettings(Document doc, Element songEle) {
+		Element importSettingsEle = doc.createElement("importSettings");
+		importSettingsEle.setAttribute("useOldVelocities", String.valueOf(usingOldVelocities));
+		if (importSettingsEle.getAttributes().getLength() > 0 || importSettingsEle.getChildNodes().getLength() > 0)
+			songEle.appendChild(importSettingsEle);
 	}
 
 	private void appendTuneSections(Document doc, Element songEle) {
@@ -978,6 +992,10 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 
 	public void setMixDirty(boolean mixDirty) {
 		this.mixDirty = mixDirty;
+	}
+
+	public boolean isUsingOldVelocities() {
+		return usingOldVelocities;
 	}
 
 	/*
