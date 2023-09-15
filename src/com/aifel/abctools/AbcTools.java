@@ -659,7 +659,7 @@ public class AbcTools {
 		
 		try {
 			projectModified = false;
-			AbcSong abcSong = new AbcSong(project, partAutoNumberer, partNameTemplate, exportFilenameTemplate, instrNameSettings, openFileResolver);
+			AbcSong abcSong = new AbcSong(project, partAutoNumberer, partNameTemplate, exportFilenameTemplate, instrNameSettings, openFileResolver, miscSettings);
 			
 			if (frame.getForceMixTimingSelected()) {
 				abcSong.setMixTiming(true);

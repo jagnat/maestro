@@ -1963,7 +1963,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		try {
 			abcSong = new AbcSong(file, partAutoNumberer, partNameTemplate, exportFilenameTemplate, instrNameSettings,
-					openFileResolver);
+					openFileResolver, miscSettings);
 			abcSong.setAllOut(miscSettings.showBadger && miscSettings.allBadger);
 			abcSong.setBadger(miscSettings.showBadger);
 			abcSong.addSongListener(abcSongListener);

@@ -33,6 +33,7 @@ import com.digero.maestro.abc.AbcConversionException;
 import com.digero.maestro.abc.AbcExporter;
 import com.digero.maestro.abc.AbcExporter.ExportTrackInfo;
 import com.digero.maestro.abc.AbcMetadataSource;
+import com.digero.maestro.view.MiscSettings;
 
 /**
  * Container for a MIDI sequence. If necessary, converts type 0 MIDI files to type 1.
@@ -60,15 +61,16 @@ public class SequenceInfo implements MidiConstants
 	 * Create instance of this class while creating MIDI sequence from abc file.
 	 * 
 	 * @param params
+	 * @param miscSettings 
 	 * @return instance of SequenceInfo
 	 * @throws InvalidMidiDataException
 	 * @throws ParseException
 	 */
-	public static SequenceInfo fromAbc(AbcToMidi.Params params) throws InvalidMidiDataException, ParseException
+	public static SequenceInfo fromAbc(AbcToMidi.Params params, MiscSettings miscSettings) throws InvalidMidiDataException, ParseException
 	{
 		if (params.abcInfo == null)
 			params.abcInfo = new AbcInfo();
-		SequenceInfo sequenceInfo = new SequenceInfo(params.filesData.get(0).file.getName(), AbcToMidi.convert(params), -1);
+		SequenceInfo sequenceInfo = new SequenceInfo(params.filesData.get(0).file.getName(), AbcToMidi.convert(params), -1, miscSettings);
 		sequenceInfo.title = params.abcInfo.getTitle();
 		sequenceInfo.composer = params.abcInfo.getComposer();
 		sequenceInfo.primaryTempoMPQ = (int) Math.round(MidiUtils.convertTempo(params.abcInfo.getPrimaryTempoBPM()));
@@ -79,15 +81,16 @@ public class SequenceInfo implements MidiConstants
 	 * Create instance of this class while creating sequence from MIDI file
 	 * 
 	 * @param midiFile
+	 * @param miscSettings 
 	 * @return
 	 * @throws InvalidMidiDataException
 	 * @throws IOException
 	 * @throws ParseException
 	 */
-	public static SequenceInfo fromMidi(File midiFile) throws InvalidMidiDataException, IOException, ParseException
+	public static SequenceInfo fromMidi(File midiFile, MiscSettings miscSettings) throws InvalidMidiDataException, IOException, ParseException
 	{
 		MidiFileFormat midiFileFormat = MidiSystem.getMidiFileFormat(midiFile);
-		return new SequenceInfo(midiFile.getName(), ConvertPPQ.convert(MidiSystem.getSequence(midiFile)), midiFileFormat.getType());
+		return new SequenceInfo(midiFile.getName(), ConvertPPQ.convert(MidiSystem.getSequence(midiFile)), midiFileFormat.getType(), miscSettings);
 	}
 
 	/**
@@ -105,7 +108,7 @@ public class SequenceInfo implements MidiConstants
 		return new SequenceInfo(abcExporter, useLotroInstruments);
 	}
 
-	private SequenceInfo(String fileName, Sequence sequence, int type) throws InvalidMidiDataException, ParseException
+	private SequenceInfo(String fileName, Sequence sequence, int type, MiscSettings miscSettings) throws InvalidMidiDataException, ParseException
 	{
 		this.fileName = fileName;
 		this.sequence = sequence;
@@ -139,7 +142,7 @@ public class SequenceInfo implements MidiConstants
 		List<TrackInfo> trackInfoList = new ArrayList<>(tracks.length);
 		for (int i = 0; i < tracks.length; i++)
 		{
-			trackInfoList.add(new TrackInfo(this, tracks[i], i, sequenceCache, sequenceCache.isXGDrumsTrack(i), sequenceCache.isGSDrumsTrack(i), wasType0, sequenceCache.isDrumsTrack(i), sequenceCache.isGM2DrumsTrack(i), portMap));
+			trackInfoList.add(new TrackInfo(this, tracks[i], i, sequenceCache, sequenceCache.isXGDrumsTrack(i), sequenceCache.isGSDrumsTrack(i), wasType0, sequenceCache.isDrumsTrack(i), sequenceCache.isGM2DrumsTrack(i), portMap, miscSettings));
 		}
 		
 

@@ -25,6 +25,7 @@ import com.digero.common.midi.MidiConstants;
 import com.digero.common.midi.MidiInstrument;
 import com.digero.common.midi.Note;
 import com.digero.common.midi.TimeSignature;
+import com.digero.maestro.view.MiscSettings;
 
 /**
  * Create NoteEvents from MIDI note ON/OFF messages
@@ -49,7 +50,7 @@ public class TrackInfo implements MidiConstants
 	private final int maxVelocity;
 	
 	@SuppressWarnings("unchecked")//
-	TrackInfo(SequenceInfo parent, Track track, int trackNumber, SequenceDataCache sequenceCache, boolean isXGDrumTrack, boolean isGSDrumTrack, boolean wasType0, boolean isDrumsTrack, boolean isGM2DrumTrack, TreeMap<Integer, Integer> portMap)
+	TrackInfo(SequenceInfo parent, Track track, int trackNumber, SequenceDataCache sequenceCache, boolean isXGDrumTrack, boolean isGSDrumTrack, boolean wasType0, boolean isDrumsTrack, boolean isGM2DrumTrack, TreeMap<Integer, Integer> portMap, MiscSettings miscSettings)
 			throws InvalidMidiDataException
 	{
 		this.sequenceInfo = parent;
@@ -111,7 +112,7 @@ public class TrackInfo implements MidiConstants
 							List<NoteEvent> bentNotes = new ArrayList<>();
 							if (notesOn[ch] != null) {
 								for (NoteEvent ne : notesOn[ch]) {
-									if (!(ne instanceof BentNoteEvent)) {
+									if (!(ne instanceof BentNoteEvent) && bend != 0) {
 										// This note is playing while this bend happens
 										// Lets convert it to a BentNoteEvent
 										BentNoteEvent be = new BentNoteEvent(ne.note, ne.velocity, ne.getStartTick(), ne.getEndTick(), ne.getTempoCache());
@@ -122,7 +123,7 @@ public class TrackInfo implements MidiConstants
 										ne = be;
 										noteEvents.add(ne);
 									}
-									if (((BentNoteEvent)ne).getBend(bendTick) != bend) {
+									if (ne instanceof BentNoteEvent && ((BentNoteEvent)ne).getBend(bendTick) != bend) {
 										// The if statement prevents double bend commands,
 										// which will make an extra split. 
 										((BentNoteEvent)ne).addBend(bendTick, bend);
@@ -276,10 +277,12 @@ public class TrackInfo implements MidiConstants
 		for (BentNoteEvent be : allBentNotes) {
 			// All bent notes that span more than an octave will
 			// already here be split into small pieces.
-			if (Math.abs(be.getMinBend() - be.getMaxBend()) > 12) {// TODO: Make this 12 into a misc setting: (-1, 6, 12, 24)
+			if (Math.abs(be.getMaxBend() - be.getMinBend()) > miscSettings.maxRangeForNewBendMethod) {
 				List<NoteEvent> prematureSplit = be.split();
 				noteEvents.addAll(prematureSplit);
 				noteEvents.remove(be);
+			} else {
+				//System.err.println(trackNumber+": Delay split on "+be.getMinBend()+"<>"+be.getMaxBend()+" ("+Math.abs(be.getMaxBend() - be.getMinBend())+")");
 			}
 		}
 

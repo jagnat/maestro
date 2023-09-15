@@ -11,6 +11,7 @@ public class MiscSettings
 	public boolean allBadger = false;
 	public String theme = "Flat Light";
 	public int fontSize = 12;
+	public int maxRangeForNewBendMethod = 12;
 	
 	private final Preferences prefs;
 
@@ -45,6 +46,7 @@ public class MiscSettings
 		allBadger = prefs.getBoolean("allBadger", allBadger);
 		theme = prefs.get("theme", theme);
 		fontSize = prefs.getInt("fontSize", fontSize);
+		maxRangeForNewBendMethod = prefs.getInt("maxRangeForNewBendMethod", maxRangeForNewBendMethod); 
 	}
 
 	public MiscSettings(MiscSettings that)
@@ -60,6 +62,7 @@ public class MiscSettings
 		allBadger = that.allBadger;
 		theme = that.theme;
 		fontSize = that.fontSize;
+		maxRangeForNewBendMethod = that.maxRangeForNewBendMethod;
 	}
 
 	public void saveToPrefs()
@@ -69,6 +72,7 @@ public class MiscSettings
 		prefs.putBoolean("allBadger", allBadger);
 		prefs.put("theme", theme);
 		prefs.putInt("fontSize", fontSize);
+		prefs.putInt("maxRangeForNewBendMethod", maxRangeForNewBendMethod);
 	}
 	
 	public void restoreDefaults()

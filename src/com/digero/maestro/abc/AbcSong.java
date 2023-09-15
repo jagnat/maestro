@@ -51,6 +51,7 @@ import com.digero.maestro.util.ListModelWrapper;
 import com.digero.maestro.util.SaveUtil;
 import com.digero.maestro.util.XmlUtil;
 import com.digero.maestro.view.InstrNameSettings;
+import com.digero.maestro.view.MiscSettings;
 
 public class AbcSong implements IDiscardable, AbcMetadataSource {
 	public static final String MSX_FILE_DESCRIPTION = MaestroMain.APP_NAME + " Song";
@@ -100,7 +101,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 
 	public AbcSong(File file, PartAutoNumberer partAutoNumberer, PartNameTemplate partNameTemplate,
 			ExportFilenameTemplate exportFilenameTemplate, InstrNameSettings instrNameSettings,
-			FileResolver fileResolver) throws IOException, InvalidMidiDataException, ParseException, SAXException {
+			FileResolver fileResolver, MiscSettings miscSettings) throws IOException, InvalidMidiDataException, ParseException, SAXException {
 		sourceFile = file;
 
 		this.partAutoNumberer = partAutoNumberer;
@@ -119,11 +120,11 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		fromAbcFile = fileName.endsWith(".abc") || fileName.endsWith(".txt");
 
 		if (fromXmlFile)
-			initFromXml(file, fileResolver);
+			initFromXml(file, fileResolver, miscSettings);
 		else if (fromAbcFile)
-			initFromAbc(file);
+			initFromAbc(file, miscSettings);
 		else
-			initFromMidi(file);
+			initFromMidi(file, miscSettings);
 	}
 
 	@Override
@@ -154,8 +155,8 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		 */
 	}
 
-	private void initFromMidi(File file) throws IOException, InvalidMidiDataException, ParseException {
-		sequenceInfo = SequenceInfo.fromMidi(file);
+	private void initFromMidi(File file, MiscSettings miscSettings) throws IOException, InvalidMidiDataException, ParseException {
+		sequenceInfo = SequenceInfo.fromMidi(file, miscSettings);
 		title = sequenceInfo.getTitle();
 		composer = sequenceInfo.getComposer();
 		keySignature = (ICompileConstants.SHOW_KEY_FIELD) ? sequenceInfo.getKeySignature() : KeySignature.C_MAJOR;
@@ -163,14 +164,14 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		note = "";
 	}
 
-	private void initFromAbc(File file) throws IOException, InvalidMidiDataException, ParseException {
+	private void initFromAbc(File file, MiscSettings miscSettings) throws IOException, InvalidMidiDataException, ParseException {
 		AbcInfo abcInfo = new AbcInfo();
 
 		AbcToMidi.Params params = new AbcToMidi.Params(file);
 		params.abcInfo = abcInfo;
 		params.useLotroInstruments = false;
 		// params.stereo = false;
-		sequenceInfo = SequenceInfo.fromAbc(params);
+		sequenceInfo = SequenceInfo.fromAbc(params, miscSettings);
 		exportFile = file;
 
 		title = sequenceInfo.getTitle();
@@ -217,7 +218,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		note = "";
 	}
 
-	private void initFromXml(File file, FileResolver fileResolver) throws SAXException, IOException, ParseException {
+	private void initFromXml(File file, FileResolver fileResolver, MiscSettings miscSettings) throws SAXException, IOException, ParseException {
 		try {
 			saveFile = file;
 			Document doc = XmlUtil.openDocument(sourceFile);
@@ -247,7 +248,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 				String name = sourceFile.getName().toLowerCase();
 				boolean isAbc = name.endsWith(".abc") || name.endsWith(".txt");
 
-				tryToLoadFromFile(fileResolver, isAbc);
+				tryToLoadFromFile(fileResolver, isAbc, miscSettings);
 
 				if (sourceFile == null)
 					throw new ParseException("Failed to load file", name);
@@ -306,7 +307,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		return false;
 	}
 
-	private void tryToLoadFromFile(FileResolver fileResolver, boolean isAbc) {
+	private void tryToLoadFromFile(FileResolver fileResolver, boolean isAbc, MiscSettings miscSettings) {
 		try {
 			if (isAbc) {
 				AbcInfo abcInfo = new AbcInfo();
@@ -315,14 +316,14 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 				params.abcInfo = abcInfo;
 				params.useLotroInstruments = false;
 				// params.stereo = false;
-				sequenceInfo = SequenceInfo.fromAbc(params);
+				sequenceInfo = SequenceInfo.fromAbc(params, miscSettings);
 
 				tripletTiming = abcInfo.hasTriplets();
 				mixTiming = abcInfo.hasMixTimings();
 				priorityActive = false;
 				transcriber = abcInfo.getTranscriber();
 			} else {
-				sequenceInfo = SequenceInfo.fromMidi(sourceFile);
+				sequenceInfo = SequenceInfo.fromMidi(sourceFile, miscSettings);
 			}
 
 			title = sequenceInfo.getTitle();

@@ -80,8 +80,7 @@ public class BentNoteEvent extends NoteEvent {
 	 * @return min seminote absolute bend
 	 */
 	public int getMinNote() {
-		getMinBend();
-		return note.id + cacheMin;
+		return note.id + getMinBend();
 	}
 	
 	/**
@@ -89,8 +88,7 @@ public class BentNoteEvent extends NoteEvent {
 	 * @return max seminote absolute bend
 	 */
 	public int getMaxNote() {
-		getMaxBend();
-		return note.id + cacheMax;
+		return note.id + getMaxBend();
 	}
 	
 	/**

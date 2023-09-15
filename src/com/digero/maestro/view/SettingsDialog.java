@@ -935,6 +935,23 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 		});
 		fontBox.setSelectedItem(Integer.toString(miscSettings.fontSize));
 		fontBox.setEnabled(!miscSettings.theme.equals(defaultStr));
+		
+		final JLabel bendLabel = new JLabel("Max range for new method of handling pitch bends (Requires restart):");
+		final JComboBox<String> bendBox = new JComboBox<>();
+		bendBox.setToolTipText(
+				"<html>Select max seminote range for new way of handling pitch bends.<br>-1 means only old method. 12 is default.</html>");
+		bendBox.addItem(Integer.toString(-1));
+		bendBox.addItem(Integer.toString(6));
+		bendBox.addItem(Integer.toString(12));
+		bendBox.addItem(Integer.toString(24));
+		bendBox.setEditable(false);
+		bendBox.addActionListener(e -> {
+			try {
+				miscSettings.maxRangeForNewBendMethod = Integer.parseInt((String) bendBox.getSelectedItem());
+			} catch (Exception ex) {
+			}
+		});
+		bendBox.setSelectedItem(Integer.toString(miscSettings.maxRangeForNewBendMethod));
 
 		TableLayout layout = new TableLayout();
 		layout.insertColumn(0, FILL);
@@ -974,6 +991,11 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 		panel.add(fontSizeLabel, "0, " + row);
 		layout.insertRow(++row, PREFERRED);
 		panel.add(fontBox, "0, " + row);
+		
+		layout.insertRow(++row, PREFERRED);
+		panel.add(bendLabel, "0, " + row);
+		layout.insertRow(++row, PREFERRED);
+		panel.add(bendBox, "0, " + row);
 
 		return panel;
 	}
