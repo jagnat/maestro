@@ -514,12 +514,21 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		midiPartsAndControls.add(partPanel, BorderLayout.CENTER);
 		midiPartsAndControls.add(playControlPanel, BorderLayout.SOUTH);
 		midiPartsAndControls.setBorder(BorderFactory.createTitledBorder("Part Settings"));
+		
+		int splitPanePos = prefs.getInt("splitPanePos", -1);
 
 		JSplitPane topLevelSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, abcPartsAndSettings,
 				midiPartsAndControls);
 		topLevelSplitPane.setBorder(BorderFactory.createEmptyBorder());
 		topLevelSplitPane.setContinuousLayout(true);
 		topLevelSplitPane.setFocusable(false);
+		if (splitPanePos != -1) {
+			topLevelSplitPane.setDividerLocation(splitPanePos);
+		}
+		topLevelSplitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, e -> {
+			System.out.println("old: " + e.getOldValue() + " new: " + e.getNewValue());
+			prefs.putInt("splitPanePos", (Integer)e.getNewValue());
+		});
 		return topLevelSplitPane;
 	}
 
