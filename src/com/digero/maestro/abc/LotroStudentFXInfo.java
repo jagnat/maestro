@@ -14,16 +14,14 @@ import java.util.TreeSet;
 
 import com.digero.common.midi.Note;
 
-public class LotroStudentFXInfo implements Comparable<LotroStudentFXInfo>
-{
+public class LotroStudentFXInfo implements Comparable<LotroStudentFXInfo> {
 	private static Map<Integer, LotroStudentFXInfo> byId = new HashMap<>();
 	private static SortedMap<String, SortedSet<LotroStudentFXInfo>> byCategory = new TreeMap<>();
 
 	public static final LotroStudentFXInfo DISABLED = new LotroStudentFXInfo(Note.REST, "None", "#None");
 	public static final List<LotroStudentFXInfo> ALL_FX;
 
-	static
-	{
+	static {
 		byCategory.put(DISABLED.category, new TreeSet<>());
 		byCategory.get(DISABLED.category).add(DISABLED);
 		byId.put(DISABLED.note.id, DISABLED);
@@ -33,31 +31,28 @@ public class LotroStudentFXInfo implements Comparable<LotroStudentFXInfo>
 		add(Note.D2, "Heavy Staccato");
 
 		int noteCount = 3 + 1;
-		if (byId.keySet().size() < noteCount)
-		{
+		if (byId.keySet().size() < noteCount) {
 			List<Integer> unassigned = new ArrayList<>(noteCount);
-			for (int id = Note.MIN_PLAYABLE.id; id <= Note.MAX_PLAYABLE.id; id++)
-			{
+			for (int id = Note.MIN_PLAYABLE.id; id <= Note.MAX_PLAYABLE.id; id++) {
 				unassigned.add(id);
 			}
 			unassigned.removeAll(byId.keySet());
-			for (int id : unassigned)
-			{
+			for (int id : unassigned) {
 				add(Note.fromId(id), "Unassigned");
 			}
 		}
 
 		ALL_FX = Collections.unmodifiableList(new ArrayList<>(new AbstractCollection<LotroStudentFXInfo>() {
-            @Override
-            public Iterator<LotroStudentFXInfo> iterator() {
-                return new FXInfoIterator();
-            }
+			@Override
+			public Iterator<LotroStudentFXInfo> iterator() {
+				return new FXInfoIterator();
+			}
 
-            @Override
-            public int size() {
-                return byId.size();
-            }
-        }));
+			@Override
+			public int size() {
+				return byId.size();
+			}
+		}));
 	}
 
 //	private static final Comparator<Note> noteComparator = new Comparator<Note>() {
@@ -73,15 +68,11 @@ public class LotroStudentFXInfo implements Comparable<LotroStudentFXInfo>
 //		}
 //	}
 
-	private static void add(Note note, String category)
-	{
+	private static void add(Note note, String category) {
 		SortedSet<LotroStudentFXInfo> categorySet = byCategory.get(category);
-		if (categorySet == null)
-		{
+		if (categorySet == null) {
 			byCategory.put(category, categorySet = new TreeSet<>());
-		}
-		else if (categorySet.size() == 1)
-		{
+		} else if (categorySet.size() == 1) {
 			// We're about to add a second one to the category...
 			// add the "1" to the name of the existing element
 			Note prevNote = categorySet.first().note;
@@ -93,13 +84,10 @@ public class LotroStudentFXInfo implements Comparable<LotroStudentFXInfo>
 		}
 
 		String name;
-		if (categorySet.isEmpty())
-		{
+		if (categorySet.isEmpty()) {
 			// If this is the first item in the category, don't add its number to the list
 			name = category + " (" + note.abc + ")";
-		}
-		else
-		{
+		} else {
 			name = category + " " + (categorySet.size() + 1) + " (" + note.abc + ")";
 		}
 		LotroStudentFXInfo info = new LotroStudentFXInfo(note, name, category);
@@ -108,36 +96,33 @@ public class LotroStudentFXInfo implements Comparable<LotroStudentFXInfo>
 		byId.put(note.id, info);
 	}
 
-	public static LotroStudentFXInfo getById(int noteId)
-	{
+	public static LotroStudentFXInfo getById(int noteId) {
 		return byId.get(noteId);
 	}
 
-	private static class FXInfoIterator implements Iterator<LotroStudentFXInfo>
-	{
+	private static class FXInfoIterator implements Iterator<LotroStudentFXInfo> {
 		private Iterator<SortedSet<LotroStudentFXInfo>> outerIter;
 		private Iterator<LotroStudentFXInfo> innerIter;
 
-		public FXInfoIterator()
-		{
+		public FXInfoIterator() {
 			outerIter = byCategory.values().iterator();
 		}
 
-		@Override public boolean hasNext()
-		{
+		@Override
+		public boolean hasNext() {
 			return outerIter.hasNext() || (innerIter != null && innerIter.hasNext());
 		}
 
-		@Override public LotroStudentFXInfo next()
-		{
+		@Override
+		public LotroStudentFXInfo next() {
 			while (innerIter == null || !innerIter.hasNext())
 				innerIter = outerIter.next().iterator();
 
 			return innerIter.next();
 		}
 
-		@Override public void remove()
-		{
+		@Override
+		public void remove() {
 			throw new UnsupportedOperationException();
 		}
 	}
@@ -146,36 +131,35 @@ public class LotroStudentFXInfo implements Comparable<LotroStudentFXInfo>
 	public final String name;
 	public final String category;
 
-	private LotroStudentFXInfo(Note note, String name, String category)
-	{
+	private LotroStudentFXInfo(Note note, String name, String category) {
 		this.note = note;
 		this.name = name;
 		this.category = category;
 	}
 
-	@Override public String toString()
-	{
+	@Override
+	public String toString() {
 		return name;
 	}
 
-	@Override public int compareTo(LotroStudentFXInfo that)
-	{
+	@Override
+	public int compareTo(LotroStudentFXInfo that) {
 		if (that == null)
 			return 1;
 
 		return this.note.id - that.note.id;
 	}
 
-	@Override public boolean equals(Object obj)
-	{
+	@Override
+	public boolean equals(Object obj) {
 		if (obj == null || obj.getClass() != this.getClass())
 			return false;
 
 		return this.note.id == ((LotroStudentFXInfo) obj).note.id;
 	}
 
-	@Override public int hashCode()
-	{
+	@Override
+	public int hashCode() {
 		return this.note.id;
 	}
 }

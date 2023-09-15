@@ -2,15 +2,12 @@ package com.digero.tools.soundfont;
 
 import com.digero.common.util.Util;
 
-public final class SoundFontUtil
-{
-	private SoundFontUtil()
-	{
+public final class SoundFontUtil {
+	private SoundFontUtil() {
 	}
 
 	/** Converts decibels to the unit used by soundfont */
-	public static int dBToAttenuationValue(float db)
-	{
+	public static int dBToAttenuationValue(float db) {
 		int attenuation = (int) Math.round(-db * 10);
 		if (attenuation < 0)
 			attenuation += 65536;
@@ -19,8 +16,7 @@ public final class SoundFontUtil
 	}
 
 	/** Converts seconds to the timecent unit used by soundfont */
-	public static int secondsToTimecents(double seconds)
-	{
+	public static int secondsToTimecents(double seconds) {
 		if (seconds < 0.001)
 			return -12000;
 

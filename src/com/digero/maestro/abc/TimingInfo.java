@@ -3,14 +3,16 @@ package com.digero.maestro.abc;
 import com.digero.common.midi.MidiUtils;
 import com.digero.common.midi.TimeSignature;
 
-public class TimingInfo
-{
+public class TimingInfo {
 	public static final long ONE_SECOND_MICROS = 1000000;
 	public static final long ONE_MINUTE_MICROS = 60 * ONE_SECOND_MICROS;
-	//public static final long SHORTEST_NOTE_MICROS = 60001;
+	// public static final long SHORTEST_NOTE_MICROS = 60001;
 	public static final long LONGEST_NOTE_MICROS = ONE_MINUTE_MICROS / 12;// reduced to 5s from 6s due to some samples are shorter than 6s.
-	public static final int MAX_TEMPO_BPM = (int) (ONE_MINUTE_MICROS / getShortestNoteMicros(125));// Maximum 1000 bpm (In which case 'beat' here is 60ms)
-	public static final int MIN_TEMPO_BPM = (int) ((ONE_MINUTE_MICROS + (ONE_MINUTE_MICROS /10) / 2) / (ONE_MINUTE_MICROS /10)); // Round up   (1m 3s)/6s = 10.5 -> 10
+	public static final int MAX_TEMPO_BPM = (int) (ONE_MINUTE_MICROS / getShortestNoteMicros(125));// Maximum 1000 bpm (In which case 'beat' here is
+																									// 60ms)
+	public static final int MIN_TEMPO_BPM = (int) ((ONE_MINUTE_MICROS + (ONE_MINUTE_MICROS / 10) / 2) / (ONE_MINUTE_MICROS / 10)); // Round up (1m
+																																	// 3s)/6s = 10.5
+																																	// -> 10
 
 	private final int tempoMPQ;
 	private final int resolutionPPQ;
@@ -22,23 +24,22 @@ public class TimingInfo
 	private final int minNoteDivisor;
 	private final long minNoteLengthTicks;
 	private final long maxNoteLengthTicks;
-	
+
 	@Override
 	public String toString() {
 		String str = "  TimingInfo:\n";
-		str += meter.toString()+"\n";
-		str += resolutionPPQ+"\n";
-		str += tempoMPQ+"\n";
-		str += exportTempoFactor+"\n";
-		str += defaultDivisor+"\n";
-		str += minNoteDivisor+"\n";
-		str += minNoteLengthTicks+"\n";
-		return str;		
+		str += meter.toString() + "\n";
+		str += resolutionPPQ + "\n";
+		str += tempoMPQ + "\n";
+		str += exportTempoFactor + "\n";
+		str += defaultDivisor + "\n";
+		str += minNoteDivisor + "\n";
+		str += minNoteLengthTicks + "\n";
+		return str;
 	}
 
 	TimingInfo(int tempoMPQ, int resolutionPPQ, float exportTempoFactor, TimeSignature meter, boolean useTripletTiming, int abcSongBPM)
-			throws AbcConversionException
-	{
+			throws AbcConversionException {
 		// Compute the export tempo and round it to a whole-number BPM
 		double exportTempoMPQ = roundTempoMPQ((double) tempoMPQ / exportTempoFactor);
 
@@ -55,10 +56,9 @@ public class TimingInfo
 
 		final int exportTempoBPM = (int) Math.round(MidiUtils.convertTempo(exportTempoMPQ));
 
-		if (exportTempoBPM > MAX_TEMPO_BPM || exportTempoBPM < MIN_TEMPO_BPM)
-		{
-			throw new AbcConversionException("Tempo " + exportTempoBPM + " is out of range. Must be between "
-					+ MIN_TEMPO_BPM + " and " + MAX_TEMPO_BPM + ".");
+		if (exportTempoBPM > MAX_TEMPO_BPM || exportTempoBPM < MIN_TEMPO_BPM) {
+			throw new AbcConversionException(
+					"Tempo " + exportTempoBPM + " is out of range. Must be between " + MIN_TEMPO_BPM + " and " + MAX_TEMPO_BPM + ".");
 		}
 
 		// From http://abcnotation.com/abc2mtex/abc.txt:
@@ -76,24 +76,20 @@ public class TimingInfo
 				minNoteDivisor *= 3;
 			long minNoteTicks = (4 * resolutionPPQ) / (minNoteDivisor);
 
-			while (minNoteTicks < SHORTEST_NOTE_TICKS && minNoteDivisor % 2 == 0)
-			{
+			while (minNoteTicks < SHORTEST_NOTE_TICKS && minNoteDivisor % 2 == 0) {
 				minNoteTicks *= 2;
 				minNoteDivisor /= 2;
 			}
 
 			assert minNoteDivisor > 0;
 
-			while (minNoteTicks >= SHORTEST_NOTE_TICKS * 2 && minNoteTicks % 2 == 0)
-			{
+			while (minNoteTicks >= SHORTEST_NOTE_TICKS * 2 && minNoteTicks % 2 == 0) {
 				minNoteTicks /= 2;
 				minNoteDivisor *= 2;
 			}
 
-			if (meter.denominator > minNoteDivisor)
-			{
-				throw new AbcConversionException("The denominator of the meter must be no greater than "
-						+ minNoteDivisor + " at this tempo");
+			if (meter.denominator > minNoteDivisor) {
+				throw new AbcConversionException("The denominator of the meter must be no greater than " + minNoteDivisor + " at this tempo");
 			}
 
 			this.minNoteLengthTicks = minNoteTicks;
@@ -101,7 +97,7 @@ public class TimingInfo
 			this.maxNoteLengthTicks = minNoteTicks * (LONGEST_NOTE_TICKS / minNoteTicks);
 		}
 	}
-	
+
 	public static long getShortestNoteMicros(int bpm) {
 		if (bpm == 30 || bpm == 60 || bpm == 90 || bpm == 120) {
 			return 60001L;
@@ -112,68 +108,55 @@ public class TimingInfo
 	/**
 	 * Rounds the given MPQ tempo so it corresponds to a whole-number of beats per minute.
 	 */
-	public static double roundTempoMPQ(double tempoMPQ)
-	{
+	public static double roundTempoMPQ(double tempoMPQ) {
 		return MidiUtils.convertTempo(Math.round(MidiUtils.convertTempo(tempoMPQ)));
 	}
 
-	public int getTempoMPQ()
-	{
+	public int getTempoMPQ() {
 		return tempoMPQ;
 	}
 
-	public int getTempoBPM()
-	{
+	public int getTempoBPM() {
 		return (int) Math.round(MidiUtils.convertTempo(tempoMPQ));
 	}
 
-	public int getResolutionPPQ()
-	{
+	public int getResolutionPPQ() {
 		return resolutionPPQ;
 	}
 
-	public float getExportTempoFactor()
-	{
+	public float getExportTempoFactor() {
 		return exportTempoFactor;
 	}
 
-	public int getExportTempoMPQ()
-	{
+	public int getExportTempoMPQ() {
 		return (int) Math.round(tempoMPQ / exportTempoFactor);
 	}
 
-	public int getExportTempoBPM()
-	{
+	public int getExportTempoBPM() {
 		return (int) Math.round(MidiUtils.convertTempo((double) tempoMPQ / exportTempoFactor));
 	}
 
-	public TimeSignature getMeter()
-	{
+	public TimeSignature getMeter() {
 		return meter;
 	}
 
-	public int getDefaultDivisor()
-	{
+	public int getDefaultDivisor() {
 		return defaultDivisor;
 	}
 
-	public int getMinNoteDivisor()
-	{
+	public int getMinNoteDivisor() {
 		return minNoteDivisor;
 	}
 
-	public long getMinNoteLengthTicks()
-	{
+	public long getMinNoteLengthTicks() {
 		return minNoteLengthTicks;
 	}
 
-	public long getMaxNoteLengthTicks()
-	{
+	public long getMaxNoteLengthTicks() {
 		return maxNoteLengthTicks;
 	}
 
-	public long getBarLengthTicks()
-	{
+	public long getBarLengthTicks() {
 		// for some songs this gives wrong result, but for most it works:
 		return minNoteDivisor * minNoteLengthTicks * meter.numerator / meter.denominator;
 	}

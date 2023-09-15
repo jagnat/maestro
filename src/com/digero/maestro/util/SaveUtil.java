@@ -15,21 +15,17 @@ import com.digero.common.midi.TimeSignature;
 import com.digero.common.util.ParseException;
 import com.digero.common.util.Version;
 
-public class SaveUtil
-{
-	private SaveUtil()
-	{
+public class SaveUtil {
+	private SaveUtil() {
 	}
 
-	public static void appendChildTextElement(Element parent, String childName, String value)
-	{
+	public static void appendChildTextElement(Element parent, String childName, String value) {
 		Element child = parent.getOwnerDocument().createElement(childName);
 		child.setTextContent(value);
 		parent.appendChild(child);
 	}
 
-	public static String parseValue(Node parent, String xpath, String defaultValue) throws XPathExpressionException
-	{
+	public static String parseValue(Node parent, String xpath, String defaultValue) throws XPathExpressionException {
 		Node node = XmlUtil.selectSingleNode(parent, xpath);
 		if (node == null)
 			return defaultValue;
@@ -37,60 +33,43 @@ public class SaveUtil
 		return node.getTextContent();
 	}
 
-	public static int parseValue(Node parent, String xpath, int defaultValue) throws ParseException,
-			XPathExpressionException
-	{
+	public static int parseValue(Node parent, String xpath, int defaultValue) throws ParseException, XPathExpressionException {
 		Node node = XmlUtil.selectSingleNode(parent, xpath);
 		if (node == null)
 			return defaultValue;
 
-		try
-		{
+		try {
 			return Integer.parseInt(node.getTextContent());
-		}
-		catch (NumberFormatException e)
-		{
+		} catch (NumberFormatException e) {
 			throw invalidValueException(node, e.getMessage());
 		}
 	}
 
-	public static byte parseValue(Node parent, String xpath, byte defaultValue) throws ParseException,
-			XPathExpressionException
-	{
+	public static byte parseValue(Node parent, String xpath, byte defaultValue) throws ParseException, XPathExpressionException {
 		Node node = XmlUtil.selectSingleNode(parent, xpath);
 		if (node == null)
 			return defaultValue;
 
-		try
-		{
+		try {
 			return Byte.parseByte(node.getTextContent());
-		}
-		catch (NumberFormatException e)
-		{
+		} catch (NumberFormatException e) {
 			throw invalidValueException(node, e.getMessage());
 		}
 	}
 
-	public static float parseValue(Node parent, String xpath, float defaultValue) throws ParseException,
-			XPathExpressionException
-	{
+	public static float parseValue(Node parent, String xpath, float defaultValue) throws ParseException, XPathExpressionException {
 		Node node = XmlUtil.selectSingleNode(parent, xpath);
 		if (node == null)
 			return defaultValue;
 
-		try
-		{
+		try {
 			return Float.parseFloat(node.getTextContent());
-		}
-		catch (NumberFormatException e)
-		{
+		} catch (NumberFormatException e) {
 			throw invalidValueException(node, e.getMessage());
 		}
 	}
 
-	public static boolean parseValue(Node parent, String xpath, boolean defaultValue) throws ParseException,
-			XPathExpressionException
-	{
+	public static boolean parseValue(Node parent, String xpath, boolean defaultValue) throws ParseException, XPathExpressionException {
 		Node node = XmlUtil.selectSingleNode(parent, xpath);
 		if (node == null)
 			return defaultValue;
@@ -104,43 +83,32 @@ public class SaveUtil
 		throw invalidValueException(node, "Value must be 'true' or 'false'");
 	}
 
-	public static TimeSignature parseValue(Node parent, String xpath, TimeSignature defaultValue)
-			throws ParseException, XPathExpressionException
-	{
+	public static TimeSignature parseValue(Node parent, String xpath, TimeSignature defaultValue) throws ParseException, XPathExpressionException {
 		Node node = XmlUtil.selectSingleNode(parent, xpath);
 		if (node == null)
 			return defaultValue;
 
-		try
-		{
+		try {
 			return new TimeSignature(node.getTextContent());
-		}
-		catch (IllegalArgumentException e)
-		{
+		} catch (IllegalArgumentException e) {
 			throw invalidValueException(node, e.getMessage());
 		}
 	}
 
-	public static KeySignature parseValue(Node parent, String xpath, KeySignature defaultValue) throws ParseException,
-			XPathExpressionException
-	{
+	public static KeySignature parseValue(Node parent, String xpath, KeySignature defaultValue) throws ParseException, XPathExpressionException {
 		Node node = XmlUtil.selectSingleNode(parent, xpath);
 		if (node == null)
 			return defaultValue;
 
-		try
-		{
+		try {
 			return new KeySignature(node.getTextContent());
-		}
-		catch (IllegalArgumentException e)
-		{
+		} catch (IllegalArgumentException e) {
 			throw invalidValueException(node, e.getMessage());
 		}
 	}
 
 	public static LotroInstrument parseValue(Node parent, String xpath, LotroInstrument defaultValue)
-			throws ParseException, XPathExpressionException
-	{
+			throws ParseException, XPathExpressionException {
 		Node node = XmlUtil.selectSingleNode(parent, xpath);
 		if (node == null)
 			return defaultValue;
@@ -152,9 +120,7 @@ public class SaveUtil
 		return instrument;
 	}
 
-	public static Version parseValue(Node parent, String xpath, Version defaultValue) throws ParseException,
-			XPathExpressionException
-	{
+	public static Version parseValue(Node parent, String xpath, Version defaultValue) throws ParseException, XPathExpressionException {
 		Node node = XmlUtil.selectSingleNode(parent, xpath);
 		if (node == null)
 			return defaultValue;
@@ -165,9 +131,7 @@ public class SaveUtil
 		return version;
 	}
 
-	public static byte[] parseValue(Node parent, String xpath, byte[] defaultValue) throws ParseException,
-			XPathExpressionException
-	{
+	public static byte[] parseValue(Node parent, String xpath, byte[] defaultValue) throws ParseException, XPathExpressionException {
 		Node node = XmlUtil.selectSingleNode(parent, xpath);
 		if (node == null)
 			return defaultValue;
@@ -176,34 +140,28 @@ public class SaveUtil
 		if (text == null || text.equals(""))
 			return defaultValue;
 
-		try
-		{
+		try {
 			return DatatypeConverter.parseBase64Binary(text);
-		}
-		catch (IllegalArgumentException e)
-		{
+		} catch (IllegalArgumentException e) {
 			throw invalidValueException(node, e.getMessage());
 		}
 	}
 
-	public static File parseValue(Node parent, String xpath, File defaultValue) throws XPathExpressionException
-	{
+	public static File parseValue(Node parent, String xpath, File defaultValue) throws XPathExpressionException {
 		Node node = XmlUtil.selectSingleNode(parent, xpath);
 		if (node == null)
 			return defaultValue;
 
 		return new File(node.getTextContent());
 	}
-	
-	public static ParseException invalidTrackException(Node node, String message)
-	{
+
+	public static ParseException invalidTrackException(Node node, String message) {
 		File f = XmlUtil.getDocumentFile(node.getOwnerDocument());
 		String fileName = (f == null) ? null : f.getName();
 		return new ParseException(message, fileName, XmlUtil.getLineNumber(node));
 	}
 
-	public static ParseException invalidValueException(Node node, String message)
-	{
+	public static ParseException invalidValueException(Node node, String message) {
 		SaveUtil.clean(node);
 		String msg = "Invalid value \"" + node.getTextContent() + "\" for " + node.getNodeName();
 		if (message != null && message.length() > 0)
@@ -213,33 +171,28 @@ public class SaveUtil
 		String fileName = (f == null) ? null : f.getName();
 		return new ParseException(msg, fileName, XmlUtil.getLineNumber(node));
 	}
-	
-	private static void clean(Node node)
-	{
-	  NodeList childNodes = node.getChildNodes();
 
-	  for (int n = childNodes.getLength() - 1; n >= 0; n--)
-	  {
-	     Node child = childNodes.item(n);
-	     short nodeType = child.getNodeType();
+	private static void clean(Node node) {
+		NodeList childNodes = node.getChildNodes();
 
-	     if (nodeType == Node.ELEMENT_NODE)
-	        clean(child);
-	     else if (nodeType == Node.TEXT_NODE)
-	     {
-	        String trimmedNodeVal = child.getNodeValue().trim();
-	        if (trimmedNodeVal.length() == 0)
-	           node.removeChild(child);
-	        else
-	           child.setNodeValue(trimmedNodeVal);
-	     }
-	     else if (nodeType == Node.COMMENT_NODE)
-	        node.removeChild(child);
-	  }
+		for (int n = childNodes.getLength() - 1; n >= 0; n--) {
+			Node child = childNodes.item(n);
+			short nodeType = child.getNodeType();
+
+			if (nodeType == Node.ELEMENT_NODE)
+				clean(child);
+			else if (nodeType == Node.TEXT_NODE) {
+				String trimmedNodeVal = child.getNodeValue().trim();
+				if (trimmedNodeVal.length() == 0)
+					node.removeChild(child);
+				else
+					child.setNodeValue(trimmedNodeVal);
+			} else if (nodeType == Node.COMMENT_NODE)
+				node.removeChild(child);
+		}
 	}
 
-	public static ParseException missingValueException(Node node, String xpath)
-	{
+	public static ParseException missingValueException(Node node, String xpath) {
 		String msg = "Missing required value \"" + xpath + "\" for <" + node.getNodeName() + "> element";
 		File f = XmlUtil.getDocumentFile(node.getOwnerDocument());
 		String fileName = (f == null) ? null : f.getName();

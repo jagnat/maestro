@@ -20,31 +20,25 @@ import com.digero.common.icons.IconLoader;
 import com.digero.common.util.Util;
 import com.digero.common.util.Version;
 
-public final class AboutDialog
-{
-	public static void show(JFrame parent, final String appName, final Version appVersion, final String appUrl,
-			final String iconName)
-	{
+public final class AboutDialog {
+	public static void show(JFrame parent, final String appName, final Version appVersion, final String appUrl, final String iconName) {
 		ImageIcon aboutIcon;
-		try
-		{
+		try {
 			aboutIcon = new ImageIcon(ImageIO.read(IconLoader.class.getResourceAsStream(iconName)));
-		}
-		catch (IOException e1)
-		{
+		} catch (IOException e1) {
 			e1.printStackTrace();
 			aboutIcon = null;
 		}
-		
+
 		String heapInUse = "unknown.";
 		MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
 		if (memoryMXBean != null) {
 			MemoryUsage usage = memoryMXBean.getHeapMemoryUsage();
 			if (usage != null) {
-				heapInUse = (usage.getUsed()/(1024*1024))+"MB/"+(usage.getMax()/(1024*1024))+"MB";
+				heapInUse = (usage.getUsed() / (1024 * 1024)) + "MB/" + (usage.getMax() / (1024 * 1024)) + "MB";
 			}
 		}
-		
+
 		JLabel aboutMessage = new JLabel("<html>" //
 				+ appName + "<br>" //
 				+ "Version " + appVersion + "<br>" //
@@ -53,15 +47,12 @@ public final class AboutDialog
 				+ "Upgraded by Aifel of Laurelin,<br>" //
 				+ "Elamond of Landroval and Karloman<br>" //
 				+ "<a href='" + appUrl + "'>" + appUrl + "</a><br>" //
-				+ "Heap in use is " + heapInUse
-				+ "</html>");
+				+ "Heap in use is " + heapInUse + "</html>");
 		aboutMessage.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		aboutMessage.addMouseListener(new MouseAdapter()
-		{
-			@Override public void mouseClicked(MouseEvent e)
-			{
-				if (e.getButton() == MouseEvent.BUTTON1)
-				{
+		aboutMessage.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getButton() == MouseEvent.BUTTON1) {
 					Util.openURL(appUrl);
 				}
 			}
@@ -78,7 +69,6 @@ public final class AboutDialog
 	}
 
 	/** Static-only class */
-	private AboutDialog()
-	{
+	private AboutDialog() {
 	}
 }

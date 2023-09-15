@@ -28,17 +28,15 @@ public class SynthesizerFactory {
 		}
 	}
 
-	public static Synthesizer getLotroSynthesizer()
-			throws MidiUnavailableException, InvalidMidiDataException, IOException {
+	public static Synthesizer getLotroSynthesizer() throws MidiUnavailableException, InvalidMidiDataException, IOException {
 		Synthesizer synth = MidiSystem.getSynthesizer();
-		//Synthesizer synth = new LotroSoftSynthesizer();
+		// Synthesizer synth = new LotroSoftSynthesizer();
 		if (synth != null)
 			initLotroSynthesizer(synth);
 		return synth;
 	}
 
-	public static AudioSynthesizer getLotroAudioSynthesizer()
-			throws MidiUnavailableException, InvalidMidiDataException, IOException {
+	public static AudioSynthesizer getLotroAudioSynthesizer() throws MidiUnavailableException, InvalidMidiDataException, IOException {
 		AudioSynthesizer synth = findAudioSynthesizer();
 		if (synth != null)
 			initAudioSynthesizer(synth);
@@ -46,36 +44,35 @@ public class SynthesizerFactory {
 	}
 
 	@SuppressWarnings("restriction")
-	public static void initLotroSynthesizer(Synthesizer synth)
-			throws MidiUnavailableException, InvalidMidiDataException, IOException {
+	public static void initLotroSynthesizer(Synthesizer synth) throws MidiUnavailableException, InvalidMidiDataException, IOException {
 		Map<String, Object> synthInfo = new HashMap();
-		synthInfo.put("midi channels", MidiConstants.CHANNEL_COUNT_ABC);//default is 16
-		synthInfo.put("reverb", false);//default is true
-		synthInfo.put("chorus", false);//default is true
-		synthInfo.put("max polyphony", 128);//default is 64
-		synthInfo.put("auto gain control", true);//default is true. Set to false it can give pops when skipping in song, especially for abc player.
-		synthInfo.put("latency", 250000L);//12000 microseconds is default. But that low with 24 parts will give pops and clicks in playback in abc player.
-		//synthInfo.put("jitter correction", true);//Not sure what this does or what the default value is.
+		synthInfo.put("midi channels", MidiConstants.CHANNEL_COUNT_ABC);// default is 16
+		synthInfo.put("reverb", false);// default is true
+		synthInfo.put("chorus", false);// default is true
+		synthInfo.put("max polyphony", 128);// default is 64
+		synthInfo.put("auto gain control", true);// default is true. Set to false it can give pops when skipping in song, especially for abc player.
+		synthInfo.put("latency", 250000L);// 12000 microseconds is default. But that low with 24 parts will give pops and clicks in playback in abc
+											// player.
+		// synthInfo.put("jitter correction", true);//Not sure what this does or what the default value is.
 		synthInfo.put("large mode", false);// Default false. Not sure what it does. If enabled it seems to use lazy loading of soundfont samples.
-		((com.sun.media.sound.SoftSynthesizer)synth).open(null, synthInfo);
-		//((LotroSoftSynthesizer)synth).open(null, synthInfo);
+		((com.sun.media.sound.SoftSynthesizer) synth).open(null, synthInfo);
+		// ((LotroSoftSynthesizer)synth).open(null, synthInfo);
 		synth.unloadAllInstruments(getLotroSoundbank());
 		synth.loadAllInstruments(getLotroSoundbank());
 	}
-	
+
 	@SuppressWarnings("restriction")
-	public static void initAudioSynthesizer(Synthesizer synth)
-			throws MidiUnavailableException, InvalidMidiDataException, IOException {
+	public static void initAudioSynthesizer(Synthesizer synth) throws MidiUnavailableException, InvalidMidiDataException, IOException {
 		Map<String, Object> synthInfo = new HashMap();
-		synthInfo.put("midi channels", MidiConstants.CHANNEL_COUNT_ABC);//default is 16
-		synthInfo.put("reverb", false);//default is true
-		synthInfo.put("chorus", false);//default is true
-		synthInfo.put("max polyphony", 128);//default is 64
-		synthInfo.put("latency", 200000L);//120000 microseconds is default, notice factor 10 from SoftSynth.
-		//synthInfo.put("jitter correction", true);//Not sure what this does.
+		synthInfo.put("midi channels", MidiConstants.CHANNEL_COUNT_ABC);// default is 16
+		synthInfo.put("reverb", false);// default is true
+		synthInfo.put("chorus", false);// default is true
+		synthInfo.put("max polyphony", 128);// default is 64
+		synthInfo.put("latency", 200000L);// 120000 microseconds is default, notice factor 10 from SoftSynth.
+		// synthInfo.put("jitter correction", true);//Not sure what this does.
 		synthInfo.put("large mode", false);// Default false. Not sure what it does.
-		//((com.sun.media.sound.SoftSynthesizer)synth).open(null, synthInfo);
-		((AudioSynthesizer)synth).open(null, synthInfo);
+		// ((com.sun.media.sound.SoftSynthesizer)synth).open(null, synthInfo);
+		((AudioSynthesizer) synth).open(null, synthInfo);
 		synth.unloadAllInstruments(getLotroSoundbank());
 		synth.loadAllInstruments(getLotroSoundbank());
 	}
@@ -86,9 +83,7 @@ public class SynthesizerFactory {
 				String folder = ".";
 				try {
 					// Find the path to the jar file we are executing in
-					folder = new File(
-							SynthesizerFactory.class.getProtectionDomain().getCodeSource().getLocation().toURI())
-							.getParent();
+					folder = new File(SynthesizerFactory.class.getProtectionDomain().getCodeSource().getLocation().toURI()).getParent();
 				} catch (URISyntaxException e) {
 					e.printStackTrace();
 				}
@@ -99,8 +94,7 @@ public class SynthesizerFactory {
 			} catch (NullPointerException npe) {
 				// JARSoundbankReader throws a NullPointerException if the file doesn't exist
 				StackTraceElement trace = npe.getStackTrace()[0];
-				if (trace.getClassName().equals("com.sun.media.sound.JARSoundbankReader")
-						&& trace.getMethodName().equals("isZIP")) {
+				if (trace.getClassName().equals("com.sun.media.sound.JARSoundbankReader") && trace.getMethodName().equals("isZIP")) {
 					throw new IOException("Soundbank file not found");
 				} else {
 					throw npe;

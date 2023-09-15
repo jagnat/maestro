@@ -32,8 +32,7 @@ import com.digero.common.abc.Dynamics;
 import com.digero.common.midi.ITempoCache;
 import com.digero.common.midi.Note;
 
-public class Chord implements AbcConstants
-{
+public class Chord implements AbcConstants {
 	private ITempoCache tempoCache;
 	private long startTick;
 	private long endTick;
@@ -42,23 +41,22 @@ public class Chord implements AbcConstants
 	private int highest = 0;
 	private int lowest = 200;
 
-	public Chord(NoteEvent firstNote)
-	{
+	public Chord(NoteEvent firstNote) {
 		tempoCache = firstNote.getTempoCache();
 		startTick = firstNote.getStartTick();
 		endTick = firstNote.getEndTick();
 		notes.add(firstNote);
 	}
-	
+
 	public boolean isRest() {
 		for (NoteEvent evt : notes) {
 			if (Note.REST != evt.note) {
 				return false;
 			}
 		}
-		return true;		
+		return true;
 	}
-	
+
 	public boolean hasRestAndNotes() {
 		boolean hasNotes = false;
 		boolean hasRests = false;
@@ -70,83 +68,66 @@ public class Chord implements AbcConstants
 			}
 		}
 		/*
-		if (hasRests && hasNotes) {
-			for (NoteEvent evt : notes) {
-				System.out.println(evt.note.getDisplayName()+" "+evt.getStartTick()+" to "+evt.getEndTick());
-			}
-		}
-		*/
+		 * if (hasRests && hasNotes) { for (NoteEvent evt : notes) {
+		 * System.out.println(evt.note.getDisplayName()+" "+evt.getStartTick()+" to "+evt.getEndTick()); } }
+		 */
 		return hasRests && hasNotes;
 	}
 
-	public long getStartTick()
-	{
+	public long getStartTick() {
 		return startTick;
 	}
 
-	public long getEndTick()
-	{
+	public long getEndTick() {
 		return endTick;
 	}
 
-	public long getStartMicros()
-	{
+	public long getStartMicros() {
 		return tempoCache.tickToMicros(startTick);
 	}
 
-	public long getEndMicros()
-	{
+	public long getEndMicros() {
 		return tempoCache.tickToMicros(endTick);
 	}
 
-	public int size()
-	{
+	public int size() {
 		return notes.size();
 	}
 
-	public boolean hasTooManyNotes()
-	{
+	public boolean hasTooManyNotes() {
 		return hasTooManyNotes;
 	}
 
-	public NoteEvent get(int i)
-	{
+	public NoteEvent get(int i) {
 		return notes.get(i);
 	}
 
-	public boolean add(NoteEvent ne, boolean force)
-	{
-		while (force && size() >= MAX_CHORD_NOTES)
-		{
+	public boolean add(NoteEvent ne, boolean force) {
+		while (force && size() >= MAX_CHORD_NOTES) {
 			remove(size() - 1);
 			hasTooManyNotes = true;
 		}
 		return add(ne);
 	}
 
-	public boolean add(NoteEvent ne)
-	{
-		if (ne.getLengthTicks() == 0)
-		{
+	public boolean add(NoteEvent ne) {
+		if (ne.getLengthTicks() == 0) {
 			hasTooManyNotes = true;
 			return false;
 		}
 
-		if (size() >= MAX_CHORD_NOTES)
-		{
+		if (size() >= MAX_CHORD_NOTES) {
 			return false;
 		}
 
 		notes.add(ne);
-		if (ne.getEndTick() < endTick)
-		{
+		if (ne.getEndTick() < endTick) {
 			endTick = ne.getEndTick();
 		}
 		return true;
 	}
 
-	public NoteEvent remove(int i)
-	{
+	public NoteEvent remove(int i) {
 		if (size() <= 1)
 			return null;
 
@@ -157,16 +138,13 @@ public class Chord implements AbcConstants
 		return ne;
 	}
 
-	public boolean remove(NoteEvent ne)
-	{
+	public boolean remove(NoteEvent ne) {
 		return notes.remove(ne);
 	}
 
-	public Dynamics calcDynamics()
-	{
+	public Dynamics calcDynamics() {
 		int velocity = Integer.MIN_VALUE;
-		for (NoteEvent ne : notes)
-		{
+		for (NoteEvent ne : notes) {
 			if (ne.note != Note.REST && ne.tiesFrom == null && ne.velocity > velocity)
 				velocity = ne.velocity;
 		}
@@ -177,23 +155,18 @@ public class Chord implements AbcConstants
 		return Dynamics.fromMidiVelocity(velocity);
 	}
 
-	public void recalcEndTick()
-	{
-		if (!notes.isEmpty())
-		{
+	public void recalcEndTick() {
+		if (!notes.isEmpty()) {
 			endTick = notes.get(0).getEndTick();
-			for (int k = 1; k < notes.size(); k++)
-			{
-				if (notes.get(k).getEndTick() < endTick)
-				{
+			for (int k = 1; k < notes.size(); k++) {
+				if (notes.get(k).getEndTick() < endTick) {
 					endTick = notes.get(k).getEndTick();
 				}
 			}
 		}
 	}
 
-	public void sort()
-	{
+	public void sort() {
 		Collections.sort(notes);
 	}
 
@@ -204,7 +177,7 @@ public class Chord implements AbcConstants
 			recalcEdges();
 
 			List<NoteEvent> newNotes = new ArrayList<>();
-			
+
 			Comparator<NoteEvent> keepMe = (n1, n2) -> {
 
 				if (n1.note == Note.REST) {
@@ -215,44 +188,20 @@ public class Chord implements AbcConstants
 				}
 
 				/*
-				if (n1.doubledNote && !n2.doubledNote) {
-					return -1;
-				}
-				if (n2.doubledNote && !n1.doubledNote) {
-					return 1;
-				}*/
+				 * if (n1.doubledNote && !n2.doubledNote) { return -1; } if (n2.doubledNote && !n1.doubledNote) { return 1; }
+				 */
 
 				// At the point in time when prune() is run, there is very few tiedTo, mostly just tiedFrom.
-				//assert n1.tiesTo == null;
-				//assert n2.tiesTo == null;
-				/* This was commented as experiments in lotro shows than can start a new note even if 6 prev. is still playing.
-				boolean n1Finished = false;
-				boolean n2Finished = false;
-				if (!sustained) {
-					// Lets find out if the notes have already finished
-					long dura = 0;
-					for (NoteEvent neTie = n1.tiesFrom; neTie != null; neTie = neTie.tiesFrom)
-					{
-						dura += neTie.getLengthMicros();
-					}
-					if (dura > AbcConstants.NON_SUSTAINED_NOTE_HOLD_SECONDS) {
-						n1Finished = true;
-					}
-					dura = 0;
-					for (NoteEvent neTie = n2.tiesFrom; neTie != null; neTie = neTie.tiesFrom)
-					{
-						dura += neTie.getLengthMicros();
-					}
-					if (dura > AbcConstants.NON_SUSTAINED_NOTE_HOLD_SECONDS) {
-						n2Finished = true;
-					}
-				}
-				if (n1Finished && !n2Finished) {
-					return -1;
-				} else if (n2Finished && !n1Finished) {
-					return 1;
-				}
-				*/
+				// assert n1.tiesTo == null;
+				// assert n2.tiesTo == null;
+				/*
+				 * This was commented as experiments in lotro shows than can start a new note even if 6 prev. is still playing. boolean n1Finished =
+				 * false; boolean n2Finished = false; if (!sustained) { // Lets find out if the notes have already finished long dura = 0; for
+				 * (NoteEvent neTie = n1.tiesFrom; neTie != null; neTie = neTie.tiesFrom) { dura += neTie.getLengthMicros(); } if (dura >
+				 * AbcConstants.NON_SUSTAINED_NOTE_HOLD_SECONDS) { n1Finished = true; } dura = 0; for (NoteEvent neTie = n2.tiesFrom; neTie != null;
+				 * neTie = neTie.tiesFrom) { dura += neTie.getLengthMicros(); } if (dura > AbcConstants.NON_SUSTAINED_NOTE_HOLD_SECONDS) { n2Finished
+				 * = true; } } if (n1Finished && !n2Finished) { return -1; } else if (n2Finished && !n1Finished) { return 1; }
+				 */
 
 				if (!sustained) {
 					// discard tiedFrom notes.
@@ -267,7 +216,6 @@ public class Chord implements AbcConstants
 					}
 				}
 
-
 				if (n1.velocity != n2.velocity) {
 					// The notes differ in volume, return the loudest
 					return n1.velocity - n2.velocity;
@@ -276,17 +224,17 @@ public class Chord implements AbcConstants
 				if (!drum) {
 					if (n1.note.id != n2.note.id) {
 						// return the note if its the highest in the chord
-						if ((n1.origPitch == 0 && highest == n1.note.id)||(n1.origPitch != 0 && highest == n1.origPitch)) {
+						if ((n1.origPitch == 0 && highest == n1.note.id) || (n1.origPitch != 0 && highest == n1.origPitch)) {
 							return 1;
 						}
-						if ((n2.origPitch == 0 && highest == n2.note.id)||(n2.origPitch != 0 && highest == n2.origPitch)) {
+						if ((n2.origPitch == 0 && highest == n2.note.id) || (n2.origPitch != 0 && highest == n2.origPitch)) {
 							return -1;
 						}
 						// return the note if its the lowest in the chord
-						if ((n1.origPitch == 0 && lowest == n1.note.id)||(n1.origPitch != 0 && lowest == n1.origPitch)) {
+						if ((n1.origPitch == 0 && lowest == n1.note.id) || (n1.origPitch != 0 && lowest == n1.origPitch)) {
 							return 1;
 						}
-						if ((n2.origPitch == 0 && lowest == n2.note.id)||(n2.origPitch != 0 && lowest == n2.origPitch)) {
+						if ((n2.origPitch == 0 && lowest == n2.note.id) || (n2.origPitch != 0 && lowest == n2.origPitch)) {
 							return -1;
 						}
 					}
@@ -301,12 +249,12 @@ public class Chord implements AbcConstants
 
 					List<Integer> removeFirst = new ArrayList<>();
 
-					removeFirst.add(highest-32);
-					removeFirst.add(highest-24);
-					removeFirst.add(highest-12);
-					removeFirst.add(lowest+32);
-					removeFirst.add(lowest+24);
-					removeFirst.add(lowest+12);
+					removeFirst.add(highest - 32);
+					removeFirst.add(highest - 24);
+					removeFirst.add(highest - 12);
+					removeFirst.add(lowest + 32);
+					removeFirst.add(lowest + 24);
+					removeFirst.add(lowest + 12);
 
 					int index1 = removeFirst.indexOf(n1.note.id);
 					int index2 = removeFirst.indexOf(n2.note.id);
@@ -328,7 +276,8 @@ public class Chord implements AbcConstants
 						}
 					}
 
-					if ((Math.abs(n1.note.id - n2.note.id) == 12 || Math.abs(n1.note.id - n2.note.id) == 24 || Math.abs(n1.note.id - n2.note.id) == 36)) {
+					if ((Math.abs(n1.note.id - n2.note.id) == 12 || Math.abs(n1.note.id - n2.note.id) == 24
+							|| Math.abs(n1.note.id - n2.note.id) == 36)) {
 						// If 2 notes have octave spacing, keep the highest pitched.
 						if (n1.note.id > n2.note.id) {
 							points += 2;
@@ -346,8 +295,10 @@ public class Chord implements AbcConstants
 						}
 					}
 
-					if (points > 0) return 1;
-					if (points < 0) return -1;
+					if (points > 0)
+						return 1;
+					if (points < 0)
+						return -1;
 
 				} else {
 
@@ -386,23 +337,23 @@ public class Chord implements AbcConstants
 				}
 
 				// discard the center-most note (for drum this is very random)
-				int center = Math.abs(n1.note.id - (lowest + (highest-lowest)/2))-Math.abs(n2.note.id - (lowest + (highest-lowest)/2));
+				int center = Math.abs(n1.note.id - (lowest + (highest - lowest) / 2)) - Math.abs(n2.note.id - (lowest + (highest - lowest) / 2));
 
 				return Integer.compare(center, 0);
 
-				//1: n1 wins  -1: n2 wins   0:equal
+				// 1: n1 wins -1: n2 wins 0:equal
 			};
-			
+
 			notes.sort(keepMe);
-			
-			//System.err.print("Prune\n");			
-			for (int i = notes.size()-1; i >= 0; i--) {
+
+			// System.err.print("Prune\n");
+			for (int i = notes.size() - 1; i >= 0; i--) {
 				if (newNotes.size() < MAX_CHORD_NOTES) {
 					newNotes.add(notes.get(i));
-					//System.err.print(" keep  " + notes.get(i).printout()+"\n");
+					// System.err.print(" keep " + notes.get(i).printout()+"\n");
 				} else {
 					deadNotes.add(notes.get(i));
-					//System.err.print(" prune " + notes.get(i).printout()+"\n");
+					// System.err.print(" prune " + notes.get(i).printout()+"\n");
 				}
 			}
 			notes = newNotes;
@@ -412,24 +363,22 @@ public class Chord implements AbcConstants
 	}
 
 	public boolean addAlways(NoteEvent ne) {
-		if (ne.getLengthTicks() == 0)
-		{
+		if (ne.getLengthTicks() == 0) {
 			hasTooManyNotes = true;
 			return false;
 		}
 		notes.add(ne);
-		
-		if (ne.getEndTick() < endTick)
-		{
+
+		if (ne.getEndTick() < endTick) {
 			endTick = ne.getEndTick();
 		}
-		return true;		
+		return true;
 	}
-	
+
 	/**
-	 *  Called only on demand when the edge values is needed.
+	 * Called only on demand when the edge values is needed.
 	 */
-	private void recalcEdges() {		
+	private void recalcEdges() {
 		highest = 0;
 		lowest = 200;
 		for (NoteEvent evt : notes) {
@@ -454,14 +403,13 @@ public class Chord implements AbcConstants
 	}
 
 	public Long getLongestEndTick() {
-		long endNoteTick = getStartTick(); 
-		if (!notes.isEmpty())
-		{
-            for (NoteEvent note : notes) {
-                if (note.note != Note.REST && note.getEndTick() > endNoteTick) {
-                    endNoteTick = note.getEndTick();
-                }
-            }
+		long endNoteTick = getStartTick();
+		if (!notes.isEmpty()) {
+			for (NoteEvent note : notes) {
+				if (note.note != Note.REST && note.getEndTick() > endNoteTick) {
+					endNoteTick = note.getEndTick();
+				}
+			}
 		}
 		return endNoteTick;
 	}
@@ -478,14 +426,13 @@ public class Chord implements AbcConstants
 	}
 
 	public void printIfUneven() {
-		long endNoteTick = getEndTick(); 
-		if (!notes.isEmpty())
-		{
-            for (NoteEvent note : notes) {
-                if (note.note != Note.REST && note.getEndTick() != endNoteTick) {
-                    System.out.println("Note in chord has bad length! " + (note.getEndTick() - endNoteTick));
-                }
-            }
-		}		
+		long endNoteTick = getEndTick();
+		if (!notes.isEmpty()) {
+			for (NoteEvent note : notes) {
+				if (note.note != Note.REST && note.getEndTick() != endNoteTick) {
+					System.out.println("Note in chord has bad length! " + (note.getEndTick() - endNoteTick));
+				}
+			}
+		}
 	}
 }

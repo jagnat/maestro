@@ -112,8 +112,7 @@ public class HighlightAbcNotesFrame extends JFrame {
 		this.sequencer = seq;
 		sequencer.addChangeListener(evt -> {
 			SequencerProperty p = evt.getProperty();
-			if (p.isInMask(SequencerProperty.TRACK_ACTIVE.mask | SequencerProperty.IS_RUNNING.mask
-					| SequencerProperty.IS_DRAGGING.mask)) {
+			if (p.isInMask(SequencerProperty.TRACK_ACTIVE.mask | SequencerProperty.IS_RUNNING.mask | SequencerProperty.IS_DRAGGING.mask)) {
 				resetAllHighlightsNextUpdate = true;
 				update();
 			} else if (p.isInMask(SequencerProperty.THUMB_POSITION_MASK)) {
@@ -155,8 +154,8 @@ public class HighlightAbcNotesFrame extends JFrame {
 		textArea.addKeyListener(textAreaListener);
 
 		gutterTextArea = new JTextArea();
-		gutterTextArea.setBorder(BorderFactory.createCompoundBorder(
-				BorderFactory.createMatteBorder(0, 0, 0, 1, ColorTable.GRAPH_BORDER_OFF.get()), textArea.getBorder()));
+		gutterTextArea.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, ColorTable.GRAPH_BORDER_OFF.get()),
+				textArea.getBorder()));
 		gutterTextArea.setFont(textArea.getFont());
 		gutterTextArea.setEditable(false);
 		gutterTextArea.setFocusable(false);
@@ -411,8 +410,7 @@ public class HighlightAbcNotesFrame extends JFrame {
 		}
 
 		private void scroll(boolean horz, boolean backwards, boolean page) {
-			JScrollBar bar = horz ? textAreaScrollPane.getHorizontalScrollBar()
-					: textAreaScrollPane.getVerticalScrollBar();
+			JScrollBar bar = horz ? textAreaScrollPane.getHorizontalScrollBar() : textAreaScrollPane.getVerticalScrollBar();
 
 			int dir = backwards ? -1 : 1;
 			int incr = page ? bar.getBlockIncrement(dir) : bar.getUnitIncrement(dir);
@@ -582,8 +580,7 @@ public class HighlightAbcNotesFrame extends JFrame {
 				tracksInView.add(region.getTrackNumber());
 
 			for (int i : tracksInView) {
-				String name = abcInfo.getPartNumber(i) + ". "
-						+ (showFullPartName ? abcInfo.getPartFullName(i) : abcInfo.getPartName(i));
+				String name = abcInfo.getPartNumber(i) + ". " + (showFullPartName ? abcInfo.getPartFullName(i) : abcInfo.getPartName(i));
 				followTrackComboBox.addItem(new PartInfo(name, i, abcInfo.getPartStartLine(i)));
 			}
 		}
@@ -707,8 +704,7 @@ public class HighlightAbcNotesFrame extends JFrame {
 		return endOfFollowedTrack;
 	}
 
-	private int handleRegionHighlight(int followedTrackNumber, int endOfFollowedTrack, AbcRegion region)
-			throws BadLocationException {
+	private int handleRegionHighlight(int followedTrackNumber, int endOfFollowedTrack, AbcRegion region) throws BadLocationException {
 		int lineStart = lineStartIndex[getLine(region)];
 		int end = lineStart + region.getEndIndex();
 

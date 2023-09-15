@@ -159,14 +159,26 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			if (trackVolumeAdjust[t] != 0)
 				SaveUtil.appendChildTextElement(trackEle, "volumeAdjust", String.valueOf(trackVolumeAdjust[t]));
 			if (abcSong.isMixTiming() && abcSong.isPriorityActive() && trackPriority[t])
-				SaveUtil.appendChildTextElement(trackEle, "combinePriority",
-						String.valueOf(QuantizedTimingInfo.COMBINE_PRIORITY_MULTIPLIER));// Hardcoded to 4 for now,
-																							// change QTM and UI if
-																							// messing with this
-			
-			if (!playLeft[t])   trackEle.setAttribute("playLeft", String.valueOf(playLeft[t]));
-			if (!playCenter[t]) trackEle.setAttribute("playCenter", String.valueOf(playCenter[t]));
-			if (!playRight[t])  trackEle.setAttribute("playRight", String.valueOf(playRight[t]));
+				SaveUtil.appendChildTextElement(trackEle, "combinePriority", String.valueOf(QuantizedTimingInfo.COMBINE_PRIORITY_MULTIPLIER));// Hardcoded
+																																				// to
+																																				// 4
+																																				// for
+																																				// now,
+																																				// change
+																																				// QTM
+																																				// and
+																																				// UI
+																																				// if
+																																				// messing
+																																				// with
+																																				// this
+
+			if (!playLeft[t])
+				trackEle.setAttribute("playLeft", String.valueOf(playLeft[t]));
+			if (!playCenter[t])
+				trackEle.setAttribute("playCenter", String.valueOf(playCenter[t]));
+			if (!playRight[t])
+				trackEle.setAttribute("playRight", String.valueOf(playRight[t]));
 
 			TreeMap<Integer, PartSection> tree = sections.get(t);
 			if (tree != null) {
@@ -227,8 +239,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 
 		if (!isCowbellPart()) {
 			if (!isFXPart() && drumNoteMap[t] != null)
-				drumNoteMap[t]
-						.saveToXml((Element) trackEle.appendChild(doc.createElement(drumNoteMap[t].getXmlName())));
+				drumNoteMap[t].saveToXml((Element) trackEle.appendChild(doc.createElement(drumNoteMap[t].getXmlName())));
 			if (isFXPart() && fxNoteMap[t] != null)
 				fxNoteMap[t].saveToXml((Element) trackEle.appendChild(doc.createElement(fxNoteMap[t].getXmlName())));
 		}
@@ -279,8 +290,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 						optionalName = " (" + optionalName + ")";
 					}
 
-					throw SaveUtil.invalidTrackException(trackEle,
-							"Could not find track number " + t + optionalName + " in original MIDI file");
+					throw SaveUtil.invalidTrackException(trackEle, "Could not find track number " + t + optionalName + " in original MIDI file");
 				}
 
 				TreeMap<Integer, PartSection> tree = sections.get(t);
@@ -303,8 +313,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 				if (tree != null) {
 					for (int i = 0; i < lastEnd + 1; i++) {
 						Entry<Integer, PartSection> entry = tree.floorEntry(i + 1);
-						booleanArray[i] = entry != null && entry.getValue().startBar <= i + 1
-								&& entry.getValue().endBar >= i + 1;
+						booleanArray[i] = entry != null && entry.getValue().startBar <= i + 1 && entry.getValue().endBar >= i + 1;
 					}
 
 					sectionsModified.set(t, booleanArray);
@@ -345,8 +354,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		}
 	}
 
-	private void handlePercussion(Version fileVersion, Element trackEle, int t)
-			throws XPathExpressionException, ParseException {
+	private void handlePercussion(Version fileVersion, Element trackEle, int t) throws XPathExpressionException, ParseException {
 		Element drumsEle = XmlUtil.selectSingleElement(trackEle, "drumsEnabled");
 		if (drumsEle != null) {
 			calculateEnabledSet(t, drumsEle);
@@ -417,8 +425,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		if (e.getProperty() == AbcSongProperty.TRANSPOSE) {
 			fireChangeEvent(AbcPartProperty.BASE_TRANSPOSE, !isDrumPart() /* affectsAbcPreview */);
 		}
-		if (e.getProperty() == AbcSongProperty.MIX_TIMING_COMBINE_PRIORITIES
-				|| e.getProperty() == AbcSongProperty.MIX_TIMING) {
+		if (e.getProperty() == AbcSongProperty.MIX_TIMING_COMBINE_PRIORITIES || e.getProperty() == AbcSongProperty.MIX_TIMING) {
 			fireChangeEvent(AbcPartProperty.TRACK_PRIORITY);
 		}
 	};
@@ -428,8 +435,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	}
 
 	/**
-	 * Maps from a MIDI note to an ABC note. If no mapping is available, returns
-	 * <code>null</code>.
+	 * Maps from a MIDI note to an ABC note. If no mapping is available, returns <code>null</code>.
 	 * 
 	 * Notice this method does not work for bent notes, use mapNoteEvent for those.
 	 */
@@ -461,10 +467,9 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			return Note.fromId(noteId);
 		}
 	}
-	
+
 	/**
-	 * Maps from a MIDI note to an ABC note. If no mapping is available, returns
-	 * <code>null</code>.
+	 * Maps from a MIDI note to an ABC note. If no mapping is available, returns <code>null</code>.
 	 * 
 	 * This method will also handle bent notes.
 	 */
@@ -494,18 +499,18 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			int minBend = be.getMinBend();
 			int maxBend = be.getMaxBend();
 			int transpose = getTranspose(track, tickStart);
-						
+
 			noteId += transpose;
 			minBend += ne.note.id + transpose;
-			maxBend += ne.note.id + transpose;			
-			
+			maxBend += ne.note.id + transpose;
+
 			while (noteId < instrument.lowestPlayable.id) {
 				noteId += 12;
 			}
 			while (noteId > instrument.highestPlayable.id) {
 				noteId -= 12;
 			}
-			
+
 			int octaveFittingMin = 0;
 			while (minBend < instrument.lowestPlayable.id) {
 				minBend += 12;
@@ -515,7 +520,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 				minBend -= 12;
 				octaveFittingMin -= 12;
 			}
-			
+
 			int octaveFittingMax = 0;
 			while (maxBend < instrument.lowestPlayable.id) {
 				maxBend += 12;
@@ -525,10 +530,10 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 				maxBend -= 12;
 				octaveFittingMax -= 12;
 			}
-			
+
 			// We transpose the entire bent note into
 			// the playable range as one coherent block of notes.
-			
+
 			if (octaveFittingMax < 0) {
 				noteId = ne.note.id + transpose;
 				noteId += octaveFittingMax;
@@ -536,7 +541,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 				noteId = ne.note.id + transpose;
 				noteId += octaveFittingMin;
 			}
-			
+
 			return Note.fromId(noteId);
 		} else {
 			noteId += getTranspose(track, tickStart);
@@ -547,7 +552,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			return Note.fromId(noteId);
 		}
 	}
-	
+
 	public boolean shouldPlay(NoteEvent ne, int track) {
 		if (ne.midiPan == -1) {
 			// This should never happen, all midi note events should have pan set.
@@ -570,8 +575,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	 * @param track
 	 * @param noteId
 	 * @param tickStart
-	 * @return Return the note id the note would have had if the instrument did not
-	 *         a have range limit.
+	 * @return Return the note id the note would have had if the instrument did not a have range limit.
 	 */
 	public int mapNoteFullOctaves(int track, int noteId, long tickStart) {
 		noteId += getTranspose(track, tickStart);
@@ -618,8 +622,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 							noteEndTick = ne.getEndTick();
 						else {
 							ITempoCache tc = ne.getTempoCache();
-							noteEndTick = tc
-									.microsToTick(tc.tickToMicros(ne.getStartTick()) + TimingInfo.ONE_SECOND_MICROS);
+							noteEndTick = tc.microsToTick(tc.tickToMicros(ne.getStartTick()) + TimingInfo.ONE_SECOND_MICROS);
 						}
 
 						if (noteEndTick > endTick)
@@ -769,8 +772,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 
 	/**
 	 * 
-	 * @return -1 for when instr do not match or string dont start with instr, 0
-	 *         when instr match but no postfix, positive number when it has number.
+	 * @return -1 for when instr do not match or string dont start with instr, 0 when instr match but no postfix, positive number when it has number.
 	 */
 	public int getTypeNumberMatchingTitle() {
 		Pair<LotroInstrument, MatchResult> result = LotroInstrument.matchInstrument(title);
@@ -815,28 +817,20 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	public boolean isTypeNumberMatchingTitle() {
 		return typeNumber == getTypeNumberMatchingTitle();
 		/*
-		 * Pair<LotroInstrument, MatchResult> result =
-		 * LotroInstrument.matchInstrument(title);
+		 * Pair<LotroInstrument, MatchResult> result = LotroInstrument.matchInstrument(title);
 		 * 
-		 * if (result == null) {
-		 * System.out.println("    "+getTitle()+" has no instr match"); return false; }
-		 * else if (result.first.equals(instrument)) { StringBuilder regex = new
-		 * StringBuilder(); String typeString = " "+getTypeNumber();
+		 * if (result == null) { System.out.println("    "+getTitle()+" has no instr match"); return false; } else if
+		 * (result.first.equals(instrument)) { StringBuilder regex = new StringBuilder(); String typeString = " "+getTypeNumber();
 		 * 
-		 * regex.append("\\b(?:"); regex.append('(');
-		 * regex.append((result.second.group()+typeString).replace(" ", "[\\s_]*"));
-		 * regex.append(')'); regex.append(")\\b");
+		 * regex.append("\\b(?:"); regex.append('('); regex.append((result.second.group()+typeString).replace(" ", "[\\s_]*")); regex.append(')');
+		 * regex.append(")\\b");
 		 * 
-		 * Pattern typeRegex = Pattern.compile(regex.toString(),
-		 * Pattern.CASE_INSENSITIVE); Matcher m = typeRegex.matcher(getTitle());
-		 * MatchResult last = null; // Iterate through the matches to find the last one
-		 * for (int i = 0; m.find(i); i = m.end()) last = m.toMatchResult();
+		 * Pattern typeRegex = Pattern.compile(regex.toString(), Pattern.CASE_INSENSITIVE); Matcher m = typeRegex.matcher(getTitle()); MatchResult
+		 * last = null; // Iterate through the matches to find the last one for (int i = 0; m.find(i); i = m.end()) last = m.toMatchResult();
 		 * 
-		 * if (last == null) System.out.println("    "+getTitle()+"    last==null");
-		 * else System.out.println("    "+getTitle()+"    last.start():"+last.start()
-		 * +" last.end():"+last.end()+" title.length:"+getTitle().length()); if (last !=
-		 * null && last.start() == 0 && last.end() == getTitle().length()) { return
-		 * true; } } return false;
+		 * if (last == null) System.out.println("    "+getTitle()+"    last==null"); else
+		 * System.out.println("    "+getTitle()+"    last.start():"+last.start() +" last.end():"+last.end()+" title.length:"+getTitle().length()); if
+		 * (last != null && last.start() == 0 && last.end() == getTitle().length()) { return true; } } return false;
 		 */
 	}
 
@@ -879,8 +873,8 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	public int getTranspose(int track, long tickStart) {
 		if (isDrumPart())
 			return 0;
-		return abcSong.getTranspose() + abcSong.getTuneTranspose(tickStart) + trackTranspose[track]
-				- getInstrument().octaveDelta * 12 + getSectionTranspose(tickStart, track);
+		return abcSong.getTranspose() + abcSong.getTuneTranspose(tickStart) + trackTranspose[track] - getInstrument().octaveDelta * 12
+				+ getSectionTranspose(tickStart, track);
 	}
 
 	public int getSectionTranspose(long tickStart, int track) {
@@ -961,8 +955,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	/**
 	 * @param track
 	 * @param ne
-	 * @return velocity of the noteEvent, or is reset velocities active, then
-	 *         mezzoforte
+	 * @return velocity of the noteEvent, or is reset velocities active, then mezzoforte
 	 */
 	public int getSectionNoteVelocity(int track, NoteEvent ne) {
 		SequenceInfo se = getSequenceInfo();
@@ -1132,19 +1125,19 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			fireChangeEvent(AbcPartProperty.PART_NUMBER);
 		}
 	}
-	
+
 	public boolean isMuted() {
 		return muted;
 	}
-	
+
 	public void setMuted(boolean muted) {
 		this.muted = muted;
 	}
-	
+
 	public boolean isSoloed() {
 		return soloed;
 	}
-	
+
 	public void setSoloed(boolean soloed) {
 		this.soloed = soloed;
 	}
@@ -1263,8 +1256,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		BitSet[] enabledSet = isCowbellPart() ? cowbellsEnabled : isFXPart() ? fxEnabled : drumsEnabled;
 
 		if (enabledSet == null || enabledSet[track] == null) {
-			return !isCowbellPart() || (drumId == MidiDrum.COWBELL.id())
-					|| !abcSong.getSequenceInfo().getTrackInfo(track).isDrumTrack();
+			return !isCowbellPart() || (drumId == MidiDrum.COWBELL.id()) || !abcSong.getSequenceInfo().getTrackInfo(track).isDrumTrack();
 		}
 
 		return enabledSet[track].get(drumId);

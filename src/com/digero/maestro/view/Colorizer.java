@@ -16,8 +16,7 @@ import javax.swing.event.ChangeListener;
 import com.digero.common.view.ColorTable;
 
 @SuppressWarnings("serial")
-public class Colorizer extends JPanel
-{
+public class Colorizer extends JPanel {
 	private JComboBox<ColorTable> picker;
 	private SpinnerNumberModel hue;
 	private SpinnerNumberModel sat;
@@ -25,8 +24,7 @@ public class Colorizer extends JPanel
 	private boolean updating = false;
 	private JPanel refresher;
 
-	public Colorizer(JPanel coloredPanel)
-	{
+	public Colorizer(JPanel coloredPanel) {
 		super(new BorderLayout());
 		this.refresher = coloredPanel;
 		picker = new JComboBox<>(ColorTable.values());
@@ -38,8 +36,7 @@ public class Colorizer extends JPanel
 		brt = new SpinnerNumberModel(0.0, 0.0, 1.0, 0.05);
 
 		ChangeListener cl = e -> {
-			if (!updating)
-			{
+			if (!updating) {
 				float h = hue.getNumber().floatValue();
 				float s = sat.getNumber().floatValue();
 				float b = brt.getNumber().floatValue();
@@ -54,7 +51,7 @@ public class Colorizer extends JPanel
 		brt.addChangeListener(cl);
 
 		JPanel spinners = new JPanel(new TableLayout(//
-				new double[] { PREFERRED, 0.33, PREFERRED, 0.33, PREFERRED, 0.34 },//
+				new double[] { PREFERRED, 0.33, PREFERRED, 0.33, PREFERRED, 0.34 }, //
 				new double[] { PREFERRED }));
 		spinners.add(new JLabel("H:"), "0, 0");
 		spinners.add(new JSpinner(hue), "1, 0");
@@ -69,8 +66,7 @@ public class Colorizer extends JPanel
 		updateSpinners();
 	}
 
-	private void updateSpinners()
-	{
+	private void updateSpinners() {
 		boolean updatingSav = updating;
 		updating = true;
 

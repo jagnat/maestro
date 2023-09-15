@@ -61,9 +61,8 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 	private boolean[] yamahaDrumChannels = null;
 	public boolean hasPorts = false;
 
-	public SequenceDataCache(Sequence song, MidiStandard standard, boolean[] rolandDrumChannels,
-			List<TreeMap<Long, Boolean>> yamahaDrumSwitches, boolean[] yamahaDrumChannels,
-			List<TreeMap<Long, Boolean>> mmaDrumSwitches, SortedMap<Integer, Integer> portMap) {
+	public SequenceDataCache(Sequence song, MidiStandard standard, boolean[] rolandDrumChannels, List<TreeMap<Long, Boolean>> yamahaDrumSwitches,
+			boolean[] yamahaDrumChannels, List<TreeMap<Long, Boolean>> mmaDrumSwitches, SortedMap<Integer, Integer> portMap) {
 		Map<Integer, Long> tempoLengths = new HashMap<>();
 
 		this.standard = standard;
@@ -85,10 +84,8 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		Arrays.fill(rpn, REGISTERED_PARAM_NONE);
 
 		/*
-		 * We need to be able to know which tracks have drum notes. We also need to know
-		 * what instrument voices are used in each track, so we build maps of voice
-		 * changes that TrackInfo later can use to build strings of instruments for each
-		 * track.
+		 * We need to be able to know which tracks have drum notes. We also need to know what instrument voices are used in each track, so we build
+		 * maps of voice changes that TrackInfo later can use to build strings of instruments for each track.
 		 * 
 		 * This among other things we will find out by iterating through all MidiEvents.
 		 * 
@@ -105,12 +102,13 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 				Track track = tracks[iiTrack];
 				int port = 0;
 				portMap.put(iiTrack, port);
-	
+
 				for (int jj = 0, sz1 = track.size(); jj < sz1; jj++) {
 					MidiEvent evt = track.get(jj);
 					MidiMessage msg = evt.getMessage();
 					long tick = evt.getTick();
-					if (tick > 0L) break;
+					if (tick > 0L)
+						break;
 					if (msg instanceof MetaMessage) {
 						MetaMessage m = (MetaMessage) msg;
 						if (m.getType() == META_PORT_CHANGE) {
@@ -133,19 +131,19 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 			TimeSignature backupTimeSignature = null;
 			for (int iTrack = 0; iTrack < tracks.length; iTrack++) {
 				Track track = tracks[iTrack];
-	
+
 				for (int j = 0, sz = track.size(); j < sz; j++) {
 					MidiEvent evt = track.get(j);
 					MidiMessage msg = evt.getMessage();
 					long tick = evt.getTick();
 					if (tick > lastTick)
 						lastTick = tick;
-	
+
 					if (msg instanceof ShortMessage) {
 						ShortMessage m = (ShortMessage) msg;
 						int cmd = m.getCommand();
 						int ch = m.getChannel();
-	
+
 						if (cmd == ShortMessage.NOTE_ON) {
 							if (rolandDrumChannels != null && rolandDrumChannels[ch] && MidiStandard.GS == standard) {
 								brandDrumBanks[iTrack] = 2;// GS Drums
@@ -154,8 +152,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 									&& yamahaDrumSwitches.get(ch).floorEntry(tick).getValue()) {
 								brandDrumBanks[iTrack] = 1;// XG drums
 							} else if (brandDrumBanks[iTrack] != 4 && MidiStandard.GM2 == standard && mmaDrumSwitches != null
-									&& mmaDrumSwitches.get(ch).floorEntry(tick) != null
-									&& mmaDrumSwitches.get(ch).floorEntry(tick).getValue()) {
+									&& mmaDrumSwitches.get(ch).floorEntry(tick) != null && mmaDrumSwitches.get(ch).floorEntry(tick).getValue()) {
 								brandDrumBanks[iTrack] = 4;// GM2 drums
 							} else if (ch == DRUM_CHANNEL && (MidiStandard.GM == standard || MidiStandard.ABC == standard)) {
 								brandDrumBanks[iTrack] = 3;// GM drums on channel #10
@@ -167,8 +164,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 									&& (MidiStandard.XG != standard || yamahaDrumSwitches == null
 											|| yamahaDrumSwitches.get(ch).floorEntry(tick) == null
 											|| !yamahaDrumSwitches.get(ch).floorEntry(tick).getValue())
-									&& (MidiStandard.GM2 != standard || mmaDrumSwitches == null
-											|| mmaDrumSwitches.get(ch).floorEntry(tick) == null
+									&& (MidiStandard.GM2 != standard || mmaDrumSwitches == null || mmaDrumSwitches.get(ch).floorEntry(tick) == null
 											|| !mmaDrumSwitches.get(ch).floorEntry(tick).getValue())) {
 								instruments.put(portMap.get(iTrack), ch, tick, m.getData1());
 							}
@@ -176,8 +172,8 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 						} else if (cmd == ShortMessage.CONTROL_CHANGE) {
 							switch (m.getData1()) {
 							case CHANNEL_VOLUME_CONTROLLER_COARSE:
-								//if (m.getData2() != 0)  TODO: uncomment this to see hidden notes in MIDIs. :)
-									channelVolume.put(ch, tick, m.getData2());
+								// if (m.getData2() != 0) TODO: uncomment this to see hidden notes in MIDIs. :)
+								channelVolume.put(ch, tick, m.getData2());
 								break;
 							case CHANNEL_EXPRESSION_CONTROLLER:
 								expression.put(ch, tick, m.getData2());
@@ -216,8 +212,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 									// Due to XG drum part protect mode being ON, drum channel 9 only can switch
 									// between MSB 126 & 127.
 									mapMSB.put(ch, tick, m.getData2());
-								} else if (ch == DRUM_CHANNEL && MidiStandard.XG == standard && m.getData2() != 126
-										&& m.getData2() != 127) {
+								} else if (ch == DRUM_CHANNEL && MidiStandard.XG == standard && m.getData2() != 126 && m.getData2() != 127) {
 									System.err.println("XG Drum Part Protect Mode prevented bank select MSB.");
 								}
 								// if(ch==DRUM_CHANNEL) System.err.println("Bank select MSB "+m.getData2()+" "+tick);
@@ -237,10 +232,9 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 					} else if (msg instanceof SysexMessage) {
 						SysexMessage sysex = (SysexMessage) msg;
 						byte[] message = sysex.getMessage();
-						if (message.length == 9 && (message[0] & 0xFF) == 0xF0 && (message[1] & 0xFF) == 0x43
-								&& (message[4] & 0xFF) == 0x08 && (message[8] & 0xFF) == 0xF7) {
-							String bank = message[6] == 1 ? "MSB"
-									: (message[6] == 2 ? "LSB" : (message[6] == 3 ? "Patch" : ""));
+						if (message.length == 9 && (message[0] & 0xFF) == 0xF0 && (message[1] & 0xFF) == 0x43 && (message[4] & 0xFF) == 0x08
+								&& (message[8] & 0xFF) == 0xF7) {
+							String bank = message[6] == 1 ? "MSB" : (message[6] == 2 ? "LSB" : (message[6] == 3 ? "Patch" : ""));
 							if (MidiStandard.XG == standard && !"".equals(bank) && message[5] < 16 && message[5] > -1 && message[7] < 128
 									&& message[7] > -1) {
 								switch (bank) {
@@ -262,7 +256,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 						long elapsedMicros = MidiUtils.ticks2microsec(tick - te.tick, te.tempoMPQ, tickResolution);
 						tempoLengths.put(te.tempoMPQ, elapsedMicros + Util.valueOf(tempoLengths.get(te.tempoMPQ), 0));
 						tempo.put(tick, new TempoEvent(MidiUtils.getTempoMPQ(msg), tick, te.micros + elapsedMicros));
-	
+
 						if (te.tempoMPQ < minTempoMPQ)
 							minTempoMPQ = te.tempoMPQ;
 						if (te.tempoMPQ > maxTempoMPQ)
@@ -289,8 +283,9 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 				}
 			}
 			// We don't like this illegal meter, but if nothing better came long we use it.
-			if (timeSignature == null) timeSignature = backupTimeSignature;
-	
+			if (timeSignature == null)
+				timeSignature = backupTimeSignature;
+
 			// Setup default banks for extensions:
 			for (int i = 0; i < CHANNEL_COUNT_ABC; i++) {
 				mapPatch.put(i, -1, 0);
@@ -331,7 +326,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		} else {
 			for (int iTrack = 0; iTrack < tracks.length; iTrack++) {
 				Track track = tracks[iTrack];
-	
+
 				for (int j = 0, sz = track.size(); j < sz; j++) {
 					MidiEvent evt = track.get(j);
 					long tick = evt.getTick();
@@ -340,12 +335,12 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 				}
 			}
 		}
-		
+
 		// Account for the duration of the final tempo
 		TempoEvent te = getTempoEventForTick(lastTick);
 		long elapsedMicros = MidiUtils.ticks2microsec(lastTick - te.tick, te.tempoMPQ, tickResolution);
 		tempoLengths.put(te.tempoMPQ, elapsedMicros + Util.valueOf(tempoLengths.get(te.tempoMPQ), 0));
-		
+
 		// Convert the bend ranges into seminote integers.
 		// We do this after the main iteration so that the
 		// getPitchBendRange has been fully built.
@@ -381,7 +376,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		str.append("[ ").append(sb).append("]");
 		return str.toString();
 	}
-	
+
 	public boolean isXGDrumsTrack(int track) {
 		if (track >= brandDrumBanks.length)
 			return false;
@@ -444,7 +439,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 
 		String value = ExtensionMidiInstrument.getInstance().fromId(type, (byte) mapMSB.get(channel, patchTick),
 				(byte) mapLSB.get(channel, patchTick), (byte) mapPatch.get(channel, tick), drumKit, rhythmChannel);
-		
+
 		return value;
 	}
 
@@ -457,7 +452,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 	public int getChannelVolume(int channel, long tick) {
 		return channelVolume.get(channel, tick);
 	}
-	
+
 	/**
 	 * 
 	 * @param channel
@@ -591,11 +586,11 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		}
 		return prev;
 	}
-	
+
 	public MapByChannel getBendMap() {
 		return bendMap;
 	}
-	
+
 	public MapByChannel getPanMap() {
 		return panMap;
 	}
@@ -630,7 +625,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 
 			return entry.getValue();
 		}
-		
+
 		public Set<Entry<Long, Integer>> getEntries(int channel, long fromTick, long toTick) {
 			if (map[channel] == null)
 				return new HashSet<>();

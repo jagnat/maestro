@@ -37,47 +37,46 @@ import javax.sound.midi.ShortMessage;
  */
 public class SoftReceiver implements Receiver {
 
-    protected boolean open = true;
-    private Object control_mutex;
-    private LotroSoftSynthesizer synth;
-    protected TreeMap<Long, Object> midimessages;
-    protected SoftMainMixer mainmixer;
+	protected boolean open = true;
+	private Object control_mutex;
+	private LotroSoftSynthesizer synth;
+	protected TreeMap<Long, Object> midimessages;
+	protected SoftMainMixer mainmixer;
 
-    public SoftReceiver(LotroSoftSynthesizer synth) {
-        this.control_mutex = synth.control_mutex;
-        this.synth = synth;
-        this.mainmixer = synth.getMainMixer();
-        if (mainmixer != null)
-            this.midimessages = mainmixer.midimessages;
-    }
+	public SoftReceiver(LotroSoftSynthesizer synth) {
+		this.control_mutex = synth.control_mutex;
+		this.synth = synth;
+		this.mainmixer = synth.getMainMixer();
+		if (mainmixer != null)
+			this.midimessages = mainmixer.midimessages;
+	}
 
-    public void send(MidiMessage message, long timeStamp) {
+	public void send(MidiMessage message, long timeStamp) {
 
-        synchronized (control_mutex) {
-            if (!open)
-                throw new IllegalStateException("Receiver is not open");
-        }
+		synchronized (control_mutex) {
+			if (!open)
+				throw new IllegalStateException("Receiver is not open");
+		}
 
-        if (timeStamp != -1) {
-            synchronized (control_mutex) {
-                while (midimessages.get(timeStamp) != null)
-                    timeStamp++;
-                if (message instanceof ShortMessage
-                        && (((ShortMessage)message).getChannel() > 0xF)) {
-                    midimessages.put(timeStamp, message.clone());
-                } else {
-                    midimessages.put(timeStamp, message.getMessage());
-                }
-            }
-        } else {
-            mainmixer.processMessage(message);
-        }
-    }
+		if (timeStamp != -1) {
+			synchronized (control_mutex) {
+				while (midimessages.get(timeStamp) != null)
+					timeStamp++;
+				if (message instanceof ShortMessage && (((ShortMessage) message).getChannel() > 0xF)) {
+					midimessages.put(timeStamp, message.clone());
+				} else {
+					midimessages.put(timeStamp, message.getMessage());
+				}
+			}
+		} else {
+			mainmixer.processMessage(message);
+		}
+	}
 
-    public void close() {
-        synchronized (control_mutex) {
-            open = false;
-        }
-        synth.removeReceiver(this);
-    }
+	public void close() {
+		synchronized (control_mutex) {
+			open = false;
+		}
+		synth.removeReceiver(this);
+	}
 }

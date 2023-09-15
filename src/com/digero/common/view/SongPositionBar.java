@@ -44,8 +44,7 @@ import com.digero.common.util.Listener;
 import com.digero.common.util.Util;
 
 @SuppressWarnings("serial")
-public class SongPositionBar extends JPanel implements Listener<SequencerEvent>
-{
+public class SongPositionBar extends JPanel implements Listener<SequencerEvent> {
 	private static final int PTR_WIDTH = 12;
 	private static final int PTR_HEIGHT = 12;
 	private static final int BAR_HEIGHT = 8;
@@ -59,8 +58,7 @@ public class SongPositionBar extends JPanel implements Listener<SequencerEvent>
 
 	private Rectangle ptrRect = new Rectangle(0, 0, PTR_WIDTH, PTR_HEIGHT);
 
-	public SongPositionBar(SequencerWrapper sequencer)
-	{
+	public SongPositionBar(SequencerWrapper sequencer) {
 		setSequence(sequencer);
 
 		MouseHandler mouseHandler = new MouseHandler();
@@ -73,8 +71,7 @@ public class SongPositionBar extends JPanel implements Listener<SequencerEvent>
 		updatePointerRect();
 	}
 
-	public void setSequence(SequencerWrapper sequencer)
-	{
+	public void setSequence(SequencerWrapper sequencer) {
 		if (this.seq != null)
 			this.seq.removeChangeListener(this);
 
@@ -86,20 +83,17 @@ public class SongPositionBar extends JPanel implements Listener<SequencerEvent>
 		setEnabled(this.seq != null && this.seq.isLoaded());
 	}
 
-	@Override protected void paintComponent(Graphics g)
-	{
+	@Override
+	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 
 		Graphics2D g2 = (Graphics2D) g;
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 		int ptrPos;
-		if (seq == null || seq.getLength() == 0)
-		{
+		if (seq == null || seq.getLength() == 0) {
 			ptrPos = 0;
-		}
-		else
-		{
+		} else {
 			ptrPos = (int) (SIDE_PAD + (getWidth() - 2 * SIDE_PAD) * seq.getThumbPosition() / seq.getLength());
 		}
 
@@ -127,8 +121,7 @@ public class SongPositionBar extends JPanel implements Listener<SequencerEvent>
 		g2.setColor(Color.BLACK);
 		g2.drawRoundRect(x, y, right - x - 1, BAR_HEIGHT, ROUND, ROUND);
 
-		if ((mouseHovering || seq.isDragging()) && this.isEnabled())
-		{
+		if ((mouseHovering || seq.isDragging()) && this.isEnabled()) {
 			int left = ptrPos - PTR_WIDTH / 2;
 
 			final Color PTR_COLOR_1 = Color.WHITE;
@@ -142,34 +135,26 @@ public class SongPositionBar extends JPanel implements Listener<SequencerEvent>
 		}
 	}
 
-	public void setUseInvertedColors(boolean usingInvertedColors)
-	{
+	public void setUseInvertedColors(boolean usingInvertedColors) {
 		this.useInvertedColors = usingInvertedColors;
 	}
 
-	public boolean isUseInvertedColors()
-	{
+	public boolean isUseInvertedColors() {
 		return useInvertedColors;
 	}
 
-	private void updatePointerRect()
-	{
-		if (seq == null || seq.getLength() == 0)
-		{
+	private void updatePointerRect() {
+		if (seq == null || seq.getLength() == 0) {
 			ptrRect.x = 0;
-		}
-		else
-		{
+		} else {
 			ptrRect.x = (int) (getWidth() * seq.getThumbPosition() / seq.getLength() - PTR_WIDTH / 2);
 		}
 	}
 
-	private class MouseHandler implements MouseListener, MouseMotionListener
-	{
+	private class MouseHandler implements MouseListener, MouseMotionListener {
 		private static final int MAX_MOUSE_DIST = 100;
 
-		private long getPosition(int x)
-		{
+		private long getPosition(int x) {
 			if (seq == null)
 				return 0;
 
@@ -177,26 +162,24 @@ public class SongPositionBar extends JPanel implements Listener<SequencerEvent>
 			return Util.clamp(pos, 0, seq.getLength() - 1);
 		}
 
-		private void setMouseHovering(MouseEvent e)
-		{
+		private void setMouseHovering(MouseEvent e) {
 			Point pt = e.getPoint();
 
 			boolean inside = pt.x >= 0 && pt.x < getWidth() && pt.y >= 0 && pt.y < getHeight();
 			boolean newMouseHovering = SongPositionBar.this.isEnabled() && (seq.isDragging() || inside);
 
-			if (newMouseHovering != mouseHovering)
-			{
+			if (newMouseHovering != mouseHovering) {
 				mouseHovering = newMouseHovering;
 				repaint();
 			}
 		}
 
-		@Override public void mouseClicked(MouseEvent e)
-		{
+		@Override
+		public void mouseClicked(MouseEvent e) {
 		}
 
-		@Override public void mousePressed(MouseEvent e)
-		{
+		@Override
+		public void mousePressed(MouseEvent e) {
 			if (!SongPositionBar.this.isEnabled())
 				return;
 			seq.setDragging(true);
@@ -205,57 +188,52 @@ public class SongPositionBar extends JPanel implements Listener<SequencerEvent>
 			requestFocus();
 		}
 
-		@Override public void mouseReleased(MouseEvent e)
-		{
+		@Override
+		public void mouseReleased(MouseEvent e) {
 			if (!SongPositionBar.this.isEnabled())
 				return;
 			seq.setDragging(false);
-			if (e.getY() > -MAX_MOUSE_DIST && e.getY() < getHeight() + MAX_MOUSE_DIST)
-			{
+			if (e.getY() > -MAX_MOUSE_DIST && e.getY() < getHeight() + MAX_MOUSE_DIST) {
 				seq.setPosition(getPosition(e.getX()));
 			}
 			setMouseHovering(e);
 		}
 
-		@Override public void mouseDragged(MouseEvent e)
-		{
+		@Override
+		public void mouseDragged(MouseEvent e) {
 			if (!SongPositionBar.this.isEnabled())
 				return;
-			if (e.getY() > -MAX_MOUSE_DIST && e.getY() < getHeight() + MAX_MOUSE_DIST)
-			{
+			if (e.getY() > -MAX_MOUSE_DIST && e.getY() < getHeight() + MAX_MOUSE_DIST) {
 				seq.setDragging(true);
 				seq.setDragPosition(getPosition(e.getX()));
-			}
-			else
-			{
+			} else {
 				seq.setDragging(false);
 			}
 			setMouseHovering(e);
 		}
 
-		@Override public void mouseMoved(MouseEvent e)
-		{
+		@Override
+		public void mouseMoved(MouseEvent e) {
 			if (!SongPositionBar.this.isEnabled())
 				return;
 			setMouseHovering(e);
 		}
 
-		@Override public void mouseEntered(MouseEvent e)
-		{
+		@Override
+		public void mouseEntered(MouseEvent e) {
 		}
 
-		@Override public void mouseExited(MouseEvent e)
-		{
-			if (mouseHovering)
-			{
+		@Override
+		public void mouseExited(MouseEvent e) {
+			if (mouseHovering) {
 				mouseHovering = false;
 				repaint();
 			}
 		}
 	}
 
-	@Override public void onEvent(SequencerEvent evt)
-	{
+	@Override
+	public void onEvent(SequencerEvent evt) {
 		if (evt.getProperty() == SequencerProperty.IS_LOADED)
 			setEnabled(evt.getSource().isLoaded());
 

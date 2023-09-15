@@ -13,22 +13,18 @@ import java.util.prefs.Preferences;
 
 import com.digero.common.abc.LotroInstrument;
 
-public class PartAutoNumberer
-{
-	public static class Settings
-	{
+public class PartAutoNumberer {
+	public static class Settings {
 		private Map<LotroInstrument, Integer> firstNumber = new EnumMap<>(LotroInstrument.class);
 		private boolean incrementByTen;
 		private final Preferences prefs;
 
-		private Settings(Preferences prefs)
-		{
+		private Settings(Preferences prefs) {
 			this.prefs = prefs;
 			incrementByTen = prefs.getBoolean("incrementByTen", true);
 			int x10 = incrementByTen ? 1 : 10;
 
-			if (!prefs.getBoolean("newCowbellDefaults", false))
-			{
+			if (!prefs.getBoolean("newCowbellDefaults", false)) {
 				prefs.putBoolean("newCowbellDefaults", true);
 				prefs.remove(prefsKey(LotroInstrument.BASIC_COWBELL));
 				prefs.remove(prefsKey(LotroInstrument.MOOR_COWBELL));
@@ -62,11 +58,9 @@ public class PartAutoNumberer
 		}
 
 		/**
-		 * @return the original name of the instrument before it was renamed, which can be used a
-		 *         stable prefs key even if the instrument is renamed.
+		 * @return the original name of the instrument before it was renamed, which can be used a stable prefs key even if the instrument is renamed.
 		 */
-		public String prefsKey(LotroInstrument instrument)
-		{
+		public String prefsKey(LotroInstrument instrument) {
 			// @formatter:off
 			switch (instrument)
 			{
@@ -100,70 +94,58 @@ public class PartAutoNumberer
 			return instrument.toString();
 		}
 
-		private void init(LotroInstrument instrument, int defaultValue)
-		{
+		private void init(LotroInstrument instrument, int defaultValue) {
 			firstNumber.put(instrument, prefs.getInt(prefsKey(instrument), defaultValue));
 		}
 
-		private void init(LotroInstrument instruments, LotroInstrument copyDefaultFrom)
-		{
+		private void init(LotroInstrument instruments, LotroInstrument copyDefaultFrom) {
 			init(instruments, firstNumber.get(copyDefaultFrom));
 		}
 
-		private void save()
-		{
-			for (Entry<LotroInstrument, Integer> entry : firstNumber.entrySet())
-			{
+		private void save() {
+			for (Entry<LotroInstrument, Integer> entry : firstNumber.entrySet()) {
 				prefs.putInt(prefsKey(entry.getKey()), entry.getValue());
 			}
 			prefs.putBoolean("incrementByTen", incrementByTen);
 		}
 
-		public Settings(Settings source)
-		{
+		public Settings(Settings source) {
 			prefs = source.prefs;
 			copyFrom(source);
 		}
 
-		public void copyFrom(Settings source)
-		{
+		public void copyFrom(Settings source) {
 			firstNumber = new EnumMap<>(source.firstNumber);
 			incrementByTen = source.incrementByTen;
 		}
 
-		public int getIncrement()
-		{
+		public int getIncrement() {
 			return incrementByTen ? 10 : 1;
 		}
 
-		public boolean isIncrementByTen()
-		{
+		public boolean isIncrementByTen() {
 			return incrementByTen;
 		}
 
-		public void setIncrementByTen(boolean incrementByTen)
-		{
+		public void setIncrementByTen(boolean incrementByTen) {
 			this.incrementByTen = incrementByTen;
 		}
 
-		public void setFirstNumber(LotroInstrument instrument, int number)
-		{
+		public void setFirstNumber(LotroInstrument instrument, int number) {
 			firstNumber.put(instrument, number);
 		}
 
-		public int getFirstNumber(LotroInstrument instrument)
-		{
+		public int getFirstNumber(LotroInstrument instrument) {
 			return firstNumber.get(instrument);
 		}
-		
-		public void restoreDefaults()
-		{
+
+		public void restoreDefaults() {
 			try {
 				prefs.clear();
 			} catch (BackingStoreException e) {
 				e.printStackTrace();
 			}
-			
+
 			Settings fresh = new Settings(prefs);
 			this.copyFrom(fresh);
 		}
@@ -172,86 +154,71 @@ public class PartAutoNumberer
 	private Settings settings;
 	private List<? extends NumberedAbcPart> parts = null;
 
-	public PartAutoNumberer(Preferences prefsNode)
-	{
+	public PartAutoNumberer(Preferences prefsNode) {
 		this.settings = new Settings(prefsNode);
 	}
-	
-	public void restoreDefaultSettings()
-	{
+
+	public void restoreDefaultSettings() {
 		settings.restoreDefaults();
 	}
 
-	public Settings getSettingsCopy()
-	{
+	public Settings getSettingsCopy() {
 		return new Settings(settings);
 	}
 
-	public boolean isIncrementByTen()
-	{
+	public boolean isIncrementByTen() {
 		return settings.isIncrementByTen();
 	}
 
-	public int getIncrement()
-	{
+	public int getIncrement() {
 		return settings.getIncrement();
 	}
 
-	public int getFirstNumber(LotroInstrument instrument)
-	{
+	public int getFirstNumber(LotroInstrument instrument) {
 		return settings.getFirstNumber(instrument);
 	}
 
-	public void setSettings(Settings settings)
-	{
+	public void setSettings(Settings settings) {
 		this.settings.copyFrom(settings);
 		this.settings.save();
 	}
 
-	public void setParts(List<? extends NumberedAbcPart> parts)
-	{
+	public void setParts(List<? extends NumberedAbcPart> parts) {
 		this.parts = parts;
 	}
 
-	public void renumberAllParts()
-	{
+	public void renumberAllParts() {
 
 		if (parts == null)
 			return;
 
 		Set<Integer> numbersInUse = new HashSet<>(parts.size());
-		
+
 		List<? extends NumberedAbcPart> partsCopy = new ArrayList<>(parts);// This is to prevent a reordering of parts while iterating through it.
-		
-		for (NumberedAbcPart part : partsCopy)
-		{
+
+		for (NumberedAbcPart part : partsCopy) {
 			int partNumber = getFirstNumber(part.getInstrument());
-			while (numbersInUse.contains(partNumber))
-			{
+			while (numbersInUse.contains(partNumber)) {
 				partNumber += getIncrement();
 			}
 			numbersInUse.add(partNumber);
 			part.setPartNumber(partNumber);
 		}
-		
+
 	}
 
-	public void onPartAdded(NumberedAbcPart partAdded)
-	{
-		
+	public void onPartAdded(NumberedAbcPart partAdded) {
+
 		if (parts == null)
 			return;
 
 		int newPartNumber = settings.getFirstNumber(partAdded.getInstrument());
 
 		boolean conflict;
-		do
-		{
+		do {
 			conflict = false;
-			for (NumberedAbcPart part : parts)
-			{
-				if (part != partAdded && part.getPartNumber() == newPartNumber)
-				{
+			for (NumberedAbcPart part : parts) {
+				if (part != partAdded && part.getPartNumber() == newPartNumber) {
 					newPartNumber += getIncrement();
 					conflict = true;
 				}
@@ -261,33 +228,32 @@ public class PartAutoNumberer
 		partAdded.setPartNumber(newPartNumber);
 	}
 
-	public void onPartDeleted(NumberedAbcPart partDeleted)
-	{
-		//System.out.println(partDeleted.getPartNumber()+" deleted");
+	public void onPartDeleted(NumberedAbcPart partDeleted) {
+		// System.out.println(partDeleted.getPartNumber()+" deleted");
 		if (parts == null)
 			return;
-		
+
 		int deletedNumber = partDeleted.getPartNumber();
-		int deletedFirstNumber = getFirstNumber(partDeleted.getInstrument());//System.out.println(deletedFirstNumber+" is the first from the deleted");
+		int deletedFirstNumber = getFirstNumber(partDeleted.getInstrument());// System.out.println(deletedFirstNumber+" is the first from the
+																				// deleted");
 		if (!isAutoAssigned(partDeleted, -1, deletedFirstNumber)) {
-			//System.out.println(partDeleted.getInstrument().toString()+" deleted and did not fit");
+			// System.out.println(partDeleted.getInstrument().toString()+" deleted and did not fit");
 			return;
 		}
-		
-		for (NumberedAbcPart part : parts)
-		{
+
+		for (NumberedAbcPart part : parts) {
 			int partNumber = part.getPartNumber();
-			int partFirstNumber = getFirstNumber(part.getInstrument());//System.out.println(partFirstNumber+" is the first");
+			int partFirstNumber = getFirstNumber(part.getInstrument());// System.out.println(partFirstNumber+" is the first");
 			boolean autoTest = isAutoAssigned(part, deletedNumber, deletedFirstNumber);
-			if (part != partDeleted && partNumber > deletedNumber && partNumber > partFirstNumber
-					&& partFirstNumber == deletedFirstNumber && autoTest)
-			{
-				part.setPartNumber(partNumber - getIncrement());//System.out.println(partNumber+" decremented");
-				if (part.getPartNumber() == deletedNumber) deletedNumber = partNumber;// the deleted spot was filled out, the one that filled it out is now considered deleted
-			}// else System.out.println(autoTest+"  "+partNumber+" isAutoAssigned(part)");
+			if (part != partDeleted && partNumber > deletedNumber && partNumber > partFirstNumber && partFirstNumber == deletedFirstNumber
+					&& autoTest) {
+				part.setPartNumber(partNumber - getIncrement());// System.out.println(partNumber+" decremented");
+				if (part.getPartNumber() == deletedNumber)
+					deletedNumber = partNumber;// the deleted spot was filled out, the one that filled it out is now considered deleted
+			} // else System.out.println(autoTest+" "+partNumber+" isAutoAssigned(part)");
 		}
 	}
-	
+
 	private boolean isAutoAssigned(NumberedAbcPart testPart, int deletedNumber, int deletedFirstNumber) {
 		// Return true if this part fit into the auto numbering scheme.
 		// If it does not or a part with lower part number has a different firstNumber,
@@ -295,52 +261,50 @@ public class PartAutoNumberer
 		// it will also return false.
 		int testNumber = testPart.getPartNumber();
 		int testFirstNumber = getFirstNumber(testPart.getInstrument());
-		if (testNumber == testFirstNumber) return true;
+		if (testNumber == testFirstNumber)
+			return true;
 		if (getIncrement() == 10 && Math.abs(testNumber) % 10 != testFirstNumber) {
 			return false;
 		}
-		if (testNumber < testFirstNumber) return false;
+		if (testNumber < testFirstNumber)
+			return false;
 		boolean cohesive = true;
 		int checkNumber = testFirstNumber;
 		if (testFirstNumber != deletedFirstNumber) {
 			deletedNumber = -1;// should not be considered
 		}
-		outer:while(cohesive && checkNumber < testNumber) {
+		outer: while (cohesive && checkNumber < testNumber) {
 			if (checkNumber == deletedNumber) {
-				//System.out.println(checkNumber+" checks out (deleted)");
+				// System.out.println(checkNumber+" checks out (deleted)");
 				checkNumber += getIncrement();
 				continue outer;
 			}
-			for (NumberedAbcPart part : parts)
-			{
+			for (NumberedAbcPart part : parts) {
 				int partNumber = part.getPartNumber();
-				
+
 				if (checkNumber == partNumber) {
 					if (testFirstNumber != getFirstNumber(part.getInstrument())) {
-						//System.out.println(" testFirstNumber != getFirstNumber(part.getInstrument())");
+						// System.out.println(" testFirstNumber != getFirstNumber(part.getInstrument())");
 						return false;
 					}
-					//System.out.println(checkNumber+" checks out");
+					// System.out.println(checkNumber+" checks out");
 					checkNumber += getIncrement();
 					continue outer;
 				}
 			}
 			cohesive = false;
-			//System.out.println(testNumber+" not cohesive");
+			// System.out.println(testNumber+" not cohesive");
 		}
 		return cohesive;
 	}
 
-	public void setPartNumber(NumberedAbcPart partToChange, int newPartNumber)
-	{
-		
+	public void setPartNumber(NumberedAbcPart partToChange, int newPartNumber) {
+
 		if (parts == null)
 			return;
 
-		for (NumberedAbcPart part : parts)
-		{
-			if (part != partToChange && part.getPartNumber() == newPartNumber)
-			{
+		for (NumberedAbcPart part : parts) {
+			if (part != partToChange && part.getPartNumber() == newPartNumber) {
 				part.setPartNumber(partToChange.getPartNumber());
 				break;
 			}
@@ -348,11 +312,9 @@ public class PartAutoNumberer
 		partToChange.setPartNumber(newPartNumber);
 	}
 
-	public void setInstrument(NumberedAbcPart partToChange, LotroInstrument newInstrument)
-	{
-		
-		if (newInstrument != partToChange.getInstrument())
-		{
+	public void setInstrument(NumberedAbcPart partToChange, LotroInstrument newInstrument) {
+
+		if (newInstrument != partToChange.getInstrument()) {
 			if (getFirstNumber(partToChange.getInstrument()) == getFirstNumber(newInstrument)) {
 				// Lets keep the part number, since it has the same first number
 				partToChange.setInstrument(newInstrument);
@@ -364,8 +326,7 @@ public class PartAutoNumberer
 		}
 	}
 
-	public LotroInstrument[] getSortedInstrumentList()
-	{
+	public LotroInstrument[] getSortedInstrumentList() {
 		LotroInstrument[] instruments = LotroInstrument.values();
 		Arrays.sort(instruments, (a, b) -> {
 			int diff = getFirstNumber(a) - getFirstNumber(b);

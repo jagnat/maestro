@@ -1,7 +1,6 @@
 package com.digero.common.midi;
 
-public enum MidiStandard
-{
+public enum MidiStandard {
 // @formatter:off
 	// MIDI 1.0:
 	GM     ("GM",   "General Midi",            "MMA",      "MIDI Manufacturers Association"),
@@ -16,7 +15,7 @@ public enum MidiStandard
 	// Preview
 	PREVIEW("GM_PV","General Midi Preview",    "MMA",      "MIDI Manufacturers Association");
 // @formatter:on
-	
+
 	public final String shortName;
 	public final String longName;
 	public final String shortBrand;
@@ -29,13 +28,12 @@ public enum MidiStandard
 		this.longBrand = longBrand;
 	}
 
-	public int id()
-	{
+	public int id() {
 		return ordinal();
 	}
 
-	@Override public String toString()
-	{
+	@Override
+	public String toString() {
 		return shortName;
 	}
 }

@@ -5,10 +5,8 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 
 @SuppressWarnings("serial")
-public class DrumSelectionDialog extends JDialog
-{
-	public DrumSelectionDialog(JFrame owner, Receiver midiReceiver, Receiver lotroReceiver)
-	{
+public class DrumSelectionDialog extends JDialog {
+	public DrumSelectionDialog(JFrame owner, Receiver midiReceiver, Receiver lotroReceiver) {
 		super(owner);
 	}
 }

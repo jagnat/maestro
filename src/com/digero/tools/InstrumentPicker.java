@@ -7,10 +7,9 @@ import java.util.Scanner;
 
 import com.digero.common.abc.LotroInstrument;
 
-public class InstrumentPicker
-{
-	@SuppressWarnings("resource") public static void main(String[] args)
-	{
+public class InstrumentPicker {
+	@SuppressWarnings("resource")
+	public static void main(String[] args) {
 		File root = new File("F:\\Games\\LOTRO\\u16\\ogg");
 		File sourceRoot = root;
 		File instrumentsRoot = new File(root, "instruments");
@@ -23,8 +22,7 @@ public class InstrumentPicker
 		final int REPLAY = 0;
 		int i = 0;
 		LotroInstrument[] instruments = LotroInstrument.values();
-		for (LotroInstrument instrument : instruments)
-		{
+		for (LotroInstrument instrument : instruments) {
 			File dir = new File(instrumentsRoot, instrument.name().toLowerCase());
 
 			dirs.put(instrument, dir);
@@ -44,14 +42,12 @@ public class InstrumentPicker
 		pickString.append(", [").append(i).append("] Maybe");
 		final int MAYBE_INSTRUMENT = i;
 
-		for (File file : sourceRoot.listFiles())
-		{
+		for (File file : sourceRoot.listFiles()) {
 			if (file.isDirectory())
 				continue;
 
 			int playCount = 0;
-			while (true)
-			{
+			while (true) {
 				playCount++;
 				System.out.print(pickString + ": ");
 				int duration = 400;
@@ -63,18 +59,12 @@ public class InstrumentPicker
 				String input = new Scanner(System.in).nextLine();
 
 				int val;
-				if (input.length() == 0)
-				{
+				if (input.length() == 0) {
 					val = NOT_INSTRUMENT;
-				}
-				else
-				{
-					try
-					{
+				} else {
+					try {
 						val = Integer.parseInt(input);
-					}
-					catch (NumberFormatException e)
-					{
+					} catch (NumberFormatException e) {
 						continue;
 					}
 				}
@@ -90,8 +80,7 @@ public class InstrumentPicker
 				else if (val > 0 && val <= instruments.length)
 					targetDir = dirs.get(instruments[val - 1]);
 
-				if (targetDir != null)
-				{
+				if (targetDir != null) {
 					if (!targetDir.exists())
 						targetDir.mkdirs();
 					File destFile = new File(targetDir, file.getName());

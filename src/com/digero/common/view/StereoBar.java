@@ -13,8 +13,7 @@ import java.awt.geom.RoundRectangle2D;
 import javax.swing.JPanel;
 
 @SuppressWarnings("serial")
-public class StereoBar extends JPanel
-{
+public class StereoBar extends JPanel {
 	private static final int PTR_WIDTH = 12;
 	private static final int PTR_HEIGHT = 12;
 	private static final int BAR_HEIGHT = 6;
@@ -25,8 +24,7 @@ public class StereoBar extends JPanel
 
 	public static final int MAX_PAN = 100;
 
-	public interface Callback
-	{
+	public interface Callback {
 		int getPan();
 
 		void setPan(int pan);
@@ -35,8 +33,7 @@ public class StereoBar extends JPanel
 	private Callback callback;
 	private boolean useInvertedColors;
 
-	public StereoBar(Callback callback)
-	{
+	public StereoBar(Callback callback) {
 		this.callback = callback;
 
 		MouseHandler mouseHandler = new MouseHandler();
@@ -48,8 +45,8 @@ public class StereoBar extends JPanel
 		setPreferredSize(sz);
 	}
 
-	@Override protected void paintComponent(Graphics g)
-	{
+	@Override
+	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
 
 		Graphics2D g2 = (Graphics2D) g;
@@ -89,34 +86,28 @@ public class StereoBar extends JPanel
 		g2.drawOval(left, 0, PTR_WIDTH - 1, PTR_HEIGHT - 1);
 	}
 
-	public void setUseInvertedColors(boolean useInvertedColors)
-	{
+	public void setUseInvertedColors(boolean useInvertedColors) {
 		this.useInvertedColors = useInvertedColors;
 	}
 
-	public boolean isUseInvertedColors()
-	{
+	public boolean isUseInvertedColors() {
 		return useInvertedColors;
 	}
 
-	private class MouseHandler extends MouseAdapter
-	{
-		private int getPosition(int x)
-		{
+	private class MouseHandler extends MouseAdapter {
+		private int getPosition(int x) {
 			int pos = (x + 1 - SIDE_PAD) * MAX_PAN / (getWidth() - 2 * SIDE_PAD);
-			if (pos < 0)
-			{
+			if (pos < 0) {
 				pos = 0;
 			}
-			if (pos > MAX_PAN)
-			{
+			if (pos > MAX_PAN) {
 				pos = MAX_PAN;
 			}
 			return pos;
 		}
 
-		@Override public void mousePressed(MouseEvent e)
-		{
+		@Override
+		public void mousePressed(MouseEvent e) {
 			if (!StereoBar.this.isEnabled())
 				return;
 			callback.setPan(getPosition(e.getX()));
@@ -124,8 +115,8 @@ public class StereoBar extends JPanel
 			requestFocus();
 		}
 
-		@Override public void mouseDragged(MouseEvent e)
-		{
+		@Override
+		public void mouseDragged(MouseEvent e) {
 			if (!StereoBar.this.isEnabled())
 				return;
 			callback.setPan(getPosition(e.getX()));

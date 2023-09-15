@@ -2,8 +2,7 @@ package com.digero.common.abctomidi;
 
 import com.digero.common.midi.Note;
 
-public class AbcRegion implements Comparable<AbcRegion>
-{
+public class AbcRegion implements Comparable<AbcRegion> {
 	private final int line;
 	private final int startIndex;
 	private final int endIndex;
@@ -14,8 +13,7 @@ public class AbcRegion implements Comparable<AbcRegion>
 	private AbcRegion tiesFrom;
 	private AbcRegion tiesTo;
 
-	public AbcRegion(int line, int startIndex, int endIndex, long startTick, long endTick, Note note, int trackNumber)
-	{
+	public AbcRegion(int line, int startIndex, int endIndex, long startTick, long endTick, Note note, int trackNumber) {
 		this.line = line;
 		this.startIndex = startIndex;
 		this.endIndex = endIndex;
@@ -25,81 +23,69 @@ public class AbcRegion implements Comparable<AbcRegion>
 		this.trackNumber = trackNumber;
 	}
 
-	public int getLine()
-	{
+	public int getLine() {
 		return line;
 	}
 
-	public int getStartIndex()
-	{
+	public int getStartIndex() {
 		return startIndex;
 	}
 
-	public int getEndIndex()
-	{
+	public int getEndIndex() {
 		return endIndex;
 	}
 
-	public long getStartTick()
-	{
+	public long getStartTick() {
 		return startTick;
 	}
 
-	public long getEndTick()
-	{
+	public long getEndTick() {
 		return endTick;
 	}
 
-	public Note getNote()
-	{
+	public Note getNote() {
 		return note;
 	}
 
-	public boolean isChord()
-	{
+	public boolean isChord() {
 		return note == null;
 	}
 
-	public int getTrackNumber()
-	{
+	public int getTrackNumber() {
 		return trackNumber;
 	}
 
-	public AbcRegion getTiesFrom()
-	{
+	public AbcRegion getTiesFrom() {
 		return tiesFrom;
 	}
 
-	public void setTiesFrom(AbcRegion tiesFrom)
-	{
+	public void setTiesFrom(AbcRegion tiesFrom) {
 		this.tiesFrom = tiesFrom;
 	}
 
-	public AbcRegion getTiesTo()
-	{
+	public AbcRegion getTiesTo() {
 		return tiesTo;
 	}
 
-	public void setTiesTo(AbcRegion tiesTo)
-	{
+	public void setTiesTo(AbcRegion tiesTo) {
 		this.tiesTo = tiesTo;
 	}
 
-	@Override public boolean equals(Object obj)
-	{
+	@Override
+	public boolean equals(Object obj) {
 		if (obj == null || obj.getClass() != AbcRegion.class)
 			return false;
 
 		return this.compareTo((AbcRegion) obj) == 0;
 	}
 
-	@Override public int hashCode()
-	{
+	@Override
+	public int hashCode() {
 		return (line << 15) ^ (startIndex << 7) ^ endIndex ^ (int) (startTick << 7) ^ (int) endTick;
 	}
 
-	@Override public int compareTo(AbcRegion that)
-	{
+	@Override
+	public int compareTo(AbcRegion that) {
 		if (this.startTick != that.startTick)
 			return (int) (this.startTick - that.startTick);
 

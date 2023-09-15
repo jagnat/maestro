@@ -288,8 +288,7 @@ public final class Util {
 	}
 
 	/**
-	 * Handle the case where the window was last saved on a screen that is no longer
-	 * connected
+	 * Handle the case where the window was last saved on a screen that is no longer connected
 	 * 
 	 * @param width
 	 * @param height

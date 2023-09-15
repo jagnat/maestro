@@ -10,60 +10,51 @@ import com.digero.common.util.IDiscardable;
 import com.digero.common.util.Listener;
 
 @SuppressWarnings("serial")
-public class BarNumberLabel extends JLabel implements Listener<SequencerEvent>, IDiscardable
-{
+public class BarNumberLabel extends JLabel implements Listener<SequencerEvent>, IDiscardable {
 	private IBarNumberCache barNumberCache;
 	private SequencerWrapper sequencer;
 	private long initialOffsetTick = 0;
 
-	public BarNumberLabel(SequencerWrapper sequencer, IBarNumberCache barNumberCache)
-	{
+	public BarNumberLabel(SequencerWrapper sequencer, IBarNumberCache barNumberCache) {
 		this.sequencer = sequencer;
 		this.barNumberCache = barNumberCache;
 
 		sequencer.addChangeListener(this);
 	}
 
-	@Override public void discard()
-	{
+	@Override
+	public void discard() {
 		if (sequencer != null)
 			sequencer.removeChangeListener(this);
 	}
 
-	public IBarNumberCache getBarNumberCache()
-	{
+	public IBarNumberCache getBarNumberCache() {
 		return barNumberCache;
 	}
 
-	public void setBarNumberCache(IBarNumberCache barNumberCache)
-	{
-		if (this.barNumberCache != barNumberCache)
-		{
+	public void setBarNumberCache(IBarNumberCache barNumberCache) {
+		if (this.barNumberCache != barNumberCache) {
 			this.barNumberCache = barNumberCache;
 			update();
 		}
 	}
 
-	public long getInitialOffsetTick()
-	{
+	public long getInitialOffsetTick() {
 		return initialOffsetTick;
 	}
 
-	public void setInitialOffsetTick(long initialOffsetTick)
-	{
-		if (this.initialOffsetTick != initialOffsetTick)
-		{
+	public void setInitialOffsetTick(long initialOffsetTick) {
+		if (this.initialOffsetTick != initialOffsetTick) {
 			this.initialOffsetTick = initialOffsetTick;
 			update();
 		}
 	}
 
-	@Override public void onEvent(SequencerEvent evt)
-	{
+	@Override
+	public void onEvent(SequencerEvent evt) {
 		SequencerProperty p = evt.getProperty();
-		if (p.isInMask(SequencerProperty.THUMB_POSITION_MASK | SequencerProperty.LENGTH.mask
-				| SequencerProperty.TEMPO.mask | SequencerProperty.SEQUENCE.mask))
-		{
+		if (p.isInMask(SequencerProperty.THUMB_POSITION_MASK | SequencerProperty.LENGTH.mask | SequencerProperty.TEMPO.mask
+				| SequencerProperty.SEQUENCE.mask)) {
 			update();
 		}
 	}
@@ -71,12 +62,9 @@ public class BarNumberLabel extends JLabel implements Listener<SequencerEvent>, 
 	private int lastPrintedBarNumber = -1;
 	private int lastPrintedBarCount = -1;
 
-	private void update()
-	{
-		if (barNumberCache == null)
-		{
-			if (lastPrintedBarNumber != -1 || lastPrintedBarCount != -1)
-			{
+	private void update() {
+		if (barNumberCache == null) {
+			if (lastPrintedBarNumber != -1 || lastPrintedBarCount != -1) {
 				lastPrintedBarNumber = -1;
 				lastPrintedBarCount = -1;
 				setText("");
@@ -90,8 +78,7 @@ public class BarNumberLabel extends JLabel implements Listener<SequencerEvent>, 
 		int barNumber = (tick < 0) ? 0 : (barNumberCache.tickToBarNumber(tick) + 1);
 		int barCount = barNumberCache.tickToBarNumber(tickLength) + 1;
 
-		if (barNumber != lastPrintedBarNumber || barCount != lastPrintedBarCount)
-		{
+		if (barNumber != lastPrintedBarNumber || barCount != lastPrintedBarCount) {
 			lastPrintedBarNumber = barNumber;
 			lastPrintedBarCount = barCount;
 			setText(barNumber + "/" + barCount);

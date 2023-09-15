@@ -1,7 +1,6 @@
 package com.digero.common.midi;
 
-public enum MidiDrum
-{
+public enum MidiDrum {
 	SYNTH_ZAP("Synth Zap"), // 27
 	UNKNOWN_28("Unknown"), // 28
 	SCRATCH_1("Scratch 1"), // 29
@@ -68,8 +67,7 @@ public enum MidiDrum
 	private static final MidiDrum[] values = values();
 	public static final int DRUM_ID_OFFSET = 27;
 
-	public static MidiDrum fromId(int id)
-	{
+	public static MidiDrum fromId(int id) {
 		id -= DRUM_ID_OFFSET;
 		if (id < 0 || id >= values.length)
 			return INVALID;
@@ -79,18 +77,16 @@ public enum MidiDrum
 
 	public final String name;
 
-	MidiDrum(String name)
-	{
+	MidiDrum(String name) {
 		this.name = name;
 	}
 
-	public int id()
-	{
+	public int id() {
 		return ordinal() + DRUM_ID_OFFSET;
 	}
 
-	@Override public String toString()
-	{
+	@Override
+	public String toString() {
 		return name;
 	}
 }

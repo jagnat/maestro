@@ -62,7 +62,7 @@ public enum LotroInstrument
 	BASIC_DRUM               ( "Basic Drum",                false, MidiInstrument.SYNTH_DRUM,           0,       true,     0.0f, "Drums?", "trommel", "tambour"),
 	STUDENT_FX_FIDDLE        ( "Student's FX Fiddle",       false, MidiInstrument.GUITAR_FRET_NOISE,    0,       true,     0.0f, "Student'?s? FX Fiddle", "Student'?s? FX", "ST FX Fiddle");
 // @formatter:on
-	
+
 	private static final LotroInstrument[] values = values();
 
 	public static final LotroInstrument DEFAULT_LUTE = LUTE_OF_AGES;
@@ -80,9 +80,8 @@ public enum LotroInstrument
 	public final float dBVolumeAdjust;
 	private final String[] nicknameRegexes;
 
-	LotroInstrument(String friendlyName, boolean sustainable, MidiInstrument midiInstrument, int octaveDelta,
-			boolean isPercussion, float dBVolumeAdjust, String... nicknameRegexes)
-	{
+	LotroInstrument(String friendlyName, boolean sustainable, MidiInstrument midiInstrument, int octaveDelta, boolean isPercussion,
+			float dBVolumeAdjust, String... nicknameRegexes) {
 		this.lowestPlayable = Note.MIN_PLAYABLE;
 		if (!"Student's FX Fiddle".equals(friendlyName)) {
 			this.highestPlayable = Note.MAX_PLAYABLE;
@@ -98,37 +97,32 @@ public enum LotroInstrument
 		this.nicknameRegexes = nicknameRegexes;
 	}
 
-	public boolean isSustainable(int noteId)
-	{
+	public boolean isSustainable(int noteId) {
 		return sustainable && isPlayable(noteId);
 	}
 
-	public boolean isPlayable(int noteId)
-	{
+	public boolean isPlayable(int noteId) {
 		if (this == BASIC_DRUM) {
 			return noteId >= lowestPlayable.id && noteId <= LotroCombiDrumInfo.maxCombi.id;
 		}
 		return noteId >= lowestPlayable.id && noteId <= highestPlayable.id;
 	}
 
-	@Override public String toString()
-	{
+	@Override
+	public String toString() {
 		return friendlyName;
 	}
 
 	private static Pattern instrumentRegex;
 	private static Pattern instrumentRegexAggr;
 
-	public static Pair<LotroInstrument, MatchResult> matchInstrument(String str)
-	{
-		if (instrumentRegex == null)
-		{
+	public static Pair<LotroInstrument, MatchResult> matchInstrument(String str) {
+		if (instrumentRegex == null) {
 			// Build a regex that contains a single capturing group for each instrument
 			// Each instrument's group matches its full name or any nicknames
 			StringBuilder regex = new StringBuilder();
 			regex.append("\\b(?:");
-			for (LotroInstrument instrument : values)
-			{
+			for (LotroInstrument instrument : values) {
 				if (instrument.ordinal() > 0)
 					regex.append('|');
 
@@ -154,10 +148,8 @@ public enum LotroInstrument
 			return null;
 
 		LotroInstrument instrument = null;
-		for (int g = 0; g < result.groupCount() && g < values.length; g++)
-		{
-			if (result.group(g + 1) != null)
-			{
+		for (int g = 0; g < result.groupCount() && g < values.length; g++) {
+			if (result.group(g + 1) != null) {
 				instrument = values[g];
 				break;
 			}
@@ -165,17 +157,14 @@ public enum LotroInstrument
 
 		return new Pair<>(instrument, result);
 	}
-	
-	public static Pair<LotroInstrument, MatchResult> matchInstrumentAggr(String str)
-	{
-		if (instrumentRegexAggr == null)
-		{
+
+	public static Pair<LotroInstrument, MatchResult> matchInstrumentAggr(String str) {
+		if (instrumentRegexAggr == null) {
 			// Build a regex that contains a single capturing group for each instrument
 			// Each instrument's group matches its full name or any nicknames
 			StringBuilder regex = new StringBuilder();
 			regex.append("(?:");
-			for (LotroInstrument instrument : values)
-			{
+			for (LotroInstrument instrument : values) {
 				if (instrument.ordinal() > 0)
 					regex.append('|');
 
@@ -201,10 +190,8 @@ public enum LotroInstrument
 			return null;
 
 		LotroInstrument instrument = null;
-		for (int g = 0; g < result.groupCount() && g < values.length; g++)
-		{
-			if (result.group(g + 1) != null)
-			{
+		for (int g = 0; g < result.groupCount() && g < values.length; g++) {
+			if (result.group(g + 1) != null) {
 				instrument = values[g];
 				break;
 			}
@@ -213,14 +200,12 @@ public enum LotroInstrument
 		return new Pair<>(instrument, result);
 	}
 
-	public static LotroInstrument findInstrumentName(String str, LotroInstrument defaultInstrument)
-	{
+	public static LotroInstrument findInstrumentName(String str, LotroInstrument defaultInstrument) {
 		Pair<LotroInstrument, MatchResult> result = matchInstrument(str);
 		return (result != null) ? result.first : defaultInstrument;
 	}
-	
-	public static LotroInstrument findInstrumentNameAggressively(String str, LotroInstrument defaultInstrument)
-	{
+
+	public static LotroInstrument findInstrumentNameAggressively(String str, LotroInstrument defaultInstrument) {
 		Pair<LotroInstrument, MatchResult> result = matchInstrumentAggr(str);
 		return (result != null) ? result.first : defaultInstrument;
 	}

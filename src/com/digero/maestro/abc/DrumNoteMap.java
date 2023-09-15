@@ -62,8 +62,7 @@ public class DrumNoteMap implements IDiscardable {
 	}
 
 	public void set(int midiNoteId, int value) {
-		if ((midiNoteId < Byte.MIN_VALUE || midiNoteId > Byte.MAX_VALUE)
-				|| (value < Byte.MIN_VALUE || value > Byte.MAX_VALUE)) {
+		if ((midiNoteId < Byte.MIN_VALUE || midiNoteId > Byte.MAX_VALUE) || (value < Byte.MIN_VALUE || value > Byte.MAX_VALUE)) {
 			throw new IllegalArgumentException();
 		}
 		set((byte) midiNoteId, (byte) value);
@@ -303,8 +302,7 @@ public class DrumNoteMap implements IDiscardable {
 	}
 
 	/**
-	 * This can be used as a backup in the event that loading the drum map from a
-	 * file fails.
+	 * This can be used as a backup in the event that loading the drum map from a file fails.
 	 */
 	public byte[] getFailsafeDefault() {
 		byte[] failsafe = new byte[MidiConstants.NOTE_COUNT];

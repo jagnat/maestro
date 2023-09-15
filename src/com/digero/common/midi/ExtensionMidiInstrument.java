@@ -10,12 +10,12 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 
 public class ExtensionMidiInstrument {
-	
-	public static final String TRACK_NAME_DRUM_GM  = "Drums";
-	public static final String TRACK_NAME_DRUM_GS  = "GS Drums";	
-	public static final String TRACK_NAME_DRUM_XG  = "XG Drums";
+
+	public static final String TRACK_NAME_DRUM_GM = "Drums";
+	public static final String TRACK_NAME_DRUM_GS = "GS Drums";
+	public static final String TRACK_NAME_DRUM_XG = "XG Drums";
 	public static final String TRACK_NAME_DRUM_GM2 = "GM2 Drums";
-	
+
 	private static ExtensionMidiInstrument instance = null;
 	private static HashMap<String, String> mapxg = new HashMap<>();
 	private static HashMap<String, String> mapgs = new HashMap<>();
@@ -42,18 +42,14 @@ public class ExtensionMidiInstrument {
 		 */
 
 		/*
-		 * System.out.println("GM  voices: 129");
-		 * System.out.println("GS  voices: "+(mapgs.size()-129));
-		 * System.out.println("XG  voices: "+(mapxg.size()-129));
-		 * System.out.println("GM2 voices: "+(mapgm2.size()-129));
-		 * System.out.println("Total     : "+(mapgm2.size()-129+mapxg.size()-129+mapgs.
-		 * size()-129+129));
+		 * System.out.println("GM  voices: 129"); System.out.println("GS  voices: "+(mapgs.size()-129));
+		 * System.out.println("XG  voices: "+(mapxg.size()-129)); System.out.println("GM2 voices: "+(mapgm2.size()-129));
+		 * System.out.println("Total     : "+(mapgm2.size()-129+mapxg.size()-129+mapgs. size()-129+129));
 		 */
 
 		return instance;
 	}
 
-	
 	/**
 	 * Determine name of voice.
 	 * 
@@ -67,11 +63,10 @@ public class ExtensionMidiInstrument {
 	public String fromId(MidiStandard extension, byte MSB, byte LSB, byte patch, boolean drumKit, boolean rhythmChannel) {
 		/*
 		 * 
-		 * Abbreviations that are not expanded: KSP: Keyboard Stereo Panning (in GS/GM2
-		 * language this is called 'Wide')
+		 * Abbreviations that are not expanded: KSP: Keyboard Stereo Panning (in GS/GM2 language this is called 'Wide')
 		 * 
 		 */
-		
+
 		// GS does not have Dulcimer on patch 15 MSB 0 like GM but a Santur, so we are
 		// careful to fetch its actual name.
 		boolean santur = extension == MidiStandard.GS && MSB == 0 && patch == 15 && !rhythmChannel;
@@ -120,8 +115,7 @@ public class ExtensionMidiInstrument {
 		return instrName;
 	}
 
-	private static void parse(MidiStandard extension, byte theByte, String fileName, boolean firstColumnPatch,
-			boolean theByteIsLSB) {
+	private static void parse(MidiStandard extension, byte theByte, String fileName, boolean firstColumnPatch, boolean theByteIsLSB) {
 		try {
 			InputStream in = instance.getClass().getResourceAsStream(fileName);
 			if (in == null) {
@@ -133,8 +127,7 @@ public class ExtensionMidiInstrument {
 			int lastPatch = -1;
 			int lookupByte = -1;
 			String regex = "\t+";// one or more tabs
-			readLines(extension, theByte, fileName, firstColumnPatch, theByteIsLSB, theFileReader, line, lastPatch,
-					lookupByte, regex);
+			readLines(extension, theByte, fileName, firstColumnPatch, theByteIsLSB, theFileReader, line, lastPatch, lookupByte, regex);
 			theFileReader.close();
 		} catch (FileNotFoundException e) {
 			System.err.println(fileName + " not readable.");
@@ -145,9 +138,8 @@ public class ExtensionMidiInstrument {
 		}
 	}
 
-	private static void readLines(MidiStandard extension, byte theByte, String fileName, boolean firstColumnPatch,
-			boolean theByteIsLSB, BufferedReader theFileReader, String line, int lastPatch, int lookupByte,
-			String regex) throws IOException {
+	private static void readLines(MidiStandard extension, byte theByte, String fileName, boolean firstColumnPatch, boolean theByteIsLSB,
+			BufferedReader theFileReader, String line, int lastPatch, int lookupByte, String regex) throws IOException {
 		while (line != null) {
 			if (line.isEmpty()) {
 				line = theFileReader.readLine();
@@ -177,8 +169,8 @@ public class ExtensionMidiInstrument {
 		}
 	}
 
-	private static void addInstruments(MidiStandard extension, byte theByte, boolean firstColumnPatch, boolean theByteIsLSB,
-			int lastPatch, int lookupByte, String[] splits) {
+	private static void addInstruments(MidiStandard extension, byte theByte, boolean firstColumnPatch, boolean theByteIsLSB, int lastPatch,
+			int lookupByte, String[] splits) {
 		if (theByteIsLSB) {
 			if (firstColumnPatch) {
 				addInstrument(extension, (byte) lookupByte, (byte) theByte, (byte) lastPatch, splits[2].trim());
