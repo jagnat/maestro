@@ -112,8 +112,9 @@ public class GenerateSoundFontInfo {
 				instruments.add(drones);
 				usedSamples.addAll(drones.usedSamples);
 
-				StandardInstrumentInfo bagpipe = new StandardInstrumentInfo(li, li.toString(), AbcConstants.BAGPIPE_LAST_DRONE_NOTE_ID + 1,
-						li.highestPlayable.id, getNotesPerSample(li), samples);
+				StandardInstrumentInfo bagpipe = new StandardInstrumentInfo(li, li.toString(),
+						AbcConstants.BAGPIPE_LAST_DRONE_NOTE_ID + 1, li.highestPlayable.id, getNotesPerSample(li),
+						samples);
 				instruments.add(bagpipe);
 				usedSamples.addAll(bagpipe.usedSamples);
 

@@ -143,7 +143,8 @@ public class InstrumentComboBox extends JComboBox<LotroInstrument> {
 		}
 
 		@Override
-		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+		public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+				boolean cellHasFocus) {
 			label.setText(value.toString());
 			if (value instanceof LotroInstrumentGroup) {
 				label.setFont(fontGroupHeader);

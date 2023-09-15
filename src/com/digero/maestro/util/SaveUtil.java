@@ -33,7 +33,8 @@ public class SaveUtil {
 		return node.getTextContent();
 	}
 
-	public static int parseValue(Node parent, String xpath, int defaultValue) throws ParseException, XPathExpressionException {
+	public static int parseValue(Node parent, String xpath, int defaultValue)
+			throws ParseException, XPathExpressionException {
 		Node node = XmlUtil.selectSingleNode(parent, xpath);
 		if (node == null)
 			return defaultValue;
@@ -45,7 +46,8 @@ public class SaveUtil {
 		}
 	}
 
-	public static byte parseValue(Node parent, String xpath, byte defaultValue) throws ParseException, XPathExpressionException {
+	public static byte parseValue(Node parent, String xpath, byte defaultValue)
+			throws ParseException, XPathExpressionException {
 		Node node = XmlUtil.selectSingleNode(parent, xpath);
 		if (node == null)
 			return defaultValue;
@@ -57,7 +59,8 @@ public class SaveUtil {
 		}
 	}
 
-	public static float parseValue(Node parent, String xpath, float defaultValue) throws ParseException, XPathExpressionException {
+	public static float parseValue(Node parent, String xpath, float defaultValue)
+			throws ParseException, XPathExpressionException {
 		Node node = XmlUtil.selectSingleNode(parent, xpath);
 		if (node == null)
 			return defaultValue;
@@ -69,7 +72,8 @@ public class SaveUtil {
 		}
 	}
 
-	public static boolean parseValue(Node parent, String xpath, boolean defaultValue) throws ParseException, XPathExpressionException {
+	public static boolean parseValue(Node parent, String xpath, boolean defaultValue)
+			throws ParseException, XPathExpressionException {
 		Node node = XmlUtil.selectSingleNode(parent, xpath);
 		if (node == null)
 			return defaultValue;
@@ -83,7 +87,8 @@ public class SaveUtil {
 		throw invalidValueException(node, "Value must be 'true' or 'false'");
 	}
 
-	public static TimeSignature parseValue(Node parent, String xpath, TimeSignature defaultValue) throws ParseException, XPathExpressionException {
+	public static TimeSignature parseValue(Node parent, String xpath, TimeSignature defaultValue)
+			throws ParseException, XPathExpressionException {
 		Node node = XmlUtil.selectSingleNode(parent, xpath);
 		if (node == null)
 			return defaultValue;
@@ -95,7 +100,8 @@ public class SaveUtil {
 		}
 	}
 
-	public static KeySignature parseValue(Node parent, String xpath, KeySignature defaultValue) throws ParseException, XPathExpressionException {
+	public static KeySignature parseValue(Node parent, String xpath, KeySignature defaultValue)
+			throws ParseException, XPathExpressionException {
 		Node node = XmlUtil.selectSingleNode(parent, xpath);
 		if (node == null)
 			return defaultValue;
@@ -120,7 +126,8 @@ public class SaveUtil {
 		return instrument;
 	}
 
-	public static Version parseValue(Node parent, String xpath, Version defaultValue) throws ParseException, XPathExpressionException {
+	public static Version parseValue(Node parent, String xpath, Version defaultValue)
+			throws ParseException, XPathExpressionException {
 		Node node = XmlUtil.selectSingleNode(parent, xpath);
 		if (node == null)
 			return defaultValue;
@@ -131,7 +138,8 @@ public class SaveUtil {
 		return version;
 	}
 
-	public static byte[] parseValue(Node parent, String xpath, byte[] defaultValue) throws ParseException, XPathExpressionException {
+	public static byte[] parseValue(Node parent, String xpath, byte[] defaultValue)
+			throws ParseException, XPathExpressionException {
 		Node node = XmlUtil.selectSingleNode(parent, xpath);
 		if (node == null)
 			return defaultValue;

@@ -89,7 +89,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 	static final int TITLE_WIDTH_DEFAULT = 150 - PRIORITY_WIDTH_DEFAULT;
 	static final int CONTROL_WIDTH_DEFAULT = 64;
 	static final int ROW_HEIGHT_DEFAULT = 48;
-	private static double[] LAYOUT_COLS = new double[] { GUTTER_WIDTH, TITLE_WIDTH_DEFAULT, PRIORITY_WIDTH_DEFAULT, CONTROL_WIDTH_DEFAULT, FILL };
+	private static double[] LAYOUT_COLS = new double[] { GUTTER_WIDTH, TITLE_WIDTH_DEFAULT, PRIORITY_WIDTH_DEFAULT,
+			CONTROL_WIDTH_DEFAULT, FILL };
 	private static double[] LAYOUT_ROWS = new double[] { ROW_HEIGHT_DEFAULT, PREFERRED };
 
 	public static class TrackDimensions {
@@ -134,11 +135,13 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 	private boolean wasDrumPart;
 	private boolean isAbcPreviewMode = false;
 
-	public TrackDimensions dims = new TrackDimensions(TITLE_WIDTH_DEFAULT, PRIORITY_WIDTH_DEFAULT, CONTROL_WIDTH_DEFAULT, ROW_HEIGHT_DEFAULT);
+	public TrackDimensions dims = new TrackDimensions(TITLE_WIDTH_DEFAULT, PRIORITY_WIDTH_DEFAULT,
+			CONTROL_WIDTH_DEFAULT, ROW_HEIGHT_DEFAULT);
 
 	private String badString = "";
 
-	public TrackPanel(TrackInfo info, NoteFilterSequencerWrapper sequencer, AbcPart part, SequencerWrapper abcSequencer_) {
+	public TrackPanel(TrackInfo info, NoteFilterSequencerWrapper sequencer, AbcPart part,
+			SequencerWrapper abcSequencer_) {
 		super(new TableLayout(LAYOUT_COLS, LAYOUT_ROWS));
 
 		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, ColorTable.PANEL_BORDER.get()));
@@ -153,7 +156,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 
 		dims = calculateTrackDims();
 
-		tableLayout.setColumn(new double[] { GUTTER_WIDTH, dims.titleWidth, dims.priorityWidth, dims.controlWidth, FILL });
+		tableLayout
+				.setColumn(new double[] { GUTTER_WIDTH, dims.titleWidth, dims.priorityWidth, dims.controlWidth, FILL });
 		tableLayout.setRow(new double[] { dims.rowHeight, PREFERRED });
 
 		gutter = new JPanel((LayoutManager) null);
@@ -174,12 +178,14 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			updateTitleText();
 		});
 		/*
-		 * Font[] fonts; Font ms = null; fonts = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts(); for (int i = 0; i <
-		 * fonts.length; i++) { if (fonts[i].getFontName().contains("JhengHei")) { ms = fonts[i]; break; } }
+		 * Font[] fonts; Font ms = null; fonts =
+		 * java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().getAllFonts(); for (int i = 0; i < fonts.length;
+		 * i++) { if (fonts[i].getFontName().contains("JhengHei")) { ms = fonts[i]; break; } }
 		 * 
-		 * if (ms != null) { Map attributes = ms.getAttributes(); attributes.replace(java.awt.font.TextAttribute.SIZE, 12); ms =
-		 * ms.deriveFont(attributes); if (ms != null) { System.out.println(ms.getFontName()); checkBox.setFont(ms); } else {
-		 * System.out.println("No such font"); } } else { System.out.println("No such font"); }
+		 * if (ms != null) { Map attributes = ms.getAttributes(); attributes.replace(java.awt.font.TextAttribute.SIZE,
+		 * 12); ms = ms.deriveFont(attributes); if (ms != null) { System.out.println(ms.getFontName());
+		 * checkBox.setFont(ms); } else { System.out.println("No such font"); } } else {
+		 * System.out.println("No such font"); }
 		 */
 
 		noteGraph = new TrackNoteGraph(seq, trackInfo);
@@ -205,7 +211,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 							for (AbcPart part : abcPart.getAbcSong().getParts()) {
 								int previewTrack = part.getPreviewSequenceTrackNumber();
 								// TODO: This only solos the first part that has the track selected.
-								// Should we change this behavior so right-clicking solos all parts which have the track selected?
+								// Should we change this behavior so right-clicking solos all parts which have the track
+								// selected?
 								if (part.isTrackEnabled(trackNumber) && previewTrack >= 0) {
 									soloAbcTracks.add(previewTrack);
 									if (!previewAllParts)
@@ -218,7 +225,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 							// Un-solo any other parts that may be soloed
 							for (AbcPart part : abcPart.getAbcSong().getParts()) {
 								int previewTrack = part.getPreviewSequenceTrackNumber();
-								if (!soloAbcTracks.contains(previewTrack) && previewTrack >= 0 && abcSequencer.getTrackSolo(previewTrack)) {
+								if (!soloAbcTracks.contains(previewTrack) && previewTrack >= 0
+										&& abcSequencer.getTrackSolo(previewTrack)) {
 									abcSequencer.setTrackSolo(previewTrack, false);
 								}
 							}
@@ -289,8 +297,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 				"<html><b> Edit sections of this track </b><br> Use the bar counter in lower right corner to find your sections. </html>");
 		sectionButton.addActionListener(e -> {
 			int track = trackInfo.getTrackNumber();
-			SectionEditor.show((JFrame) sectionButton.getTopLevelAncestor(), noteGraph, abcPart, track, abcPart.getInstrument().isPercussion,
-					dPanels);// super hack! :(
+			SectionEditor.show((JFrame) sectionButton.getTopLevelAncestor(), noteGraph, abcPart, track,
+					abcPart.getInstrument().isPercussion, dPanels);// super hack! :(
 		});
 
 		priorityBox = new JCheckBox();
@@ -391,7 +399,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 
 			return dims;
 		} else {
-			return new TrackDimensions(TITLE_WIDTH_DEFAULT, PRIORITY_WIDTH_DEFAULT, CONTROL_WIDTH_DEFAULT, ROW_HEIGHT_DEFAULT);
+			return new TrackDimensions(TITLE_WIDTH_DEFAULT, PRIORITY_WIDTH_DEFAULT, CONTROL_WIDTH_DEFAULT,
+					ROW_HEIGHT_DEFAULT);
 		}
 	}
 
@@ -518,8 +527,9 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 	}
 
 	private boolean isPriorityEnabled() {
-		return abcPart.getAbcSong().isMixTiming() && abcPart.getAbcSong().isPriorityActive() && abcPart.getEnabledTrackCount() > 1; // &&
-																																	// abcPart.getAbcSong().isMixTiming()
+		return abcPart.getAbcSong().isMixTiming() && abcPart.getAbcSong().isPriorityActive()
+				&& abcPart.getEnabledTrackCount() > 1; // &&
+														// abcPart.getAbcSong().isMixTiming()
 	}
 
 	@Override
@@ -552,7 +562,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 				if (part != this.abcPart)
 					trackEnabledOtherPart = true;
 				else if (sectionButton != null) {
-					if (this.abcPart.sections.get(trackNumber) == null && this.abcPart.nonSection.get(trackNumber) == null) {
+					if (this.abcPart.sections.get(trackNumber) == null
+							&& this.abcPart.nonSection.get(trackNumber) == null) {
 						sectionButton.setForeground(new Color(0.5f, 0.5f, 0.5f));
 					} else {
 						sectionButton.setForeground(new Color(0.2f, 0.8f, 0.2f));
@@ -613,11 +624,12 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			checkBox.setForeground(ColorTable.PANEL_TEXT_ENABLED.get());
 		} else {
 			boolean inputEnabled = abcPart.isDrumPart() == trackInfo.isDrumTrack();
-			checkBox.setForeground(inputEnabled ? ColorTable.PANEL_TEXT_DISABLED.get() : ColorTable.PANEL_TEXT_OFF.get());
+			checkBox.setForeground(
+					inputEnabled ? ColorTable.PANEL_TEXT_DISABLED.get() : ColorTable.PANEL_TEXT_OFF.get());
 		}
 
-		noteGraph.setOctaveLinesVisible(
-				!trackInfo.isDrumTrack() && !(abcPart.getInstrument().isPercussion && abcPart.isTrackEnabled(trackInfo.getTrackNumber())));
+		noteGraph.setOctaveLinesVisible(!trackInfo.isDrumTrack()
+				&& !(abcPart.getInstrument().isPercussion && abcPart.isTrackEnabled(trackInfo.getTrackNumber())));
 	}
 
 	private void updateState() {
@@ -715,7 +727,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			dir = Util.getLotroMusicPath(false /* create */);
 
 		JFileChooser fileChooser = new JFileChooser(dir);
-		fileChooser.setFileFilter(new ExtensionFileFilter("Drum Map (*." + DrumNoteMap.FILE_SUFFIX + ")", DrumNoteMap.FILE_SUFFIX));
+		fileChooser.setFileFilter(
+				new ExtensionFileFilter("Drum Map (*." + DrumNoteMap.FILE_SUFFIX + ")", DrumNoteMap.FILE_SUFFIX));
 
 		File saveFile;
 		do {
@@ -729,7 +742,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			}
 
 			if (saveFile.exists()) {
-				int result = JOptionPane.showConfirmDialog(this, "File " + saveFile.getName() + " already exists. Overwrite?", "Confirm overwrite",
+				int result = JOptionPane.showConfirmDialog(this,
+						"File " + saveFile.getName() + " already exists. Overwrite?", "Confirm overwrite",
 						JOptionPane.OK_CANCEL_OPTION);
 				if (result != JOptionPane.OK_OPTION)
 					continue;
@@ -741,8 +755,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		try {
 			abcPart.getDrumMap(trackInfo.getTrackNumber()).save(saveFile);
 		} catch (IOException e) {
-			JOptionPane.showMessageDialog(this, "Failed to save drum map:\n\n" + e.getMessage(), "Failed to save drum map",
-					JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Failed to save drum map:\n\n" + e.getMessage(),
+					"Failed to save drum map", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
 
@@ -759,7 +773,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			dir = Util.getLotroMusicPath(false /* create */);
 
 		JFileChooser fileChooser = new JFileChooser(dir);
-		fileChooser.setFileFilter(new ExtensionFileFilter("Drum Map (*." + DrumNoteMap.FILE_SUFFIX + ")", DrumNoteMap.FILE_SUFFIX, "txt"));
+		fileChooser.setFileFilter(new ExtensionFileFilter("Drum Map (*." + DrumNoteMap.FILE_SUFFIX + ")",
+				DrumNoteMap.FILE_SUFFIX, "txt"));
 
 		if (fileChooser.showOpenDialog(this) != JFileChooser.APPROVE_OPTION)
 			return false;
@@ -769,8 +784,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		try {
 			abcPart.getDrumMap(trackInfo.getTrackNumber()).load(loadFile);
 		} catch (IOException | ParseException e) {
-			JOptionPane.showMessageDialog(this, "Failed to load drum map:\n\n" + e.getMessage(), "Failed to load drum map",
-					JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Failed to load drum map:\n\n" + e.getMessage(),
+					"Failed to load drum map", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
 
@@ -851,7 +866,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 
 		@Override
 		protected boolean audibleNote(NoteEvent ne) {
-			return abcPart.getAudible(trackInfo.getTrackNumber(), ne.getStartTick()) && abcPart.shouldPlay(ne, trackInfo.getTrackNumber());
+			return abcPart.getAudible(trackInfo.getTrackNumber(), ne.getStartTick())
+					&& abcPart.shouldPlay(ne, trackInfo.getTrackNumber());
 		}
 
 		@Override

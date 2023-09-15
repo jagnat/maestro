@@ -188,19 +188,22 @@ public class Chord implements AbcConstants {
 				}
 
 				/*
-				 * if (n1.doubledNote && !n2.doubledNote) { return -1; } if (n2.doubledNote && !n1.doubledNote) { return 1; }
+				 * if (n1.doubledNote && !n2.doubledNote) { return -1; } if (n2.doubledNote && !n1.doubledNote) { return
+				 * 1; }
 				 */
 
 				// At the point in time when prune() is run, there is very few tiedTo, mostly just tiedFrom.
 				// assert n1.tiesTo == null;
 				// assert n2.tiesTo == null;
 				/*
-				 * This was commented as experiments in lotro shows than can start a new note even if 6 prev. is still playing. boolean n1Finished =
-				 * false; boolean n2Finished = false; if (!sustained) { // Lets find out if the notes have already finished long dura = 0; for
-				 * (NoteEvent neTie = n1.tiesFrom; neTie != null; neTie = neTie.tiesFrom) { dura += neTie.getLengthMicros(); } if (dura >
-				 * AbcConstants.NON_SUSTAINED_NOTE_HOLD_SECONDS) { n1Finished = true; } dura = 0; for (NoteEvent neTie = n2.tiesFrom; neTie != null;
-				 * neTie = neTie.tiesFrom) { dura += neTie.getLengthMicros(); } if (dura > AbcConstants.NON_SUSTAINED_NOTE_HOLD_SECONDS) { n2Finished
-				 * = true; } } if (n1Finished && !n2Finished) { return -1; } else if (n2Finished && !n1Finished) { return 1; }
+				 * This was commented as experiments in lotro shows than can start a new note even if 6 prev. is still
+				 * playing. boolean n1Finished = false; boolean n2Finished = false; if (!sustained) { // Lets find out
+				 * if the notes have already finished long dura = 0; for (NoteEvent neTie = n1.tiesFrom; neTie != null;
+				 * neTie = neTie.tiesFrom) { dura += neTie.getLengthMicros(); } if (dura >
+				 * AbcConstants.NON_SUSTAINED_NOTE_HOLD_SECONDS) { n1Finished = true; } dura = 0; for (NoteEvent neTie =
+				 * n2.tiesFrom; neTie != null; neTie = neTie.tiesFrom) { dura += neTie.getLengthMicros(); } if (dura >
+				 * AbcConstants.NON_SUSTAINED_NOTE_HOLD_SECONDS) { n2Finished = true; } } if (n1Finished && !n2Finished)
+				 * { return -1; } else if (n2Finished && !n1Finished) { return 1; }
 				 */
 
 				if (!sustained) {
@@ -224,17 +227,21 @@ public class Chord implements AbcConstants {
 				if (!drum) {
 					if (n1.note.id != n2.note.id) {
 						// return the note if its the highest in the chord
-						if ((n1.origPitch == 0 && highest == n1.note.id) || (n1.origPitch != 0 && highest == n1.origPitch)) {
+						if ((n1.origPitch == 0 && highest == n1.note.id)
+								|| (n1.origPitch != 0 && highest == n1.origPitch)) {
 							return 1;
 						}
-						if ((n2.origPitch == 0 && highest == n2.note.id) || (n2.origPitch != 0 && highest == n2.origPitch)) {
+						if ((n2.origPitch == 0 && highest == n2.note.id)
+								|| (n2.origPitch != 0 && highest == n2.origPitch)) {
 							return -1;
 						}
 						// return the note if its the lowest in the chord
-						if ((n1.origPitch == 0 && lowest == n1.note.id) || (n1.origPitch != 0 && lowest == n1.origPitch)) {
+						if ((n1.origPitch == 0 && lowest == n1.note.id)
+								|| (n1.origPitch != 0 && lowest == n1.origPitch)) {
 							return 1;
 						}
-						if ((n2.origPitch == 0 && lowest == n2.note.id) || (n2.origPitch != 0 && lowest == n2.origPitch)) {
+						if ((n2.origPitch == 0 && lowest == n2.note.id)
+								|| (n2.origPitch != 0 && lowest == n2.origPitch)) {
 							return -1;
 						}
 					}
@@ -337,7 +344,8 @@ public class Chord implements AbcConstants {
 				}
 
 				// discard the center-most note (for drum this is very random)
-				int center = Math.abs(n1.note.id - (lowest + (highest - lowest) / 2)) - Math.abs(n2.note.id - (lowest + (highest - lowest) / 2));
+				int center = Math.abs(n1.note.id - (lowest + (highest - lowest) / 2))
+						- Math.abs(n2.note.id - (lowest + (highest - lowest) / 2));
 
 				return Integer.compare(center, 0);
 

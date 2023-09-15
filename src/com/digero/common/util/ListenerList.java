@@ -50,8 +50,9 @@ public class ListenerList<E extends EventObject> implements IDiscardable {
 			List<Listener<E>> listeners = this.listeners;
 
 			/*
-			 * Important: do not access this.listeners after this point. It may be copied and modified if a listener is added or removed while firing
-			 * this event. If that happens, this loop will finish on the old copy of the list.
+			 * Important: do not access this.listeners after this point. It may be copied and modified if a listener is
+			 * added or removed while firing this event. If that happens, this loop will finish on the old copy of the
+			 * list.
 			 */
 			for (Listener<E> l : listeners) {
 				l.onEvent(e);

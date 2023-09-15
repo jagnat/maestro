@@ -60,8 +60,8 @@ public class AbcExporter {
 
 	public int stereoPan = 100;// zero is mono, 100 is very wide.
 
-	public AbcExporter(List<AbcPart> parts, QuantizedTimingInfo timingInfo, KeySignature keySignature, AbcMetadataSource metadata)
-			throws AbcConversionException {
+	public AbcExporter(List<AbcPart> parts, QuantizedTimingInfo timingInfo, KeySignature keySignature,
+			AbcMetadataSource metadata) throws AbcConversionException {
 		this.parts = parts;
 		this.qtm = timingInfo;
 		this.metadata = metadata;
@@ -145,7 +145,8 @@ public class AbcExporter {
 			throws AbcConversionException, InvalidMidiDataException {
 		try {
 
-			Pair<Long, Long> startEndTick = getSongStartEndTick(true /* lengthenToBar */, false /* accountForSustain */);
+			Pair<Long, Long> startEndTick = getSongStartEndTick(true /* lengthenToBar */,
+					false /* accountForSustain */);
 			exportStartTick = startEndTick.first;
 			exportEndTick = startEndTick.second;
 
@@ -162,8 +163,8 @@ public class AbcExporter {
 
 			int partsCount = calculatePartsCount(parts);
 			if (parts.size() > MAX_RAID) {
-				throw new AbcConversionException("Songs with more than " + MAX_RAID + " parts can never be previewed.\n" + "This song currently has "
-						+ parts.size() + " parts and failed to preview.");
+				throw new AbcConversionException("Songs with more than " + MAX_RAID + " parts can never be previewed.\n"
+						+ "This song currently has " + parts.size() + " parts and failed to preview.");
 			}
 			exportForChords(chordsMade, exportStartTick, exportEndTick);// export the chords here early, as we possibly
 																		// need to process them for sharing.
@@ -171,7 +172,8 @@ public class AbcExporter {
 				int target = partsCount - MAX_PARTS;// How many channels we need to free up.
 				// System.out.println("\n\nPreview requested for more than 15 parts. Starting
 				// combine algorithms.");
-				Pair<Map<AbcPart, Integer>, Integer> shareResult = findSharableParts(target, chordsMade, assignedSharingPartsSwitchers);
+				Pair<Map<AbcPart, Integer>, Integer> shareResult = findSharableParts(target, chordsMade,
+						assignedSharingPartsSwitchers);
 				if (shareResult != null) {
 					shareChannelSameVoiceMap = shareResult.first;
 					assignedSharingPartsSameVoice = shareChannelSameVoiceMap.keySet();
@@ -209,8 +211,9 @@ public class AbcExporter {
 					}
 				}
 				if (target > 0) {
-					throw new AbcConversionException("Songs with more than " + MAX_PARTS + " parts can sometimes be previewed.\n"
-							+ "This song currently has " + partsCount + " active parts and failed to preview though.");
+					throw new AbcConversionException("Songs with more than " + MAX_PARTS
+							+ " parts can sometimes be previewed.\n" + "This song currently has " + partsCount
+							+ " active parts and failed to preview though.");
 				}
 			}
 
@@ -229,10 +232,11 @@ public class AbcExporter {
 			for (AbcPart part : assignedSharingPartsSameVoice) {
 				// Do the parts that is sharing channel first, as they will use the lower
 				// (already designated) numbered channels
-				int pan = (parts.size() > 1) ? panner.get(part.getInstrument(), part.getTitle(), stereoPan) : PanGenerator.CENTER;
+				int pan = (parts.size() > 1) ? panner.get(part.getInstrument(), part.getTitle(), stereoPan)
+						: PanGenerator.CENTER;
 				int chan = shareChannelSameVoiceMap.get(part);
-				ExportTrackInfo inf = exportPartToPreview(part, sequence, exportStartTick, exportEndTick, pan, useLotroInstruments, assignedChannels,
-						chan, false, chordsMade);
+				ExportTrackInfo inf = exportPartToPreview(part, sequence, exportStartTick, exportEndTick, pan,
+						useLotroInstruments, assignedChannels, chan, false, chordsMade);
 				infoList.add(inf);
 				// System.out.println(part.getTitle()+" assigned to share channel
 				// "+inf.channel+" on track "+inf.trackNumber);
@@ -246,10 +250,11 @@ public class AbcExporter {
 					int pan = -100000;
 					for (AbcPart part : entry) {
 						if (pan == -100000) {
-							pan = (parts.size() > 1) ? panner.get(part.getInstrument(), part.getTitle(), stereoPan) : PanGenerator.CENTER;
+							pan = (parts.size() > 1) ? panner.get(part.getInstrument(), part.getTitle(), stereoPan)
+									: PanGenerator.CENTER;
 						}
-						ExportTrackInfo inf = exportPartToPreview(part, sequence, exportStartTick, exportEndTick, pan, useLotroInstruments,
-								assignedChannels, chan, true, chordsMade);
+						ExportTrackInfo inf = exportPartToPreview(part, sequence, exportStartTick, exportEndTick, pan,
+								useLotroInstruments, assignedChannels, chan, true, chordsMade);
 						infoList.add(inf);
 						// System.out.println(part.getTitle()+" assigned to switch channel
 						// "+inf.channel+" on track "+inf.trackNumber);
@@ -262,12 +267,14 @@ public class AbcExporter {
 				// use 1 channel each.
 				if (part.getEnabledTrackCount() > 0 && !assignedSharingPartsSameVoice.contains(part)
 						&& !assignedSharingPartsSwitchers.contains(part)) {
-					int pan = (parts.size() > 1) ? panner.get(part.getInstrument(), part.getTitle(), stereoPan) : PanGenerator.CENTER;
-					ExportTrackInfo inf = exportPartToPreview(part, sequence, exportStartTick, exportEndTick, pan, useLotroInstruments,
-							assignedChannels, null, false, chordsMade);
+					int pan = (parts.size() > 1) ? panner.get(part.getInstrument(), part.getTitle(), stereoPan)
+							: PanGenerator.CENTER;
+					ExportTrackInfo inf = exportPartToPreview(part, sequence, exportStartTick, exportEndTick, pan,
+							useLotroInstruments, assignedChannels, null, false, chordsMade);
 					infoList.add(inf);
 					assignedChannels.add(inf.channel);
-					// System.out.println(part.getTitle()+" assigned to channel "+inf.channel+" on track "+inf.trackNumber);
+					// System.out.println(part.getTitle()+" assigned to channel "+inf.channel+" on track
+					// "+inf.trackNumber);
 					/*
 					 * if (exportStartTick > 0) { track0.add(MidiFactory.createNoteOnEventEx(40,inf.channel,100,0L));
 					 * track0.add(MidiFactory.createNoteOffEventEx(40,inf.channel,0,100L)); }
@@ -308,8 +315,8 @@ public class AbcExporter {
 	 * @param assignedSharingPartsChannel Will not check the parts in this set.
 	 * @return Map of pairs of parts that can share channels using this method.
 	 */
-	private Triplet<List<Set<AbcPart>>, Set<AbcPart>, Integer> findSharableChannelSwitchers(Map<AbcPart, TreeMap<Long, Boolean>> toneMap, int target,
-			Set<AbcPart> assignedSharingPartsChannel) {
+	private Triplet<List<Set<AbcPart>>, Set<AbcPart>, Integer> findSharableChannelSwitchers(
+			Map<AbcPart, TreeMap<Long, Boolean>> toneMap, int target, Set<AbcPart> assignedSharingPartsChannel) {
 		// System.out.println("Attempting to free "+target+" channels by finding pairs
 		// that can share channel with voice switching.");
 		List<Set<AbcPart>> shareChannelWithPatchChangesMap = new ArrayList<>();
@@ -348,7 +355,8 @@ public class AbcExporter {
 							target--;
 							core: for (int iterE = 0; iterE < keySet.size() && target > 0; iterE++) {
 								AbcPart partE = keySet.get(iterE);
-								if (assignedSharingPartsChannel.contains(partE) || assignedSharingPartsSwitchers.contains(partE)) {
+								if (assignedSharingPartsChannel.contains(partE)
+										|| assignedSharingPartsSwitchers.contains(partE)) {
 									continue core;
 								}
 								TreeMap<Long, Boolean> tonesEtree = toneMap.get(partE);
@@ -444,7 +452,8 @@ public class AbcExporter {
 	 * @param exportEndTick
 	 * @throws AbcConversionException
 	 */
-	private void exportForChords(Map<AbcPart, List<Chord>> chordsMade, long exportStartTick, long exportEndTick) throws AbcConversionException {
+	private void exportForChords(Map<AbcPart, List<Chord>> chordsMade, long exportStartTick, long exportEndTick)
+			throws AbcConversionException {
 		for (AbcPart part : parts) {
 			if (part.getEnabledTrackCount() > 0) {
 				List<Chord> chords = combineAndQuantize(part, false, exportStartTick, exportEndTick);
@@ -473,12 +482,14 @@ public class AbcExporter {
 		Map<AbcPart, Integer> shareMap = new HashMap<>();
 		int channel = 0;// We create the midi tracks for this method first, so we start at channel 0
 		// evaluate fiddles first as they are most likely to use only single notes.
-		LotroInstrument[] orderToEvaluate = { LotroInstrument.LONELY_MOUNTAIN_FIDDLE, LotroInstrument.BASIC_FIDDLE, LotroInstrument.BARDIC_FIDDLE,
-				LotroInstrument.SPRIGHTLY_FIDDLE, LotroInstrument.STUDENT_FIDDLE, LotroInstrument.BASIC_FLUTE, LotroInstrument.BASIC_CLARINET,
-				LotroInstrument.BASIC_HORN, LotroInstrument.BASIC_BAGPIPE, LotroInstrument.LONELY_MOUNTAIN_BASSOON, LotroInstrument.BASIC_BASSOON,
-				LotroInstrument.BRUSQUE_BASSOON, LotroInstrument.BASIC_PIBGORN, LotroInstrument.BASIC_THEORBO, LotroInstrument.BASIC_LUTE,
-				LotroInstrument.LUTE_OF_AGES, LotroInstrument.BASIC_HARP, LotroInstrument.MISTY_MOUNTAIN_HARP, LotroInstrument.BASIC_DRUM,
-				LotroInstrument.BASIC_COWBELL, LotroInstrument.MOOR_COWBELL, LotroInstrument.TRAVELLERS_TRUSTY_FIDDLE,
+		LotroInstrument[] orderToEvaluate = { LotroInstrument.LONELY_MOUNTAIN_FIDDLE, LotroInstrument.BASIC_FIDDLE,
+				LotroInstrument.BARDIC_FIDDLE, LotroInstrument.SPRIGHTLY_FIDDLE, LotroInstrument.STUDENT_FIDDLE,
+				LotroInstrument.BASIC_FLUTE, LotroInstrument.BASIC_CLARINET, LotroInstrument.BASIC_HORN,
+				LotroInstrument.BASIC_BAGPIPE, LotroInstrument.LONELY_MOUNTAIN_BASSOON, LotroInstrument.BASIC_BASSOON,
+				LotroInstrument.BRUSQUE_BASSOON, LotroInstrument.BASIC_PIBGORN, LotroInstrument.BASIC_THEORBO,
+				LotroInstrument.BASIC_LUTE, LotroInstrument.LUTE_OF_AGES, LotroInstrument.BASIC_HARP,
+				LotroInstrument.MISTY_MOUNTAIN_HARP, LotroInstrument.BASIC_DRUM, LotroInstrument.BASIC_COWBELL,
+				LotroInstrument.MOOR_COWBELL, LotroInstrument.TRAVELLERS_TRUSTY_FIDDLE,
 				LotroInstrument.STUDENT_FX_FIDDLE };
 
 		for (LotroInstrument evalInstr : orderToEvaluate) {
@@ -503,7 +514,8 @@ public class AbcExporter {
 				boolean matchFound = false;
 				Set<List<Chord>> chordsSet = new HashSet<>();
 				chordsSet.add(chordsA);
-				inner: for (iterBParts = iterAParts + 1; iterBParts < partsToCompare.size() && target > 0; iterBParts++) {
+				inner: for (iterBParts = iterAParts + 1; iterBParts < partsToCompare.size()
+						&& target > 0; iterBParts++) {
 					AbcPart partB = partsToCompare.get(iterBParts);
 					if (shareMap.containsKey(partB)) {
 						continue inner;
@@ -624,13 +636,13 @@ public class AbcExporter {
 		}
 	}
 
-	private ExportTrackInfo exportPartToPreview(AbcPart part, Sequence sequence, long songStartTick, long songEndTick, int pan,
-			boolean useLotroInstruments, Set<Integer> assignedChannels, Integer chan, boolean programChangeEveryChord,
-			Map<AbcPart, List<Chord>> chordsMade) throws AbcConversionException {
+	private ExportTrackInfo exportPartToPreview(AbcPart part, Sequence sequence, long songStartTick, long songEndTick,
+			int pan, boolean useLotroInstruments, Set<Integer> assignedChannels, Integer chan,
+			boolean programChangeEveryChord, Map<AbcPart, List<Chord>> chordsMade) throws AbcConversionException {
 		List<Chord> chords = chordsMade.get(part);
 
-		Pair<Integer, Integer> trackNumber = exportPartToMidi(part, sequence, chords, pan, useLotroInstruments, assignedChannels, chan,
-				programChangeEveryChord);
+		Pair<Integer, Integer> trackNumber = exportPartToMidi(part, sequence, chords, pan, useLotroInstruments,
+				assignedChannels, chan, programChangeEveryChord);
 
 		List<NoteEvent> noteEvents = new ArrayList<>(chords.size());
 		for (Chord chord : chords) {
@@ -653,11 +665,12 @@ public class AbcExporter {
 			}
 		}
 
-		return new ExportTrackInfo(trackNumber.first, part, noteEvents, trackNumber.second, part.getInstrument().midi.id());
+		return new ExportTrackInfo(trackNumber.first, part, noteEvents, trackNumber.second,
+				part.getInstrument().midi.id());
 	}
 
-	private Pair<Integer, Integer> exportPartToMidi(AbcPart part, Sequence out, List<Chord> chords, int pan, boolean useLotroInstruments,
-			Set<Integer> assignedChannels, Integer chan, boolean programChangeEveryChord) {
+	private Pair<Integer, Integer> exportPartToMidi(AbcPart part, Sequence out, List<Chord> chords, int pan,
+			boolean useLotroInstruments, Set<Integer> assignedChannels, Integer chan, boolean programChangeEveryChord) {
 		int trackNumber = out.getTracks().length;
 		part.setPreviewSequenceTrackNumber(trackNumber);
 
@@ -696,7 +709,8 @@ public class AbcExporter {
 
 		for (Chord chord : chords) {
 			if (programChangeEveryChord && useLotroInstruments) {
-				track.add(MidiFactory.createProgramChangeEvent(part.getInstrument().midi.id(), channel, chord.getStartTick()));
+				track.add(MidiFactory.createProgramChangeEvent(part.getInstrument().midi.id(), channel,
+						chord.getStartTick()));
 			}
 			Dynamics dynamics = chord.calcDynamics();
 			if (dynamics == null)
@@ -729,10 +743,11 @@ public class AbcExporter {
 				// Lengthen to match the note lengths used in the game
 				if (useLotroInstruments) {
 					boolean sustainable = part.getInstrument().isSustainable(ne.note.id);
-					double extraSeconds = sustainable ? AbcConstants.SUSTAINED_NOTE_HOLD_SECONDS : AbcConstants.NON_SUSTAINED_NOTE_HOLD_SECONDS;
+					double extraSeconds = sustainable ? AbcConstants.SUSTAINED_NOTE_HOLD_SECONDS
+							: AbcConstants.NON_SUSTAINED_NOTE_HOLD_SECONDS;
 
-					endTick = qtm.microsToTick(
-							qtm.tickToMicros(endTick) + (int) (extraSeconds * TimingInfo.ONE_SECOND_MICROS * qtm.getExportTempoFactor()));
+					endTick = qtm.microsToTick(qtm.tickToMicros(endTick)
+							+ (int) (extraSeconds * TimingInfo.ONE_SECOND_MICROS * qtm.getExportTempoFactor()));
 				}
 
 				if (endTick != ne.getEndTick()) {
@@ -741,7 +756,8 @@ public class AbcExporter {
 					ne.origPitch = oPitch;
 				}
 
-				track.add(MidiFactory.createNoteOnEventEx(ne.note.id + noteDelta, channel, dynamics.getVol(useLotroInstruments), ne.getStartTick()));
+				track.add(MidiFactory.createNoteOnEventEx(ne.note.id + noteDelta, channel,
+						dynamics.getVol(useLotroInstruments), ne.getStartTick()));
 				notesOn.add(ne);
 			}
 		}
@@ -802,8 +818,8 @@ public class AbcExporter {
 		}
 	}
 
-	private void exportPartToAbc(AbcPart part, long songStartTick, long songEndTick, PrintStream out, boolean delayEnabled)
-			throws AbcConversionException {
+	private void exportPartToAbc(AbcPart part, long songStartTick, long songEndTick, PrintStream out,
+			boolean delayEnabled) throws AbcConversionException {
 		List<Chord> chords = combineAndQuantize(part, true, songStartTick, songEndTick);
 
 		out.println();
@@ -931,7 +947,8 @@ public class AbcExporter {
 
 				int exportBarNumber = curBarNumber - firstBarNumber;
 				if ((exportBarNumber + 1) % 10 == 0) {
-					long micros = (long) ((qtm.barNumberToMicrosecond(curBarNumber) - songStartMicros) / qtm.getExportTempoFactor());
+					long micros = (long) ((qtm.barNumberToMicrosecond(curBarNumber) - songStartMicros)
+							/ qtm.getExportTempoFactor());
 					out.println("% Bar " + (exportBarNumber + 1) + " (" + Util.formatDuration(micros) + ")");
 				}
 
@@ -1016,8 +1033,8 @@ public class AbcExporter {
 					bar.append("//");
 				} else {
 					if (numerator == 0) {
-						System.err.println(
-								"Zero length Error: ticks=" + evt.getLengthTicks() + " micros=" + evt.getLengthMicros() + " note=" + noteAbc);
+						System.err.println("Zero length Error: ticks=" + evt.getLengthTicks() + " micros="
+								+ evt.getLengthMicros() + " note=" + noteAbc);
 					}
 					if (numerator != 1)
 						bar.append(numerator);
@@ -1052,8 +1069,8 @@ public class AbcExporter {
 	/**
 	 * Combine the tracks into one, quantize the note lengths, separate into chords.
 	 */
-	private List<Chord> combineAndQuantize(AbcPart part, boolean addTies, final long songStartTick, final long songEndTick)
-			throws AbcConversionException {
+	private List<Chord> combineAndQuantize(AbcPart part, boolean addTies, final long songStartTick,
+			final long songEndTick) throws AbcConversionException {
 		// Combine the events from the enabled tracks
 		List<NoteEvent> events = new ArrayList<>();
 		for (int t = 0; t < part.getTrackCount(); t++) {
@@ -1117,8 +1134,9 @@ public class AbcExporter {
 						long startTick = Math.max(ne.getStartTick(), songStartTick);
 						long endTick = Math.min(ne.getEndTick(), songEndTick);
 						if (part.isFXPart()) {
-							long endTickMin = qtm.microsToTick(qtm.tickToMicros(startTick)
-									+ (long) (AbcConstants.STUDENT_FX_MIN_SECONDS * TimingInfo.ONE_SECOND_MICROS * qtm.getExportTempoFactor()));
+							long endTickMin = qtm.microsToTick(
+									qtm.tickToMicros(startTick) + (long) (AbcConstants.STUDENT_FX_MIN_SECONDS
+											* TimingInfo.ONE_SECOND_MICROS * qtm.getExportTempoFactor()));
 							endTick = Math.max(endTick, endTickMin);
 						}
 
@@ -1134,7 +1152,8 @@ public class AbcExporter {
 							}
 						}
 						/*
-						 * if (!addTies) { // Only associate if doing preview newNE.origEvent = new ArrayList<NoteEvent>(); newNE.origEvent.add(ne); }
+						 * if (!addTies) { // Only associate if doing preview newNE.origEvent = new
+						 * ArrayList<NoteEvent>(); newNE.origEvent.add(ne); }
 						 */
 						events.add(newNE);
 
@@ -1234,7 +1253,8 @@ public class AbcExporter {
 		// Add initial rest if necessary
 		long quantizedStartTick = qtm.quantize(songStartTick, part);
 		if (events.get(0).getStartTick() > quantizedStartTick) {
-			events.add(0, new NoteEvent(Note.REST, Dynamics.DEFAULT.midiVol, quantizedStartTick, events.get(0).getStartTick(), qtm));
+			events.add(0, new NoteEvent(Note.REST, Dynamics.DEFAULT.midiVol, quantizedStartTick,
+					events.get(0).getStartTick(), qtm));
 		}
 
 		// Add a rest at the end if necessary
@@ -1245,7 +1265,8 @@ public class AbcExporter {
 				if (lastEvent.note == Note.REST) {
 					lastEvent.setEndTick(quantizedEndTick);
 				} else {
-					events.add(new NoteEvent(Note.REST, Dynamics.DEFAULT.midiVol, lastEvent.getEndTick(), quantizedEndTick, qtm));
+					events.add(new NoteEvent(Note.REST, Dynamics.DEFAULT.midiVol, lastEvent.getEndTick(),
+							quantizedEndTick, qtm));
 				}
 			}
 		}
@@ -1271,8 +1292,8 @@ public class AbcExporter {
 						// Remove the duplicate note
 						neIter.remove();
 						/*
-						 * if (ne.origEvent != null) { if (on.origEvent == null) { on.origEvent = new ArrayList<NoteEvent>(); }
-						 * on.origEvent.addAll(ne.origEvent); }
+						 * if (ne.origEvent != null) { if (on.origEvent == null) { on.origEvent = new
+						 * ArrayList<NoteEvent>(); } on.origEvent.addAll(ne.origEvent); }
 						 */
 						continue dupLoop;
 					} else {
@@ -1310,7 +1331,8 @@ public class AbcExporter {
 				curChord.addAlways(ne);
 				// if (addTies) assert curChord.hasRestAndNotes() : "addTies is true!";
 			} else {
-				List<NoteEvent> deadnotes = curChord.prune(part.getInstrument().sustainable, part.getInstrument() == LotroInstrument.BASIC_DRUM);
+				List<NoteEvent> deadnotes = curChord.prune(part.getInstrument().sustainable,
+						part.getInstrument() == LotroInstrument.BASIC_DRUM);
 				removeNotes(events, deadnotes, part);
 				if (!deadnotes.isEmpty()) {
 					// One of the tiedTo notes that was pruned might be the events.get(i) note,
@@ -1371,8 +1393,8 @@ public class AbcExporter {
 					// length
 					if (curChord.getEndTick() > nextChord.getStartTick()) {
 						// If the chord is too long, add a short rest in the chord to shorten it
-						curChord.addAlways(
-								new NoteEvent(Note.REST, Dynamics.DEFAULT.midiVol, curChord.getStartTick(), nextChord.getStartTick(), qtm));
+						curChord.addAlways(new NoteEvent(Note.REST, Dynamics.DEFAULT.midiVol, curChord.getStartTick(),
+								nextChord.getStartTick(), qtm));
 						// No pruning after a rest is added, as this is for preview and 6 notes plus a
 						// rest should be allowed.
 					}
@@ -1381,7 +1403,8 @@ public class AbcExporter {
 				// Insert a rest between the chords if needed
 				if (curChord.getEndTick() < nextChord.getStartTick()) {
 					tmpEvents.clear();
-					tmpEvents.add(new NoteEvent(Note.REST, Dynamics.DEFAULT.midiVol, curChord.getEndTick(), nextChord.getStartTick(), qtm));
+					tmpEvents.add(new NoteEvent(Note.REST, Dynamics.DEFAULT.midiVol, curChord.getEndTick(),
+							nextChord.getStartTick(), qtm));
 					breakLongNotes(part, tmpEvents, addTies);
 
 					for (NoteEvent restEvent : tmpEvents) {
@@ -1406,7 +1429,8 @@ public class AbcExporter {
 				// before the next chord starts.
 
 				// Last chord needs to be pruned as that hasn't happened yet.
-				List<NoteEvent> deadnotes = curChord.prune(part.getInstrument().sustainable, part.getInstrument() == LotroInstrument.BASIC_DRUM);
+				List<NoteEvent> deadnotes = curChord.prune(part.getInstrument().sustainable,
+						part.getInstrument() == LotroInstrument.BASIC_DRUM);
 				removeNotes(events, deadnotes, part);// we need to set the pruned flag for last chord too.
 				curChord.recalcEndTick();
 				long targetEndTick = curChord.getEndTick();
@@ -1437,7 +1461,8 @@ public class AbcExporter {
 			}
 		} else {
 			// Last chord needs to be pruned as that hasn't happened yet.
-			List<NoteEvent> deadnotes = curChord.prune(part.getInstrument().sustainable, part.getInstrument() == LotroInstrument.BASIC_DRUM);
+			List<NoteEvent> deadnotes = curChord.prune(part.getInstrument().sustainable,
+					part.getInstrument() == LotroInstrument.BASIC_DRUM);
 			removeNotes(events, deadnotes, part);// we need to set the pruned flag for last chord too.
 			curChord.recalcEndTick();
 		}
@@ -1446,7 +1471,8 @@ public class AbcExporter {
 		return chords;
 	}
 
-	private NoteEvent createNoteEvent(NoteEvent oldNe, Note note, int velocity, long startTick, long endTick, ITempoCache tempos) {
+	private NoteEvent createNoteEvent(NoteEvent oldNe, Note note, int velocity, long startTick, long endTick,
+			ITempoCache tempos) {
 		if (oldNe instanceof BentNoteEvent) {
 			BentNoteEvent newNe = new BentNoteEvent(note, velocity, startTick, endTick, tempos);
 			newNe.setBends(((BentNoteEvent) oldNe).bends);
@@ -1511,8 +1537,9 @@ public class AbcExporter {
 						long grid = qtm.getGridSizeTicks(t, part);
 						if (grid >= 3 && t < lastGridTick + grid / 3L) {
 							/*
-							 * We have a pitch change, and we are less than a 3rd of a gridlength from last gridpoint. Last grid point there was no
-							 * pitch changes. So we round this pitch change back to last gridpoint.
+							 * We have a pitch change, and we are less than a 3rd of a gridlength from last gridpoint.
+							 * Last grid point there was no pitch changes. So we round this pitch change back to last
+							 * gridpoint.
 							 */
 							current = createBentSubNote(be, noteID, current, lastGridTick);
 							if (current == null)
@@ -1550,20 +1577,24 @@ public class AbcExporter {
 			NoteEvent ne = events.get(i);
 			TimingInfo tm = qtm.getTimingInfo(ne.getStartTick(), part);
 
-			long maxNoteEndTick = qtm
-					.quantize(qtm.microsToTick(ne.getStartMicros() + (long) (TimingInfo.LONGEST_NOTE_MICROS * qtm.getExportTempoFactor())), part);
+			long maxNoteEndTick = qtm.quantize(
+					qtm.microsToTick(
+							ne.getStartMicros() + (long) (TimingInfo.LONGEST_NOTE_MICROS * qtm.getExportTempoFactor())),
+					part);
 
 			// Make a hard break for notes that are longer than LotRO can play
 			// Bagpipe notes up to B2 can sustain indefinitely; don't break them
 			if (ne.getEndTick() > maxNoteEndTick && ne.note != Note.REST
-					&& !(part.getInstrument() == LotroInstrument.BASIC_BAGPIPE && ne.note.id <= AbcConstants.BAGPIPE_LAST_DRONE_NOTE_ID)) {
+					&& !(part.getInstrument() == LotroInstrument.BASIC_BAGPIPE
+							&& ne.note.id <= AbcConstants.BAGPIPE_LAST_DRONE_NOTE_ID)) {
 
 				// Align with a bar boundary if it extends across 1 or more full bars.
 				long endBarTick = qtm.tickToBarStartTick(maxNoteEndTick);
 
 				long slipMicros = qtm.tickToMicrosABC(maxNoteEndTick) - qtm.tickToMicrosABC(endBarTick);
 
-				if (qtm.tickToBarEndTick(ne.getStartTick()) < endBarTick && slipMicros < AbcConstants.ONE_SECOND_MICROS) {
+				if (qtm.tickToBarEndTick(ne.getStartTick()) < endBarTick
+						&& slipMicros < AbcConstants.ONE_SECOND_MICROS) {
 					maxNoteEndTick = qtm.quantize(endBarTick, part);
 					assert ne.getEndTick() > maxNoteEndTick;
 				}
@@ -1571,7 +1602,8 @@ public class AbcExporter {
 				// If the note is a rest or sustainable, add another one after
 				// this ends to keep it going...
 				if (ne.note == Note.REST || part.getInstrument().isSustainable(ne.note.id)) {
-					assert (ne.getEndTick() - maxNoteEndTick >= qtm.getTimingInfo(maxNoteEndTick, part).getMinNoteLengthTicks());
+					assert (ne.getEndTick() - maxNoteEndTick >= qtm.getTimingInfo(maxNoteEndTick, part)
+							.getMinNoteLengthTicks());
 					NoteEvent next = new NoteEvent(ne.note, ne.velocity, maxNoteEndTick, ne.getEndTick(), qtm);
 					next.origPitch = ne.origPitch;
 					int ins = Collections.binarySearch(events, next);
@@ -1581,9 +1613,9 @@ public class AbcExporter {
 					events.add(ins, next);
 
 					/*
-					 * If the final note is less than a full bar length, just tie it to the original note rather than creating a hard break. We don't
-					 * want the last piece of a long sustained note to be a short blast. LOTRO won't complain about a note being too long if it's part
-					 * of a tie.
+					 * If the final note is less than a full bar length, just tie it to the original note rather than
+					 * creating a hard break. We don't want the last piece of a long sustained note to be a short blast.
+					 * LOTRO won't complain about a note being too long if it's part of a tie.
 					 */
 					TimingInfo tmNext = qtm.getTimingInfo(next.getStartTick(), part);
 					if (next.getLengthTicks() < tmNext.getBarLengthTicks() && ne.note != Note.REST) {
@@ -1598,7 +1630,8 @@ public class AbcExporter {
 
 			if (addTies) {
 				// Tie notes across bar boundaries
-				long targetEndTick = Math.min(ne.getEndTick(), qtm.quantize(qtm.tickToBarEndTick(ne.getStartTick()), part));
+				long targetEndTick = Math.min(ne.getEndTick(),
+						qtm.quantize(qtm.tickToBarEndTick(ne.getStartTick()), part));
 				if (targetEndTick < ne.getStartTick() + tm.getMinNoteLengthTicks()) {
 					// Mix Timings can cause code to come here.
 					targetEndTick = ne.getStartTick() + tm.getMinNoteLengthTicks();
@@ -1607,7 +1640,8 @@ public class AbcExporter {
 				assert (targetEndTick >= ne.getStartTick() + tm.getMinNoteLengthTicks());
 
 				// Tie notes across tempo boundaries
-				final QuantizedTimingInfo.TimingInfoEvent nextTempoEvent = qtm.getNextTimingEvent(ne.getStartTick(), part);
+				final QuantizedTimingInfo.TimingInfoEvent nextTempoEvent = qtm.getNextTimingEvent(ne.getStartTick(),
+						part);
 				if (nextTempoEvent != null && nextTempoEvent.tick < targetEndTick) {
 					targetEndTick = nextTempoEvent.tick;
 					assert (targetEndTick - ne.getStartTick() >= tm.getMinNoteLengthTicks());
@@ -1616,17 +1650,18 @@ public class AbcExporter {
 
 				// If remaining bar is larger than 5s, then split rests earlier (and yes, have
 				// seen this happen for 8s+ -aifel)
-				if (ne.note == Note.REST && targetEndTick > qtm
-						.microsToTick(qtm.tickToMicros(ne.getStartTick()) + (long) (TimingInfo.LONGEST_NOTE_MICROS * qtm.getExportTempoFactor()))) {
+				if (ne.note == Note.REST && targetEndTick > qtm.microsToTick(qtm.tickToMicros(ne.getStartTick())
+						+ (long) (TimingInfo.LONGEST_NOTE_MICROS * qtm.getExportTempoFactor()))) {
 					// Rest longer than 5s, split it at 4s:
-					targetEndTick = qtm.quantize(qtm.microsToTick(
-							qtm.tickToMicros(ne.getStartTick()) + (long) (0.5f * AbcConstants.LONGEST_NOTE_MICROS * qtm.getExportTempoFactor())),
+					targetEndTick = qtm.quantize(
+							qtm.microsToTick(qtm.tickToMicros(ne.getStartTick())
+									+ (long) (0.5f * AbcConstants.LONGEST_NOTE_MICROS * qtm.getExportTempoFactor())),
 							part);
 				}
 
 				/*
-				 * Make sure that quarter notes start on quarter-note boundaries within the bar, and that eighth notes start on eight-note boundaries,
-				 * and so on. Add a tie at the boundary if they start past the boundary.
+				 * Make sure that quarter notes start on quarter-note boundaries within the bar, and that eighth notes
+				 * start on eight-note boundaries, and so on. Add a tie at the boundary if they start past the boundary.
 				 */
 				if (!qtm.isMixTiming()) {// This is only to prettify output, we omit this from Mix Timing since bars
 											// follow default timing, and notes might be in odd timing.
@@ -1653,7 +1688,8 @@ public class AbcExporter {
 				}
 
 				if (ne.getEndTick() > targetEndTick) {
-					assert (ne.getEndTick() - targetEndTick >= qtm.getTimingInfo(targetEndTick, part).getMinNoteLengthTicks());
+					assert (ne.getEndTick() - targetEndTick >= qtm.getTimingInfo(targetEndTick, part)
+							.getMinNoteLengthTicks());
 					assert (targetEndTick - ne.getStartTick() >= tm.getMinNoteLengthTicks());
 					NoteEvent next = ne.splitWithTieAtTick(targetEndTick);
 					int ins = Collections.binarySearch(events, next);
@@ -1691,7 +1727,8 @@ public class AbcExporter {
 				ne.tiesFrom.tiesTo = null;
 				ne.tiesFrom = null;
 			} /*
-				 * else if (ne.origEvent != null && showPruned) { for (NoteEvent neo : ne.origEvent) { neo.prune(part); } }
+				 * else if (ne.origEvent != null && showPruned) { for (NoteEvent neo : ne.origEvent) { neo.prune(part);
+				 * } }
 				 */
 
 			// Remove the remainder of the notes that this is tied to (if any)
@@ -1751,7 +1788,8 @@ public class AbcExporter {
 		}
 
 		/*
-		 * public T getFirst() { return first; } public U getSecond() { return second; } public V getThird() { return third; }
+		 * public T getFirst() { return first; } public U getSecond() { return second; } public V getThird() { return
+		 * third; }
 		 */
 	}
 }

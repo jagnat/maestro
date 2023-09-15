@@ -93,14 +93,16 @@ class TuneInfo {
 		} else {
 			String[] parts = str.split("[/:| ]");
 			if (parts.length != 2) {
-				throw new IllegalArgumentException("The string: \"" + str + "\" is not a valid time signature (expected format: 4/4)");
+				throw new IllegalArgumentException(
+						"The string: \"" + str + "\" is not a valid time signature (expected format: 4/4)");
 			}
 			meterNumerator = Integer.parseInt(parts[0]);
 			meterDenominator = Integer.parseInt(parts[1]);
 		}
 
 		if (this.noteDivisor < 0) {
-			this.ppqn = ((4 * meterNumerator / meterDenominator) < 3 ? 16 : 8) * AbcToMidi.DEFAULT_NOTE_TICKS / meterDenominator;
+			this.ppqn = ((4 * meterNumerator / meterDenominator) < 3 ? 16 : 8) * AbcToMidi.DEFAULT_NOTE_TICKS
+					/ meterDenominator;
 		} else {
 			calcPPQN();
 		}
@@ -163,11 +165,13 @@ class TuneInfo {
 	}
 
 	/*
-	 * private int parseDivisor(String str) { String[] parts = str.trim().split("[/:| ]"); if (parts.length != 2) { throw new
-	 * IllegalArgumentException("\"" + str + "\" is not a valid note length" + " (example of valid note length: 1/4)"); } int numerator =
-	 * Integer.parseInt(parts[0]); int denominator = Integer.parseInt(parts[1]); if (numerator != 1) { throw new
-	 * IllegalArgumentException("The numerator of the note length must be 1" + " (example of valid note length: 1/4)"); } if (denominator < 1) { throw
-	 * new IllegalArgumentException("The denominator of the note length must be positive" + " (example of valid note length: 1/4)"); }
+	 * private int parseDivisor(String str) { String[] parts = str.trim().split("[/:| ]"); if (parts.length != 2) {
+	 * throw new IllegalArgumentException("\"" + str + "\" is not a valid note length" +
+	 * " (example of valid note length: 1/4)"); } int numerator = Integer.parseInt(parts[0]); int denominator =
+	 * Integer.parseInt(parts[1]); if (numerator != 1) { throw new
+	 * IllegalArgumentException("The numerator of the note length must be 1" + " (example of valid note length: 1/4)");
+	 * } if (denominator < 1) { throw new IllegalArgumentException("The denominator of the note length must be positive"
+	 * + " (example of valid note length: 1/4)"); }
 	 * 
 	 * return denominator; }
 	 */
@@ -175,7 +179,8 @@ class TuneInfo {
 	private double parseNoteDivisor(String str) {
 		String[] parts = str.trim().split("[/:| ]");
 		if (parts.length != 2) {
-			throw new IllegalArgumentException("\"" + str + "\" is not a valid note length" + " (example of valid note length: 1/4)");
+			throw new IllegalArgumentException(
+					"\"" + str + "\" is not a valid note length" + " (example of valid note length: 1/4)");
 		}
 		int numerator = Integer.parseInt(parts[0]);
 		int denominator = Integer.parseInt(parts[1]);
@@ -184,10 +189,12 @@ class TuneInfo {
 		 * " (example of valid note length: 1/4)"); }
 		 **/
 		if (numerator < 1) {
-			throw new IllegalArgumentException("The numerator of the note length must be positive" + " (example of valid note length: 3/8)");
+			throw new IllegalArgumentException(
+					"The numerator of the note length must be positive" + " (example of valid note length: 3/8)");
 		}
 		if (denominator < 1) {
-			throw new IllegalArgumentException("The denominator of the note length must be positive" + " (example of valid note length: 3/8)");
+			throw new IllegalArgumentException(
+					"The denominator of the note length must be positive" + " (example of valid note length: 3/8)");
 		}
 
 		return numerator / (double) denominator;

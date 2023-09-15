@@ -78,17 +78,19 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 		this(sequencer, trackInfo, minRenderedNoteId, maxRenderedNoteId, 2, 2);
 	}
 
-	public NoteGraph(SequencerWrapper sequencer, TrackInfo trackInfo, int minRenderedNoteId, int maxRenderedNoteId, double noteWidthPx,
-			double noteHeightPx) {
-		this(sequencer, (trackInfo == null) ? null : trackInfo.getSequenceInfo(), trackInfo, minRenderedNoteId, maxRenderedNoteId, 2, 2);
+	public NoteGraph(SequencerWrapper sequencer, TrackInfo trackInfo, int minRenderedNoteId, int maxRenderedNoteId,
+			double noteWidthPx, double noteHeightPx) {
+		this(sequencer, (trackInfo == null) ? null : trackInfo.getSequenceInfo(), trackInfo, minRenderedNoteId,
+				maxRenderedNoteId, 2, 2);
 	}
 
-	public NoteGraph(SequencerWrapper sequencer, SequenceInfo sequenceInfo, int minRenderedNoteId, int maxRenderedNoteId) {
+	public NoteGraph(SequencerWrapper sequencer, SequenceInfo sequenceInfo, int minRenderedNoteId,
+			int maxRenderedNoteId) {
 		this(sequencer, sequenceInfo, null, minRenderedNoteId, maxRenderedNoteId, 2, 2);
 	}
 
-	private NoteGraph(SequencerWrapper sequencer, SequenceInfo sequenceInfo, TrackInfo trackInfo, int minRenderedNoteId, int maxRenderedNoteId,
-			double noteWidthPx, double noteHeightPx) {
+	private NoteGraph(SequencerWrapper sequencer, SequenceInfo sequenceInfo, TrackInfo trackInfo, int minRenderedNoteId,
+			int maxRenderedNoteId, double noteWidthPx, double noteHeightPx) {
 		super((LayoutManager) null);
 
 		this.sequencer = sequencer;
@@ -319,14 +321,16 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 		}
 
 		if (evt.getProperty() == SequencerProperty.IS_DRAGGING) {
-			indicatorLine.setBackground(sequencer.isDragging() ? ColorTable.INDICATOR_ACTIVE.get() : ColorTable.INDICATOR.get());
+			indicatorLine.setBackground(
+					sequencer.isDragging() ? ColorTable.INDICATOR_ACTIVE.get() : ColorTable.INDICATOR.get());
 		}
 
 		// Repaint the parts that need it
 		if (evt.getProperty() == SequencerProperty.POSITION) {
 			final long currentSongPos = sequencer.getPosition();
 			final long leftSongPos = Math.min(currentSongPos, Math.min(lastPaintedMinSongPos, songPos));
-			final long rightSongPos = Math.max(currentSongPos, Math.max(lastPaintedSongPos, songPos)) + SequencerWrapper.UPDATE_FREQUENCY_MICROS;
+			final long rightSongPos = Math.max(currentSongPos, Math.max(lastPaintedSongPos, songPos))
+					+ SequencerWrapper.UPDATE_FREQUENCY_MICROS;
 			songPos = currentSongPos;
 
 			if (leftSongPos < 0) {
@@ -391,7 +395,8 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 	}
 
 	@SuppressWarnings("unchecked")
-	private void fillNote(Graphics2D g2, NoteEvent ne, int noteId, double minWidth, double height, double extraWidth, double extraHeight) {
+	private void fillNote(Graphics2D g2, NoteEvent ne, int noteId, double minWidth, double height, double extraWidth,
+			double extraHeight) {
 		if (ne instanceof BentNoteEvent) {
 			BentNoteEvent be = (BentNoteEvent) ne;
 
@@ -413,13 +418,15 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 				long startMicro = tempoCache.tickToMicros(bend1tick);
 				double width = Math.max(minWidth, tempoCache.tickToMicros(bend2tick) - startMicro);
 				double y = Util.clamp(noteId + bend1bend, MIN_RENDERED, MAX_RENDERED);
-				rectTmp.setRect(startMicro - extraWidth, y - extraHeight, width + 2 * extraWidth, height + 2 * extraHeight);
+				rectTmp.setRect(startMicro - extraWidth, y - extraHeight, width + 2 * extraWidth,
+						height + 2 * extraHeight);
 				g2.fill(rectTmp);
 			}
 		} else {
 			double width = Math.max(minWidth, ne.getLengthMicros());
 			double y = Util.clamp(noteId, MIN_RENDERED, MAX_RENDERED);
-			rectTmp.setRect(ne.getStartMicros() - extraWidth, y - extraHeight, width + 2 * extraWidth, height + 2 * extraHeight);
+			rectTmp.setRect(ne.getStartMicros() - extraWidth, y - extraHeight, width + 2 * extraWidth,
+					height + 2 * extraHeight);
 			g2.fill(rectTmp);
 		}
 	}
@@ -435,7 +442,8 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 		double minHeight = Math.abs(NOTE_VELOCITY_MIN_HEIGHT_PX / xform.getScaleY());
 		// double height = ((double) (velocity - Dynamics.MINIMUM.midiVol) /
 		// Dynamics.MAXIMUM.midiVol)
-		double height = ((double) (dynamics.ordinal()) / (double) Dynamics.MAXIMUM.ordinal()) * (MAX_RENDERED - MIN_RENDERED - minHeight) + minHeight;
+		double height = ((double) (dynamics.ordinal()) / (double) Dynamics.MAXIMUM.ordinal())
+				* (MAX_RENDERED - MIN_RENDERED - minHeight) + minHeight;
 
 		rectTmp.setRect(ne.getStartMicros(), MIN_RENDERED, width, height);
 		g2.fill(rectTmp);
@@ -623,7 +631,8 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 
 					int noteId = transposeNote(ne.note.id, ne.getStartTick());
 
-					if (showNotesOn && songPos >= ne.getStartMicros() && minSongPos <= ne.getEndMicros() && sequencer.isNoteActive(ne.note.id)) {
+					if (showNotesOn && songPos >= ne.getStartMicros() && minSongPos <= ne.getEndMicros()
+							&& sequencer.isNoteActive(ne.note.id)) {
 						if (notesOn == null)
 							notesOn = new BitSet(noteEvents.size());
 						notesOn.set(i);
@@ -650,7 +659,8 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 
 						int noteIdDouble = transposeNote(ne.note.id + addition, ne.getStartTick());
 
-						if (showNotesOn && songPos >= ne.getStartMicros() && minSongPos <= ne.getEndMicros() && sequencer.isNoteActive(ne.note.id)) {
+						if (showNotesOn && songPos >= ne.getStartMicros() && minSongPos <= ne.getEndMicros()
+								&& sequencer.isNoteActive(ne.note.id)) {
 							//
 						} else if (!isNotePlayable(ne, addition)) {
 							BitSet notesBadDouble;
@@ -675,8 +685,8 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 
 							notesBadDouble.set(i);
 						} else {
-							NoteEvent nd = new NoteEvent(Note.fromId(noteIdDouble), ne.velocity, ne.getStartTick(), ne.getEndTick(),
-									ne.getTempoCache());
+							NoteEvent nd = new NoteEvent(Note.fromId(noteIdDouble), ne.velocity, ne.getStartTick(),
+									ne.getEndTick(), ne.getTempoCache());
 
 							g2.setColor(getNoteColor(nd));
 							fillNote(g2, nd, noteIdDouble, minLength, height);
@@ -696,7 +706,8 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 			if (notesBad0 != null) {
 				for (int i = notesBad0.nextSetBit(0); i >= 0; i = notesBad0.nextSetBit(i + 1)) {
 					NoteEvent ne = noteEvents.get(i);
-					NoteEvent nd = new NoteEvent(Note.fromId(ne.note.id - 24), ne.velocity, ne.getStartTick(), ne.getEndTick(), ne.getTempoCache());
+					NoteEvent nd = new NoteEvent(Note.fromId(ne.note.id - 24), ne.velocity, ne.getStartTick(),
+							ne.getEndTick(), ne.getTempoCache());
 					g2.setColor(getBadNoteColor(nd));
 					int noteId = transposeNote(nd.note.id, nd.getStartTick());
 					fillNote(g2, nd, noteId, minLength, height);
@@ -705,7 +716,8 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 			if (notesBad1 != null) {
 				for (int i = notesBad1.nextSetBit(0); i >= 0; i = notesBad1.nextSetBit(i + 1)) {
 					NoteEvent ne = noteEvents.get(i);
-					NoteEvent nd = new NoteEvent(Note.fromId(ne.note.id - 12), ne.velocity, ne.getStartTick(), ne.getEndTick(), ne.getTempoCache());
+					NoteEvent nd = new NoteEvent(Note.fromId(ne.note.id - 12), ne.velocity, ne.getStartTick(),
+							ne.getEndTick(), ne.getTempoCache());
 					g2.setColor(getBadNoteColor(nd));
 					int noteId = transposeNote(nd.note.id, nd.getStartTick());
 					fillNote(g2, nd, noteId, minLength, height);
@@ -714,7 +726,8 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 			if (notesBad2 != null) {
 				for (int i = notesBad2.nextSetBit(0); i >= 0; i = notesBad2.nextSetBit(i + 1)) {
 					NoteEvent ne = noteEvents.get(i);
-					NoteEvent nd = new NoteEvent(Note.fromId(ne.note.id + 12), ne.velocity, ne.getStartTick(), ne.getEndTick(), ne.getTempoCache());
+					NoteEvent nd = new NoteEvent(Note.fromId(ne.note.id + 12), ne.velocity, ne.getStartTick(),
+							ne.getEndTick(), ne.getTempoCache());
 					g2.setColor(getBadNoteColor(nd));
 					int noteId = transposeNote(nd.note.id, nd.getStartTick());
 					fillNote(g2, nd, noteId, minLength, height);
@@ -723,7 +736,8 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 			if (notesBad3 != null) {
 				for (int i = notesBad3.nextSetBit(0); i >= 0; i = notesBad3.nextSetBit(i + 1)) {
 					NoteEvent ne = noteEvents.get(i);
-					NoteEvent nd = new NoteEvent(Note.fromId(ne.note.id + 24), ne.velocity, ne.getStartTick(), ne.getEndTick(), ne.getTempoCache());
+					NoteEvent nd = new NoteEvent(Note.fromId(ne.note.id + 24), ne.velocity, ne.getStartTick(),
+							ne.getEndTick(), ne.getTempoCache());
 					g2.setColor(getBadNoteColor(nd));
 					int noteId = transposeNote(nd.note.id, nd.getStartTick());
 					fillNote(g2, nd, noteId, minLength, height);
@@ -740,7 +754,8 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 					NoteEvent ne = noteEvents.get(i);
 					int noteId = transposeNote(ne.note.id, ne.getStartTick());
 
-					fillNote(g2, noteEvents.get(i), noteId, minLength, height, noteOnOutlineWidthX, noteOnExtraHeightY + noteOnOutlineWidthY);
+					fillNote(g2, noteEvents.get(i), noteId, minLength, height, noteOnOutlineWidthX,
+							noteOnExtraHeightY + noteOnOutlineWidthY);
 
 					for (int k = 0; k < 4; k++) {
 						if (!getSectionDoubling(ne.getStartTick())[k]) {
@@ -757,7 +772,8 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 
 						int noteIdDouble = transposeNote(ne.note.id + addition, ne.getStartTick());
 
-						fillNote(g2, ne, noteIdDouble, minLength, height, noteOnOutlineWidthX, noteOnExtraHeightY + noteOnOutlineWidthY);
+						fillNote(g2, ne, noteIdDouble, minLength, height, noteOnOutlineWidthX,
+								noteOnExtraHeightY + noteOnOutlineWidthY);
 					}
 				}
 
@@ -811,7 +827,8 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 					else
 						dynamicsRenderedInThisPass = dynamicsValues[d];
 
-					boolean isOutOfRange = (velocity < Dynamics.MINIMUM.midiVol) || (velocity > Dynamics.MAXIMUM.midiVol);
+					boolean isOutOfRange = (velocity < Dynamics.MINIMUM.midiVol)
+							|| (velocity > Dynamics.MAXIMUM.midiVol);
 
 					// Note that we're rendering the "above max" dynamics in the *second* pass
 					// (the first is d == dynamicsValues.length). This lets us render those bad
@@ -830,7 +847,8 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 					}
 
 					if (isNoteVisible(ne)) {
-						setColorAndFillVelocity(g2, showNotesOn, minSongPos, ne, dynamicsRenderedInThisPass, isOutOfRange);
+						setColorAndFillVelocity(g2, showNotesOn, minSongPos, ne, dynamicsRenderedInThisPass,
+								isOutOfRange);
 					}
 				}
 			}
@@ -840,9 +858,10 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, hintAntialiasSav);
 	}
 
-	private void setColorAndFillVelocity(Graphics2D g2, boolean showNotesOn, long minSongPos, NoteEvent ne, Dynamics dynamicsRenderedInThisPass,
-			boolean isOutOfRange) {
-		if (showNotesOn && songPos >= ne.getStartMicros() && minSongPos <= ne.getEndMicros() && sequencer.isNoteActive(ne.note.id)) {
+	private void setColorAndFillVelocity(Graphics2D g2, boolean showNotesOn, long minSongPos, NoteEvent ne,
+			Dynamics dynamicsRenderedInThisPass, boolean isOutOfRange) {
+		if (showNotesOn && songPos >= ne.getStartMicros() && minSongPos <= ne.getEndMicros()
+				&& sequencer.isNoteActive(ne.note.id)) {
 			g2.setColor(noteOnColor.get());
 			fillNoteVelocity(g2, ne, dynamicsRenderedInThisPass);
 		} else if (isOutOfRange) {

@@ -25,7 +25,8 @@ public class Triple<T1, T2, T3> {
 			return false;
 
 		Triple<?, ?, ?> that = (Triple<?, ?, ?>) obj;
-		return (Objects.equals(this.first, that.first)) && (Objects.equals(this.second, that.second)) && (Objects.equals(this.third, that.third));
+		return (Objects.equals(this.first, that.first)) && (Objects.equals(this.second, that.second))
+				&& (Objects.equals(this.third, that.third));
 	}
 
 	@Override

@@ -84,7 +84,8 @@ public class PartNumberingConfig {
 				} else if (key.equals("INCREMENT")) {
 					increment = Integer.parseInt(value);
 					if (increment != 10 && increment != 1) {
-						throw new ParseException("Invalid value of INCREMENT " + increment + ". Should be 1 or 10", fn, lineNo);
+						throw new ParseException("Invalid value of INCREMENT " + increment + ". Should be 1 or 10", fn,
+								lineNo);
 					}
 				}
 			}
@@ -96,7 +97,9 @@ public class PartNumberingConfig {
 			for (Entry<LotroInstrument, Integer> entry : map.entrySet()) {
 				int val = entry.getValue();
 				if ((increment == 10 && (val < 0 || val > 10)) || (increment == 1 && (val < 0 || val > 999))) {
-					throw new ParseException("Instrument " + entry.getKey().name() + " has an out-of-range first part number " + val, fn);
+					throw new ParseException(
+							"Instrument " + entry.getKey().name() + " has an out-of-range first part number " + val,
+							fn);
 				}
 			}
 		}

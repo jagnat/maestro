@@ -73,12 +73,14 @@ public class VolumeTransceiver implements Transceiver, MidiConstants {
 
 	private void passOn(MidiMessage message, long timeStamp) {
 		/*
-		 * if (message instanceof ShortMessage) { ShortMessage m = (ShortMessage) message; if (m.getCommand() == ShortMessage.SYSTEM_RESET) {
-		 * System.out.println("Reset"); } else if (m.getCommand() == ShortMessage.CONTROL_CHANGE && m.getData1() == CHANNEL_VOLUME_CONTROLLER_COARSE)
-		 * { int c = m.getChannel(); System.out.println("PassOn: Channel "+c+" set to "+m.getData2()); } else if (m.getCommand() ==
+		 * if (message instanceof ShortMessage) { ShortMessage m = (ShortMessage) message; if (m.getCommand() ==
+		 * ShortMessage.SYSTEM_RESET) { System.out.println("Reset"); } else if (m.getCommand() ==
+		 * ShortMessage.CONTROL_CHANGE && m.getData1() == CHANNEL_VOLUME_CONTROLLER_COARSE) { int c = m.getChannel();
+		 * System.out.println("PassOn: Channel "+c+" set to "+m.getData2()); } else if (m.getCommand() ==
 		 * ShortMessage.CONTROL_CHANGE && m.getData1() == CHANNEL_VOLUME_CONTROLLER_FINE) { int c = m.getChannel();
-		 * System.out.println("Channel "+c+" set to fine "+m.getData2()); } else if (m.getCommand() == ShortMessage.CONTROL_CHANGE && m.getData1() ==
-		 * CHANNEL_EXPRESSION_CONTROLLER) { int c = m.getChannel(); System.out.println("Channel "+c+" expression "+m.getData2()); } }
+		 * System.out.println("Channel "+c+" set to fine "+m.getData2()); } else if (m.getCommand() ==
+		 * ShortMessage.CONTROL_CHANGE && m.getData1() == CHANNEL_EXPRESSION_CONTROLLER) { int c = m.getChannel();
+		 * System.out.println("Channel "+c+" expression "+m.getData2()); } }
 		 */
 
 		if (receiver != null) {
@@ -94,7 +96,8 @@ public class VolumeTransceiver implements Transceiver, MidiConstants {
 			if (m.getCommand() == ShortMessage.SYSTEM_RESET) {
 				Arrays.fill(channelVolume, UNSET_CHANNEL_VOLUME);
 				systemReset = true;
-			} else if (m.getCommand() == ShortMessage.CONTROL_CHANGE && m.getData1() == CHANNEL_VOLUME_CONTROLLER_COARSE) {
+			} else if (m.getCommand() == ShortMessage.CONTROL_CHANGE
+					&& m.getData1() == CHANNEL_VOLUME_CONTROLLER_COARSE) {
 				/*
 				 * try {
 				 */
@@ -109,12 +112,14 @@ public class VolumeTransceiver implements Transceiver, MidiConstants {
 				/*
 				 * } catch (InvalidMidiDataException e) { e.printStackTrace(); }
 				 */
-			} else if (m.getCommand() == ShortMessage.CONTROL_CHANGE && m.getData1() == CHANNEL_VOLUME_CONTROLLER_FINE) {
+			} else if (m.getCommand() == ShortMessage.CONTROL_CHANGE
+					&& m.getData1() == CHANNEL_VOLUME_CONTROLLER_FINE) {
 				// int c = m.getChannel();
 				// System.out.println("Channel "+c+" set to fine "+m.getData2());
 			} else if (m.getCommand() == ShortMessage.CONTROL_CHANGE && m.getData1() == CHANNEL_EXPRESSION_CONTROLLER) {
 				// int c = m.getChannel();
-				// System.out.println("Channel "+c+" expression "+m.getData2()+" becomes="+getActualVolume(c)*((float)m.getData2()/127.0));
+				// System.out.println("Channel "+c+" expression "+m.getData2()+"
+				// becomes="+getActualVolume(c)*((float)m.getData2()/127.0));
 
 				return; // This (sort of) fixes an issue with SoundBlaster Audigy 5
 			}
@@ -128,7 +133,8 @@ public class VolumeTransceiver implements Transceiver, MidiConstants {
 			 * System.err.println("SYSEX : "+sb.toString());
 			 */
 
-			if (sysex.length > 4 && (sysex[1] & 0xFF) == SYSEX_UNIVERSAL_REALTIME && (sysex[3] & 0xFF) == 0x04 && (sysex[4] & 0xFF) == 0x01) {
+			if (sysex.length > 4 && (sysex[1] & 0xFF) == SYSEX_UNIVERSAL_REALTIME && (sysex[3] & 0xFF) == 0x04
+					&& (sysex[4] & 0xFF) == 0x01) {
 				// System.out.println("Ignored SysEx device volume command.");
 				return;
 			}

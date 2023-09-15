@@ -336,8 +336,8 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 
 	}
 
-	protected void initVoice(SoftVoice voice, SoftPerformer p, int voiceID, int noteNumber, int velocity, ModelConnectionBlock[] connectionBlocks,
-			ModelChannelMixer channelmixer, boolean releaseTriggered) {
+	protected void initVoice(SoftVoice voice, SoftPerformer p, int voiceID, int noteNumber, int velocity,
+			ModelConnectionBlock[] connectionBlocks, ModelChannelMixer channelmixer, boolean releaseTriggered) {
 		if (voice.active) {
 			// Voice is active , we must steal the voice
 			voice.stealer_channel = this;
@@ -391,7 +391,8 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 			} else {
 				if (portamento_lastnote_ix != 0) {
 					portamento_lastnote_ix--;
-					voice.co_noteon_keynumber[0] = (tuning.getTuning(portamento_lastnote[portamento_lastnote_ix]) / 100.0) * (1f / 128f);
+					voice.co_noteon_keynumber[0] = (tuning.getTuning(portamento_lastnote[portamento_lastnote_ix])
+							/ 100.0) * (1f / 128f);
 					voice.portamento = true;
 				}
 			}
@@ -417,7 +418,8 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 			if (sustain) {
 				sustain = false;
 				for (int i = 0; i < voices.length; i++) {
-					if ((voices[i].sustain || voices[i].on) && voices[i].channel == channel && voices[i].active && voices[i].note == noteNumber) {
+					if ((voices[i].sustain || voices[i].on) && voices[i].channel == channel && voices[i].active
+							&& voices[i].note == noteNumber) {
 						voices[i].sustain = false;
 						voices[i].on = true;
 						voices[i].noteOff(0);
@@ -432,7 +434,8 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 				if (portamento) {
 					boolean n_found = false;
 					for (int i = 0; i < voices.length; i++) {
-						if (voices[i].on && voices[i].channel == channel && voices[i].active && voices[i].releaseTriggered == false) {
+						if (voices[i].on && voices[i].channel == channel && voices[i].active
+								&& voices[i].releaseTriggered == false) {
 							voices[i].portamento = true;
 							voices[i].setNote(noteNumber);
 							n_found = true;
@@ -447,8 +450,8 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 				if (portamento_control_note != -1) {
 					boolean n_found = false;
 					for (int i = 0; i < voices.length; i++) {
-						if (voices[i].on && voices[i].channel == channel && voices[i].active && voices[i].note == portamento_control_note
-								&& voices[i].releaseTriggered == false) {
+						if (voices[i].on && voices[i].channel == channel && voices[i].active
+								&& voices[i].note == portamento_control_note && voices[i].releaseTriggered == false) {
 							voices[i].portamento = true;
 							voices[i].setNote(noteNumber);
 							n_found = true;
@@ -487,12 +490,13 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 			current_director.noteOn(tunedKey, velocity);
 
 			/*
-			 * SoftPerformer[] performers = current_instrument.getPerformers(); for (int i = 0; i < performers.length; i++) { SoftPerformer p =
-			 * performers[i]; if (p.keyFrom <= tunedKey && p.keyTo >= tunedKey) { if (p.velFrom <= velocity && p.velTo >= velocity) { if (firstVoice)
-			 * { firstVoice = false; if (p.exclusiveClass != 0) { int x = p.exclusiveClass; for (int j = 0; j < voices.length; j++) { if
-			 * (voices[j].active && voices[j].channel == channel && voices[j].exclusiveClass == x) { if (!(p.selfNonExclusive && voices[j].note ==
-			 * noteNumber)) voices[j].shutdown(); } } } } voiceNo = findFreeVoice(voiceNo); if (voiceNo == -1) return; initVoice(voices[voiceNo], p,
-			 * prevVoiceID, noteNumber, velocity); } } }
+			 * SoftPerformer[] performers = current_instrument.getPerformers(); for (int i = 0; i < performers.length;
+			 * i++) { SoftPerformer p = performers[i]; if (p.keyFrom <= tunedKey && p.keyTo >= tunedKey) { if (p.velFrom
+			 * <= velocity && p.velTo >= velocity) { if (firstVoice) { firstVoice = false; if (p.exclusiveClass != 0) {
+			 * int x = p.exclusiveClass; for (int j = 0; j < voices.length; j++) { if (voices[j].active &&
+			 * voices[j].channel == channel && voices[j].exclusiveClass == x) { if (!(p.selfNonExclusive &&
+			 * voices[j].note == noteNumber)) voices[j].shutdown(); } } } } voiceNo = findFreeVoice(voiceNo); if
+			 * (voiceNo == -1) return; initVoice(voices[voiceNo], p, prevVoiceID, noteNumber, velocity); } } }
 			 */
 		}
 	}
@@ -520,7 +524,8 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 
 			mainmixer.activity();
 			for (int i = 0; i < voices.length; i++) {
-				if (voices[i].on && voices[i].channel == channel && voices[i].note == noteNumber && voices[i].releaseTriggered == false) {
+				if (voices[i].on && voices[i].channel == channel && voices[i].note == noteNumber
+						&& voices[i].releaseTriggered == false) {
 					voices[i].noteOff(velocity);
 				}
 			}
@@ -587,7 +592,8 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 		if (voiceNo == -1)
 			return;
 
-		initVoice(voices[voiceNo], p, prevVoiceID, noteNumber, velocity, connectionBlocks, current_mixer, releasetriggered);
+		initVoice(voices[voiceNo], p, prevVoiceID, noteNumber, velocity, connectionBlocks, current_mixer,
+				releasetriggered);
 	}
 
 	public void noteOff(int noteNumber) {
@@ -642,7 +648,8 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 	}
 
 	protected void applyInstrumentCustomization() {
-		if (cds_control_connections == null && cds_channelpressure_connections == null && cds_polypressure_connections == null) {
+		if (cds_control_connections == null && cds_channelpressure_connections == null
+				&& cds_polypressure_connections == null) {
 			return;
 		}
 
@@ -674,7 +681,8 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 					if (sources != null) {
 						for (int j = 0; j < sources.length; j++) {
 							ModelSource src = sources[j];
-							if ("midi_cc".equals(src.getIdentifier().getObject()) && cc.equals(src.getIdentifier().getVariable())) {
+							if ("midi_cc".equals(src.getIdentifier().getObject())
+									&& cc.equals(src.getIdentifier().getVariable())) {
 								removeok = true;
 							}
 						}
@@ -695,7 +703,8 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 					if (sources != null) {
 						for (int j = 0; j < sources.length; j++) {
 							ModelSource src = sources[j];
-							if ("midi".equals(src.getIdentifier().getObject()) && "poly_pressure".equals(src.getIdentifier().getVariable())) {
+							if ("midi".equals(src.getIdentifier().getObject())
+									&& "poly_pressure".equals(src.getIdentifier().getVariable())) {
 								removeok = true;
 							}
 						}
@@ -737,10 +746,11 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 	private ModelConnectionBlock[] createModelConnections(ModelIdentifier sid, int[] destination, int[] range) {
 
 		/*
-		 * controlled parameter (pp)|range (rr)| Description |Default -------------------------|----------|-------------------------|------- 00 Pitch
-		 * Control | 28H..58H | -24..+24 semitones | 40H 01 Filter Cutoff Control | 00H..7FH | -9600..+9450 cents | 40H 02 Amplitude Control |
-		 * 00H..7FH | 0..(127/64)*100 percent | 40H 03 LFO Pitch Depth | 00H..7FH | 0..600 cents | 0 04 LFO Filter Depth | 00H..7FH | 0..2400 cents |
-		 * 0 05 LFO Amplitude Depth | 00H..7FH | 0..100 percent | 0
+		 * controlled parameter (pp)|range (rr)| Description |Default
+		 * -------------------------|----------|-------------------------|------- 00 Pitch Control | 28H..58H | -24..+24
+		 * semitones | 40H 01 Filter Cutoff Control | 00H..7FH | -9600..+9450 cents | 40H 02 Amplitude Control |
+		 * 00H..7FH | 0..(127/64)*100 percent | 40H 03 LFO Pitch Depth | 00H..7FH | 0..600 cents | 0 04 LFO Filter Depth
+		 * | 00H..7FH | 0..2400 cents | 0 05 LFO Amplitude Depth | 00H..7FH | 0..100 percent | 0
 		 */
 
 		List<ModelConnectionBlock> conns = new ArrayList<ModelConnectionBlock>();
@@ -750,9 +760,10 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 			int r = range[i];
 			if (d == 0) {
 				double scale = (r - 64) * 100;
-				ModelConnectionBlock conn = new ModelConnectionBlock(new ModelSource(sid, ModelStandardTransform.DIRECTION_MIN2MAX,
-						ModelStandardTransform.POLARITY_UNIPOLAR, ModelStandardTransform.TRANSFORM_LINEAR), scale,
-						new ModelDestination(new ModelIdentifier("osc", "pitch")));
+				ModelConnectionBlock conn = new ModelConnectionBlock(
+						new ModelSource(sid, ModelStandardTransform.DIRECTION_MIN2MAX,
+								ModelStandardTransform.POLARITY_UNIPOLAR, ModelStandardTransform.TRANSFORM_LINEAR),
+						scale, new ModelDestination(new ModelIdentifier("osc", "pitch")));
 				conns.add(conn);
 
 			}
@@ -760,13 +771,15 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 				double scale = (r / 64.0 - 1.0) * 9600.0;
 				ModelConnectionBlock conn;
 				if (scale > 0) {
-					conn = new ModelConnectionBlock(new ModelSource(sid, ModelStandardTransform.DIRECTION_MAX2MIN,
-							ModelStandardTransform.POLARITY_UNIPOLAR, ModelStandardTransform.TRANSFORM_LINEAR), -scale,
-							new ModelDestination(ModelDestination.DESTINATION_FILTER_FREQ));
+					conn = new ModelConnectionBlock(
+							new ModelSource(sid, ModelStandardTransform.DIRECTION_MAX2MIN,
+									ModelStandardTransform.POLARITY_UNIPOLAR, ModelStandardTransform.TRANSFORM_LINEAR),
+							-scale, new ModelDestination(ModelDestination.DESTINATION_FILTER_FREQ));
 				} else {
-					conn = new ModelConnectionBlock(new ModelSource(sid, ModelStandardTransform.DIRECTION_MIN2MAX,
-							ModelStandardTransform.POLARITY_UNIPOLAR, ModelStandardTransform.TRANSFORM_LINEAR), scale,
-							new ModelDestination(ModelDestination.DESTINATION_FILTER_FREQ));
+					conn = new ModelConnectionBlock(
+							new ModelSource(sid, ModelStandardTransform.DIRECTION_MIN2MAX,
+									ModelStandardTransform.POLARITY_UNIPOLAR, ModelStandardTransform.TRANSFORM_LINEAR),
+							scale, new ModelDestination(ModelDestination.DESTINATION_FILTER_FREQ));
 				}
 				conns.add(conn);
 			}
@@ -794,20 +807,20 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 			if (d == 3) {
 				double scale = (r / 64.0 - 1.0) * 9600.0;
 				ModelConnectionBlock conn = new ModelConnectionBlock(
-						new ModelSource(ModelSource.SOURCE_LFO1, ModelStandardTransform.DIRECTION_MIN2MAX, ModelStandardTransform.POLARITY_BIPOLAR,
-								ModelStandardTransform.TRANSFORM_LINEAR),
-						new ModelSource(sid, ModelStandardTransform.DIRECTION_MIN2MAX, ModelStandardTransform.POLARITY_UNIPOLAR,
-								ModelStandardTransform.TRANSFORM_LINEAR),
+						new ModelSource(ModelSource.SOURCE_LFO1, ModelStandardTransform.DIRECTION_MIN2MAX,
+								ModelStandardTransform.POLARITY_BIPOLAR, ModelStandardTransform.TRANSFORM_LINEAR),
+						new ModelSource(sid, ModelStandardTransform.DIRECTION_MIN2MAX,
+								ModelStandardTransform.POLARITY_UNIPOLAR, ModelStandardTransform.TRANSFORM_LINEAR),
 						scale, new ModelDestination(ModelDestination.DESTINATION_PITCH));
 				conns.add(conn);
 			}
 			if (d == 4) {
 				double scale = (r / 128.0) * 2400.0;
 				ModelConnectionBlock conn = new ModelConnectionBlock(
-						new ModelSource(ModelSource.SOURCE_LFO1, ModelStandardTransform.DIRECTION_MIN2MAX, ModelStandardTransform.POLARITY_BIPOLAR,
-								ModelStandardTransform.TRANSFORM_LINEAR),
-						new ModelSource(sid, ModelStandardTransform.DIRECTION_MIN2MAX, ModelStandardTransform.POLARITY_UNIPOLAR,
-								ModelStandardTransform.TRANSFORM_LINEAR),
+						new ModelSource(ModelSource.SOURCE_LFO1, ModelStandardTransform.DIRECTION_MIN2MAX,
+								ModelStandardTransform.POLARITY_BIPOLAR, ModelStandardTransform.TRANSFORM_LINEAR),
+						new ModelSource(sid, ModelStandardTransform.DIRECTION_MIN2MAX,
+								ModelStandardTransform.POLARITY_UNIPOLAR, ModelStandardTransform.TRANSFORM_LINEAR),
 						scale, new ModelDestination(ModelDestination.DESTINATION_FILTER_FREQ));
 				conns.add(conn);
 			}
@@ -823,8 +836,8 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 				};
 
 				ModelConnectionBlock conn = new ModelConnectionBlock(
-						new ModelSource(ModelSource.SOURCE_LFO1, ModelStandardTransform.DIRECTION_MIN2MAX, ModelStandardTransform.POLARITY_UNIPOLAR,
-								ModelStandardTransform.TRANSFORM_LINEAR),
+						new ModelSource(ModelSource.SOURCE_LFO1, ModelStandardTransform.DIRECTION_MIN2MAX,
+								ModelStandardTransform.POLARITY_UNIPOLAR, ModelStandardTransform.TRANSFORM_LINEAR),
 						new ModelSource(sid, mt), -960, new ModelDestination(ModelDestination.DESTINATION_GAIN));
 				conns.add(conn);
 			}
@@ -839,7 +852,8 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 			cds_polypressure_connections = null;
 			return;
 		}
-		cds_polypressure_connections = createModelConnections(new ModelIdentifier("midi", "poly_pressure"), destination, range);
+		cds_polypressure_connections = createModelConnections(new ModelIdentifier("midi", "poly_pressure"), destination,
+				range);
 	}
 
 	public void mapChannelPressureToDestination(int[] destination, int[] range) {
@@ -848,7 +862,8 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 			cds_channelpressure_connections = null;
 			return;
 		}
-		cds_channelpressure_connections = createModelConnections(new ModelIdentifier("midi", "channel_pressure"), destination, range);
+		cds_channelpressure_connections = createModelConnections(new ModelIdentifier("midi", "channel_pressure"),
+				destination, range);
 	}
 
 	public void mapControlToDestination(int control, int[] destination, int[] range) {
@@ -864,20 +879,24 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 			cds_control_connections = null;
 			return;
 		}
-		cds_control_connections = createModelConnections(new ModelIdentifier("midi_cc", Integer.toString(control)), destination, range);
+		cds_control_connections = createModelConnections(new ModelIdentifier("midi_cc", Integer.toString(control)),
+				destination, range);
 	}
 
 	public void controlChangePerNote(int noteNumber, int controller, int value) {
 
 		/*
 		 * CC# | nn | Name | vv | default | description
-		 * -----|------|-------------------------|----------------|------------|------------------------------- 7 |07H |Note Volume |00H-40H-7FH |40H
-		 * |0-100-(127/64)*100(%)(Relative) 10 |0AH |*Pan |00H-7FH absolute|Preset Value|Left-Center-Right (absolute) 33-63|21-3FH|LSB for |01H-1FH |
-		 * | 71 |47H |Timbre/Harmonic Intensity|00H-40H-7FH |40H (???) | 72 |48H |Release Time |00H-40H-7FH |40H (???) | 73 |49H |Attack Time
-		 * |00H-40H-7FH |40H (???) | 74 |4AH |Brightness |00H-40H-7FH |40H (???) | 75 |4BH |Decay Time |00H-40H-7FH |40H (???) | 76 |4CH |Vibrato Rate
-		 * |00H-40H-7FH |40H (???) | 77 |4DH |Vibrato Depth |00H-40H-7FH |40H (???) | 78 |4EH |Vibrato Delay |00H-40H-7FH |40H (???) | 91 |5BH
-		 * |*Reverb Send |00H-7FH absolute|Preset Value|Left-Center-Right (absolute) 93 |5DH |*Chorus Send |00H-7FH absolute|Preset
-		 * Value|Left-Center-Right (absolute) 120 |78H |**Fine Tuning |00H-40H-7FH |40H (???) | 121 |79H |**Coarse Tuning |00H-40H-7FH |40H (???) |
+		 * -----|------|-------------------------|----------------|------------|------------------------------- 7 |07H
+		 * |Note Volume |00H-40H-7FH |40H |0-100-(127/64)*100(%)(Relative) 10 |0AH |*Pan |00H-7FH absolute|Preset
+		 * Value|Left-Center-Right (absolute) 33-63|21-3FH|LSB for |01H-1FH | | 71 |47H |Timbre/Harmonic
+		 * Intensity|00H-40H-7FH |40H (???) | 72 |48H |Release Time |00H-40H-7FH |40H (???) | 73 |49H |Attack Time
+		 * |00H-40H-7FH |40H (???) | 74 |4AH |Brightness |00H-40H-7FH |40H (???) | 75 |4BH |Decay Time |00H-40H-7FH |40H
+		 * (???) | 76 |4CH |Vibrato Rate |00H-40H-7FH |40H (???) | 77 |4DH |Vibrato Depth |00H-40H-7FH |40H (???) | 78
+		 * |4EH |Vibrato Delay |00H-40H-7FH |40H (???) | 91 |5BH |*Reverb Send |00H-7FH absolute|Preset
+		 * Value|Left-Center-Right (absolute) 93 |5DH |*Chorus Send |00H-7FH absolute|Preset Value|Left-Center-Right
+		 * (absolute) 120 |78H |**Fine Tuning |00H-40H-7FH |40H (???) | 121 |79H |**Coarse Tuning |00H-40H-7FH |40H
+		 * (???) |
 		 */
 
 		if (keybasedcontroller_active == null) {
@@ -933,9 +952,9 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 		synchronized (control_mutex) {
 			switch (controller) {
 			/*
-			 * Map<String, int[]>co_midi_rpn_rpn_i = new HashMap<String, int[]>(); Map<String, double[]>co_midi_rpn_rpn = new HashMap<String,
-			 * double[]>(); Map<String, int[]>co_midi_nrpn_nrpn_i = new HashMap<String, int[]>(); Map<String, double[]>co_midi_nrpn_nrpn = new
-			 * HashMap<String, double[]>();
+			 * Map<String, int[]>co_midi_rpn_rpn_i = new HashMap<String, int[]>(); Map<String, double[]>co_midi_rpn_rpn
+			 * = new HashMap<String, double[]>(); Map<String, int[]>co_midi_nrpn_nrpn_i = new HashMap<String, int[]>();
+			 * Map<String, double[]>co_midi_nrpn_nrpn = new HashMap<String, double[]>();
 			 */
 
 			case 5:
@@ -1168,8 +1187,9 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 	public void nrpnChange(int controller, int value) {
 
 		/*
-		 * System.out.println("(" + channel + ").nrpnChange(" + Integer.toHexString(controller >> 7) + " " + Integer.toHexString(controller & 127) +
-		 * ", " + Integer.toHexString(value >> 7) + " " + Integer.toHexString(value & 127) + ")");
+		 * System.out.println("(" + channel + ").nrpnChange(" + Integer.toHexString(controller >> 7) + " " +
+		 * Integer.toHexString(controller & 127) + ", " + Integer.toHexString(value >> 7) + " " +
+		 * Integer.toHexString(value & 127) + ")");
 		 */
 
 		if (synthesizer.getGeneralMidiMode() == 0) {
@@ -1224,8 +1244,9 @@ public class SoftChannel implements MidiChannel, ModelDirectedPlayer {
 	public void rpnChange(int controller, int value) {
 
 		/*
-		 * System.out.println("(" + channel + ").rpnChange(" + Integer.toHexString(controller >> 7) + " " + Integer.toHexString(controller & 127) +
-		 * ", " + Integer.toHexString(value >> 7) + " " + Integer.toHexString(value & 127) + ")");
+		 * System.out.println("(" + channel + ").rpnChange(" + Integer.toHexString(controller >> 7) + " " +
+		 * Integer.toHexString(controller & 127) + ", " + Integer.toHexString(value >> 7) + " " +
+		 * Integer.toHexString(value & 127) + ")");
 		 */
 
 		if (controller == 3) {

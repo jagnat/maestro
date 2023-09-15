@@ -43,7 +43,8 @@ public class ExtensionMidiInstrument {
 
 		/*
 		 * System.out.println("GM  voices: 129"); System.out.println("GS  voices: "+(mapgs.size()-129));
-		 * System.out.println("XG  voices: "+(mapxg.size()-129)); System.out.println("GM2 voices: "+(mapgm2.size()-129));
+		 * System.out.println("XG  voices: "+(mapxg.size()-129));
+		 * System.out.println("GM2 voices: "+(mapgm2.size()-129));
 		 * System.out.println("Total     : "+(mapgm2.size()-129+mapxg.size()-129+mapgs. size()-129+129));
 		 */
 
@@ -60,7 +61,8 @@ public class ExtensionMidiInstrument {
 	 * @param rhythmChannel rhythmic non-chromatic channel.
 	 * @return string with instrument name
 	 */
-	public String fromId(MidiStandard extension, byte MSB, byte LSB, byte patch, boolean drumKit, boolean rhythmChannel) {
+	public String fromId(MidiStandard extension, byte MSB, byte LSB, byte patch, boolean drumKit,
+			boolean rhythmChannel) {
 		/*
 		 * 
 		 * Abbreviations that are not expanded: KSP: Keyboard Stereo Panning (in GS/GM2 language this is called 'Wide')
@@ -115,7 +117,8 @@ public class ExtensionMidiInstrument {
 		return instrName;
 	}
 
-	private static void parse(MidiStandard extension, byte theByte, String fileName, boolean firstColumnPatch, boolean theByteIsLSB) {
+	private static void parse(MidiStandard extension, byte theByte, String fileName, boolean firstColumnPatch,
+			boolean theByteIsLSB) {
 		try {
 			InputStream in = instance.getClass().getResourceAsStream(fileName);
 			if (in == null) {
@@ -127,7 +130,8 @@ public class ExtensionMidiInstrument {
 			int lastPatch = -1;
 			int lookupByte = -1;
 			String regex = "\t+";// one or more tabs
-			readLines(extension, theByte, fileName, firstColumnPatch, theByteIsLSB, theFileReader, line, lastPatch, lookupByte, regex);
+			readLines(extension, theByte, fileName, firstColumnPatch, theByteIsLSB, theFileReader, line, lastPatch,
+					lookupByte, regex);
 			theFileReader.close();
 		} catch (FileNotFoundException e) {
 			System.err.println(fileName + " not readable.");
@@ -138,8 +142,9 @@ public class ExtensionMidiInstrument {
 		}
 	}
 
-	private static void readLines(MidiStandard extension, byte theByte, String fileName, boolean firstColumnPatch, boolean theByteIsLSB,
-			BufferedReader theFileReader, String line, int lastPatch, int lookupByte, String regex) throws IOException {
+	private static void readLines(MidiStandard extension, byte theByte, String fileName, boolean firstColumnPatch,
+			boolean theByteIsLSB, BufferedReader theFileReader, String line, int lastPatch, int lookupByte,
+			String regex) throws IOException {
 		while (line != null) {
 			if (line.isEmpty()) {
 				line = theFileReader.readLine();
@@ -169,8 +174,8 @@ public class ExtensionMidiInstrument {
 		}
 	}
 
-	private static void addInstruments(MidiStandard extension, byte theByte, boolean firstColumnPatch, boolean theByteIsLSB, int lastPatch,
-			int lookupByte, String[] splits) {
+	private static void addInstruments(MidiStandard extension, byte theByte, boolean firstColumnPatch,
+			boolean theByteIsLSB, int lastPatch, int lookupByte, String[] splits) {
 		if (theByteIsLSB) {
 			if (firstColumnPatch) {
 				addInstrument(extension, (byte) lookupByte, (byte) theByte, (byte) lastPatch, splits[2].trim());

@@ -83,7 +83,8 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 	private JScrollPane notePanel = null;
 	private boolean syncUpdate = false;
 
-	public PartPanel(NoteFilterSequencerWrapper sequencer, PartAutoNumberer partAutoNumberer, SequencerWrapper abcSequencer) {
+	public PartPanel(NoteFilterSequencerWrapper sequencer, PartAutoNumberer partAutoNumberer,
+			SequencerWrapper abcSequencer) {
 		super(new TableLayout(//
 				new double[] { FILL, PREFERRED }, //
 				new double[] { PREFERRED, FILL }));
@@ -261,10 +262,12 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 
 			// Add the tempo panel if this song contains tempo changes
 			if (abcPart.getSequenceInfo().hasTempoChanges() || abcPart.getAbcSong().tuneBarsModified != null) {
-				TempoPanel tempoPanel = new TempoPanel(abcPart.getSequenceInfo(), sequencer, abcSequencer, abcPart.getAbcSong());
+				TempoPanel tempoPanel = new TempoPanel(abcPart.getSequenceInfo(), sequencer, abcSequencer,
+						abcPart.getAbcSong());
 				tempoPanel.setAbcPreviewMode(isAbcPreviewMode);
 				trackScrollPane.getVerticalScrollBar().setUnitIncrement(tempoPanel.getPreferredSize().height);
-				trackListVGroup.addComponent(tempoPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE);
+				trackListVGroup.addComponent(tempoPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE,
+						GroupLayout.PREFERRED_SIZE);
 				trackListHGroup.addComponent(tempoPanel);
 			}
 
@@ -274,7 +277,8 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 					TrackPanel trackPanel = new TrackPanel(track, sequencer, abcPart, abcSequencer);
 					trackPanel.setAbcPreviewMode(isAbcPreviewMode);
 					trackScrollPane.getVerticalScrollBar().setUnitIncrement(trackPanel.getPreferredSize().height);
-					trackListVGroup.addComponent(trackPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE);
+					trackListVGroup.addComponent(trackPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE,
+							GroupLayout.PREFERRED_SIZE);
 					trackListHGroup.addComponent(trackPanel);
 
 					if (MUTE_DISABLED_TRACKS)
@@ -333,10 +337,12 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 
 			// Add the tempo panel if this song contains tempo changes
 			if (abcPart.getSequenceInfo().hasTempoChanges() || abcPart.getAbcSong().tuneBarsModified != null) {
-				TempoPanel tempoPanel = new TempoPanel(abcPart.getSequenceInfo(), sequencer, abcSequencer, abcPart.getAbcSong());
+				TempoPanel tempoPanel = new TempoPanel(abcPart.getSequenceInfo(), sequencer, abcSequencer,
+						abcPart.getAbcSong());
 				tempoPanel.setAbcPreviewMode(isAbcPreviewMode);
 				trackScrollPane.getVerticalScrollBar().setUnitIncrement(tempoPanel.getPreferredSize().height);
-				trackListVGroup.addComponent(tempoPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE);
+				trackListVGroup.addComponent(tempoPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE,
+						GroupLayout.PREFERRED_SIZE);
 				trackListHGroup.addComponent(tempoPanel);
 			}
 
@@ -346,7 +352,8 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 					TrackPanel trackPanel = new TrackPanel(track, sequencer, abcPart, abcSequencer);
 					trackPanel.setAbcPreviewMode(isAbcPreviewMode);
 					trackScrollPane.getVerticalScrollBar().setUnitIncrement(trackPanel.getPreferredSize().height);
-					trackListVGroup.addComponent(trackPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE);
+					trackListVGroup.addComponent(trackPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE,
+							GroupLayout.PREFERRED_SIZE);
 					trackListHGroup.addComponent(trackPanel);
 
 					if (MUTE_DISABLED_TRACKS)

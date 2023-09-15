@@ -54,9 +54,9 @@ public class TimeSignature implements MidiConstants {
 			this.thirtySecondNotes = data[3];
 
 			/*
-			 * int unsignedByte3 = data[3] & 0xFF;// convert the byte to unsigned since javas byte is signed but MIDIs is unsigned.
-			 * System.err.println("MIDI time signature: "+this.numerator+"/"+this.denominator+" - "+unsignedByte3+" 32nd notes per "+this.
-			 * metronome+" MIDI clocks.");
+			 * int unsignedByte3 = data[3] & 0xFF;// convert the byte to unsigned since javas byte is signed but MIDIs
+			 * is unsigned. System.err.println("MIDI time signature: "+this.numerator+"/"+this.denominator+" - "
+			 * +unsignedByte3+" 32nd notes per "+this. metronome+" MIDI clocks.");
 			 */
 		}
 	}
@@ -86,9 +86,9 @@ public class TimeSignature implements MidiConstants {
 			this.thirtySecondNotes = 8;
 
 			/*
-			 * int unsignedByte3 = data[3] & 0xFF;// convert the byte to unsigned since javas byte is signed but MIDIs is unsigned.
-			 * System.err.println("MIDI time signature: "+this.numerator+"/"+this.denominator+" - "+unsignedByte3+" 32nd notes per "+this.
-			 * metronome+" MIDI clocks.");
+			 * int unsignedByte3 = data[3] & 0xFF;// convert the byte to unsigned since javas byte is signed but MIDIs
+			 * is unsigned. System.err.println("MIDI time signature: "+this.numerator+"/"+this.denominator+" - "
+			 * +unsignedByte3+" 32nd notes per "+this. metronome+" MIDI clocks.");
 			 */
 		}
 	}
@@ -104,7 +104,8 @@ public class TimeSignature implements MidiConstants {
 		} else {
 			String[] parts = str.split("[/:| ]");
 			if (parts.length != 2) {
-				throw new IllegalArgumentException("The string: \"" + str + "\" is not a valid time signature (expected format: 4/4)");
+				throw new IllegalArgumentException(
+						"The string: \"" + str + "\" is not a valid time signature (expected format: 4/4)");
 			}
 			if (Integer.parseInt(parts[1]) > MAX_DENOMINATOR) {
 				this.numerator = 4;
@@ -175,8 +176,8 @@ public class TimeSignature implements MidiConstants {
 	public boolean equals(Object obj) {
 		if (obj instanceof TimeSignature) {
 			TimeSignature that = (TimeSignature) obj;
-			return this.numerator == that.numerator && this.denominator == that.denominator && this.metronome == that.metronome
-					&& this.thirtySecondNotes == that.thirtySecondNotes;
+			return this.numerator == that.numerator && this.denominator == that.denominator
+					&& this.metronome == that.metronome && this.thirtySecondNotes == that.thirtySecondNotes;
 		}
 		return false;
 	}

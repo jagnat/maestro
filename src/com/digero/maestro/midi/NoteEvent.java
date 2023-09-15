@@ -157,7 +157,8 @@ public class NoteEvent implements Comparable<NoteEvent> {
 	public boolean equals(Object obj) {
 		if (obj instanceof NoteEvent) {
 			NoteEvent that = (NoteEvent) obj;
-			return (this.startTick == that.startTick) && (this.endTick == that.endTick) && (this.note.id == that.note.id);
+			return (this.startTick == that.startTick) && (this.endTick == that.endTick)
+					&& (this.note.id == that.note.id);
 		}
 		return false;
 	}
@@ -193,10 +194,11 @@ public class NoteEvent implements Comparable<NoteEvent> {
 	}
 
 	/*
-	 * public boolean isPruned(AbcPart abcPart) { if (abcPart == null || pruneMap == null) { return false; } return pruneMap.get(abcPart) != null &&
-	 * pruneMap.get(abcPart) == true; }
+	 * public boolean isPruned(AbcPart abcPart) { if (abcPart == null || pruneMap == null) { return false; } return
+	 * pruneMap.get(abcPart) != null && pruneMap.get(abcPart) == true; }
 	 * 
-	 * public void prune(AbcPart part) { if (pruneMap == null) { pruneMap = new HashMap<AbcPart, Boolean>(); } pruneMap.put(part, true); }
+	 * public void prune(AbcPart part) { if (pruneMap == null) { pruneMap = new HashMap<AbcPart, Boolean>(); }
+	 * pruneMap.put(part, true); }
 	 * 
 	 * public void resetPruned(AbcPart part) { if (pruneMap == null) { return; } pruneMap.remove(part); }
 	 * 

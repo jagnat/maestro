@@ -89,7 +89,8 @@ public class Version implements Comparable<Version> {
 		}
 
 		Version that = (Version) obj;
-		return (this.major == that.major) && (this.minor == that.minor) && (this.revision == that.revision) && (this.build == that.build);
+		return (this.major == that.major) && (this.minor == that.minor) && (this.revision == that.revision)
+				&& (this.build == that.build);
 	}
 
 	@Override

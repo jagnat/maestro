@@ -558,8 +558,9 @@ public class SoftVoice extends VoiceStatus {
 				}
 
 			if (stealer_channel != null) {
-				stealer_channel.initVoice(this, stealer_performer, stealer_voiceID, stealer_noteNumber, stealer_velocity,
-						stealer_extendedConnectionBlocks, stealer_channelmixer, stealer_releaseTriggered);
+				stealer_channel.initVoice(this, stealer_performer, stealer_voiceID, stealer_noteNumber,
+						stealer_velocity, stealer_extendedConnectionBlocks, stealer_channelmixer,
+						stealer_releaseTriggered);
 				stealer_releaseTriggered = false;
 				stealer_channel = null;
 				stealer_performer = null;

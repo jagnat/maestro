@@ -13,12 +13,12 @@ public class StandardInstrumentInfo extends InstrumentInfo {
 	public final NavigableSet<SampleInfo> usedSamples;
 
 	public StandardInstrumentInfo(LotroInstrument lotroInstrument, int notesPerSample, Map<Key, SampleInfo> samples) {
-		this(lotroInstrument, lotroInstrument.toString(), lotroInstrument.lowestPlayable.id, lotroInstrument.highestPlayable.id, notesPerSample,
-				samples);
+		this(lotroInstrument, lotroInstrument.toString(), lotroInstrument.lowestPlayable.id,
+				lotroInstrument.highestPlayable.id, notesPerSample, samples);
 	}
 
-	public StandardInstrumentInfo(LotroInstrument lotroInstrument, String name, int lowestNoteId, int highestNoteId, int notesPerSample,
-			Map<Key, SampleInfo> samples) {
+	public StandardInstrumentInfo(LotroInstrument lotroInstrument, String name, int lowestNoteId, int highestNoteId,
+			int notesPerSample, Map<Key, SampleInfo> samples) {
 		super(lotroInstrument, name, lowestNoteId, highestNoteId);
 
 		this.usedSamples = new TreeSet<>();
@@ -48,7 +48,8 @@ public class StandardInstrumentInfo extends InstrumentInfo {
 			prevHighKey = highKey;
 
 			LotroInstrument instrument = sample.key.lotroInstrument;
-			boolean isLooped = instrument == LotroInstrument.BASIC_BAGPIPE && sample.key.noteId <= AbcConstants.BAGPIPE_LAST_DRONE_NOTE_ID;
+			boolean isLooped = instrument == LotroInstrument.BASIC_BAGPIPE
+					&& sample.key.noteId <= AbcConstants.BAGPIPE_LAST_DRONE_NOTE_ID;
 
 			int releaseTime = SoundFontUtil.secondsToTimecents(AbcConstants.NOTE_RELEASE_SECONDS);
 

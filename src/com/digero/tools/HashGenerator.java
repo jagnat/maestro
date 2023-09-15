@@ -129,7 +129,8 @@ public class HashGenerator {
 		return target;
 	}
 
-	private static void moveDir(boolean include, File truthDirectory, File sourceDirectory, File targetDirectory) throws IOException {
+	private static void moveDir(boolean include, File truthDirectory, File sourceDirectory, File targetDirectory)
+			throws IOException {
 		if (!sourceDirectory.exists())
 			throw new IOException("Source directory does not exist: " + sourceDirectory.getAbsolutePath());
 
@@ -147,15 +148,16 @@ public class HashGenerator {
 		Map<File, Hash> sourceHashes = generateHashes(sourceDirectory, /* recursive = */true);
 		Map<File, Hash> targetHashes = new HashMap<>();
 
-		System.out.println("Moving from \"" + sourceDirectory.getAbsolutePath() + "\" to \"" + targetDirectory.getAbsolutePath() + "\" if they "
-				+ (include ? "exist" : "don't exist") + " in \"" + truthDirectory.getAbsolutePath() + "\"");
+		System.out.println("Moving from \"" + sourceDirectory.getAbsolutePath() + "\" to \""
+				+ targetDirectory.getAbsolutePath() + "\" if they " + (include ? "exist" : "don't exist") + " in \""
+				+ truthDirectory.getAbsolutePath() + "\"");
 		int movedCount = 0;
 		for (Map.Entry<File, Hash> entry : sourceHashes.entrySet()) {
 			File truthFile = truthHashes.get(entry.getValue());
 			boolean isInList = (truthFile != null);
 			if (include == isInList) {
-				File subDirectory = new File(targetDirectory,
-						truthFile.getParentFile().getAbsolutePath().substring(truthDirectory.getAbsolutePath().length()));
+				File subDirectory = new File(targetDirectory, truthFile.getParentFile().getAbsolutePath()
+						.substring(truthDirectory.getAbsolutePath().length()));
 
 				if (!subDirectory.exists())
 					subDirectory.mkdirs();
@@ -168,7 +170,8 @@ public class HashGenerator {
 					if (sourceFile.renameTo(targetFile)) {
 						renameSuccess = true;
 						if (retry > 0) {
-							System.out.println("Renamed target file when moving \"" + sourceFile + "\" to \"" + targetFile + "\"");
+							System.out.println(
+									"Renamed target file when moving \"" + sourceFile + "\" to \"" + targetFile + "\"");
 						}
 						break;
 					}
@@ -195,7 +198,8 @@ public class HashGenerator {
 		appendHashListToFile(targetHashes, new File(targetDirectory, cachedHashesFileName), false);
 	}
 
-	private static void move(boolean include, File existingHashFile, File sourceDirectory, File targetDirectory) throws IOException {
+	private static void move(boolean include, File existingHashFile, File sourceDirectory, File targetDirectory)
+			throws IOException {
 		Set<Hash> existingHashes = new HashSet<>(inputHashListFromFile(existingHashFile, true).values());
 		Map<File, Hash> sourceHashes = generateHashes(sourceDirectory, /* recursive = */true);
 		Map<File, Hash> targetHashes = new HashMap<>();
@@ -347,14 +351,15 @@ public class HashGenerator {
 				long elapsedMicros = (System.currentTimeMillis() - s.startMillis) * 1000;
 				int w = (int) Math.ceil(Math.log10(count));
 				synchronized (System.out) {
-					System.out.format("Generating hashes in %s: [%" + w + "d/%" + w + "d] %3d%% (%s)\n", s.directory.getPath(), printCount, count,
-							pct, Util.formatDuration(elapsedMicros));
+					System.out.format("Generating hashes in %s: [%" + w + "d/%" + w + "d] %3d%% (%s)\n",
+							s.directory.getPath(), printCount, count, pct, Util.formatDuration(elapsedMicros));
 				}
 			}
 		}
 	}
 
-	private static void outputHashListToFile(Map<File, Hash> hashes, File outputFile, boolean verbose) throws IOException {
+	private static void outputHashListToFile(Map<File, Hash> hashes, File outputFile, boolean verbose)
+			throws IOException {
 		if (hashes.isEmpty()) {
 			Files.deleteIfExists(outputFile.toPath());
 			return;
@@ -389,7 +394,8 @@ public class HashGenerator {
 		return hashes;
 	}
 
-	private static void appendHashListToFile(Map<File, Hash> hashes, File outputFile, boolean verbose) throws IOException {
+	private static void appendHashListToFile(Map<File, Hash> hashes, File outputFile, boolean verbose)
+			throws IOException {
 		Map<File, Hash> output;
 		if (outputFile.exists()) {
 			output = inputHashListFromFile(outputFile, false);
@@ -485,7 +491,8 @@ public class HashGenerator {
 		byte[] bufferA = new byte[bufferSize];
 		byte[] bufferB = new byte[bufferSize];
 
-		try (FileInputStream streamA = new FileInputStream(fileA); FileInputStream streamB = new FileInputStream(fileB)) {
+		try (FileInputStream streamA = new FileInputStream(fileA);
+				FileInputStream streamB = new FileInputStream(fileB)) {
 			while (true) {
 				int readA = readMax(streamA, bufferA);
 				int readB = readMax(streamB, bufferB);
@@ -501,7 +508,8 @@ public class HashGenerator {
 	}
 
 	/**
-	 * Reads as many bytes as possible from the stream. Blocks until either the buffer is full or end of stream is reached.
+	 * Reads as many bytes as possible from the stream. Blocks until either the buffer is full or end of stream is
+	 * reached.
 	 * 
 	 * @return The number of bytes read. A value less than buffer.length indicates the end of stream was reached.
 	 */

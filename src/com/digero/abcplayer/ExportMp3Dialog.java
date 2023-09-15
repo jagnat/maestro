@@ -56,7 +56,8 @@ public class ExportMp3Dialog extends JDialog implements TableLayoutConstants {
 
 	private List<ActionListener> actionListeners;
 
-	public ExportMp3Dialog(JFrame parent, File theExe, Preferences prefs, File abcFile, String songTitle, String songArtist) {
+	public ExportMp3Dialog(JFrame parent, File theExe, Preferences prefs, File abcFile, String songTitle,
+			String songArtist) {
 		super(parent, AbcPlayer.APP_NAME + " - Export to MP3", false);
 
 		this.prefs = prefs;
@@ -145,7 +146,8 @@ public class ExportMp3Dialog extends JDialog implements TableLayoutConstants {
 		outerContent.add(okCancelPanel, BorderLayout.SOUTH);
 
 		pack();
-		setLocation(getOwner().getX() + (getOwner().getWidth() - getWidth()) / 2, getOwner().getY() + (getOwner().getHeight() - getHeight()) / 2);
+		setLocation(getOwner().getX() + (getOwner().getWidth() - getWidth()) / 2,
+				getOwner().getY() + (getOwner().getHeight() - getHeight()) / 2);
 		setResizable(false);
 	}
 
@@ -276,22 +278,25 @@ public class ExportMp3Dialog extends JDialog implements TableLayoutConstants {
 		File f = new File(saveAsField.getText());
 
 		if (f.isDirectory()) {
-			JOptionPane.showMessageDialog(this, "Specified path is a folder:\n" + f.getAbsolutePath(), "Invalid file", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Specified path is a folder:\n" + f.getAbsolutePath(), "Invalid file",
+					JOptionPane.ERROR_MESSAGE);
 			return false;
 		} else if (f.exists()) {
-			int result = JOptionPane.showConfirmDialog(this, "File " + f.getName() + " already exists. Overwrite?", "Confirm overwrite",
-					JOptionPane.YES_NO_CANCEL_OPTION);
+			int result = JOptionPane.showConfirmDialog(this, "File " + f.getName() + " already exists. Overwrite?",
+					"Confirm overwrite", JOptionPane.YES_NO_CANCEL_OPTION);
 			if (result == JOptionPane.CANCEL_OPTION) {
 				setVisible(false);
 				return false;
 			}
 			return result == JOptionPane.OK_OPTION;
 		} else if (!f.getParentFile().exists()) {
-			int result = JOptionPane.showConfirmDialog(this, "Folder \"" + f.getParentFile().getName() + "\" doesn't exist. Create?",
-					"Create directory", JOptionPane.OK_CANCEL_OPTION);
+			int result = JOptionPane.showConfirmDialog(this,
+					"Folder \"" + f.getParentFile().getName() + "\" doesn't exist. Create?", "Create directory",
+					JOptionPane.OK_CANCEL_OPTION);
 			if (result == JOptionPane.OK_OPTION) {
 				if (!f.getParentFile().mkdirs()) {
-					JOptionPane.showMessageDialog(this, "Failed to create parent folder", "Failed to create folder", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(this, "Failed to create parent folder", "Failed to create folder",
+							JOptionPane.ERROR_MESSAGE);
 					return false;
 				}
 				return true;

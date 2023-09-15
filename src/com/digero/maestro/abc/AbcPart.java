@@ -159,19 +159,20 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			if (trackVolumeAdjust[t] != 0)
 				SaveUtil.appendChildTextElement(trackEle, "volumeAdjust", String.valueOf(trackVolumeAdjust[t]));
 			if (abcSong.isMixTiming() && abcSong.isPriorityActive() && trackPriority[t])
-				SaveUtil.appendChildTextElement(trackEle, "combinePriority", String.valueOf(QuantizedTimingInfo.COMBINE_PRIORITY_MULTIPLIER));// Hardcoded
-																																				// to
-																																				// 4
-																																				// for
-																																				// now,
-																																				// change
-																																				// QTM
-																																				// and
-																																				// UI
-																																				// if
-																																				// messing
-																																				// with
-																																				// this
+				SaveUtil.appendChildTextElement(trackEle, "combinePriority",
+						String.valueOf(QuantizedTimingInfo.COMBINE_PRIORITY_MULTIPLIER));// Hardcoded
+																							// to
+																							// 4
+																							// for
+																							// now,
+																							// change
+																							// QTM
+																							// and
+																							// UI
+																							// if
+																							// messing
+																							// with
+																							// this
 
 			if (!playLeft[t])
 				trackEle.setAttribute("playLeft", String.valueOf(playLeft[t]));
@@ -239,7 +240,8 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 
 		if (!isCowbellPart()) {
 			if (!isFXPart() && drumNoteMap[t] != null)
-				drumNoteMap[t].saveToXml((Element) trackEle.appendChild(doc.createElement(drumNoteMap[t].getXmlName())));
+				drumNoteMap[t]
+						.saveToXml((Element) trackEle.appendChild(doc.createElement(drumNoteMap[t].getXmlName())));
 			if (isFXPart() && fxNoteMap[t] != null)
 				fxNoteMap[t].saveToXml((Element) trackEle.appendChild(doc.createElement(fxNoteMap[t].getXmlName())));
 		}
@@ -290,7 +292,8 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 						optionalName = " (" + optionalName + ")";
 					}
 
-					throw SaveUtil.invalidTrackException(trackEle, "Could not find track number " + t + optionalName + " in original MIDI file");
+					throw SaveUtil.invalidTrackException(trackEle,
+							"Could not find track number " + t + optionalName + " in original MIDI file");
 				}
 
 				TreeMap<Integer, PartSection> tree = sections.get(t);
@@ -313,7 +316,8 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 				if (tree != null) {
 					for (int i = 0; i < lastEnd + 1; i++) {
 						Entry<Integer, PartSection> entry = tree.floorEntry(i + 1);
-						booleanArray[i] = entry != null && entry.getValue().startBar <= i + 1 && entry.getValue().endBar >= i + 1;
+						booleanArray[i] = entry != null && entry.getValue().startBar <= i + 1
+								&& entry.getValue().endBar >= i + 1;
 					}
 
 					sectionsModified.set(t, booleanArray);
@@ -354,7 +358,8 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		}
 	}
 
-	private void handlePercussion(Version fileVersion, Element trackEle, int t) throws XPathExpressionException, ParseException {
+	private void handlePercussion(Version fileVersion, Element trackEle, int t)
+			throws XPathExpressionException, ParseException {
 		Element drumsEle = XmlUtil.selectSingleElement(trackEle, "drumsEnabled");
 		if (drumsEle != null) {
 			calculateEnabledSet(t, drumsEle);
@@ -425,7 +430,8 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		if (e.getProperty() == AbcSongProperty.TRANSPOSE) {
 			fireChangeEvent(AbcPartProperty.BASE_TRANSPOSE, !isDrumPart() /* affectsAbcPreview */);
 		}
-		if (e.getProperty() == AbcSongProperty.MIX_TIMING_COMBINE_PRIORITIES || e.getProperty() == AbcSongProperty.MIX_TIMING) {
+		if (e.getProperty() == AbcSongProperty.MIX_TIMING_COMBINE_PRIORITIES
+				|| e.getProperty() == AbcSongProperty.MIX_TIMING) {
 			fireChangeEvent(AbcPartProperty.TRACK_PRIORITY);
 		}
 	};
@@ -622,7 +628,8 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 							noteEndTick = ne.getEndTick();
 						else {
 							ITempoCache tc = ne.getTempoCache();
-							noteEndTick = tc.microsToTick(tc.tickToMicros(ne.getStartTick()) + TimingInfo.ONE_SECOND_MICROS);
+							noteEndTick = tc
+									.microsToTick(tc.tickToMicros(ne.getStartTick()) + TimingInfo.ONE_SECOND_MICROS);
 						}
 
 						if (noteEndTick > endTick)
@@ -772,7 +779,8 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 
 	/**
 	 * 
-	 * @return -1 for when instr do not match or string dont start with instr, 0 when instr match but no postfix, positive number when it has number.
+	 * @return -1 for when instr do not match or string dont start with instr, 0 when instr match but no postfix,
+	 *         positive number when it has number.
 	 */
 	public int getTypeNumberMatchingTitle() {
 		Pair<LotroInstrument, MatchResult> result = LotroInstrument.matchInstrument(title);
@@ -820,17 +828,20 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		 * Pair<LotroInstrument, MatchResult> result = LotroInstrument.matchInstrument(title);
 		 * 
 		 * if (result == null) { System.out.println("    "+getTitle()+" has no instr match"); return false; } else if
-		 * (result.first.equals(instrument)) { StringBuilder regex = new StringBuilder(); String typeString = " "+getTypeNumber();
+		 * (result.first.equals(instrument)) { StringBuilder regex = new StringBuilder(); String typeString =
+		 * " "+getTypeNumber();
 		 * 
-		 * regex.append("\\b(?:"); regex.append('('); regex.append((result.second.group()+typeString).replace(" ", "[\\s_]*")); regex.append(')');
-		 * regex.append(")\\b");
+		 * regex.append("\\b(?:"); regex.append('('); regex.append((result.second.group()+typeString).replace(" ",
+		 * "[\\s_]*")); regex.append(')'); regex.append(")\\b");
 		 * 
-		 * Pattern typeRegex = Pattern.compile(regex.toString(), Pattern.CASE_INSENSITIVE); Matcher m = typeRegex.matcher(getTitle()); MatchResult
-		 * last = null; // Iterate through the matches to find the last one for (int i = 0; m.find(i); i = m.end()) last = m.toMatchResult();
+		 * Pattern typeRegex = Pattern.compile(regex.toString(), Pattern.CASE_INSENSITIVE); Matcher m =
+		 * typeRegex.matcher(getTitle()); MatchResult last = null; // Iterate through the matches to find the last one
+		 * for (int i = 0; m.find(i); i = m.end()) last = m.toMatchResult();
 		 * 
 		 * if (last == null) System.out.println("    "+getTitle()+"    last==null"); else
-		 * System.out.println("    "+getTitle()+"    last.start():"+last.start() +" last.end():"+last.end()+" title.length:"+getTitle().length()); if
-		 * (last != null && last.start() == 0 && last.end() == getTitle().length()) { return true; } } return false;
+		 * System.out.println("    "+getTitle()+"    last.start():"+last.start()
+		 * +" last.end():"+last.end()+" title.length:"+getTitle().length()); if (last != null && last.start() == 0 &&
+		 * last.end() == getTitle().length()) { return true; } } return false;
 		 */
 	}
 
@@ -873,8 +884,8 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	public int getTranspose(int track, long tickStart) {
 		if (isDrumPart())
 			return 0;
-		return abcSong.getTranspose() + abcSong.getTuneTranspose(tickStart) + trackTranspose[track] - getInstrument().octaveDelta * 12
-				+ getSectionTranspose(tickStart, track);
+		return abcSong.getTranspose() + abcSong.getTuneTranspose(tickStart) + trackTranspose[track]
+				- getInstrument().octaveDelta * 12 + getSectionTranspose(tickStart, track);
 	}
 
 	public int getSectionTranspose(long tickStart, int track) {
@@ -1256,7 +1267,8 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		BitSet[] enabledSet = isCowbellPart() ? cowbellsEnabled : isFXPart() ? fxEnabled : drumsEnabled;
 
 		if (enabledSet == null || enabledSet[track] == null) {
-			return !isCowbellPart() || (drumId == MidiDrum.COWBELL.id()) || !abcSong.getSequenceInfo().getTrackInfo(track).isDrumTrack();
+			return !isCowbellPart() || (drumId == MidiDrum.COWBELL.id())
+					|| !abcSong.getSequenceInfo().getTrackInfo(track).isDrumTrack();
 		}
 
 		return enabledSet[track].get(drumId);

@@ -176,8 +176,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 	/** A new activation (a.k.a. a file was opened) */
 	public static void activate(String[] args) {
 		/*
-		 * if (args != null && args.length > 0 && args[0] != null) { System.out.println(" Processing file path ("+args[0].length()+" chars):\n"
-		 * +args[0]); }
+		 * if (args != null && args.length > 0 && args[0] != null) {
+		 * System.out.println(" Processing file path ("+args[0].length()+" chars):\n" +args[0]); }
 		 */
 		mainWindow.openSongFromCommandLine(args);
 	}
@@ -302,15 +302,16 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 					Version recommendedJavaVersion = new Version(1, 7, 0, 25);
 
 					JPanel errorMessage = new JPanel(new BorderLayout(0, 12));
-					errorMessage.add(
-							new JLabel("<html><b>There was an error loading the LOTRO instrument sounds</b><br>"
-									+ "Playback will use standard MIDI instruments instead<br>" + "(drums do not sound good in this mode).</html>"),
-							BorderLayout.NORTH);
+					errorMessage
+							.add(new JLabel("<html><b>There was an error loading the LOTRO instrument sounds</b><br>"
+									+ "Playback will use standard MIDI instruments instead<br>"
+									+ "(drums do not sound good in this mode).</html>"), BorderLayout.NORTH);
 
 					final String JAVA_URL = "http://www.java.com";
 					if (requredJavaVersion.compareTo(Version.parseVersion(System.getProperty("java.version"))) > 0) {
-						JLabel update = new JLabel("<html>It is recommended that you install Java " + recommendedJavaVersion.getMinor() + " update "
-								+ recommendedJavaVersion.getRevision() + " or later.<br>" + "Get the latest version from <a href='" + JAVA_URL + "'>"
+						JLabel update = new JLabel("<html>It is recommended that you install Java "
+								+ recommendedJavaVersion.getMinor() + " update " + recommendedJavaVersion.getRevision()
+								+ " or later.<br>" + "Get the latest version from <a href='" + JAVA_URL + "'>"
 								+ JAVA_URL + "</a>.</html>");
 						update.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 						update.addMouseListener(new MouseAdapter() {
@@ -324,10 +325,12 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 						errorMessage.add(update, BorderLayout.CENTER);
 					}
 
-					errorMessage.add(new JLabel("<html>Error details:<br>" + LotroSequencerWrapper.getLoadLotroSynthError() + "</html>"),
+					errorMessage.add(new JLabel(
+							"<html>Error details:<br>" + LotroSequencerWrapper.getLoadLotroSynthError() + "</html>"),
 							BorderLayout.SOUTH);
 
-					JOptionPane.showMessageDialog(this, errorMessage, APP_NAME + " failed to load LOTRO instruments", JOptionPane.ERROR_MESSAGE);
+					JOptionPane.showMessageDialog(this, errorMessage, APP_NAME + " failed to load LOTRO instruments",
+							JOptionPane.ERROR_MESSAGE);
 
 					useLotroInstruments = false;
 				}
@@ -364,7 +367,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		trackListScroller.setBorder(BorderFactory.createMatteBorder(1, 0, 1, 0, Color.GRAY));
 
 		JPanel controlPanel = new JPanel(new TableLayout(//
-				new double[] { 4, SongPositionBar.SIDE_PAD, 0.5, 4, PREFERRED, 4, PREFERRED, 4, 0.5, SongPositionBar.SIDE_PAD, 4, PREFERRED, 4 }, //
+				new double[] { 4, SongPositionBar.SIDE_PAD, 0.5, 4, PREFERRED, 4, PREFERRED, 4, 0.5,
+						SongPositionBar.SIDE_PAD, 4, PREFERRED, 4 }, //
 				new double[] { 4, PREFERRED, 4, PREFERRED, 4 }));
 
 		songPositionBar = new SongPositionBar(sequencer);
@@ -512,7 +516,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		String artist = abcInfo.getComposer_MaybeNull();
 
 		if (artist != null) {
-			titleLabel.setText("<html>" + title + "&ensp;<span style='font-size:12pt; font-weight:normal'>" + artist + "</span></html>");
+			titleLabel.setText("<html>" + title + "&ensp;<span style='font-size:12pt; font-weight:normal'>" + artist
+					+ "</span></html>");
 		} else {
 			titleLabel.setText(title);
 		}
@@ -543,7 +548,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 		JMenuItem openAppend = fileMenu.add(new JMenuItem("Append ABC file(s)..."));
 		openAppend.setMnemonic(KeyEvent.VK_D);
-		openAppend.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
+		openAppend.setAccelerator(
+				KeyStroke.getKeyStroke(KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
 		openAppend.addActionListener(e -> appendSongDialog());
 
 		final JMenuItem pasteMenuItem = fileMenu.add(new JMenuItem("Open from clipboard"));
@@ -569,7 +575,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 		final JMenuItem pasteAppendMenuItem = fileMenu.add(new JMenuItem("Append from clipboard"));
 		pasteAppendMenuItem.setMnemonic(KeyEvent.VK_N);
-		pasteAppendMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
+		pasteAppendMenuItem.setAccelerator(
+				KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
 		pasteAppendMenuItem.addActionListener(e -> {
 			ArrayList<File> files = new ArrayList<>();
 			if (getFileListFromClipboard(files)) {
@@ -598,7 +605,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 		final JMenuItem saveMenuItem = fileMenu.add(new JMenuItem("Save a copy as ABC..."));
 		saveMenuItem.setMnemonic(KeyEvent.VK_S);
-		saveMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
+		saveMenuItem.setAccelerator(
+				KeyStroke.getKeyStroke(KeyEvent.VK_S, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
 		saveMenuItem.addActionListener(e -> {
 			if (!sequencer.isLoaded()) {
 				Toolkit.getDefaultToolkit().beep();
@@ -632,7 +640,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 		final JMenuItem exportWavMenuItem = fileMenu.add(new JMenuItem("Save as Wave file..."));
 		exportWavMenuItem.setMnemonic(KeyEvent.VK_E);
-		exportWavMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
+		exportWavMenuItem.setAccelerator(
+				KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
 		exportWavMenuItem.addActionListener(e -> {
 			if (!sequencer.isLoaded() || isExporting) {
 				Toolkit.getDefaultToolkit().beep();
@@ -693,11 +702,12 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 		toolsMenu.add(lotroErrorsMenuItem = new JCheckBoxMenuItem("Ignore LOTRO-specific errors"));
 		lotroErrorsMenuItem.setSelected(prefs.getBoolean("ignoreLotroErrors", false));
-		lotroErrorsMenuItem.addActionListener(e -> prefs.putBoolean("ignoreLotroErrors", lotroErrorsMenuItem.isSelected()));
+		lotroErrorsMenuItem
+				.addActionListener(e -> prefs.putBoolean("ignoreLotroErrors", lotroErrorsMenuItem.isSelected()));
 
 		toolsMenu.add(stereoMenuItem = new JCheckBoxMenuItem("Stereo pan in multi-part songs"));
-		stereoMenuItem
-				.setToolTipText("<html>Separates the parts of a multi-part song by <br>" + "panning them towards the left or right speaker.</html>");
+		stereoMenuItem.setToolTipText("<html>Separates the parts of a multi-part song by <br>"
+				+ "panning them towards the left or right speaker.</html>");
 		stereoMenuItem.setSelected(prefs.getBoolean("stereoMenuItem", true));
 		stereoMenuItem.addActionListener(e -> {
 			prefs.putBoolean("stereoMenuItem", stereoMenuItem.isSelected());
@@ -749,7 +759,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 		JMenuItem about = toolsMenu.add(new JMenuItem("About " + APP_NAME + "..."));
 		about.setMnemonic(KeyEvent.VK_A);
-		about.addActionListener(e -> AboutDialog.show(AbcPlayer.this, APP_NAME_LONG, APP_VERSION, APP_URL, "abcplayer_64.png"));
+		about.addActionListener(
+				e -> AboutDialog.show(AbcPlayer.this, APP_NAME_LONG, APP_VERSION, APP_URL, "abcplayer_64.png"));
 
 		JMenu abcViewMenu = mainMenu.add(new JMenu(" ABC View "));
 		abcViewMenu.setMnemonic(KeyEvent.VK_A);
@@ -933,7 +944,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 	private void initOpenFileDialog() {
 		if (openFileDialog == null) {
-			openFileDialog = new JFileChooser(prefs.get("openFileDialog.currentDirectory", Util.getLotroMusicPath(false).getAbsolutePath()));
+			openFileDialog = new JFileChooser(
+					prefs.get("openFileDialog.currentDirectory", Util.getLotroMusicPath(false).getAbsolutePath()));
 
 			openFileDialog.setMultiSelectionEnabled(true);
 			openFileDialog.setFileFilter(ABC_FILE_FILTER);
@@ -973,7 +985,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		}
 
 		if (saveFileDialog == null) {
-			saveFileDialog = new JFileChooser(prefs.get("saveFileDialog.currentDirectory", Util.getLotroMusicPath(false).getAbsolutePath()));
+			saveFileDialog = new JFileChooser(
+					prefs.get("saveFileDialog.currentDirectory", Util.getLotroMusicPath(false).getAbsolutePath()));
 
 			saveFileDialog.setFileFilter(ABC_FILE_FILTER);
 		}
@@ -989,8 +1002,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 			File saveFileTmp = new File(saveFileDialog.getSelectedFile().getParent(), fileName);
 			if (saveFileTmp.exists()) {
-				int res = JOptionPane.showConfirmDialog(this, "File " + fileName + " already exists. Overwrite?", "Confirm Overwrite",
-						JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+				int res = JOptionPane.showConfirmDialog(this, "File " + fileName + " already exists. Overwrite?",
+						"Confirm Overwrite", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 				if (res != JOptionPane.YES_OPTION)
 					return;
 			}
@@ -1186,8 +1199,10 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 				}
 			} catch (ParseException e) {
 				String thisFile = appendData.size() == 1 ? "this file" : "these files";
-				String msg = e.getMessage() + "\n\nWould you like to close the current song and retry opening " + thisFile + "?";
-				int result = JOptionPane.showConfirmDialog(this, msg, "Error appending ABC", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE);
+				String msg = e.getMessage() + "\n\nWould you like to close the current song and retry opening "
+						+ thisFile + "?";
+				int result = JOptionPane.showConfirmDialog(this, msg, "Error appending ABC", JOptionPane.YES_NO_OPTION,
+						JOptionPane.ERROR_MESSAGE);
 				if (result == JOptionPane.YES_OPTION) {
 					boolean success = openSong(appendData);
 					sequencer.setRunning(success && running);
@@ -1306,7 +1321,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 			waitProgress.setIndeterminate(true);
 			waitContent.add(waitProgress, BorderLayout.SOUTH);
 			pack();
-			setLocation(getOwner().getX() + (getOwner().getWidth() - getWidth()) / 2, getOwner().getY() + (getOwner().getHeight() - getHeight()) / 2);
+			setLocation(getOwner().getX() + (getOwner().getWidth() - getWidth()) / 2,
+					getOwner().getY() + (getOwner().getHeight() - getHeight()) / 2);
 			setResizable(false);
 			setEnabled(false);
 			setIconImages(AbcPlayer.this.getIconImages());
@@ -1315,7 +1331,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 	private void exportWav() {
 		if (exportFileDialog == null) {
-			exportFileDialog = new JFileChooser(prefs.get("exportFileDialog.currentDirectory", Util.getUserMusicPath().getAbsolutePath()));
+			exportFileDialog = new JFileChooser(
+					prefs.get("exportFileDialog.currentDirectory", Util.getUserMusicPath().getAbsolutePath()));
 
 			File openedFile = null;
 			if (!abcData.isEmpty())
@@ -1390,7 +1407,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		@Override
 		public void run() {
 			if (error != null) {
-				JOptionPane.showMessageDialog(AbcPlayer.this, error.getMessage(), "Error saving WAV file", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(AbcPlayer.this, error.getMessage(), "Error saving WAV file",
+						JOptionPane.ERROR_MESSAGE);
 			}
 			waitFrame.setVisible(false);
 		}
@@ -1560,23 +1578,26 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 				Object message;
 				int icon;
 				if (i == 0) {
-					message = new Object[] { "Exporting to MP3 requires LAME, a free MP3 encoder.\n" + "To download LAME, visit: ", hyperlink,
-							"\nAfter you download and unzip it, click OK to locate lame.exe", };
+					message = new Object[] {
+							"Exporting to MP3 requires LAME, a free MP3 encoder.\n" + "To download LAME, visit: ",
+							hyperlink, "\nAfter you download and unzip it, click OK to locate lame.exe", };
 					icon = JOptionPane.INFORMATION_MESSAGE;
 				} else {
 					message = "File does not exist:\n" + lameExe.getAbsolutePath();
 					icon = JOptionPane.ERROR_MESSAGE;
 				}
-				int result = JOptionPane.showConfirmDialog(this, message, "Export to MP3 requires LAME", JOptionPane.OK_CANCEL_OPTION, icon);
+				int result = JOptionPane.showConfirmDialog(this, message, "Export to MP3 requires LAME",
+						JOptionPane.OK_CANCEL_OPTION, icon);
 				if (result != JOptionPane.OK_OPTION)
 					return;
 			} else if (!isLame(lameExe)) {
 				Object[] message = new Object[] {
-						"The MP3 converter you selected \"" + lameExe.getName() + "\" doesn't appear to be LAME.\n" + "You can download LAME from: ",
+						"The MP3 converter you selected \"" + lameExe.getName() + "\" doesn't appear to be LAME.\n"
+								+ "You can download LAME from: ",
 						hyperlink, "\nWould you like to use \"" + lameExe.getName() + "\" anyways?\n"
 								+ "If you choose No, you'll be prompted to locate lame.exe" };
-				int result = JOptionPane.showConfirmDialog(this, message, "Export to MP3 requires LAME", JOptionPane.YES_NO_CANCEL_OPTION,
-						JOptionPane.WARNING_MESSAGE);
+				int result = JOptionPane.showConfirmDialog(this, message, "Export to MP3 requires LAME",
+						JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
 				if (result == JOptionPane.YES_OPTION)
 					overrideAndUseExe = true;
 				else if (result == JOptionPane.NO_OPTION)
@@ -1588,7 +1609,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 			mp3Prefs.put("lameExe", lameExe.getAbsolutePath());
 		}
 
-		ExportMp3Dialog mp3Dialog = new ExportMp3Dialog(this, lameExe, mp3Prefs, openedFile, abcInfo.getTitle(), abcInfo.getComposer());
+		ExportMp3Dialog mp3Dialog = new ExportMp3Dialog(this, lameExe, mp3Prefs, openedFile, abcInfo.getTitle(),
+				abcInfo.getComposer());
 		mp3Dialog.setIconImages(AbcPlayer.this.getIconImages());
 		mp3Dialog.addActionListener(e -> {
 			ExportMp3Dialog dialog = (ExportMp3Dialog) e.getSource();
@@ -1703,14 +1725,17 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 					Object message;
 					int icon;
 					if (i == 0) {
-						message = new Object[] { "Exporting to MP3 requires FFmpeg, a free MP3 encoder.\n" + "To download FFmpeg, visit: ", hyperlink,
-								"\nAfter you download and unzip it, click OK to locate ffmpeg.exe", };
+						message = new Object[] {
+								"Exporting to MP3 requires FFmpeg, a free MP3 encoder.\n"
+										+ "To download FFmpeg, visit: ",
+								hyperlink, "\nAfter you download and unzip it, click OK to locate ffmpeg.exe", };
 						icon = JOptionPane.INFORMATION_MESSAGE;
 					} else {
 						message = "File does not exist:\n" + ffExe.getAbsolutePath();
 						icon = JOptionPane.ERROR_MESSAGE;
 					}
-					int result = JOptionPane.showConfirmDialog(this, message, "Export to MP3 requires FFmpeg", JOptionPane.OK_CANCEL_OPTION, icon);
+					int result = JOptionPane.showConfirmDialog(this, message, "Export to MP3 requires FFmpeg",
+							JOptionPane.OK_CANCEL_OPTION, icon);
 					if (result != JOptionPane.OK_OPTION)
 						return;
 				} else if (!isFF(ffExe)) {
@@ -1719,8 +1744,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 									+ "You can download FFmpeg from: ",
 							hyperlink, "\nWould you like to use \"" + ffExe.getName() + "\" anyways?\n"
 									+ "If you choose No, you'll be prompted to locate ffmpeg.exe" };
-					int result = JOptionPane.showConfirmDialog(this, message, "Export to MP3 requires FFmpeg", JOptionPane.YES_NO_CANCEL_OPTION,
-							JOptionPane.WARNING_MESSAGE);
+					int result = JOptionPane.showConfirmDialog(this, message, "Export to MP3 requires FFmpeg",
+							JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
 					if (result == JOptionPane.YES_OPTION)
 						overrideAndUseExe = true;
 					else if (result == JOptionPane.NO_OPTION)
@@ -1732,7 +1757,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 				mp3Prefs.put("ffExe", ffExe.getAbsolutePath());
 			}
 		}
-		ExportMp3Dialog mp3Dialog = new ExportMp3Dialog(this, ffExe, mp3Prefs, openedFile, abcInfo.getTitle(), abcInfo.getComposer());
+		ExportMp3Dialog mp3Dialog = new ExportMp3Dialog(this, ffExe, mp3Prefs, openedFile, abcInfo.getTitle(),
+				abcInfo.getComposer());
 		mp3Dialog.setIconImages(AbcPlayer.this.getIconImages());
 		mp3Dialog.addActionListener(e -> {
 			ExportMp3Dialog dialog = (ExportMp3Dialog) e.getSource();
@@ -1812,7 +1838,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		@Override
 		public void run() {
 			if (error != null) {
-				JOptionPane.showMessageDialog(AbcPlayer.this, error.getMessage(), "Error saving MP3 file", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(AbcPlayer.this, error.getMessage(), "Error saving MP3 file",
+						JOptionPane.ERROR_MESSAGE);
 			}
 			waitFrame.setVisible(false);
 		}
@@ -1870,14 +1897,16 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 				while (true) {
 					Socket socket = serverSocket.accept();
 					// System.out.println("Accepted");
-					BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_16));
+					BufferedReader in = new BufferedReader(
+							new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_16));
 
 					// while (socket.isConnected()) {
 					String data = in.readLine();
 
-					if (data != null && data.length() >= 4 && data.substring(data.length() - 4).equalsIgnoreCase(".abc")) {// &&
-																															// !data.substring(0,3).equalsIgnoreCase("GET")
-																															// &&
+					if (data != null && data.length() >= 4
+							&& data.substring(data.length() - 4).equalsIgnoreCase(".abc")) {// &&
+																							// !data.substring(0,3).equalsIgnoreCase("GET")
+																							// &&
 						// System.out.println("Receiving file path ("+data.length()+" chars) from port
 						// "+(9000+APP_VERSION.getBuild())+":\n"+data);
 						String[] datas = { data };

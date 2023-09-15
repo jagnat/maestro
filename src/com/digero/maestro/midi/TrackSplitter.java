@@ -29,9 +29,10 @@ public class TrackSplitter {
 	private SequenceDataCache sequenceCache = null;
 	private boolean isGM = true;
 
-	public Sequence split(Sequence sequence, SequenceDataCache sequenceCache, MidiStandard standard, boolean[] rolandDrumChannels,
-			List<TreeMap<Long, Boolean>> yamahaDrumSwitches, boolean[] yamahaDrumChannels, List<TreeMap<Long, Boolean>> mmaDrumSwitches,
-			SortedMap<Integer, Integer> portMap) throws InvalidMidiDataException {
+	public Sequence split(Sequence sequence, SequenceDataCache sequenceCache, MidiStandard standard,
+			boolean[] rolandDrumChannels, List<TreeMap<Long, Boolean>> yamahaDrumSwitches, boolean[] yamahaDrumChannels,
+			List<TreeMap<Long, Boolean>> mmaDrumSwitches, SortedMap<Integer, Integer> portMap)
+			throws InvalidMidiDataException {
 
 		this.sequenceCache = sequenceCache;
 
@@ -166,7 +167,8 @@ public class TrackSplitter {
 		return expandedSequence;
 	}
 
-	private String handleEvent(int j, List<HashMap<Integer, String>> notesOn, int port, long tick, int channel, int cmd, ShortMessage shortMsg) {
+	private String handleEvent(int j, List<HashMap<Integer, String>> notesOn, int port, long tick, int channel, int cmd,
+			ShortMessage shortMsg) {
 		boolean on = cmd == ShortMessage.NOTE_ON;
 		int note = shortMsg.getData1();
 		int velocity = shortMsg.getData2();
@@ -188,8 +190,8 @@ public class TrackSplitter {
 	/**
 	 * Its not preceded by a midi ON, so we treat is as a midi ON although, it's silent.
 	 * <p>
-	 * TODO: Consider to remove it, cause Maestro will assign +pppp+ to it, and it will become audible which is probably not what the midi maker
-	 * intended.
+	 * TODO: Consider to remove it, cause Maestro will assign +pppp+ to it, and it will become audible which is probably
+	 * not what the midi maker intended.
 	 * 
 	 * @param index
 	 * @param notesOn
@@ -199,7 +201,8 @@ public class TrackSplitter {
 	 * @param note
 	 * @return
 	 */
-	private String treatAsMidiOn(int index, List<HashMap<Integer, String>> notesOn, int port, long tick, int channel, int note) {
+	private String treatAsMidiOn(int index, List<HashMap<Integer, String>> notesOn, int port, long tick, int channel,
+			int note) {
 		String instr;
 		instr = fetchInstrName(tick, channel, port, index);
 		if (instr != null && !"".equals(instr)) {
@@ -241,11 +244,12 @@ public class TrackSplitter {
 	}
 
 	private boolean isXgGsGm2DrumsTrack(int track) {
-		return sequenceCache.isXGDrumsTrack(track) || sequenceCache.isGSDrumsTrack(track) || sequenceCache.isGM2DrumsTrack(track);
+		return sequenceCache.isXGDrumsTrack(track) || sequenceCache.isGSDrumsTrack(track)
+				|| sequenceCache.isGM2DrumsTrack(track);
 	}
 
 	private boolean isDrumsTrack(int track) {
-		return sequenceCache.isXGDrumsTrack(track) || sequenceCache.isGSDrumsTrack(track) || sequenceCache.isGM2DrumsTrack(track)
-				|| sequenceCache.isDrumsTrack(track);
+		return sequenceCache.isXGDrumsTrack(track) || sequenceCache.isGSDrumsTrack(track)
+				|| sequenceCache.isGM2DrumsTrack(track) || sequenceCache.isDrumsTrack(track);
 	}
 }

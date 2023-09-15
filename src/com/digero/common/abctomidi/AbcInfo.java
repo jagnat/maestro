@@ -161,7 +161,8 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 		if (info == null || info.name == null)
 			return "Track " + trackIndex;
 
-		if (info.nameIsFromExtendedInfo || titlePrefix == null || titlePrefix.length() == 0 || titlePrefix.length() == info.name.length())
+		if (info.nameIsFromExtendedInfo || titlePrefix == null || titlePrefix.length() == 0
+				|| titlePrefix.length() == info.name.length())
 			return info.name;
 
 		return info.name.substring(titlePrefix.length()).trim();
@@ -355,7 +356,8 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 	}
 
 	private static final String openPunct = "[-:;\\(\\[\\{\\s]*";
-	private static final Pattern trailingPunct = Pattern.compile(openPunct + "([\\(\\[\\{]\\d{1,2}:\\d{2}[\\)\\]\\}])?" + openPunct + "$");
+	private static final Pattern trailingPunct = Pattern
+			.compile(openPunct + "([\\(\\[\\{]\\d{1,2}:\\d{2}[\\)\\]\\}])?" + openPunct + "$");
 
 	private String getTitlePrefix() {
 		if (titlePrefix == null || titlePrefix.length() == 0) {

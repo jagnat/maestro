@@ -21,8 +21,8 @@ public class AudioPlayer {
 			AudioInputStream decodedInput = null;
 			if (compressedInput != null) {
 				AudioFormat baseFormat = compressedInput.getFormat();
-				AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, baseFormat.getSampleRate(), 16, baseFormat.getChannels(),
-						baseFormat.getChannels() * 2, baseFormat.getSampleRate(), false);
+				AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, baseFormat.getSampleRate(), 16,
+						baseFormat.getChannels(), baseFormat.getChannels() * 2, baseFormat.getSampleRate(), false);
 				// Get AudioInputStream that will be decoded by underlying VorbisSPI
 				decodedInput = AudioSystem.getAudioInputStream(format, compressedInput);
 
@@ -35,7 +35,8 @@ public class AudioPlayer {
 					playDurationBytes = oneSecondBytes * playDurationMillis / 1000;
 
 				byte[] data = new byte[1024];
-				SourceDataLine line = (SourceDataLine) AudioSystem.getLine(new DataLine.Info(SourceDataLine.class, format));
+				SourceDataLine line = (SourceDataLine) AudioSystem
+						.getLine(new DataLine.Info(SourceDataLine.class, format));
 				line.open(format);
 
 				FloatControl gainControl = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);

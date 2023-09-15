@@ -689,13 +689,15 @@ public class SoftMainMixer {
 			private SoftAudioBuffer[] buffers = SoftMainMixer.this.buffers;
 			private int nrofchannels = SoftMainMixer.this.synth.getFormat().getChannels();
 			private int buffersize = buffers[0].getSize();
-			private byte[] bbuffer = new byte[buffersize * (SoftMainMixer.this.synth.getFormat().getSampleSizeInBits() / 8) * nrofchannels];
+			private byte[] bbuffer = new byte[buffersize
+					* (SoftMainMixer.this.synth.getFormat().getSampleSizeInBits() / 8) * nrofchannels];
 			private int bbuffer_pos = 0;
 			private byte[] single = new byte[1];
 
 			public void fillBuffer() {
 				/*
-				 * boolean pusher_silent2; synchronized (control_mutex) { pusher_silent2 = pusher_silent; } if(!pusher_silent2)
+				 * boolean pusher_silent2; synchronized (control_mutex) { pusher_silent2 = pusher_silent; }
+				 * if(!pusher_silent2)
 				 */
 				processAudioBuffers();
 				for (int i = 0; i < nrofchannels; i++)

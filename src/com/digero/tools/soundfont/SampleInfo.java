@@ -53,7 +53,8 @@ public class SampleInfo implements Comparable<SampleInfo> {
 	public final String name;
 	public final float sampleRate;
 
-	private static final Pattern FILE_NAME_REGEX = Pattern.compile("(([a-z_]+)(_([0-9][0-9]))?)\\.wav", Pattern.CASE_INSENSITIVE);
+	private static final Pattern FILE_NAME_REGEX = Pattern.compile("(([a-z_]+)(_([0-9][0-9]))?)\\.wav",
+			Pattern.CASE_INSENSITIVE);
 	private static final int FILE_NAME_GROUP = 1;
 	private static final int FILE_INSTRUMENT_GROUP = 2;
 	private static final int FILE_NOTEID_GROUP = 4;

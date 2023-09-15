@@ -61,8 +61,9 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 	private boolean[] yamahaDrumChannels = null;
 	public boolean hasPorts = false;
 
-	public SequenceDataCache(Sequence song, MidiStandard standard, boolean[] rolandDrumChannels, List<TreeMap<Long, Boolean>> yamahaDrumSwitches,
-			boolean[] yamahaDrumChannels, List<TreeMap<Long, Boolean>> mmaDrumSwitches, SortedMap<Integer, Integer> portMap) {
+	public SequenceDataCache(Sequence song, MidiStandard standard, boolean[] rolandDrumChannels,
+			List<TreeMap<Long, Boolean>> yamahaDrumSwitches, boolean[] yamahaDrumChannels,
+			List<TreeMap<Long, Boolean>> mmaDrumSwitches, SortedMap<Integer, Integer> portMap) {
 		Map<Integer, Long> tempoLengths = new HashMap<>();
 
 		this.standard = standard;
@@ -84,8 +85,9 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		Arrays.fill(rpn, REGISTERED_PARAM_NONE);
 
 		/*
-		 * We need to be able to know which tracks have drum notes. We also need to know what instrument voices are used in each track, so we build
-		 * maps of voice changes that TrackInfo later can use to build strings of instruments for each track.
+		 * We need to be able to know which tracks have drum notes. We also need to know what instrument voices are used
+		 * in each track, so we build maps of voice changes that TrackInfo later can use to build strings of instruments
+		 * for each track.
 		 * 
 		 * This among other things we will find out by iterating through all MidiEvents.
 		 * 
@@ -147,24 +149,29 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 						if (cmd == ShortMessage.NOTE_ON) {
 							if (rolandDrumChannels != null && rolandDrumChannels[ch] && MidiStandard.GS == standard) {
 								brandDrumBanks[iTrack] = 2;// GS Drums
-							} else if (brandDrumBanks[iTrack] != 1 && MidiStandard.XG == standard && yamahaDrumSwitches != null
-									&& yamahaDrumSwitches.get(ch).floorEntry(tick) != null
+							} else if (brandDrumBanks[iTrack] != 1 && MidiStandard.XG == standard
+									&& yamahaDrumSwitches != null && yamahaDrumSwitches.get(ch).floorEntry(tick) != null
 									&& yamahaDrumSwitches.get(ch).floorEntry(tick).getValue()) {
 								brandDrumBanks[iTrack] = 1;// XG drums
-							} else if (brandDrumBanks[iTrack] != 4 && MidiStandard.GM2 == standard && mmaDrumSwitches != null
-									&& mmaDrumSwitches.get(ch).floorEntry(tick) != null && mmaDrumSwitches.get(ch).floorEntry(tick).getValue()) {
+							} else if (brandDrumBanks[iTrack] != 4 && MidiStandard.GM2 == standard
+									&& mmaDrumSwitches != null && mmaDrumSwitches.get(ch).floorEntry(tick) != null
+									&& mmaDrumSwitches.get(ch).floorEntry(tick).getValue()) {
 								brandDrumBanks[iTrack] = 4;// GM2 drums
-							} else if (ch == DRUM_CHANNEL && (MidiStandard.GM == standard || MidiStandard.ABC == standard)) {
+							} else if (ch == DRUM_CHANNEL
+									&& (MidiStandard.GM == standard || MidiStandard.ABC == standard)) {
 								brandDrumBanks[iTrack] = 3;// GM drums on channel #10
 							}
 						} else if (cmd == ShortMessage.PROGRAM_CHANGE) {
 							if (((ch != DRUM_CHANNEL && rolandDrumChannels == null && yamahaDrumChannels == null)
-									|| ((rolandDrumChannels == null || MidiStandard.GS != standard || !rolandDrumChannels[ch])
-											&& (yamahaDrumChannels == null || MidiStandard.XG != standard || !yamahaDrumChannels[ch])))
+									|| ((rolandDrumChannels == null || MidiStandard.GS != standard
+											|| !rolandDrumChannels[ch])
+											&& (yamahaDrumChannels == null || MidiStandard.XG != standard
+													|| !yamahaDrumChannels[ch])))
 									&& (MidiStandard.XG != standard || yamahaDrumSwitches == null
 											|| yamahaDrumSwitches.get(ch).floorEntry(tick) == null
 											|| !yamahaDrumSwitches.get(ch).floorEntry(tick).getValue())
-									&& (MidiStandard.GM2 != standard || mmaDrumSwitches == null || mmaDrumSwitches.get(ch).floorEntry(tick) == null
+									&& (MidiStandard.GM2 != standard || mmaDrumSwitches == null
+											|| mmaDrumSwitches.get(ch).floorEntry(tick) == null
 											|| !mmaDrumSwitches.get(ch).floorEntry(tick).getValue())) {
 								instruments.put(portMap.get(iTrack), ch, tick, m.getData1());
 							}
@@ -208,11 +215,13 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 								panMap.put(ch, tick, m.getData2());
 								break;
 							case BANK_SELECT_MSB:
-								if (ch != DRUM_CHANNEL || MidiStandard.XG != standard || m.getData2() == 126 || m.getData2() == 127) {
+								if (ch != DRUM_CHANNEL || MidiStandard.XG != standard || m.getData2() == 126
+										|| m.getData2() == 127) {
 									// Due to XG drum part protect mode being ON, drum channel 9 only can switch
 									// between MSB 126 & 127.
 									mapMSB.put(ch, tick, m.getData2());
-								} else if (ch == DRUM_CHANNEL && MidiStandard.XG == standard && m.getData2() != 126 && m.getData2() != 127) {
+								} else if (ch == DRUM_CHANNEL && MidiStandard.XG == standard && m.getData2() != 126
+										&& m.getData2() != 127) {
 									System.err.println("XG Drum Part Protect Mode prevented bank select MSB.");
 								}
 								// if(ch==DRUM_CHANNEL) System.err.println("Bank select MSB "+m.getData2()+" "+tick);
@@ -232,11 +241,12 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 					} else if (msg instanceof SysexMessage) {
 						SysexMessage sysex = (SysexMessage) msg;
 						byte[] message = sysex.getMessage();
-						if (message.length == 9 && (message[0] & 0xFF) == 0xF0 && (message[1] & 0xFF) == 0x43 && (message[4] & 0xFF) == 0x08
-								&& (message[8] & 0xFF) == 0xF7) {
-							String bank = message[6] == 1 ? "MSB" : (message[6] == 2 ? "LSB" : (message[6] == 3 ? "Patch" : ""));
-							if (MidiStandard.XG == standard && !"".equals(bank) && message[5] < 16 && message[5] > -1 && message[7] < 128
-									&& message[7] > -1) {
+						if (message.length == 9 && (message[0] & 0xFF) == 0xF0 && (message[1] & 0xFF) == 0x43
+								&& (message[4] & 0xFF) == 0x08 && (message[8] & 0xFF) == 0xF7) {
+							String bank = message[6] == 1 ? "MSB"
+									: (message[6] == 2 ? "LSB" : (message[6] == 3 ? "Patch" : ""));
+							if (MidiStandard.XG == standard && !"".equals(bank) && message[5] < 16 && message[5] > -1
+									&& message[7] < 128 && message[7] > -1) {
 								switch (bank) {
 								case "MSB":
 									// XG Drum Part Protect Mode does not apply to sysex bank changes.

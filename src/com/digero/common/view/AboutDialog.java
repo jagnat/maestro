@@ -21,7 +21,8 @@ import com.digero.common.util.Util;
 import com.digero.common.util.Version;
 
 public final class AboutDialog {
-	public static void show(JFrame parent, final String appName, final Version appVersion, final String appUrl, final String iconName) {
+	public static void show(JFrame parent, final String appName, final Version appVersion, final String appUrl,
+			final String iconName) {
 		ImageIcon aboutIcon;
 		try {
 			aboutIcon = new ImageIcon(ImageIO.read(IconLoader.class.getResourceAsStream(iconName)));

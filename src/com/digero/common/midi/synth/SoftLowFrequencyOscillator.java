@@ -86,7 +86,8 @@ public class SoftLowFrequencyOscillator implements SoftProcess {
 				 * double fr = 440.0 * Math.pow(2.0, (freq[i][0] - 6900.0) / 1200.0); sin_phase[i] += fr * sin_factor;
 				 */
 				/*
-				 * sin_phase[i] += sin_step[i]; while (sin_phase[i] > PI2) sin_phase[i] -= PI2; out[i][0] = 0.5 + Math.sin(sin_phase[i]) * 0.5;
+				 * sin_phase[i] += sin_step[i]; while (sin_phase[i] > PI2) sin_phase[i] -= PI2; out[i][0] = 0.5 +
+				 * Math.sin(sin_phase[i]) * 0.5;
 				 */
 				double p = sin_phase[i];
 				p += sin_step[i];

@@ -227,8 +227,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private int maxNoteCountTotal = 0;
 	private boolean midiResolved = false;
 	/*
-	 * private static Color BRIGHT_RED = new Color(255, 0, 0); private static Color ORANGE = new Color(235, 150, 64); private static Color BLACK = new
-	 * Color(0, 0, 0);
+	 * private static Color BRIGHT_RED = new Color(255, 0, 0); private static Color ORANGE = new Color(235, 150, 64);
+	 * private static Color BLACK = new Color(0, 0, 0);
 	 */
 
 	public ProjectFrame() {
@@ -249,7 +249,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		handleInputMaps();
 
-		String welcomeMessage = formatInfoMessage("Hello Maestro", "Drag and drop a MIDI or ABC file to open it.\n" + "Or use File > Open.");
+		String welcomeMessage = formatInfoMessage("Hello Maestro",
+				"Drag and drop a MIDI or ABC file to open it.\n" + "Or use File > Open.");
 
 		partAutoNumberer = new PartAutoNumberer(prefs.node("partAutoNumberer"));
 		partNameTemplate = new PartNameTemplate(prefs.node("partNameTemplate"));
@@ -258,7 +259,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		saveSettings = new SaveAndExportSettings(prefs.node("saveAndExportSettings"));
 		miscSettings = new MiscSettings(prefs.node("miscSettings"),
 				true /*
-						 * Fallback if miscSettings is empty. Maestro 2.5.0.115 and earlier save misc settings in saveAndExportSettings
+						 * Fallback if miscSettings is empty. Maestro 2.5.0.115 and earlier save misc settings in
+						 * saveAndExportSettings
 						 */);
 
 		checkVolumeTransceiver();
@@ -274,14 +276,17 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 			if (LotroSequencerWrapper.getLoadLotroSynthError() != null) {
 				welcomeMessage = formatErrorMessage("Could not load LOTRO instrument sounds",
-						"ABC Preview will use standard MIDI instruments instead\n" + "(drums do not sound good in this mode).\n\n"
-								+ "Error details:\n" + LotroSequencerWrapper.getLoadLotroSynthError());
+						"ABC Preview will use standard MIDI instruments instead\n"
+								+ "(drums do not sound good in this mode).\n\n" + "Error details:\n"
+								+ LotroSequencerWrapper.getLoadLotroSynthError());
 				failedToLoadLotroInstruments = true;
 			}
 		} catch (MidiUnavailableException e) {
-			JOptionPane.showMessageDialog(null,
-					"Failed to initialize MIDI sequencer.\nThe program will now exit.\n\n" + "Error details:\n" + e.getMessage(),
-					"Failed to initialize MIDI sequencer", JOptionPane.ERROR_MESSAGE);
+			JOptionPane
+					.showMessageDialog(
+							null, "Failed to initialize MIDI sequencer.\nThe program will now exit.\n\n"
+									+ "Error details:\n" + e.getMessage(),
+							"Failed to initialize MIDI sequencer", JOptionPane.ERROR_MESSAGE);
 			System.exit(1);
 			return;
 		}
@@ -394,7 +399,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		tuneEditorButton = new JButton();
 		tuneEditorButton.setText("Tune-editor");
-		tuneEditorButton.setToolTipText("<html><b> Tune Editor </b><br> Edit the tempo or key in specific sections </html>");
+		tuneEditorButton
+				.setToolTipText("<html><b> Tune Editor </b><br> Edit the tempo or key in specific sections </html>");
 		tuneEditorButton.addActionListener(e -> TuneEditor.show(ProjectFrame.this, abcSong));
 
 		JPanel modeButtonPanel = new JPanel(new BorderLayout());
@@ -427,14 +433,15 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		noteCountLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
 		noteCountLabel.setBorder(new EmptyBorder(0, 0, 0, 20));// top,left,bottom,right
 		noteCountLabel.setToolTipText("<html>Number of simultanious notes<br>" + "that is playing.<br>"
-				+ "Use as rough (as it for tech reasons typically overestimates)<br>" + "guide to estimate how much of lotro max<br>"
-				+ "polyphony the song will consume.<br>" + "Stopped notes that are in release phase also counts.</html>");
+				+ "Use as rough (as it for tech reasons typically overestimates)<br>"
+				+ "guide to estimate how much of lotro max<br>" + "polyphony the song will consume.<br>"
+				+ "Stopped notes that are in release phase also counts.</html>");
 		playControlPanel.add(noteCountLabel, "7, 0, 7, 0, L, C");
 
 		add(generateTopLevelSplitPane(settingsPanel, playControlPanel), "0, 0, 1, 0");
 
-		final FileFilterDropListener dropListener = new FileFilterDropListener(false, "mid", "midi", "kar", "abc", "txt",
-				AbcSong.MSX_FILE_EXTENSION_NO_DOT);
+		final FileFilterDropListener dropListener = new FileFilterDropListener(false, "mid", "midi", "kar", "abc",
+				"txt", AbcSong.MSX_FILE_EXTENSION_NO_DOT);
 		dropListener.addActionListener(e -> {
 			final File file = dropListener.getDroppedFile();
 			SwingUtilities.invokeLater(() -> openFile(file));
@@ -454,7 +461,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		// Add support for using spacebar for pause/play.
 		ActionListener spaceBarListener = generateSpaceBarListener();
-		this.getRootPane().registerKeyboardAction(spaceBarListener, KeyStroke.getKeyStroke(' '), JComponent.WHEN_IN_FOCUSED_WINDOW);
+		this.getRootPane().registerKeyboardAction(spaceBarListener, KeyStroke.getKeyStroke(' '),
+				JComponent.WHEN_IN_FOCUSED_WINDOW);
 
 		// Add a listener to remove focus from current component when somewhere else is
 		// clicked.
@@ -508,7 +516,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		int splitPanePos = prefs.getInt("splitPanePos", -1);
 
-		JSplitPane topLevelSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, abcPartsAndSettings, midiPartsAndControls);
+		JSplitPane topLevelSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, abcPartsAndSettings,
+				midiPartsAndControls);
 		topLevelSplitPane.setBorder(BorderFactory.createEmptyBorder());
 		topLevelSplitPane.setContinuousLayout(true);
 		topLevelSplitPane.setFocusable(false);
@@ -524,7 +533,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private JPanel generateFlowPanel() {
 		JPanel flowP = new JPanel(new FlowLayout());
 		noteButton.addActionListener(e -> partPanel.noteToggle());
-		noteButton.setToolTipText("<html>Show notepad where custom notes can be entered.<br>" + "Will be saved in msx project file.</html>");
+		noteButton.setToolTipText("<html>Show notepad where custom notes can be entered.<br>"
+				+ "Will be saved in msx project file.</html>");
 		// playControlPanel.add(noteButton, "6, 2, C, C");
 
 		zoom.addActionListener(e -> partPanel.zoom());
@@ -535,7 +545,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		return flowP;
 	}
 
-	private JPanel generatePlayControlPanel(JPanel volumePanel, JPanel stereoPanel, JPanel modeButtonPanel, JPanel playButtonPanel) {
+	private JPanel generatePlayControlPanel(JPanel volumePanel, JPanel stereoPanel, JPanel modeButtonPanel,
+			JPanel playButtonPanel) {
 		JPanel playControlPanel = new JPanel(new TableLayout(//
 				new double[] { PREFERRED, 0.50, 4, PREFERRED, 4, 0.25, 0.25, PREFERRED, PREFERRED, 4 }, //
 				new double[] { PREFERRED, 4, PREFERRED }));
@@ -706,8 +717,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	}
 
 	/**
-	 * Wrap the part list in a panel that forces the list to the top. Fixes a swing bug where clicking after the end of the list will select the last
-	 * element
+	 * Wrap the part list in a panel that forces the list to the top. Fixes a swing bug where clicking after the end of
+	 * the list will select the last element
 	 */
 	private JScrollPane wrapPartsList() {
 		JPanel partListWrapperPanel = new JPanel(new BorderLayout());
@@ -721,7 +732,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				getRootPane().requestFocus();
 			}
 		});
-		JScrollPane scrollPane = new JScrollPane(partListWrapperPanel, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		JScrollPane scrollPane = new JScrollPane(partListWrapperPanel, VERTICAL_SCROLLBAR_ALWAYS,
+				HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		Dimension sz = scrollPane.getMinimumSize();
 		sz.width = PartsListItem.getProtoDimension().width;
 		scrollPane.setPreferredSize(sz);
@@ -770,9 +782,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 	private void generatePrioCheckBox() {
 		prioCheckBox = new JCheckBox("Combine Priorities");
-		prioCheckBox.setToolTipText(
-				"<html>This allow to set track priority for Mix Timings.<br><br>" + "Checkboxes will appear when combining tracks,<br>"
-						+ "those enabled will prioritize the timings of those" + "tracks over non-prioritized tracks.</html>");
+		prioCheckBox.setToolTipText("<html>This allow to set track priority for Mix Timings.<br><br>"
+				+ "Checkboxes will appear when combining tracks,<br>"
+				+ "those enabled will prioritize the timings of those" + "tracks over non-prioritized tracks.</html>");
 		prioCheckBox.addActionListener(e -> {
 			if (abcSong != null)
 				abcSong.setPriorityActive(prioCheckBox.isSelected());
@@ -784,7 +796,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 	private void generateMixCheckBox() {
 		mixCheckBox = new JCheckBox("Mix Timings");
-		mixCheckBox.setToolTipText("<html>Allow Maestro to detect which notes<br>" + "that differs from the above triplet/swing setting.<br><br>"
+		mixCheckBox.setToolTipText("<html>Allow Maestro to detect which notes<br>"
+				+ "that differs from the above triplet/swing setting.<br><br>"
 				+ "It is done per part, so some notes in a parts might export as swing/tuplets<br>"
 				+ "while other parts at same time export even notes.</html>");
 		mixCheckBox.addActionListener(e -> {
@@ -828,11 +841,12 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	}
 
 	private void generateTempoSpinner() {
-		tempoSpinner = new JSpinner(new SpinnerNumberModel(MidiConstants.DEFAULT_TEMPO_BPM /* value */, 8 /* min */, 960 /* max */, 1 /* step */));
-		tempoSpinner.setToolTipText(
-				"<html>Tempo in beats per minute.<br><br>" + "This number represents the <b>Main Tempo</b>, which is the tempo that covers<br>"
-						+ "the largest portion of the song. If parts of the song play at a different tempo,<br>"
-						+ "they will all be adjusted proportionally.</html>");
+		tempoSpinner = new JSpinner(new SpinnerNumberModel(MidiConstants.DEFAULT_TEMPO_BPM /* value */, 8 /* min */,
+				960 /* max */, 1 /* step */));
+		tempoSpinner.setToolTipText("<html>Tempo in beats per minute.<br><br>"
+				+ "This number represents the <b>Main Tempo</b>, which is the tempo that covers<br>"
+				+ "the largest portion of the song. If parts of the song play at a different tempo,<br>"
+				+ "they will all be adjusted proportionally.</html>");
 		tempoSpinner.addChangeListener(e -> {
 			if (abcSong != null) {
 				abcSong.setTempoBPM((Integer) tempoSpinner.getValue());
@@ -852,7 +866,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 	private void generateTransposeSpinner() {
 		transposeSpinner = new JSpinner(new SpinnerNumberModel(0, -48, 48, 1));
-		transposeSpinner.setToolTipText("<html>Transpose the entire song by semitones.<br>" + "12 semitones = 1 octave</html>");
+		transposeSpinner
+				.setToolTipText("<html>Transpose the entire song by semitones.<br>" + "12 semitones = 1 octave</html>");
 		transposeSpinner.addChangeListener(e -> {
 			if (abcSong != null)
 				abcSong.setTranspose(getTranspose());
@@ -862,7 +877,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private void generateTimeSignatureField() {
 		timeSignatureField = new MyFormattedTextField(TimeSignature.FOUR_FOUR, 5);
 		timeSignatureField.setToolTipText("<html>Adjust the time signature of the ABC file.<br><br>"
-				+ "This mainly affects the display only, but can affect long notes slightly.<br>" + "Examples: 4/4, 3/4, 3/8, 2/2, 2/4, 6/8</html>");
+				+ "This mainly affects the display only, but can affect long notes slightly.<br>"
+				+ "Examples: 4/4, 3/4, 3/8, 2/2, 2/4, 6/8</html>");
 		timeSignatureField.addPropertyChangeListener("value", evt -> {
 			if (abcSong != null)
 				abcSong.setTimeSignature((TimeSignature) timeSignatureField.getValue());
@@ -888,7 +904,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private void generateKeySignatureField() {
 		keySignatureField = new MyFormattedTextField(KeySignature.C_MAJOR, 5);
 		keySignatureField.setToolTipText("<html>Adjust the key signature of the ABC file. "
-				+ "This only affects the display, not the sound of the exported file.<br>" + "Examples: C maj, Eb maj, F# min</html>");
+				+ "This only affects the display, not the sound of the exported file.<br>"
+				+ "Examples: C maj, Eb maj, F# min</html>");
 		if (SHOW_KEY_FIELD) {
 			keySignatureField.addPropertyChangeListener("value", evt -> {
 				if (abcSong != null)
@@ -1107,8 +1124,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				if (openFileChooser == null) {
 					openFileChooser = new JFileChooser(prefs.get("openFileChooser.path", null));
 					openFileChooser.setMultiSelectionEnabled(false);
-					openFileChooser.setFileFilter(new ExtensionFileFilter("MIDI, ABC, and " + AbcSong.MSX_FILE_DESCRIPTION_PLURAL, "mid", "midi",
-							"kar", "abc", "txt", AbcSong.MSX_FILE_EXTENSION_NO_DOT));
+					openFileChooser.setFileFilter(
+							new ExtensionFileFilter("MIDI, ABC, and " + AbcSong.MSX_FILE_DESCRIPTION_PLURAL, "mid",
+									"midi", "kar", "abc", "txt", AbcSong.MSX_FILE_EXTENSION_NO_DOT));
 				}
 
 				int result = openFileChooser.showOpenDialog(ProjectFrame.this);
@@ -1182,8 +1200,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		JMenuItem aboutItem = toolsMenu.add(new JMenuItem("About " + MaestroMain.APP_NAME + "..."));
 		aboutItem.setMnemonic('A');
 		aboutItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0));
-		aboutItem.addActionListener(
-				e -> AboutDialog.show(ProjectFrame.this, MaestroMain.APP_NAME, MaestroMain.APP_VERSION, MaestroMain.APP_URL, "maestro_64.png"));
+		aboutItem.addActionListener(e -> AboutDialog.show(ProjectFrame.this, MaestroMain.APP_NAME,
+				MaestroMain.APP_VERSION, MaestroMain.APP_URL, "maestro_64.png"));
 	}
 
 	private int currentSettingsDialogTab = 0;
@@ -1198,8 +1216,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		int y = -1;
 		do {
 			showSettingsAgain = false;
-			SettingsDialog dialog = new SettingsDialog(ProjectFrame.this, prefs, partAutoNumberer, partNameTemplate, exportFilenameTemplate,
-					saveSettings.getCopy(), miscSettings.getCopy(), instrNameSettings.getCopy());
+			SettingsDialog dialog = new SettingsDialog(ProjectFrame.this, prefs, partAutoNumberer, partNameTemplate,
+					exportFilenameTemplate, saveSettings.getCopy(), miscSettings.getCopy(),
+					instrNameSettings.getCopy());
 			if (x > 0 && y > 0) {
 				dialog.setLocation(x, y);
 			}
@@ -1355,9 +1374,11 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				try {
 					echoingPosition = true;
 					if (evt.getProperty() == SequencerProperty.POSITION) {
-						abcSequencer.setTickPosition(Util.clamp(sequencer.getTickPosition(), abcPreviewStartTick, abcSequencer.getTickLength()));
+						abcSequencer.setTickPosition(Util.clamp(sequencer.getTickPosition(), abcPreviewStartTick,
+								abcSequencer.getTickLength()));
 					} else if (evt.getProperty() == SequencerProperty.DRAG_POSITION) {
-						abcSequencer.setDragTick(Util.clamp(sequencer.getDragTick(), abcPreviewStartTick, abcSequencer.getTickLength()));
+						abcSequencer.setDragTick(
+								Util.clamp(sequencer.getDragTick(), abcPreviewStartTick, abcSequencer.getTickLength()));
 					} else if (evt.getProperty() == SequencerProperty.IS_DRAGGING) {
 						abcSequencer.setDragging(sequencer.isDragging());
 					}
@@ -1414,7 +1435,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				try {
 					echoingPosition = true;
 					if (evt.getProperty() == SequencerProperty.POSITION) {
-						sequencer.setTickPosition(Util.clamp(abcSequencer.getTickPosition(), 0, sequencer.getTickLength()));
+						sequencer.setTickPosition(
+								Util.clamp(abcSequencer.getTickPosition(), 0, sequencer.getTickLength()));
 					} else if (evt.getProperty() == SequencerProperty.DRAG_POSITION) {
 						sequencer.setDragTick(Util.clamp(abcSequencer.getDragTick(), 0, sequencer.getTickLength()));
 					} else if (evt.getProperty() == SequencerProperty.IS_DRAGGING) {
@@ -1582,7 +1604,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		noteButton.setEnabled(midiLoaded);
 		if (midiLoaded) {
 			midiModeRadioButton.setText("Original ("
-					+ ((abcSong.getSequenceInfo().standard == MidiStandard.GM && abcSong.getSequenceInfo().hasPorts) ? MidiStandard.GM_PLUS
+					+ ((abcSong.getSequenceInfo().standard == MidiStandard.GM && abcSong.getSequenceInfo().hasPorts)
+							? MidiStandard.GM_PLUS
 							: abcSong.getSequenceInfo().standard)
 					+ ")");
 		} else {
@@ -1604,7 +1627,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	};
 
 	public void updateDelayButton() {
-		if (partsList.getSelectedIndex() != -1 && partPanel != null && partPanel.getAbcPart() != null && partPanel.getAbcPart().delay != 0) {
+		if (partsList.getSelectedIndex() != -1 && partPanel != null && partPanel.getAbcPart() != null
+				&& partPanel.getAbcPart().delay != 0) {
 			delayButton.setForeground(new Color(0.2f, 0.8f, 0.2f));// green
 		} else if (partsList.getSelectedIndex() != -1) {
 			Color c = UIManager.getColor("TextField.foreground");
@@ -1879,8 +1903,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			else
 				message = "Do you want to save changes to \"" + abcSong.getSaveFile().getName() + "\"?";
 
-			int result = JOptionPane.showConfirmDialog(this, message, "Save Changes", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE,
-					IconLoader.getImageIcon("msxfile_32.png"));
+			int result = JOptionPane.showConfirmDialog(this, message, "Save Changes", JOptionPane.YES_NO_CANCEL_OPTION,
+					JOptionPane.QUESTION_MESSAGE, IconLoader.getImageIcon("msxfile_32.png"));
 			if (result == JOptionPane.CANCEL_OPTION)
 				return false;
 
@@ -1949,8 +1973,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		setAbcSongModified(false);
 
 		try {
-			abcSong = new AbcSong(file, partAutoNumberer, partNameTemplate, exportFilenameTemplate, instrNameSettings, openFileResolver,
-					miscSettings);
+			abcSong = new AbcSong(file, partAutoNumberer, partNameTemplate, exportFilenameTemplate, instrNameSettings,
+					openFileResolver, miscSettings);
 			abcSong.setAllOut(miscSettings.showBadger && miscSettings.allBadger);
 			abcSong.setBadger(miscSettings.showBadger);
 			abcSong.addSongListener(abcSongListener);
@@ -2068,7 +2092,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		}
 
 		private File resolveHelper(File original, String message) {
-			int result = JOptionPane.showConfirmDialog(ProjectFrame.this, message, "Failed to open file", JOptionPane.OK_CANCEL_OPTION);
+			int result = JOptionPane.showConfirmDialog(ProjectFrame.this, message, "Failed to open file",
+					JOptionPane.OK_CANCEL_OPTION);
 
 			File alternateFile = null;
 			if (result == JOptionPane.OK_OPTION) {
@@ -2086,12 +2111,13 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	};
 
 	private static String formatInfoMessage(String title, String message) {
-		return "<html><h3>" + Util.htmlEscape(title) + "</h3>" + Util.htmlEscape(message).replace("\n", "<br>") + "<h3>&nbsp;</h3></html>";
+		return "<html><h3>" + Util.htmlEscape(title) + "</h3>" + Util.htmlEscape(message).replace("\n", "<br>")
+				+ "<h3>&nbsp;</h3></html>";
 	}
 
 	private static String formatErrorMessage(String title, String message) {
-		return "<html><h3><font color=\"" + ColorTable.PANEL_TEXT_ERROR.getHtml() + "\">" + Util.htmlEscape(title) + "</font></h3>"
-				+ Util.htmlEscape(message).replace("\n", "<br>") + "<h3>&nbsp;</h3></html>";
+		return "<html><h3><font color=\"" + ColorTable.PANEL_TEXT_ERROR.getHtml() + "\">" + Util.htmlEscape(title)
+				+ "</font></h3>" + Util.htmlEscape(message).replace("\n", "<br>") + "<h3>&nbsp;</h3></html>";
 	}
 
 	private void updatePreviewMode(boolean abcPreviewModeNew) {
@@ -2172,7 +2198,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			// abcSong.setShowPruned(saveSettings.showPruned);
 			AbcExporter exporter = abcSong.getAbcExporter();
 			exporter.stereoPan = prefs.getInt("stereoPan", 100);
-			SequenceInfo previewSequenceInfo = SequenceInfo.fromAbcParts(exporter, !failedToLoadLotroInstruments, false);
+			SequenceInfo previewSequenceInfo = SequenceInfo.fromAbcParts(exporter, !failedToLoadLotroInstruments,
+					false);
 
 			long tick = sequencer.getTickPosition();
 			abcPreviewStartTick = exporter.getExportStartTick();
@@ -2201,7 +2228,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		} catch (InvalidMidiDataException | AbcConversionException e) {
 			sequencer.stop();
 			abcSequencer.stop();
-			JOptionPane.showMessageDialog(ProjectFrame.this, e.getMessage(), "Error previewing ABC", JOptionPane.WARNING_MESSAGE);
+			JOptionPane.showMessageDialog(ProjectFrame.this, e.getMessage(), "Error previewing ABC",
+					JOptionPane.WARNING_MESSAGE);
 			return false;
 		}
 
@@ -2240,7 +2268,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			}
 
 			if (selectedFile.exists() && !selectedFile.equals(allowOverwriteFile)) {
-				int res = JOptionPane.showConfirmDialog(this, "File \"" + fileName + "\" already exists.\n" + "Do you want to replace it?",
+				int res = JOptionPane.showConfirmDialog(this,
+						"File \"" + fileName + "\" already exists.\n" + "Do you want to replace it?",
 						"Confirm Replace File", JOptionPane.YES_NO_CANCEL_OPTION);
 				if (res == JOptionPane.CANCEL_OPTION)
 					return null;
@@ -2299,7 +2328,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		exportFile = new File(folder, fileName);
 
-		exportFile = doSaveDialog(exportFile, allowOverwriteFile, ".abc", new ExtensionFileFilter("ABC files (*.abc, *.txt)", "abc", "txt"));
+		exportFile = doSaveDialog(exportFile, allowOverwriteFile, ".abc",
+				new ExtensionFileFilter("ABC files (*.abc, *.txt)", "abc", "txt"));
 
 		if (exportFile == null) {
 			return false;
@@ -2352,7 +2382,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			});
 			return true;
 		} catch (FileNotFoundException e) {
-			JOptionPane.showMessageDialog(this, "Failed to create file!\n" + e.getMessage(), "Failed to create file", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Failed to create file!\n" + e.getMessage(), "Failed to create file",
+					JOptionPane.ERROR_MESSAGE);
 			return false;
 		} catch (IOException | AbcConversionException e) {
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -2407,8 +2438,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		saveFile = new File(folder, fileName);
 
-		saveFile = doSaveDialog(saveFile, allowOverwriteFile, AbcSong.MSX_FILE_EXTENSION, new ExtensionFileFilter(
-				AbcSong.MSX_FILE_DESCRIPTION_PLURAL + " (*" + AbcSong.MSX_FILE_EXTENSION + ")", AbcSong.MSX_FILE_EXTENSION_NO_DOT));
+		saveFile = doSaveDialog(saveFile, allowOverwriteFile, AbcSong.MSX_FILE_EXTENSION,
+				new ExtensionFileFilter(AbcSong.MSX_FILE_DESCRIPTION_PLURAL + " (*" + AbcSong.MSX_FILE_EXTENSION + ")",
+						AbcSong.MSX_FILE_EXTENSION_NO_DOT));
 
 		if (saveFile == null)
 			return false;
@@ -2438,7 +2470,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		try {
 			XmlUtil.saveDocument(abcSong.saveToXml(), abcSong.getSaveFile());
 		} catch (FileNotFoundException e) {
-			JOptionPane.showMessageDialog(this, "Failed to create file!\n" + e.getMessage(), "Failed to create file", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Failed to create file!\n" + e.getMessage(), "Failed to create file",
+					JOptionPane.ERROR_MESSAGE);
 
 			return false;
 		} catch (IOException | TransformerException e) {
@@ -2462,7 +2495,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		}
 
 		if (abcSong.getSourceFile().getName().startsWith("expanded_")) {
-			JOptionPane.showMessageDialog(this, "This midi has already been expanded", "Error", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "This midi has already been expanded", "Error",
+					JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
 
@@ -2502,21 +2536,25 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		try {
 			Sequence sequence2 = abcSong.getSequenceInfo().split();
 			if (sequence2 == null) {
-				JOptionPane.showMessageDialog(this, "Something went wrong in the splitting process", "Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this, "Something went wrong in the splitting process", "Error",
+						JOptionPane.ERROR_MESSAGE);
 				return false;
 			}
 			int[] types = MidiSystem.getMidiFileTypes(sequence2);
 			if (types.length != 0) {
 				// expandedFile.delete();
 				// expandedFile.createNewFile();
-				System.out.println("Writing type " + types[types.length - 1] + " expanded midi as '" + saveFile.getAbsolutePath() + "'");
+				System.out.println("Writing type " + types[types.length - 1] + " expanded midi as '"
+						+ saveFile.getAbsolutePath() + "'");
 				MidiSystem.write(sequence2, types[types.length - 1], saveFile);
 			} else {
-				JOptionPane.showMessageDialog(this, "Something went wrong when in midi type handling", "Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(this, "Something went wrong when in midi type handling", "Error",
+						JOptionPane.ERROR_MESSAGE);
 				return false;
 			}
 		} catch (FileNotFoundException e) {
-			JOptionPane.showMessageDialog(this, "Failed to create file!\n" + e.getMessage(), "Failed to create file", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(this, "Failed to create file!\n" + e.getMessage(), "Failed to create file",
+					JOptionPane.ERROR_MESSAGE);
 
 			return false;
 		} catch (IOException e) {
@@ -2524,8 +2562,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			return false;
 		}
 
-		int result = JOptionPane.showConfirmDialog(this, "Would you also like to load the new expanded midi?", "Expanded MIDI",
-				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+		int result = JOptionPane.showConfirmDialog(this, "Would you also like to load the new expanded midi?",
+				"Expanded MIDI", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
 		switch (result) {
 		case JOptionPane.YES_OPTION:

@@ -102,7 +102,8 @@ public class MultiMergerView extends JFrame {
 		splitPane.setLeftComponent(btnSource);
 
 		btnDest = new JButton("Select multi part destination folder");
-		btnDest.setToolTipText("This is the folder where you want the new ABC files to be. Its recommended that it is empty.");
+		btnDest.setToolTipText(
+				"This is the folder where you want the new ABC files to be. Its recommended that it is empty.");
 		btnDest.addActionListener(arg0 -> {
 		});
 		splitPane.setRightComponent(btnDest);
@@ -179,7 +180,8 @@ public class MultiMergerView extends JFrame {
 		splitPaneAuto.add(btnSourceAuto);
 
 		btnDestAuto = new JButton("Select ABC destination folder");
-		btnDestAuto.setToolTipText("This is the folder where you want the exported ABC files to be. Its recommended that it is empty.");
+		btnDestAuto.setToolTipText(
+				"This is the folder where you want the exported ABC files to be. Its recommended that it is empty.");
 		btnDestAuto.addActionListener(arg0 -> {
 		});
 

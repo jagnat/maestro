@@ -141,7 +141,8 @@ public class XmlUtil {
 		}
 
 		@Override
-		public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		public void startElement(String uri, String localName, String qName, Attributes attributes)
+				throws SAXException {
 			appendText();
 			Element ele = doc.createElement(qName);
 			stack.push(ele);
@@ -228,7 +229,8 @@ public class XmlUtil {
 		return new NodeListWrapper<>((NodeList) xpath.evaluate(xpathString, fromNode, XPathConstants.NODESET));
 	}
 
-	public static NodeListWrapper<Element> selectElements(Node fromNode, String xpathString) throws XPathExpressionException {
+	public static NodeListWrapper<Element> selectElements(Node fromNode, String xpathString)
+			throws XPathExpressionException {
 		return new NodeListWrapper<>((NodeList) xpath.evaluate(xpathString, fromNode, XPathConstants.NODESET));
 	}
 

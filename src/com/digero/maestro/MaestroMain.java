@@ -171,7 +171,8 @@ public class MaestroMain {
 				while (true) {
 					Socket socket = serverSocket.accept();
 					// System.out.println("Accepted");
-					BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_16));
+					BufferedReader in = new BufferedReader(
+							new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_16));
 					// while (socket.isConnected()) {
 					String data = in.readLine();
 

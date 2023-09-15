@@ -40,7 +40,8 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 	static final int GRAPH_COLUMN = 3;
 
 	private static final int GUTTER_WIDTH = TrackPanel.GUTTER_WIDTH;
-	private static final int TITLE_WIDTH = TrackPanel.TITLE_WIDTH_DEFAULT + TrackPanel.HGAP + TrackPanel.PRIORITY_WIDTH_DEFAULT;
+	private static final int TITLE_WIDTH = TrackPanel.TITLE_WIDTH_DEFAULT + TrackPanel.HGAP
+			+ TrackPanel.PRIORITY_WIDTH_DEFAULT;
 	private static final int TEMPO_WIDTH = TrackPanel.CONTROL_WIDTH_DEFAULT;
 
 	private static double[] LAYOUT_COLS = new double[] { GUTTER_WIDTH, TITLE_WIDTH, TEMPO_WIDTH, FILL };
@@ -56,7 +57,8 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 
 	private AbcSong abcSong;
 
-	public TempoPanel(SequenceInfo sequenceInfo, SequencerWrapper sequencer, SequencerWrapper abcSequencer, AbcSong abcSong) {
+	public TempoPanel(SequenceInfo sequenceInfo, SequencerWrapper sequencer, SequencerWrapper abcSequencer,
+			AbcSong abcSong) {
 		super(new TableLayout(LAYOUT_COLS, LAYOUT_ROWS));
 		this.abcSong = abcSong;
 		TableLayout tableLayout = (TableLayout) getLayout();
@@ -167,7 +169,8 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 		private List<NoteEvent> events;
 
 		public TempoNoteGraph(SequenceInfo sequenceInfo, SequencerWrapper sequencer, int minBPM, int maxBPM) {
-			super(sequencer, sequenceInfo, Note.MIN.id - (Note.MIN.id + Note.MAX.id) / 4, Note.MAX.id + (Note.MIN.id + Note.MAX.id) / 4);
+			super(sequencer, sequenceInfo, Note.MIN.id - (Note.MIN.id + Note.MAX.id) / 4,
+					Note.MAX.id + (Note.MIN.id + Note.MAX.id) / 4);
 
 			this.minBPM = minBPM;
 			this.maxBPM = maxBPM;
@@ -194,7 +197,8 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 
 			if (prevEvent != null) {
 				int id = tempoToNoteId(prevEvent.tempoMPQ, minBPM, maxBPM);
-				events.add(new NoteEvent(Note.fromId(id), 127, prevEvent.tick, dataCache.getSongLengthTicks(), dataCache));
+				events.add(
+						new NoteEvent(Note.fromId(id), 127, prevEvent.tick, dataCache.getSongLengthTicks(), dataCache));
 			} else {
 				int id = tempoToNoteId(sequenceInfo.getPrimaryTempoMPQ(), minBPM, maxBPM);
 				events.add(new NoteEvent(Note.fromId(id), 127, 0, dataCache.getSongLengthTicks(), dataCache));

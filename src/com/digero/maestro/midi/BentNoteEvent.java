@@ -95,7 +95,8 @@ public class BentNoteEvent extends NoteEvent {
 	}
 
 	/**
-	 * Split this bent note into smaller note events. Will not take actual grid into consideration, so is only for bent notes that has a big range.
+	 * Split this bent note into smaller note events. Will not take actual grid into consideration, so is only for bent
+	 * notes that has a big range.
 	 * 
 	 * @return list of NoteEvents
 	 */

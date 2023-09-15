@@ -44,8 +44,9 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 	public static final int COMBINE_PRIORITY_MULTIPLIER = 4;// Do not change this number without exposing the int in UI.
 															// Since old projects will have 4 saved in msx.
 
-	public QuantizedTimingInfo(SequenceInfo source, float exportTempoFactor, TimeSignature meter, boolean useTripletTiming, int abcSongBPM,
-			AbcSong song, boolean oddsAndEnds, int mixVersion) throws AbcConversionException {
+	public QuantizedTimingInfo(SequenceInfo source, float exportTempoFactor, TimeSignature meter,
+			boolean useTripletTiming, int abcSongBPM, AbcSong song, boolean oddsAndEnds, int mixVersion)
+			throws AbcConversionException {
 		double exportPrimaryTempoMPQ = TimingInfo.roundTempoMPQ(source.getPrimaryTempoMPQ() / exportTempoFactor);
 		this.primaryTempoMPQ = (int) Math.round(exportPrimaryTempoMPQ * exportTempoFactor);
 		this.exportTempoFactor = exportTempoFactor;
@@ -56,9 +57,10 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 
 		final int resolution = source.getDataCache().getTickResolution();
 
-		TimingInfo defaultTiming = new TimingInfo(source.getPrimaryTempoMPQ(), resolution, exportTempoFactor, meter, useTripletTiming, abcSongBPM);
-		TimingInfo defaultOddTiming = new TimingInfo(source.getPrimaryTempoMPQ(), resolution, exportTempoFactor, meter, !useTripletTiming,
-				abcSongBPM);
+		TimingInfo defaultTiming = new TimingInfo(source.getPrimaryTempoMPQ(), resolution, exportTempoFactor, meter,
+				useTripletTiming, abcSongBPM);
+		TimingInfo defaultOddTiming = new TimingInfo(source.getPrimaryTempoMPQ(), resolution, exportTempoFactor, meter,
+				!useTripletTiming, abcSongBPM);
 		timingInfoByTick.put(0L, new TimingInfoEvent(0, 0, 0, defaultTiming, defaultOddTiming));
 		// System.out.println("even"+defaultTiming.toString());
 		// System.out.println("odd"+defaultOddTiming.toString());
@@ -66,9 +68,9 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 		Collection<TimingInfoEvent> reversedEvents = timingInfoByTick.descendingMap().values();
 
 		/*
-		 * Go through the tempo events from the MIDI file and quantize them so each event starts at an integral multiple of the previous event's
-		 * MinNoteLengthTicks. This ensures that we can split notes at each tempo change without creating a note that is shorter than
-		 * MinNoteLengthTicks.
+		 * Go through the tempo events from the MIDI file and quantize them so each event starts at an integral multiple
+		 * of the previous event's MinNoteLengthTicks. This ensures that we can split notes at each tempo change without
+		 * creating a note that is shorter than MinNoteLengthTicks.
 		 */
 		Collection<SequenceDataCache.TempoEvent> origTempos = source.getDataCache().getTempoEvents().values();
 
@@ -80,11 +82,14 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 			long tick = midiTempo.tick;
 			Entry<Long, Integer> midiEntry = changeTree.floorEntry(tick);
 			if (midiEntry != null && midiEntry.getValue() != 0) {
-				int newTempo = (int) MidiUtils.convertTempo(Math.max(1.0d, MidiUtils.convertTempo(midiTempo.tempoMPQ) + midiEntry.getValue()));
-				SequenceDataCache.TempoEvent te = source.getDataCache().getATempoEvent(newTempo, midiTempo.tick, midiTempo.micros);
+				int newTempo = (int) MidiUtils.convertTempo(
+						Math.max(1.0d, MidiUtils.convertTempo(midiTempo.tempoMPQ) + midiEntry.getValue()));
+				SequenceDataCache.TempoEvent te = source.getDataCache().getATempoEvent(newTempo, midiTempo.tick,
+						midiTempo.micros);
 				combinedTempos.add(te);
 			} else {
-				combinedTempos.add(source.getDataCache().getATempoEvent(midiTempo.tempoMPQ, midiTempo.tick, midiTempo.micros));
+				combinedTempos.add(
+						source.getDataCache().getATempoEvent(midiTempo.tempoMPQ, midiTempo.tick, midiTempo.micros));
 			}
 		}
 		for (Entry<Long, Integer> tuneTempo : changeTree.entrySet()) {
@@ -96,14 +101,17 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 				if (prevTempo != null) {
 					int mpq = prevTempo.getValue().tempoMPQ;
 					if (tuneTempo.getValue() != 0) {
-						mpq = (int) MidiUtils.convertTempo(Math.max(1.0d, MidiUtils.convertTempo(mpq) + tuneTempo.getValue()));
+						mpq = (int) MidiUtils
+								.convertTempo(Math.max(1.0d, MidiUtils.convertTempo(mpq) + tuneTempo.getValue()));
 					}
-					SequenceDataCache.TempoEvent te = source.getDataCache().getATempoEvent(mpq, tick, prevTempo.getValue().micros);
+					SequenceDataCache.TempoEvent te = source.getDataCache().getATempoEvent(mpq, tick,
+							prevTempo.getValue().micros);
 					combinedTempos.add(te);
 				} else {
 					int mpq = MidiConstants.DEFAULT_TEMPO_MPQ;
 					if (tuneTempo.getValue() != 0) {
-						mpq = (int) MidiUtils.convertTempo(Math.max(1.0d, MidiUtils.convertTempo(mpq) + tuneTempo.getValue()));
+						mpq = (int) MidiUtils
+								.convertTempo(Math.max(1.0d, MidiUtils.convertTempo(mpq) + tuneTempo.getValue()));
 					}
 					SequenceDataCache.TempoEvent te = source.getDataCache().getATempoEvent(mpq, tick,
 							SequenceDataCache.TempoEvent.DEFAULT_TEMPO.micros);
@@ -125,8 +133,10 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 			long tick = 0;
 			long micros = 0;
 			double barNumber = 0;
-			TimingInfo info = new TimingInfo(sourceEvent.tempoMPQ, resolution, exportTempoFactor, meter, useTripletTiming, abcSongBPM);
-			TimingInfo infoOdd = new TimingInfo(sourceEvent.tempoMPQ, resolution, exportTempoFactor, meter, !useTripletTiming, abcSongBPM);
+			TimingInfo info = new TimingInfo(sourceEvent.tempoMPQ, resolution, exportTempoFactor, meter,
+					useTripletTiming, abcSongBPM);
+			TimingInfo infoOdd = new TimingInfo(sourceEvent.tempoMPQ, resolution, exportTempoFactor, meter,
+					!useTripletTiming, abcSongBPM);
 
 			// Iterate over the existing events in reverse order
 			Iterator<TimingInfoEvent> reverseIterator = reversedEvents.iterator();
@@ -140,12 +150,14 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 				long lengthTicks = Util.floorGrid(sourceEvent.tick - prev.tick, gridUnitTicks);
 
 				/*
-				 * If the new event has a coarser timing grid than prev, then it's possible that the bar splits will not align to the grid. To avoid
-				 * this, adjust the length so that the new event starts at a time that will allow the bar to land on the quantization grid.
+				 * If the new event has a coarser timing grid than prev, then it's possible that the bar splits will not
+				 * align to the grid. To avoid this, adjust the length so that the new event starts at a time that will
+				 * allow the bar to land on the quantization grid.
 				 */
 				while (lengthTicks > 0) {
 					double barNumberTmp = prev.barNumber + lengthTicks / ((double) prev.info.getBarLengthTicks());
-					double gridUnitsRemaining = ((Math.ceil(barNumberTmp) - barNumberTmp) * info.getBarLengthTicks()) / info.getMinNoteLengthTicks();
+					double gridUnitsRemaining = ((Math.ceil(barNumberTmp) - barNumberTmp) * info.getBarLengthTicks())
+							/ info.getMinNoteLengthTicks();
 
 					final double epsilon = TimingInfo.MIN_TEMPO_BPM / (2.0 * TimingInfo.MAX_TEMPO_BPM);
 					if (Math.abs(gridUnitsRemaining - Math.round(gridUnitsRemaining)) <= epsilon)
@@ -210,9 +222,8 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 			ArrayList<NoteEvent> eventList = new ArrayList<>();
 			for (int t = 0; t < tracks; t++) {
 				if (abcPart.isTrackEnabled(t)) {
-					int scoreMultiplier = (song.isPriorityActive() && abcPart.getEnabledTrackCount() > 1 && abcPart.isTrackPriority(t))
-							? COMBINE_PRIORITY_MULTIPLIER
-							: 1;
+					int scoreMultiplier = (song.isPriorityActive() && abcPart.getEnabledTrackCount() > 1
+							&& abcPart.isTrackPriority(t)) ? COMBINE_PRIORITY_MULTIPLIER : 1;
 					if (abcPart.sectionsModified.get(t) == null && abcPart.nonSection.get(t) == null) {
 						eventList.addAll(abcPart.getTrackEvents(t));
 						for (NoteEvent note : abcPart.getTrackEvents(t)) {
@@ -244,7 +255,8 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 				// duration.
 				// Its really just LCM (Least Common Multiple)
 				long sixTicks = 0;
-				boolean evenShortest = tempoChange.info.getMinNoteLengthTicks() < tempoChange.infoOdd.getMinNoteLengthTicks();
+				boolean evenShortest = tempoChange.info.getMinNoteLengthTicks() < tempoChange.infoOdd
+						.getMinNoteLengthTicks();
 				int loopCount = 1;
 				long longest = 0;
 				long shortest = 0;
@@ -279,14 +291,16 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 						endingWeightFinal /= endingSustainedWeightFactor;
 					}
 
-					if (ne.getStartTick() > tempoChange.tick && (nextTempoChange == null || ne.getStartTick() < nextTempoChange.tick)) {
+					if (ne.getStartTick() > tempoChange.tick
+							&& (nextTempoChange == null || ne.getStartTick() < nextTempoChange.tick)) {
 
 						// Note starting scores
 						// The note starts after current tempo change and either is last tempochange or
 						// note starts before next tempo change
-						long q = tempoChange.tick + Util.roundGrid(ne.getStartTick() - tempoChange.tick, tempoChange.info.getMinNoteLengthTicks());
-						long qOdd = tempoChange.tick
-								+ Util.roundGrid(ne.getStartTick() - tempoChange.tick, tempoChange.infoOdd.getMinNoteLengthTicks());
+						long q = tempoChange.tick + Util.roundGrid(ne.getStartTick() - tempoChange.tick,
+								tempoChange.info.getMinNoteLengthTicks());
+						long qOdd = tempoChange.tick + Util.roundGrid(ne.getStartTick() - tempoChange.tick,
+								tempoChange.infoOdd.getMinNoteLengthTicks());
 						int odd = (int) (Math.abs(ne.getStartTick() - q) - Math.abs(ne.getStartTick() - qOdd));
 						// determine which sixGrid we are in
 
@@ -317,8 +331,10 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 							if (tick > tempoChange.tick && (nextTempoChange == null || tick < nextTempoChange.tick)) {
 								// The note starts after current tempo change and either is last tempochange or
 								// note starts before next tempo change
-								long q = tempoChange.tick + Util.roundGrid(tick - tempoChange.tick, tempoChange.info.getMinNoteLengthTicks());
-								long qOdd = tempoChange.tick + Util.roundGrid(tick - tempoChange.tick, tempoChange.infoOdd.getMinNoteLengthTicks());
+								long q = tempoChange.tick + Util.roundGrid(tick - tempoChange.tick,
+										tempoChange.info.getMinNoteLengthTicks());
+								long qOdd = tempoChange.tick + Util.roundGrid(tick - tempoChange.tick,
+										tempoChange.infoOdd.getMinNoteLengthTicks());
 								int odd = (int) (Math.abs(tick - q) - Math.abs(tick - qOdd));
 
 								// determine which sixGrid we are in
@@ -340,14 +356,16 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 						}
 					}
 
-					if ((!noDrumEndingScore || !abcPart.getInstrument().equals(LotroInstrument.BASIC_DRUM)) && ne.getEndTick() > tempoChange.tick
+					if ((!noDrumEndingScore || !abcPart.getInstrument().equals(LotroInstrument.BASIC_DRUM))
+							&& ne.getEndTick() > tempoChange.tick
 							&& (nextTempoChange == null || ne.getEndTick() < nextTempoChange.tick)) {
 						// Note ending scores
 						// The note ends after current tempo change and either is last tempochange or
 						// note ends before next tempo change
-						long q = tempoChange.tick + Util.roundGrid(ne.getEndTick() - tempoChange.tick, tempoChange.info.getMinNoteLengthTicks());
-						long qOdd = tempoChange.tick
-								+ Util.roundGrid(ne.getEndTick() - tempoChange.tick, tempoChange.infoOdd.getMinNoteLengthTicks());
+						long q = tempoChange.tick + Util.roundGrid(ne.getEndTick() - tempoChange.tick,
+								tempoChange.info.getMinNoteLengthTicks());
+						long qOdd = tempoChange.tick + Util.roundGrid(ne.getEndTick() - tempoChange.tick,
+								tempoChange.infoOdd.getMinNoteLengthTicks());
 						int odd = (int) (Math.abs(ne.getEndTick() - q) - Math.abs(ne.getEndTick() - qOdd));
 						// determine which sixGrid we are in
 						int sixGrid = (int) ((ne.getEndTick() - tempoChange.tick) / sixTicks);
@@ -369,7 +387,8 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 				boolean prevOdd = false;
 				for (int i = 0; i <= highest; i++) {
 					long tck = sixTicks * i;
-					long micros = tempoChange.micros + MidiUtils.ticks2microsec(tck, tempoChange.info.getTempoMPQ(), resolution);
+					long micros = tempoChange.micros
+							+ MidiUtils.ticks2microsec(tck, tempoChange.info.getTempoMPQ(), resolution);
 					tck += tempoChange.tick;
 					assert (nextTempoChange == null || tck < nextTempoChange.tick);
 					if (sixGridsOdds.get(i) != null && sixGridsOdds.get(i) > 0
@@ -379,7 +398,8 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 						// else if (!useTripletTiming) totalSwing += MidiUtils.ticks2microsec(sixTicks,
 						// tempoChange.info.getTempoMPQ(), tempoChange.info.getResolutionPPQ());
 						if (!prevOdd) {
-							TimingInfoEvent newTempoChange = new TimingInfoEvent(tck, micros, tempoChange.barNumber, tempoChange.infoOdd, null);
+							TimingInfoEvent newTempoChange = new TimingInfoEvent(tck, micros, tempoChange.barNumber,
+									tempoChange.infoOdd, null);
 							partMap.remove(tck);
 							partMap.put(tck, newTempoChange);
 						}
@@ -392,7 +412,8 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 						// sixGridsOdds.get(i) != 0) totalSwing += MidiUtils.ticks2microsec(sixTicks,
 						// tempoChange.info.getTempoMPQ(), tempoChange.info.getResolutionPPQ());
 						if (prevOdd) {
-							TimingInfoEvent newTempoChange = new TimingInfoEvent(tck, micros, tempoChange.barNumber, tempoChange.info, null);
+							TimingInfoEvent newTempoChange = new TimingInfoEvent(tck, micros, tempoChange.barNumber,
+									tempoChange.info, null);
 							partMap.putIfAbsent(tck, newTempoChange);
 						}
 						prevOdd = false;
@@ -402,10 +423,12 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 					int i = highest + 1;
 					// Make sure tempo section ends with a default tempoevent.
 					long tck = sixTicks * i;
-					long micros = tempoChange.micros + MidiUtils.ticks2microsec(tck, tempoChange.info.getTempoMPQ(), resolution);
+					long micros = tempoChange.micros
+							+ MidiUtils.ticks2microsec(tck, tempoChange.info.getTempoMPQ(), resolution);
 					tck += tempoChange.tick;
 					if (nextTempoChange == null || tck < nextTempoChange.tick) {
-						TimingInfoEvent newTempoChange = new TimingInfoEvent(tck, micros, tempoChange.barNumber, tempoChange.info, null);
+						TimingInfoEvent newTempoChange = new TimingInfoEvent(tck, micros, tempoChange.barNumber,
+								tempoChange.info, null);
 						partMap.put(tck, newTempoChange);
 					}
 				}
@@ -418,8 +441,8 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 	}
 
 	/**
-	 * Recalculate all the microseconds in the ABC timing events. This will modify the TempoEvents, so make sure that you do not send the original
-	 * midi tempo events to this method.
+	 * Recalculate all the microseconds in the ABC timing events. This will modify the TempoEvents, so make sure that
+	 * you do not send the original midi tempo events to this method.
 	 * 
 	 * @param combinedTempos Sorted list of tempo events
 	 */
@@ -516,7 +539,8 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 	 */
 	public long tickToMicrosABC(long tick) {
 		TimingInfoEvent e = getTimingEventForTick(tick);
-		return (long) ((e.micros + MidiUtils.ticks2microsec(tick - e.tick, e.info.getTempoMPQ(), e.info.getResolutionPPQ()))
+		return (long) ((e.micros
+				+ MidiUtils.ticks2microsec(tick - e.tick, e.info.getTempoMPQ(), e.info.getResolutionPPQ()))
 				* getExportTempoFactor());
 	}
 
@@ -586,7 +610,8 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 		for (TimingInfoEvent event : timingInfoByTick.values()) {
 			if (prev != null) {
 				// Calculate the start time for all bars that start between prev and event
-				long barStart = prev.tick + Math.round((Math.ceil(prev.barNumber) - prev.barNumber) * prev.info.getBarLengthTicks());
+				long barStart = prev.tick
+						+ Math.round((Math.ceil(prev.barNumber) - prev.barNumber) * prev.info.getBarLengthTicks());
 				while (barStart < event.tick) {
 					barStartTicks.add(barStart);
 					barStart += prev.info.getBarLengthTicks();
@@ -596,7 +621,8 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 		}
 
 		// Calculate bar starts for all bars after the last tempo change
-		long barStart = prev.tick + Math.round((Math.ceil(prev.barNumber) - prev.barNumber) * prev.info.getBarLengthTicks());
+		long barStart = prev.tick
+				+ Math.round((Math.ceil(prev.barNumber) - prev.barNumber) * prev.info.getBarLengthTicks());
 		while (barStart <= songLengthTicks) {
 			barStartTicks.add(barStart);
 			barStart += prev.info.getBarLengthTicks();

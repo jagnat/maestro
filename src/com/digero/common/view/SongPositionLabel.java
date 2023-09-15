@@ -47,7 +47,8 @@ public class SongPositionLabel extends JLabel implements Listener<SequencerEvent
 	@Override
 	public void onEvent(SequencerEvent evt) {
 		SequencerProperty p = evt.getProperty();
-		if (p.isInMask(SequencerProperty.THUMB_POSITION_MASK | SequencerProperty.LENGTH.mask | SequencerProperty.TEMPO.mask)) {
+		if (p.isInMask(
+				SequencerProperty.THUMB_POSITION_MASK | SequencerProperty.LENGTH.mask | SequencerProperty.TEMPO.mask)) {
 			update();
 		}
 	}
@@ -60,8 +61,8 @@ public class SongPositionLabel extends JLabel implements Listener<SequencerEvent
 		long tick = Math.max(0, Math.min(tickLength, sequencer.getThumbTick() - initialOffsetTick));
 
 		/*
-		 * if (adjustForTempo) { tick = Math.round(tick / sequencer.getTempoFactor()); tickLength = Math.round(tickLength /
-		 * sequencer.getTempoFactor()); }
+		 * if (adjustForTempo) { tick = Math.round(tick / sequencer.getTempoFactor()); tickLength =
+		 * Math.round(tickLength / sequencer.getTempoFactor()); }
 		 */
 
 		long micros = sequencer.tickToMicros(tick);

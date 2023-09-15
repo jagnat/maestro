@@ -12,6 +12,7 @@ public class TuneLine {
 
 	@Override
 	public String toString() {
-		return "Tune Line " + startBar + " to " + endBar + ": tempo=" + tempo + " seminoteStep=" + seminoteStep + " dialogLine=" + dialogLine;
+		return "Tune Line " + startBar + " to " + endBar + ": tempo=" + tempo + " seminoteStep=" + seminoteStep
+				+ " dialogLine=" + dialogLine;
 	}
 }

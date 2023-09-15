@@ -49,7 +49,8 @@ public class TrackListPanel extends JPanel implements Listener<SequencerEvent>, 
 	private TrackControls[] trackControls = null;
 
 	private static class TrackControls {
-		public TrackControls(JCheckBox checkBox, JLabel lineNumberLabel, JToggleButton soloButton, JComboBox<LotroInstrument> instrumentComboBox) {
+		public TrackControls(JCheckBox checkBox, JLabel lineNumberLabel, JToggleButton soloButton,
+				JComboBox<LotroInstrument> instrumentComboBox) {
 			this.checkBox = checkBox;
 			this.lineNumberLabel = lineNumberLabel;
 			this.soloButton = soloButton;
@@ -76,7 +77,8 @@ public class TrackListPanel extends JPanel implements Listener<SequencerEvent>, 
 	private static final int INSTRUMENT_COLUMN = 7;
 
 	public TrackListPanel(SequencerWrapper sequencer, TrackListPanelCallback abcPlayer) {
-		super(new TableLayout(new double[] { HGAP, FILL, HGAP, PREFERRED, HGAP, PREFERRED, HGAP, PREFERRED, HGAP }, new double[] { 0, 0 }));
+		super(new TableLayout(new double[] { HGAP, FILL, HGAP, PREFERRED, HGAP, PREFERRED, HGAP, PREFERRED, HGAP },
+				new double[] { 0, 0 }));
 
 		this.sequencer = sequencer;
 		this.abcPlayer = abcPlayer;
@@ -292,7 +294,8 @@ public class TrackListPanel extends JPanel implements Listener<SequencerEvent>, 
 	}
 
 	private String getCheckBoxText(int i) {
-		return abcInfo.getPartNumber(i) + ". " + (showFullPartName ? abcInfo.getPartFullName(i) : abcInfo.getPartName(i));
+		return abcInfo.getPartNumber(i) + ". "
+				+ (showFullPartName ? abcInfo.getPartFullName(i) : abcInfo.getPartName(i));
 	}
 
 	private ActionListener trackMuteListener = new ActionListener() {
@@ -336,7 +339,8 @@ public class TrackListPanel extends JPanel implements Listener<SequencerEvent>, 
 	@Override
 	public void onEvent(SequencerEvent evt) {
 		SequencerProperty p = evt.getProperty();
-		if (p.isInMask(SequencerProperty.THUMB_POSITION_MASK | SequencerProperty.LENGTH.mask | SequencerProperty.TEMPO.mask)) {
+		if (p.isInMask(
+				SequencerProperty.THUMB_POSITION_MASK | SequencerProperty.LENGTH.mask | SequencerProperty.TEMPO.mask)) {
 			update();
 		}
 	}

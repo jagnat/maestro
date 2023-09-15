@@ -7,12 +7,16 @@ public class TimingInfo {
 	public static final long ONE_SECOND_MICROS = 1000000;
 	public static final long ONE_MINUTE_MICROS = 60 * ONE_SECOND_MICROS;
 	// public static final long SHORTEST_NOTE_MICROS = 60001;
-	public static final long LONGEST_NOTE_MICROS = ONE_MINUTE_MICROS / 12;// reduced to 5s from 6s due to some samples are shorter than 6s.
-	public static final int MAX_TEMPO_BPM = (int) (ONE_MINUTE_MICROS / getShortestNoteMicros(125));// Maximum 1000 bpm (In which case 'beat' here is
+	public static final long LONGEST_NOTE_MICROS = ONE_MINUTE_MICROS / 12;// reduced to 5s from 6s due to some samples
+																			// are shorter than 6s.
+	public static final int MAX_TEMPO_BPM = (int) (ONE_MINUTE_MICROS / getShortestNoteMicros(125));// Maximum 1000 bpm
+																									// (In which case
+																									// 'beat' here is
 																									// 60ms)
-	public static final int MIN_TEMPO_BPM = (int) ((ONE_MINUTE_MICROS + (ONE_MINUTE_MICROS / 10) / 2) / (ONE_MINUTE_MICROS / 10)); // Round up (1m
-																																	// 3s)/6s = 10.5
-																																	// -> 10
+	public static final int MIN_TEMPO_BPM = (int) ((ONE_MINUTE_MICROS + (ONE_MINUTE_MICROS / 10) / 2)
+			/ (ONE_MINUTE_MICROS / 10)); // Round up (1m
+											// 3s)/6s = 10.5
+											// -> 10
 
 	private final int tempoMPQ;
 	private final int resolutionPPQ;
@@ -38,8 +42,8 @@ public class TimingInfo {
 		return str;
 	}
 
-	TimingInfo(int tempoMPQ, int resolutionPPQ, float exportTempoFactor, TimeSignature meter, boolean useTripletTiming, int abcSongBPM)
-			throws AbcConversionException {
+	TimingInfo(int tempoMPQ, int resolutionPPQ, float exportTempoFactor, TimeSignature meter, boolean useTripletTiming,
+			int abcSongBPM) throws AbcConversionException {
 		// Compute the export tempo and round it to a whole-number BPM
 		double exportTempoMPQ = roundTempoMPQ((double) tempoMPQ / exportTempoFactor);
 
@@ -51,14 +55,15 @@ public class TimingInfo {
 		this.exportTempoFactor = exportTempoFactor;
 		this.meter = meter;
 
-		final long SHORTEST_NOTE_TICKS = (long) Math.ceil((getShortestNoteMicros(abcSongBPM) * resolutionPPQ) / exportTempoMPQ);
+		final long SHORTEST_NOTE_TICKS = (long) Math
+				.ceil((getShortestNoteMicros(abcSongBPM) * resolutionPPQ) / exportTempoMPQ);
 		final long LONGEST_NOTE_TICKS = (long) Math.floor((LONGEST_NOTE_MICROS * resolutionPPQ) / exportTempoMPQ);
 
 		final int exportTempoBPM = (int) Math.round(MidiUtils.convertTempo(exportTempoMPQ));
 
 		if (exportTempoBPM > MAX_TEMPO_BPM || exportTempoBPM < MIN_TEMPO_BPM) {
-			throw new AbcConversionException(
-					"Tempo " + exportTempoBPM + " is out of range. Must be between " + MIN_TEMPO_BPM + " and " + MAX_TEMPO_BPM + ".");
+			throw new AbcConversionException("Tempo " + exportTempoBPM + " is out of range. Must be between "
+					+ MIN_TEMPO_BPM + " and " + MAX_TEMPO_BPM + ".");
 		}
 
 		// From http://abcnotation.com/abc2mtex/abc.txt:
@@ -89,7 +94,8 @@ public class TimingInfo {
 			}
 
 			if (meter.denominator > minNoteDivisor) {
-				throw new AbcConversionException("The denominator of the meter must be no greater than " + minNoteDivisor + " at this tempo");
+				throw new AbcConversionException(
+						"The denominator of the meter must be no greater than " + minNoteDivisor + " at this tempo");
 			}
 
 			this.minNoteLengthTicks = minNoteTicks;

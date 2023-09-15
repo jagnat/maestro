@@ -80,8 +80,8 @@ public enum LotroInstrument
 	public final float dBVolumeAdjust;
 	private final String[] nicknameRegexes;
 
-	LotroInstrument(String friendlyName, boolean sustainable, MidiInstrument midiInstrument, int octaveDelta, boolean isPercussion,
-			float dBVolumeAdjust, String... nicknameRegexes) {
+	LotroInstrument(String friendlyName, boolean sustainable, MidiInstrument midiInstrument, int octaveDelta,
+			boolean isPercussion, float dBVolumeAdjust, String... nicknameRegexes) {
 		this.lowestPlayable = Note.MIN_PLAYABLE;
 		if (!"Student's FX Fiddle".equals(friendlyName)) {
 			this.highestPlayable = Note.MAX_PLAYABLE;

@@ -58,7 +58,8 @@ public class PartAutoNumberer {
 		}
 
 		/**
-		 * @return the original name of the instrument before it was renamed, which can be used a stable prefs key even if the instrument is renamed.
+		 * @return the original name of the instrument before it was renamed, which can be used a stable prefs key even
+		 *         if the instrument is renamed.
 		 */
 		public String prefsKey(LotroInstrument instrument) {
 			// @formatter:off
@@ -194,7 +195,8 @@ public class PartAutoNumberer {
 
 		Set<Integer> numbersInUse = new HashSet<>(parts.size());
 
-		List<? extends NumberedAbcPart> partsCopy = new ArrayList<>(parts);// This is to prevent a reordering of parts while iterating through it.
+		List<? extends NumberedAbcPart> partsCopy = new ArrayList<>(parts);// This is to prevent a reordering of parts
+																			// while iterating through it.
 
 		for (NumberedAbcPart part : partsCopy) {
 			int partNumber = getFirstNumber(part.getInstrument());
@@ -234,7 +236,8 @@ public class PartAutoNumberer {
 			return;
 
 		int deletedNumber = partDeleted.getPartNumber();
-		int deletedFirstNumber = getFirstNumber(partDeleted.getInstrument());// System.out.println(deletedFirstNumber+" is the first from the
+		int deletedFirstNumber = getFirstNumber(partDeleted.getInstrument());// System.out.println(deletedFirstNumber+"
+																				// is the first from the
 																				// deleted");
 		if (!isAutoAssigned(partDeleted, -1, deletedFirstNumber)) {
 			// System.out.println(partDeleted.getInstrument().toString()+" deleted and did not fit");
@@ -243,13 +246,15 @@ public class PartAutoNumberer {
 
 		for (NumberedAbcPart part : parts) {
 			int partNumber = part.getPartNumber();
-			int partFirstNumber = getFirstNumber(part.getInstrument());// System.out.println(partFirstNumber+" is the first");
+			int partFirstNumber = getFirstNumber(part.getInstrument());// System.out.println(partFirstNumber+" is the
+																		// first");
 			boolean autoTest = isAutoAssigned(part, deletedNumber, deletedFirstNumber);
-			if (part != partDeleted && partNumber > deletedNumber && partNumber > partFirstNumber && partFirstNumber == deletedFirstNumber
-					&& autoTest) {
+			if (part != partDeleted && partNumber > deletedNumber && partNumber > partFirstNumber
+					&& partFirstNumber == deletedFirstNumber && autoTest) {
 				part.setPartNumber(partNumber - getIncrement());// System.out.println(partNumber+" decremented");
 				if (part.getPartNumber() == deletedNumber)
-					deletedNumber = partNumber;// the deleted spot was filled out, the one that filled it out is now considered deleted
+					deletedNumber = partNumber;// the deleted spot was filled out, the one that filled it out is now
+												// considered deleted
 			} // else System.out.println(autoTest+" "+partNumber+" isAutoAssigned(part)");
 		}
 	}

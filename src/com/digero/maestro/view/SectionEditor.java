@@ -47,14 +47,16 @@ public class SectionEditor {
 	static boolean[] clipboardEnabled = new boolean[numberOfSections];
 	private static JDialog openDialog = null;
 
-	public static void show(JFrame jf, NoteGraph noteGraph, AbcPart abcPart, int track, final boolean percussion, final List<DrumPanel> dPanels) {
+	public static void show(JFrame jf, NoteGraph noteGraph, AbcPart abcPart, int track, final boolean percussion,
+			final List<DrumPanel> dPanels) {
 		if (openDialog != null)
 			return;
 
 		@SuppressWarnings("serial")
 		class SectionDialog extends JDialog {
 
-			private final double[] LAYOUT_COLS = new double[] { 0.081, 0.093, 0.093, 0.093, 0.093, 0.073, 0.093, 0.093, 0.072, 0.072, 0.072, 0.072 };
+			private final double[] LAYOUT_COLS = new double[] { 0.081, 0.093, 0.093, 0.093, 0.093, 0.073, 0.093, 0.093,
+					0.072, 0.072, 0.072, 0.072 };
 			private double[] LAYOUT_ROWS;
 			private AbcPart abcPart;
 			private int track;
@@ -69,7 +71,8 @@ public class SectionEditor {
 
 			// NoteGraph noteGraph = null;
 
-			public SectionDialog(JFrame jf, final NoteGraph noteGraph, String title, boolean modal, AbcPart abcPart, int track) {
+			public SectionDialog(JFrame jf, final NoteGraph noteGraph, String title, boolean modal, AbcPart abcPart,
+					int track) {
 				super(jf, title, modal);
 				this.abcPart = abcPart;
 				this.track = track;
@@ -86,7 +89,8 @@ public class SectionEditor {
 					if (al != null)
 						al.actionPerformed(ae);
 				};
-				this.getRootPane().registerKeyboardAction(spaceBarListener, KeyStroke.getKeyStroke(' '), JComponent.WHEN_IN_FOCUSED_WINDOW);
+				this.getRootPane().registerKeyboardAction(spaceBarListener, KeyStroke.getKeyStroke(' '),
+						JComponent.WHEN_IN_FOCUSED_WINDOW);
 
 				SectionDialog.this.addWindowListener(new WindowAdapter() {
 
@@ -136,11 +140,12 @@ public class SectionEditor {
 //		        LAYOUT_ROWS[4+numberOfSections] = TableLayoutConstants.PREFERRED;
 //		        LAYOUT_ROWS[5+numberOfSections] = TableLayoutConstants.FILL;
 				/*
-				 * LAYOUT_ROWS[6+numberOfSections] = TableLayoutConstants.PREFERRED; LAYOUT_ROWS[7+numberOfSections] = TableLayoutConstants.PREFERRED;
-				 * LAYOUT_ROWS[8+numberOfSections] = TableLayoutConstants.PREFERRED; LAYOUT_ROWS[9+numberOfSections] = TableLayoutConstants.PREFERRED;
-				 * LAYOUT_ROWS[10+numberOfSections] = TableLayoutConstants.PREFERRED; LAYOUT_ROWS[11+numberOfSections] =
-				 * TableLayoutConstants.PREFERRED; LAYOUT_ROWS[12+numberOfSections] = TableLayoutConstants.PREFERRED; LAYOUT_ROWS[13+numberOfSections]
-				 * = TableLayoutConstants.PREFERRED;
+				 * LAYOUT_ROWS[6+numberOfSections] = TableLayoutConstants.PREFERRED; LAYOUT_ROWS[7+numberOfSections] =
+				 * TableLayoutConstants.PREFERRED; LAYOUT_ROWS[8+numberOfSections] = TableLayoutConstants.PREFERRED;
+				 * LAYOUT_ROWS[9+numberOfSections] = TableLayoutConstants.PREFERRED; LAYOUT_ROWS[10+numberOfSections] =
+				 * TableLayoutConstants.PREFERRED; LAYOUT_ROWS[11+numberOfSections] = TableLayoutConstants.PREFERRED;
+				 * LAYOUT_ROWS[12+numberOfSections] = TableLayoutConstants.PREFERRED; LAYOUT_ROWS[13+numberOfSections] =
+				 * TableLayoutConstants.PREFERRED;
 				 * 
 				 */
 				TableLayout layout = new TableLayout(LAYOUT_COLS, LAYOUT_ROWS);
@@ -152,8 +157,8 @@ public class SectionEditor {
 				panel.setLayout(new TableLayout(LAYOUT_COLS, LAYOUT_ROWS));
 
 				// Row 0
-				titleLabel = new JLabel(
-						"<html><b> " + abcPart.getTitle() + ": </b> " + abcPart.getInstrument().toString() + " on track " + track + " </html>");
+				titleLabel = new JLabel("<html><b> " + abcPart.getTitle() + ": </b> "
+						+ abcPart.getInstrument().toString() + " on track " + track + " </html>");
 				panel.add(titleLabel, "0, 0, 7, 0, C, C");
 				JTextField octDouble = new JTextField("Octave doubling");
 				octDouble.setEditable(false);
@@ -169,10 +174,14 @@ public class SectionEditor {
 				left.setSelected(abcPart.playLeft[track]);
 				center.setSelected(abcPart.playCenter[track]);
 				right.setSelected(abcPart.playRight[track]);
-				panel.add(panLabel, "1, " + (firstRowIndex + 2 + numberOfSections) + ", 4, " + (firstRowIndex + 2 + numberOfSections) + ", f, f");
-				panel.add(left, "5, " + (firstRowIndex + 2 + numberOfSections) + ", 6, " + (firstRowIndex + 2 + numberOfSections) + ", f, f");
-				panel.add(center, "7, " + (firstRowIndex + 2 + numberOfSections) + ", 8, " + (firstRowIndex + 2 + numberOfSections) + ", f, f");
-				panel.add(right, "9, " + (firstRowIndex + 2 + numberOfSections) + ", 10, " + (firstRowIndex + 2 + numberOfSections) + ", f, f");
+				panel.add(panLabel, "1, " + (firstRowIndex + 2 + numberOfSections) + ", 4, "
+						+ (firstRowIndex + 2 + numberOfSections) + ", f, f");
+				panel.add(left, "5, " + (firstRowIndex + 2 + numberOfSections) + ", 6, "
+						+ (firstRowIndex + 2 + numberOfSections) + ", f, f");
+				panel.add(center, "7, " + (firstRowIndex + 2 + numberOfSections) + ", 8, "
+						+ (firstRowIndex + 2 + numberOfSections) + ", f, f");
+				panel.add(right, "9, " + (firstRowIndex + 2 + numberOfSections) + ", 10, "
+						+ (firstRowIndex + 2 + numberOfSections) + ", f, f");
 
 				// Row 1
 				panel.add(new JLabel("Enable"), "0, 1, c, c");
@@ -190,8 +199,10 @@ public class SectionEditor {
 				JTextField nonSection = new JTextField("Rest of the track");
 				nonSection.setEditable(false);
 				nonSection.setHorizontalAlignment(CENTER);
-				panel.add(nonSection, "1, " + (firstRowIndex + numberOfSections) + ", 4, " + (firstRowIndex + numberOfSections) + ", f, f");
-				// panel.add(new JLabel("Rest of the track"), "1, "+(3+numberOfSections)+", 2, "+(3+numberOfSections)+", c, c");
+				panel.add(nonSection, "1, " + (firstRowIndex + numberOfSections) + ", 4, "
+						+ (firstRowIndex + numberOfSections) + ", f, f");
+				// panel.add(new JLabel("Rest of the track"), "1, "+(3+numberOfSections)+", 2, "+(3+numberOfSections)+",
+				// c, c");
 
 				for (int j = 0; j < numberOfSections; j++) {
 					SectionEditorLine l = new SectionEditorLine();
@@ -216,7 +227,8 @@ public class SectionEditor {
 							number = ps.dialogLine;
 						}
 						if (number >= numberOfSections || number < 0) {
-							System.err.println("Too many sections in treemap in section-editor, or line numbers was badly edited in .msx file.");
+							System.err.println(
+									"Too many sections in treemap in section-editor, or line numbers was badly edited in .msx file.");
 						} else {
 							sectionInputs.get(number).enable.setSelected(true);
 							sectionInputs.get(number).barA.setText(String.valueOf(ps.startBar));
@@ -318,7 +330,8 @@ public class SectionEditor {
 					pasteSections.setEnabled(clipboardArmed);
 				});
 				copySections.setToolTipText("<html><b> Copy the section starts and ends.</html>");
-				panel.add(copySections, "1," + (firstRowIndex + 1 + numberOfSections) + ",2," + (firstRowIndex + 1 + numberOfSections) + ",f,f");
+				panel.add(copySections, "1," + (firstRowIndex + 1 + numberOfSections) + ",2,"
+						+ (firstRowIndex + 1 + numberOfSections) + ",f,f");
 
 				pasteSections.getModel().addActionListener(e -> {
 					if (!clipboardArmed)
@@ -330,7 +343,8 @@ public class SectionEditor {
 					}
 				});
 				pasteSections.setToolTipText("<html><b> Paste the section starts and ends.</html>");
-				panel.add(pasteSections, "3," + (firstRowIndex + 1 + numberOfSections) + ",4," + (firstRowIndex + 1 + numberOfSections) + ",f,f");
+				panel.add(pasteSections, "3," + (firstRowIndex + 1 + numberOfSections) + ",4,"
+						+ (firstRowIndex + 1 + numberOfSections) + ",f,f");
 				pasteSections.setEnabled(clipboardArmed);
 
 				showVolume.getModel().addChangeListener(e -> {
@@ -353,18 +367,21 @@ public class SectionEditor {
 				});
 				showVolume.setToolTipText(
 						"<html><b> Press and hold to see the note volumes on the track. </b><br> Only edits after clicking APPLY will show. </html>");
-				panel.add(showVolume, "5," + (firstRowIndex + 1 + numberOfSections) + ",6," + (firstRowIndex + 1 + numberOfSections) + ",f,f");
+				panel.add(showVolume, "5," + (firstRowIndex + 1 + numberOfSections) + ",6,"
+						+ (firstRowIndex + 1 + numberOfSections) + ",f,f");
 
 				JTextField help = new JTextField("Help");
 				help.setEditable(false);
 				help.setHorizontalAlignment(CENTER);
-				help.setToolTipText("<html><b>Enabled sections must have no overlap.<br>Bar numbers are inclusive and use original MIDI bars.<br>"
-						+ "No decimal numbers allowed, only whole numbers.<br>Bar numbers must be positive and greater than zero.<br>"
-						+ "Clicking APPLY will also disable faulty sections.<br><br>Warning: If 'Remove initial silence' is enabled or the<br>"
-						+ "meter is modified, then the bar counter in lower-right might<br>not match up, unless your preview mode is in 'Original'.<br><br>"
-						+ "Doubling works by copying all<br>notes and pasting them 1 or 2<br>octaves from their original pitch.<br><br>"
-						+ "The last line under the sections 'Rest of the track' is all<br>notes that is not covered by sections.</b></html>");
-				panel.add(help, "7," + (firstRowIndex + 1 + numberOfSections) + ", 7, " + (firstRowIndex + 1 + numberOfSections) + ",f,f");
+				help.setToolTipText(
+						"<html><b>Enabled sections must have no overlap.<br>Bar numbers are inclusive and use original MIDI bars.<br>"
+								+ "No decimal numbers allowed, only whole numbers.<br>Bar numbers must be positive and greater than zero.<br>"
+								+ "Clicking APPLY will also disable faulty sections.<br><br>Warning: If 'Remove initial silence' is enabled or the<br>"
+								+ "meter is modified, then the bar counter in lower-right might<br>not match up, unless your preview mode is in 'Original'.<br><br>"
+								+ "Doubling works by copying all<br>notes and pasting them 1 or 2<br>octaves from their original pitch.<br><br>"
+								+ "The last line under the sections 'Rest of the track' is all<br>notes that is not covered by sections.</b></html>");
+				panel.add(help, "7," + (firstRowIndex + 1 + numberOfSections) + ", 7, "
+						+ (firstRowIndex + 1 + numberOfSections) + ",f,f");
 
 				JButton okButton = new JButton("APPLY");
 				okButton.addActionListener(e -> {
@@ -414,7 +431,8 @@ public class SectionEditor {
 						ps1.doubling[1] = nonSectionInput.doubling1.isSelected();
 						ps1.doubling[2] = nonSectionInput.doubling2.isSelected();
 						ps1.doubling[3] = nonSectionInput.doubling3.isSelected();
-						if (ps1.silence || ps1.resetVelocities || ps1.doubling[0] || ps1.doubling[1] || ps1.doubling[2] || ps1.doubling[3]) {
+						if (ps1.silence || ps1.resetVelocities || ps1.doubling[0] || ps1.doubling[1] || ps1.doubling[2]
+								|| ps1.doubling[3]) {
 							SectionDialog.this.abcPart.nonSection.set(SectionDialog.this.track, ps1);
 						} else {
 							SectionDialog.this.abcPart.nonSection.set(SectionDialog.this.track, null);
@@ -430,7 +448,8 @@ public class SectionEditor {
 						boolean[] booleanArray = new boolean[lastEnd + 1];
 						for (int m = 0; m < lastEnd + 1; m++) {
 							Entry<Integer, PartSection> entry = tm.floorEntry(m + 1);
-							booleanArray[m] = entry != null && entry.getValue().startBar <= m + 1 && entry.getValue().endBar >= m + 1;
+							booleanArray[m] = entry != null && entry.getValue().startBar <= m + 1
+									&& entry.getValue().endBar >= m + 1;
 						}
 
 						SectionDialog.this.abcPart.sectionsModified.set(SectionDialog.this.track, booleanArray);
@@ -444,26 +463,33 @@ public class SectionEditor {
 				});
 				okButton.setToolTipText(
 						"<html><b> Apply the effects. </b><br> Note that non-applied effects will not be remembered when closing dialog.<br> Sections that are not enabled will likewise also not be remembered. </html>");
-				panel.add(okButton, "8," + (firstRowIndex + 1 + numberOfSections) + ", 9, " + (firstRowIndex + 1 + numberOfSections) + ",f,f");
+				panel.add(okButton, "8," + (firstRowIndex + 1 + numberOfSections) + ", 9, "
+						+ (firstRowIndex + 1 + numberOfSections) + ",f,f");
 				/*
-				 * panel.add(new JLabel("Enabled sections must have no overlap."), "0,"+(6+numberOfSections)+", 6," +(6+numberOfSections)+", c, c");
-				 * panel.add(new JLabel("Bar numbers are inclusive and use original MIDI bars."),
+				 * panel.add(new JLabel("Enabled sections must have no overlap."), "0,"+(6+numberOfSections)+", 6,"
+				 * +(6+numberOfSections)+", c, c"); panel.add(new
+				 * JLabel("Bar numbers are inclusive and use original MIDI bars."),
 				 * "0, "+(7+numberOfSections)+", 6, "+(7+numberOfSections)+", c, c"); panel.add(new
-				 * JLabel("No decimal numbers allowed, only whole numbers."), "0, "+(8+numberOfSections)+", 6," +(8+numberOfSections)+", c, c");
-				 * panel.add(new JLabel("Bar numbers must be positive and greater than zero."), "0, "+(9+numberOfSections)+", 6,"
-				 * +(9+numberOfSections)+", c, c"); panel.add(new JLabel("Clicking APPLY will also disable faulty sections."),
-				 * "0, "+(10+numberOfSections)+", 6," +(10+numberOfSections)+", c, c");
+				 * JLabel("No decimal numbers allowed, only whole numbers."), "0, "+(8+numberOfSections)+", 6,"
+				 * +(8+numberOfSections)+", c, c"); panel.add(new
+				 * JLabel("Bar numbers must be positive and greater than zero."), "0, "+(9+numberOfSections)+", 6,"
+				 * +(9+numberOfSections)+", c, c"); panel.add(new
+				 * JLabel("Clicking APPLY will also disable faulty sections."), "0, "+(10+numberOfSections)+", 6,"
+				 * +(10+numberOfSections)+", c, c");
 				 * 
-				 * JLabel warn1 = new JLabel("Warning: If 'Remove initial silence' is enabled or the"); JLabel warn2 = new
-				 * JLabel("meter is modified, then the bar counter in lower-right might"); JLabel warn3 = new
-				 * JLabel("not match up, unless your preview mode is in 'Original'."); warn1.setForeground(new Color(1f,0f,0f));
-				 * warn2.setForeground(new Color(1f,0f,0f)); warn3.setForeground(new Color(1f,0f,0f)); panel.add(warn1, "0,"
-				 * +(11+numberOfSections)+", 6," +(11+numberOfSections)+", c, c"); panel.add(warn2, "0," +(12+numberOfSections)+", 6,"
-				 * +(12+numberOfSections)+", c, c"); panel.add(warn3, "0," +(13+numberOfSections)+", 6," +(13+numberOfSections)+", c, c");
+				 * JLabel warn1 = new JLabel("Warning: If 'Remove initial silence' is enabled or the"); JLabel warn2 =
+				 * new JLabel("meter is modified, then the bar counter in lower-right might"); JLabel warn3 = new
+				 * JLabel("not match up, unless your preview mode is in 'Original'."); warn1.setForeground(new
+				 * Color(1f,0f,0f)); warn2.setForeground(new Color(1f,0f,0f)); warn3.setForeground(new Color(1f,0f,0f));
+				 * panel.add(warn1, "0," +(11+numberOfSections)+", 6," +(11+numberOfSections)+", c, c");
+				 * panel.add(warn2, "0," +(12+numberOfSections)+", 6," +(12+numberOfSections)+", c, c");
+				 * panel.add(warn3, "0," +(13+numberOfSections)+", 6," +(13+numberOfSections)+", c, c");
 				 * 
-				 * panel.add(new JLabel("Doubling works by copying all"), "7,"+(6+numberOfSections)+", 10," +(6+numberOfSections)+", c, c");
-				 * panel.add(new JLabel("notes and pasting them 1 or 2"), "7, "+(7+numberOfSections)+", 10, "+(7+numberOfSections)+", c, c");
-				 * panel.add(new JLabel("octaves from their original pitch."), "7, "+(8+numberOfSections)+", 10," +(8+numberOfSections)+", c, c");
+				 * panel.add(new JLabel("Doubling works by copying all"), "7,"+(6+numberOfSections)+", 10,"
+				 * +(6+numberOfSections)+", c, c"); panel.add(new JLabel("notes and pasting them 1 or 2"),
+				 * "7, "+(7+numberOfSections)+", 10, "+(7+numberOfSections)+", c, c"); panel.add(new
+				 * JLabel("octaves from their original pitch."), "7, "+(8+numberOfSections)+", 10,"
+				 * +(8+numberOfSections)+", c, c");
 				 * 
 				 * panel.add(new JLabel("The last line under the sections is all"), "7, "+(10+numberOfSections)+", 10,"
 				 * +(10+numberOfSections)+", c, c"); panel.add(new JLabel("notes that is not covered by sections."),
@@ -473,7 +499,8 @@ public class SectionEditor {
 				this.getContentPane().add(panel);
 				Window window = SwingUtilities.windowForComponent(this);
 				if (window != null) {
-					// Lets keep the dialog inside the screen, in case the screen changed resolution since it was last popped up
+					// Lets keep the dialog inside the screen, in case the screen changed resolution since it was last
+					// popped up
 					int maxX = window.getBounds().width - w;
 					int maxY = window.getBounds().height - h;
 					int x = Math.max(0, Math.min(maxX, SectionEditor.lastLocation.x));
@@ -488,12 +515,13 @@ public class SectionEditor {
 
 			private Listener<AbcPartEvent> abcPartListener = e -> {
 				if (e.getProperty() == AbcPartProperty.TITLE) {
-					titleLabel.setText(
-							"<html><b> " + abcPart.getTitle() + ": </b> " + abcPart.getInstrument().toString() + " on track " + track + " </html>");
+					titleLabel.setText("<html><b> " + abcPart.getTitle() + ": </b> "
+							+ abcPart.getInstrument().toString() + " on track " + track + " </html>");
 				} else if (e.getProperty() == AbcPartProperty.INSTRUMENT) {
-					titleLabel.setText(
-							"<html><b> " + abcPart.getTitle() + ": </b> " + abcPart.getInstrument().toString() + " on track " + track + " </html>");
-					// have to close and reopen dialog to enable/disable doubling in case we switched between percussion and non-percussion.
+					titleLabel.setText("<html><b> " + abcPart.getTitle() + ": </b> "
+							+ abcPart.getInstrument().toString() + " on track " + track + " </html>");
+					// have to close and reopen dialog to enable/disable doubling in case we switched between percussion
+					// and non-percussion.
 				}
 			};
 

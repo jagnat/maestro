@@ -127,7 +127,8 @@ public class PartsListItem extends JPanel implements IDiscardable, TableLayoutCo
 			@Override
 			public void mousePressed(MouseEvent e) {
 				if (itemListener != null) {
-					PartsListItemEvent ev = new PartsListItemEvent(PartsListItem.this, PartsListItemEvent.EventType.SELECTION);
+					PartsListItemEvent ev = new PartsListItemEvent(PartsListItem.this,
+							PartsListItemEvent.EventType.SELECTION);
 					itemListener.onEvent(ev);
 				}
 			}

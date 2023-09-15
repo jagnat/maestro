@@ -49,9 +49,10 @@ public class TrackInfo implements MidiConstants {
 	private final int maxVelocity;
 
 	@SuppressWarnings("unchecked") //
-	TrackInfo(SequenceInfo parent, Track track, int trackNumber, SequenceDataCache sequenceCache, boolean isXGDrumTrack, boolean isGSDrumTrack,
-			boolean wasType0, boolean isDrumsTrack, boolean isGM2DrumTrack, TreeMap<Integer, Integer> portMap, MiscSettings miscSettings,
-			boolean oldVelocities) throws InvalidMidiDataException {
+	TrackInfo(SequenceInfo parent, Track track, int trackNumber, SequenceDataCache sequenceCache, boolean isXGDrumTrack,
+			boolean isGSDrumTrack, boolean wasType0, boolean isDrumsTrack, boolean isGM2DrumTrack,
+			TreeMap<Integer, Integer> portMap, MiscSettings miscSettings, boolean oldVelocities)
+			throws InvalidMidiDataException {
 		this.sequenceInfo = parent;
 		// TempoCache tempoCache = new TempoCache(parent.getSequence());
 		this.trackNumber = trackNumber;
@@ -63,7 +64,8 @@ public class TrackInfo implements MidiConstants {
 		if (isXGDrumTrack || isGSDrumTrack || isDrumsTrack || isGM2DrumTrack) {
 			isDrumTrack = true;
 
-			// No need? Separated drum tracks already have their name. Type 0 channel tracks can keep their 'Track x', or?
+			// No need? Separated drum tracks already have their name. Type 0 channel tracks can keep their 'Track x',
+			// or?
 			if (wasType0) {
 				if (isXGDrumTrack) {
 					name = ExtensionMidiInstrument.TRACK_NAME_DRUM_XG;
@@ -111,8 +113,8 @@ public class TrackInfo implements MidiConstants {
 									if (!(ne instanceof BentNoteEvent) && bend != 0) {
 										// This note is playing while this bend happens
 										// Lets convert it to a BentNoteEvent
-										BentNoteEvent be = new BentNoteEvent(ne.note, ne.velocity, ne.getStartTick(), ne.getEndTick(),
-												ne.getTempoCache());
+										BentNoteEvent be = new BentNoteEvent(ne.note, ne.velocity, ne.getStartTick(),
+												ne.getEndTick(), ne.getTempoCache());
 										allBentNotes.add(be);
 										be.setMidiPan(ne.midiPan);
 										be.addBend(ne.getStartTick(), 0);// we need this initial bend in NoteGraph class
@@ -142,8 +144,9 @@ public class TrackInfo implements MidiConstants {
 				int c = m.getChannel();
 
 				/*
-				 * if (isXGDrumTrack || isGSDrumTrack) { // } else if (noteEvents.isEmpty() && cmd == ShortMessage.NOTE_ON) isDrumTrack = (c ==
-				 * DRUM_CHANNEL); else if (isDrumTrack != (c == DRUM_CHANNEL) && cmd == ShortMessage.NOTE_ON)
+				 * if (isXGDrumTrack || isGSDrumTrack) { // } else if (noteEvents.isEmpty() && cmd ==
+				 * ShortMessage.NOTE_ON) isDrumTrack = (c == DRUM_CHANNEL); else if (isDrumTrack != (c == DRUM_CHANNEL)
+				 * && cmd == ShortMessage.NOTE_ON)
 				 * System.err.println("Track "+trackNumber+" contains both notes and drums.."+(name!=null?name:""));
 				 */
 				if (notesOn[c] == null)
@@ -168,12 +171,14 @@ public class TrackInfo implements MidiConstants {
 					}
 
 					/*
-					 * long time = MidiUtils.tick2microsecond(parent.getSequence(), tick, tempoCache); if (trackNumber == 2 && time > 360000000L &&
-					 * velocity == 0) { System.err.println(); System.err.println("Tick: "+evt.getTick());
-					 * System.err.println(cmd==ShortMessage.NOTE_ON?"NOTE ON":(cmd==ShortMessage.NOTE_OFF?"NOTE OFF":cmd));
-					 * System.err.println("Channel: "+c); System.err.println("Velocity: "+m.getData2());
-					 * System.err.println("CH Volume: "+sequenceCache.getVolume(c, tick)); System.err.println("Pitch: "+noteId);
-					 * System.err.println("Bytes: "+m.getLength()); System.err.println("Time: "+Util.formatDuration(time)); }
+					 * long time = MidiUtils.tick2microsecond(parent.getSequence(), tick, tempoCache); if (trackNumber
+					 * == 2 && time > 360000000L && velocity == 0) { System.err.println();
+					 * System.err.println("Tick: "+evt.getTick());
+					 * System.err.println(cmd==ShortMessage.NOTE_ON?"NOTE ON":(cmd==ShortMessage.NOTE_OFF?"NOTE OFF":cmd
+					 * )); System.err.println("Channel: "+c); System.err.println("Velocity: "+m.getData2());
+					 * System.err.println("CH Volume: "+sequenceCache.getVolume(c, tick));
+					 * System.err.println("Pitch: "+noteId); System.err.println("Bytes: "+m.getLength());
+					 * System.err.println("Time: "+Util.formatDuration(time)); }
 					 */
 
 					// If this Note ON was preceded by a similar Note ON without a Note OFF, lets turn it off
@@ -202,7 +207,8 @@ public class TrackInfo implements MidiConstants {
 							be.addBend(tick, sequenceCache.getBendMap().get(c, tick));
 							ne = be;
 						}
-						ne.setMidiPan(sequenceCache.getPanMap().get(c, tick));// We don't set this in NoteEvent constructor as only MIDI notes will
+						ne.setMidiPan(sequenceCache.getPanMap().get(c, tick));// We don't set this in NoteEvent
+																				// constructor as only MIDI notes will
 																				// get this set, abc notes not.
 
 						Iterator<NoteEvent> onIter = notesOn[c].iterator();
@@ -235,14 +241,16 @@ public class TrackInfo implements MidiConstants {
 				int type = m.getType();
 
 				if (type == META_TRACK_NAME && name == null) {
-					byte[] data = m.getData();// Text that starts with any of these indicate charset: "@LATIN", "@JP", "@UTF-16LE", or "@UTF-16BE"
+					byte[] data = m.getData();// Text that starts with any of these indicate charset: "@LATIN", "@JP",
+												// "@UTF-16LE", or "@UTF-16BE"
 					String tmp = new String(data, 0, data.length, StandardCharsets.US_ASCII).trim();// "UTF-8"
-					if (tmp.length() > 0 && !tmp.equalsIgnoreCase("untitled") && !tmp.equalsIgnoreCase("WinJammer Demo")) {
+					if (tmp.length() > 0 && !tmp.equalsIgnoreCase("untitled")
+							&& !tmp.equalsIgnoreCase("WinJammer Demo")) {
 						// System.out.println("Starts with @ "+data[0]+" "+(data[0] & 0xFF));
 
 						/*
-						 * String pattern = "\u000B";// Vertical tab in unicode Pattern r = Pattern.compile(pattern); Matcher match = r.matcher(tmp);
-						 * tmp = match.replaceAll(" ");
+						 * String pattern = "\u000B";// Vertical tab in unicode Pattern r = Pattern.compile(pattern);
+						 * Matcher match = r.matcher(tmp); tmp = match.replaceAll(" ");
 						 */
 
 						name = tmp;
@@ -267,7 +275,8 @@ public class TrackInfo implements MidiConstants {
 				noteEvents.addAll(prematureSplit);
 				noteEvents.remove(be);
 			} else {
-				// System.err.println(trackNumber+": Delay split on "+be.getMinBend()+"<>"+be.getMaxBend()+" ("+Math.abs(be.getMaxBend() -
+				// System.err.println(trackNumber+": Delay split on "+be.getMinBend()+"<>"+be.getMaxBend()+"
+				// ("+Math.abs(be.getMaxBend() -
 				// be.getMinBend())+")");
 			}
 		}
@@ -391,7 +400,8 @@ public class TrackInfo implements MidiConstants {
 		StringBuilder names = new StringBuilder();
 		boolean first = true;
 
-		if (!isGM()) {// Due to Maestro only supporting port assignments for GM, we make sure to use the GM instr. names for GM.
+		if (!isGM()) {// Due to Maestro only supporting port assignments for GM, we make sure to use the GM instr. names
+						// for GM.
 			for (String i : instrumentExtensions) {
 				if (i == null)
 					break;

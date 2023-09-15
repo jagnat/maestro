@@ -60,13 +60,17 @@ public class AbcHelper {
 	static void appendIfNotPercussion(PartSection partSection, Element sectionElement, boolean isPercussion) {
 		if (!isPercussion) {
 			if (partSection.doubling[0])
-				SaveUtil.appendChildTextElement(sectionElement, "double2OctDown", String.valueOf(partSection.doubling[0]));
+				SaveUtil.appendChildTextElement(sectionElement, "double2OctDown",
+						String.valueOf(partSection.doubling[0]));
 			if (partSection.doubling[1])
-				SaveUtil.appendChildTextElement(sectionElement, "double1OctDown", String.valueOf(partSection.doubling[1]));
+				SaveUtil.appendChildTextElement(sectionElement, "double1OctDown",
+						String.valueOf(partSection.doubling[1]));
 			if (partSection.doubling[2])
-				SaveUtil.appendChildTextElement(sectionElement, "double1OctUp", String.valueOf(partSection.doubling[2]));
+				SaveUtil.appendChildTextElement(sectionElement, "double1OctUp",
+						String.valueOf(partSection.doubling[2]));
 			if (partSection.doubling[3])
-				SaveUtil.appendChildTextElement(sectionElement, "double2OctUp", String.valueOf(partSection.doubling[3]));
+				SaveUtil.appendChildTextElement(sectionElement, "double2OctUp",
+						String.valueOf(partSection.doubling[3]));
 		}
 	}
 

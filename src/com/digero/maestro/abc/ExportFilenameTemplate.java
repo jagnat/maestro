@@ -17,7 +17,8 @@ import com.digero.maestro.view.SettingsDialog.MockMetadataSource;
 
 public class ExportFilenameTemplate {
 	public static final String[] spaceReplaceChars = { " ", "", "_", "-" };
-	public static final String[] spaceReplaceLabels = { "Don't Replace", "Remove Spaces", "_ (Underscore)", "- (Dash)" };
+	public static final String[] spaceReplaceLabels = { "Don't Replace", "Remove Spaces", "_ (Underscore)",
+			"- (Dash)" };
 
 	public static class Settings {
 		private boolean exportFilenamePatternEnabled;
@@ -170,7 +171,8 @@ public class ExportFilenameTemplate {
 		variables.put("$PartCount", new Variable("Number of parts in the ABC file") {
 			@Override
 			public String getValue() {
-				return String.format(settings.partCountZeroPadded ? "%02d" : "%d", getMetadataSource().getActivePartCount());
+				return String.format(settings.partCountZeroPadded ? "%02d" : "%d",
+						getMetadataSource().getActivePartCount());
 			}
 		});
 		variables.put("$SourceFile", new Variable("Source file name (midi or ABC)") {

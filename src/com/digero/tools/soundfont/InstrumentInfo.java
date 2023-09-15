@@ -11,7 +11,8 @@ public abstract class InstrumentInfo implements Comparable<InstrumentInfo> {
 	public final int highestNoteId;
 
 	protected InstrumentInfo(LotroInstrument lotroInstrument) {
-		this(lotroInstrument, lotroInstrument.toString(), lotroInstrument.lowestPlayable.id, lotroInstrument.highestPlayable.id);
+		this(lotroInstrument, lotroInstrument.toString(), lotroInstrument.lowestPlayable.id,
+				lotroInstrument.highestPlayable.id);
 	}
 
 	protected InstrumentInfo(LotroInstrument lotroInstrument, String name, int lowestNoteId, int highestNoteId) {

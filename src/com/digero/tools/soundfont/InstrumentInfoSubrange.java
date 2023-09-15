@@ -5,7 +5,8 @@ import java.io.PrintStream;
 import com.digero.common.abc.LotroInstrument;
 
 public class InstrumentInfoSubrange extends InstrumentInfo {
-	public InstrumentInfoSubrange(LotroInstrument instrument, InstrumentInfo base, int lowestNoteId, int hightestNoteId) {
+	public InstrumentInfoSubrange(LotroInstrument instrument, InstrumentInfo base, int lowestNoteId,
+			int hightestNoteId) {
 		super(instrument, base.name, lowestNoteId, hightestNoteId);
 	}
 

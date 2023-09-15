@@ -95,7 +95,8 @@ public class AbcTools {
 	public static void main(String[] args) {
 		try {
 			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+		} catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+				| UnsupportedLookAndFeelException e) {
 			e.printStackTrace();
 		}
 		EventQueue.invokeLater(() -> {
@@ -152,12 +153,17 @@ public class AbcTools {
 		frame.getBtnMIDI().addActionListener(getMIDIAutoActionListener());
 		frame.getBtnSourceAuto().addActionListener(getSourceAutoActionListener());
 
-		frame.getTxtAutoExport().setText("<html>Start with selecting source, midi and dest folders." + "<br>Destination folder must be empty!"
-				+ "<br>MIDI folder is optional. It is used when midi cannot be found," + " then it looks in that folder before asking for location."
-				+ "<br>When exporting it will use your Maestro settings for filename, partname etc etc." + "<br>Close Maestro while this app runs.");
+		frame.getTxtAutoExport()
+				.setText("<html>Start with selecting source, midi and dest folders."
+						+ "<br>Destination folder must be empty!"
+						+ "<br>MIDI folder is optional. It is used when midi cannot be found,"
+						+ " then it looks in that folder before asking for location."
+						+ "<br>When exporting it will use your Maestro settings for filename, partname etc etc."
+						+ "<br>Close Maestro while this app runs.");
 		/*
-		 * try { List<Image> icons = new ArrayList<>(); icons.add(ImageIO.read(new FileInputStream("abcmergetool.ico"))); frame.setIconImages(icons);
-		 * } catch (Exception ex) { // Ignore ex.printStackTrace(); }
+		 * try { List<Image> icons = new ArrayList<>(); icons.add(ImageIO.read(new
+		 * FileInputStream("abcmergetool.ico"))); frame.setIconImages(icons); } catch (Exception ex) { // Ignore
+		 * ex.printStackTrace(); }
 		 */
 		refresh();
 		refreshAuto();
@@ -246,9 +252,11 @@ public class AbcTools {
 								if (instr != null) {
 									line += "[" + instr + "]";
 								} else if (instr == null) {
-									instr = LotroInstrument.findInstrumentNameAggressively(theFiles.get(fileNo).getName(), null);
+									instr = LotroInstrument
+											.findInstrumentNameAggressively(theFiles.get(fileNo).getName(), null);
 									if (instr != null)
-										line += "[[" + instr + "]]";// Double [[ means there is significant chance it got the instrument wrong
+										line += "[[" + instr + "]]";// Double [[ means there is significant chance it
+																	// got the instrument wrong
 									else if (theFiles.get(fileNo).getName().toLowerCase().contains("wind")) {
 										line += "[Wind]";
 									}
@@ -270,8 +278,9 @@ public class AbcTools {
 			}
 
 			if (mismatch) {
-				int misresult = JOptionPane.showConfirmDialog(frame, "All these files do not seem to belong to same song. Continue with merge?",
-						"Tempo mismatch", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+				int misresult = JOptionPane.showConfirmDialog(frame,
+						"All these files do not seem to belong to same song. Continue with merge?", "Tempo mismatch",
+						JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
 
 				switch (misresult) {
 				case JOptionPane.YES_OPTION:
@@ -306,8 +315,8 @@ public class AbcTools {
 			File newFile = new File(destFolder, newName);
 			if (newFile.exists()) {
 				int result = JOptionPane.showConfirmDialog(frame,
-						"The file " + newFile.getAbsolutePath() + " exist already. Do you want to overwrite it?", "Overwrite",
-						JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+						"The file " + newFile.getAbsolutePath() + " exist already. Do you want to overwrite it?",
+						"Overwrite", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 
 				switch (result) {
 				case JOptionPane.YES_OPTION:
@@ -327,9 +336,10 @@ public class AbcTools {
 			newFile.createNewFile();
 			FileWriter writer = new FileWriter(newFile);
 
-			frame.setTextFieldText("Writing new file:\n " + newFile.getAbsolutePath() + "\n\n The song has " + (x - 1) + " parts.");
-			StringBuilder info = new StringBuilder(
-					"Writing new file:\n " + newFile.getAbsolutePath() + "\n\n The song has " + (x - 1) + " parts.\n\n");
+			frame.setTextFieldText(
+					"Writing new file:\n " + newFile.getAbsolutePath() + "\n\n The song has " + (x - 1) + " parts.");
+			StringBuilder info = new StringBuilder("Writing new file:\n " + newFile.getAbsolutePath()
+					+ "\n\n The song has " + (x - 1) + " parts.\n\n");
 			for (String line : newContent) {
 				writer.write(line + System.lineSeparator());
 				info.append(System.lineSeparator()).append(line);
@@ -457,7 +467,8 @@ public class AbcTools {
 		}
 
 		@Override
-		public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+		public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
+				boolean cellHasFocus) {
 
 			Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 			JLabel l = (JLabel) c;
@@ -643,8 +654,8 @@ public class AbcTools {
 
 		try {
 			projectModified = false;
-			AbcSong abcSong = new AbcSong(project, partAutoNumberer, partNameTemplate, exportFilenameTemplate, instrNameSettings, openFileResolver,
-					miscSettings);
+			AbcSong abcSong = new AbcSong(project, partAutoNumberer, partNameTemplate, exportFilenameTemplate,
+					instrNameSettings, openFileResolver, miscSettings);
 
 			if (frame.getForceMixTimingSelected()) {
 				abcSong.setMixTiming(true);
@@ -811,7 +822,8 @@ public class AbcTools {
 		}
 
 		private File resolveHelper(File original, String message) {
-			int result = JOptionPane.showConfirmDialog(frame, message, "Failed to open file", JOptionPane.OK_CANCEL_OPTION);
+			int result = JOptionPane.showConfirmDialog(frame, message, "Failed to open file",
+					JOptionPane.OK_CANCEL_OPTION);
 
 			File alternateFile = null;
 			if (result == JOptionPane.OK_OPTION) {

@@ -18,7 +18,8 @@ public class SaveAndExportSettings {
 		showExportFileChooser = prefs.getBoolean("showExportFileChooser", showExportFileChooser);
 		skipSilenceAtStart = prefs.getBoolean("skipSilenceAtStart", skipSilenceAtStart);
 		// showPruned = prefs.getBoolean("showPruned", showPruned);
-		convertABCStringsToBasicAscii = prefs.getBoolean("convertABCStringsToBasicAscii", convertABCStringsToBasicAscii);
+		convertABCStringsToBasicAscii = prefs.getBoolean("convertABCStringsToBasicAscii",
+				convertABCStringsToBasicAscii);
 	}
 
 	public SaveAndExportSettings(SaveAndExportSettings that) {

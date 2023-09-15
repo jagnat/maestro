@@ -53,8 +53,8 @@ public class BarNumberLabel extends JLabel implements Listener<SequencerEvent>, 
 	@Override
 	public void onEvent(SequencerEvent evt) {
 		SequencerProperty p = evt.getProperty();
-		if (p.isInMask(SequencerProperty.THUMB_POSITION_MASK | SequencerProperty.LENGTH.mask | SequencerProperty.TEMPO.mask
-				| SequencerProperty.SEQUENCE.mask)) {
+		if (p.isInMask(SequencerProperty.THUMB_POSITION_MASK | SequencerProperty.LENGTH.mask
+				| SequencerProperty.TEMPO.mask | SequencerProperty.SEQUENCE.mask)) {
 			update();
 		}
 	}

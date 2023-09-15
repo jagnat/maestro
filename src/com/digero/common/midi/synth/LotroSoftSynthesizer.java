@@ -848,7 +848,8 @@ public class LotroSoftSynthesizer implements AudioSynthesizer, ReferenceCounting
 				double latency = this.latency;
 
 				if (!line.isOpen()) {
-					int bufferSize = getFormat().getFrameSize() * (int) (getFormat().getFrameRate() * (latency / 1000000f));
+					int bufferSize = getFormat().getFrameSize()
+							* (int) (getFormat().getFrameRate() * (latency / 1000000f));
 					line.open(getFormat(), bufferSize);
 
 					// Remember that we opened that line
@@ -900,7 +901,8 @@ public class LotroSoftSynthesizer implements AudioSynthesizer, ReferenceCounting
 		}
 	}
 
-	public AudioInputStream openStream(AudioFormat targetFormat, Map<String, Object> info) throws MidiUnavailableException {
+	public AudioInputStream openStream(AudioFormat targetFormat, Map<String, Object> info)
+			throws MidiUnavailableException {
 
 		if (isOpen())
 			throw new MidiUnavailableException("Synthesizer is already open");

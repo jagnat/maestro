@@ -410,7 +410,8 @@ public class SequencerWrapper implements MidiConstants, ITempoCache, IDiscardabl
 				snapshotIndex = i;
 				i++;
 			}
-			us = snapshotMicro + MidiUtils.ticks2microsec(tick - ticks[snapshotIndex], tempos[snapshotIndex], resolution);
+			us = snapshotMicro
+					+ MidiUtils.ticks2microsec(tick - ticks[snapshotIndex], tempos[snapshotIndex], resolution);
 		}
 		cache.snapshotIndex = snapshotIndex;
 		cache.snapshotMicro = snapshotMicro;
@@ -428,11 +429,12 @@ public class SequencerWrapper implements MidiConstants, ITempoCache, IDiscardabl
 		}
 		return l;
 		/*
-		 * this also works, but the above way is better if (hoursPlus > 0) { return -l+3600000000L*hoursPlus; } Sequence seq =
-		 * sequencer.getSequence(); if (seq != null) { Track[] tracks = seq.getTracks(); long lastTick = 0; for (Track track : tracks) { if
-		 * (track.ticks() > lastTick) { lastTick = track.ticks(); } } if (lastTick > 0L) {
-		 * //System.out.println("lastTick="+lastTick+" us="+tick2microsecondSlow(seq, lastTick)); long hours = tick2microsecondSlow(seq,
-		 * lastTick)/3600000000L; System.out.println("This midi is over "+hours+" hours long. But do not worry :)"); l = -l+3600000000L*hours;
+		 * this also works, but the above way is better if (hoursPlus > 0) { return -l+3600000000L*hoursPlus; } Sequence
+		 * seq = sequencer.getSequence(); if (seq != null) { Track[] tracks = seq.getTracks(); long lastTick = 0; for
+		 * (Track track : tracks) { if (track.ticks() > lastTick) { lastTick = track.ticks(); } } if (lastTick > 0L) {
+		 * //System.out.println("lastTick="+lastTick+" us="+tick2microsecondSlow(seq, lastTick)); long hours =
+		 * tick2microsecondSlow(seq, lastTick)/3600000000L;
+		 * System.out.println("This midi is over "+hours+" hours long. But do not worry :)"); l = -l+3600000000L*hours;
 		 * hoursPlus = hours; } } return l;
 		 */
 	}
@@ -619,8 +621,8 @@ public class SequencerWrapper implements MidiConstants, ITempoCache, IDiscardabl
 
 			if (sequence != null) {
 				/*
-				 * System.out.print(transceivers.size()+" transceivers will play song: "+sequence.hashCode()+"\n"); for (Transceiver t : transceivers)
-				 * { System.out.println(t.toString()); }
+				 * System.out.print(transceivers.size()+" transceivers will play song: "+sequence.hashCode()+"\n"); for
+				 * (Transceiver t : transceivers) { System.out.println(t.toString()); }
 				 */
 				tempoCache.refresh(sequence);
 			}

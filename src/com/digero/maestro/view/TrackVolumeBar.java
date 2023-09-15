@@ -175,7 +175,8 @@ public class TrackVolumeBar extends JPanel implements IDiscardable {
 		private void handleDrag(MouseEvent e) {
 			int x = e.getX();
 			int y = e.getY();
-			if ((y < -DRAG_MARGIN_Y || y > getHeight() + DRAG_MARGIN_Y) || (x < -DRAG_MARGIN_X || x > getWidth() + DRAG_MARGIN_X)) {
+			if ((y < -DRAG_MARGIN_Y || y > getHeight() + DRAG_MARGIN_Y)
+					|| (x < -DRAG_MARGIN_X || x > getWidth() + DRAG_MARGIN_X)) {
 				// Cancel the drag
 				value = deltaAtDragStart;
 			} else {

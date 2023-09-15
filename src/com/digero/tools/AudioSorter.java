@@ -62,8 +62,8 @@ public class AudioSorter {
 		copyToFinalNames(sourceRoot, targetRoot, "lonely_bassoon", false);
 	}
 
-	private static void copyToFinalNames(final String sourceRoot, final String targetRoot, final String instrumentName, final boolean checkEquals)
-			throws IOException {
+	private static void copyToFinalNames(final String sourceRoot, final String targetRoot, final String instrumentName,
+			final boolean checkEquals) throws IOException {
 		Files.walkFileTree(Paths.get(sourceRoot, instrumentName), new SimpleFileVisitor<Path>() {
 			private int i = 35;
 			private Path previous = null;
@@ -93,7 +93,8 @@ public class AudioSorter {
 				}
 
 				String targetFileName = instrumentName + "_" + i + (equals ? "a" : "") + ".wav";
-				Path target = equals ? Paths.get(targetRoot, "a", targetFileName) : Paths.get(targetRoot, targetFileName);
+				Path target = equals ? Paths.get(targetRoot, "a", targetFileName)
+						: Paths.get(targetRoot, targetFileName);
 
 				System.out.println(target);
 				Files.copy(file, target);
@@ -130,9 +131,11 @@ public class AudioSorter {
 		int i = 0;
 		for (FileFft fileFft : sorted) {
 //			File outputFile = getTargetFileName(fileFft, targetFolder);
-			File outputFile = new File(targetFolder, String.format("%02d0.%05d - %s", ++i, fileFft.number, fileFft.file.getName()));
+			File outputFile = new File(targetFolder,
+					String.format("%02d0.%05d - %s", ++i, fileFft.number, fileFft.file.getName()));
 			System.out.println(outputFile.getAbsolutePath());
-			Files.copy(Paths.get(fileFft.file.getAbsolutePath()), Paths.get(outputFile.getAbsolutePath()), StandardCopyOption.REPLACE_EXISTING);
+			Files.copy(Paths.get(fileFft.file.getAbsolutePath()), Paths.get(outputFile.getAbsolutePath()),
+					StandardCopyOption.REPLACE_EXISTING);
 		}
 	}
 
@@ -334,8 +337,8 @@ public class AudioSorter {
 
 //		System.out.println(maxValue);
 
-		boolean compress = instrument.equalsIgnoreCase("flute") || instrument.equalsIgnoreCase("pibgorn") || instrument.equalsIgnoreCase("clarinet")
-				|| instrument.equalsIgnoreCase("bagpipe");
+		boolean compress = instrument.equalsIgnoreCase("flute") || instrument.equalsIgnoreCase("pibgorn")
+				|| instrument.equalsIgnoreCase("clarinet") || instrument.equalsIgnoreCase("bagpipe");
 		compress = compress && ((width * 2) <= fft.length);
 
 		int compressionFactor = compress ? 2 : 1;

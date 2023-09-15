@@ -35,7 +35,8 @@ public class LotroSequencerWrapper extends NoteFilterSequencerWrapper {
 					// We only do this when stopping to play
 					receiver.send(MidiFactory.createAllControllersOff(info.channel), -1L);
 				}
-				receiver.send(MidiFactory.createLotroChangeEvent(info.patch, info.channel, sequencer.getTickPosition()).getMessage(), -1L);
+				receiver.send(MidiFactory.createLotroChangeEvent(info.patch, info.channel, sequencer.getTickPosition())
+						.getMessage(), -1L);
 			}
 		}
 	}

@@ -43,8 +43,8 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 	// +---+--------------------+----------+--------------------+
 	private static final int GUTTER_WIDTH = TrackPanel.GUTTER_WIDTH;
 	private static final int COMBO_WIDTH = 122;
-	private static final int TITLE_WIDTH = TrackPanel.TITLE_WIDTH_DEFAULT + TrackPanel.HGAP + TrackPanel.PRIORITY_WIDTH_DEFAULT
-			+ TrackPanel.CONTROL_WIDTH_DEFAULT - COMBO_WIDTH;
+	private static final int TITLE_WIDTH = TrackPanel.TITLE_WIDTH_DEFAULT + TrackPanel.HGAP
+			+ TrackPanel.PRIORITY_WIDTH_DEFAULT + TrackPanel.CONTROL_WIDTH_DEFAULT - COMBO_WIDTH;
 	private static double[] LAYOUT_COLS = new double[] { GUTTER_WIDTH, TITLE_WIDTH, COMBO_WIDTH, FILL };
 	private static final double[] LAYOUT_ROWS = new double[] { PREFERRED };
 
@@ -66,8 +66,8 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 
 	private TrackDimensions dims = new TrackDimensions(TITLE_WIDTH, 0, COMBO_WIDTH, -1);
 
-	public DrumPanel(TrackInfo info, NoteFilterSequencerWrapper sequencer, AbcPart part, int drumNoteId, SequencerWrapper abcSequencer_,
-			TrackVolumeBar trackVolumeBar_) {
+	public DrumPanel(TrackInfo info, NoteFilterSequencerWrapper sequencer, AbcPart part, int drumNoteId,
+			SequencerWrapper abcSequencer_, TrackVolumeBar trackVolumeBar_) {
 		super(new TableLayout(LAYOUT_COLS, LAYOUT_ROWS));
 
 		this.trackInfo = info;
@@ -97,7 +97,8 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 
 		checkBox = new JCheckBox();
 		checkBox.setSelected(abcPart.isDrumEnabled(trackInfo.getTrackNumber(), drumId));
-		checkBox.addActionListener(e -> abcPart.setDrumEnabled(trackInfo.getTrackNumber(), drumId, checkBox.isSelected()));
+		checkBox.addActionListener(
+				e -> abcPart.setDrumEnabled(trackInfo.getTrackNumber(), drumId, checkBox.isSelected()));
 
 		checkBox.setOpaque(false);
 
@@ -364,7 +365,8 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 
 		@Override
 		protected boolean audibleNote(NoteEvent ne) {
-			return abcPart.getAudible(trackInfo.getTrackNumber(), ne.getStartTick()) && abcPart.shouldPlay(ne, trackInfo.getTrackNumber());
+			return abcPart.getAudible(trackInfo.getTrackNumber(), ne.getStartTick())
+					&& abcPart.shouldPlay(ne, trackInfo.getTrackNumber());
 		}
 
 		@Override

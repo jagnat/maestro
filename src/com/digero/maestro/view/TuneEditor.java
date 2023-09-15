@@ -70,7 +70,8 @@ public class TuneEditor {
 					if (al != null)
 						al.actionPerformed(ae);
 				};
-				this.getRootPane().registerKeyboardAction(spaceBarListener, KeyStroke.getKeyStroke(' '), JComponent.WHEN_IN_FOCUSED_WINDOW);
+				this.getRootPane().registerKeyboardAction(spaceBarListener, KeyStroke.getKeyStroke(' '),
+						JComponent.WHEN_IN_FOCUSED_WINDOW);
 
 				TuneDialog.this.addWindowListener(new WindowAdapter() {
 
@@ -106,19 +107,22 @@ public class TuneEditor {
 				LAYOUT_ROWS[4 + SectionEditor.numberOfSections] = TableLayoutConstants.PREFERRED;
 				LAYOUT_ROWS[5 + SectionEditor.numberOfSections] = TableLayoutConstants.FILL;
 				/*
-				 * LAYOUT_ROWS[6+SectionEditor.numberOfSections] = TableLayoutConstants.PREFERRED; LAYOUT_ROWS[7+SectionEditor.numberOfSections] =
-				 * TableLayoutConstants.PREFERRED; LAYOUT_ROWS[8+SectionEditor.numberOfSections] = TableLayoutConstants.PREFERRED;
-				 * LAYOUT_ROWS[9+SectionEditor.numberOfSections] = TableLayoutConstants.PREFERRED; LAYOUT_ROWS[10+SectionEditor.numberOfSections] =
-				 * TableLayoutConstants.PREFERRED; LAYOUT_ROWS[11+SectionEditor.numberOfSections] = TableLayoutConstants.PREFERRED;
-				 * LAYOUT_ROWS[12+SectionEditor.numberOfSections] = TableLayoutConstants.PREFERRED; LAYOUT_ROWS[13+SectionEditor.numberOfSections] =
-				 * TableLayoutConstants.PREFERRED;
+				 * LAYOUT_ROWS[6+SectionEditor.numberOfSections] = TableLayoutConstants.PREFERRED;
+				 * LAYOUT_ROWS[7+SectionEditor.numberOfSections] = TableLayoutConstants.PREFERRED;
+				 * LAYOUT_ROWS[8+SectionEditor.numberOfSections] = TableLayoutConstants.PREFERRED;
+				 * LAYOUT_ROWS[9+SectionEditor.numberOfSections] = TableLayoutConstants.PREFERRED;
+				 * LAYOUT_ROWS[10+SectionEditor.numberOfSections] = TableLayoutConstants.PREFERRED;
+				 * LAYOUT_ROWS[11+SectionEditor.numberOfSections] = TableLayoutConstants.PREFERRED;
+				 * LAYOUT_ROWS[12+SectionEditor.numberOfSections] = TableLayoutConstants.PREFERRED;
+				 * LAYOUT_ROWS[13+SectionEditor.numberOfSections] = TableLayoutConstants.PREFERRED;
 				 */
 
 				TableLayout layout = new TableLayout(LAYOUT_COLS, LAYOUT_ROWS);
 				int vg = layout.getVGap();
 				int w = 25 * rowHeight;
 				// int h = 153+(rowHeight+0)*SectionEditor.numberOfSections;
-				int h = (SectionEditor.numberOfSections) * rowHeight + 4 * auxHeight + (3 + SectionEditor.numberOfSections) * vg;
+				int h = (SectionEditor.numberOfSections) * rowHeight + 4 * auxHeight
+						+ (3 + SectionEditor.numberOfSections) * vg;
 				this.setSize(w, h);
 
 				panel.setLayout(layout);
@@ -153,7 +157,8 @@ public class TuneEditor {
 					pasteSections.setEnabled(SectionEditor.clipboardArmed);
 				});
 				copySections.setToolTipText("<html><b> Copy the section starts and ends.</html>");
-				panel.add(copySections, "1," + (3 + SectionEditor.numberOfSections) + ",1," + (3 + SectionEditor.numberOfSections) + ",f,f");
+				panel.add(copySections, "1," + (3 + SectionEditor.numberOfSections) + ",1,"
+						+ (3 + SectionEditor.numberOfSections) + ",f,f");
 
 				pasteSections.getModel().addActionListener(e -> {
 					if (!SectionEditor.clipboardArmed)
@@ -165,17 +170,20 @@ public class TuneEditor {
 					}
 				});
 				pasteSections.setToolTipText("<html><b> Paste the section starts and ends.</html>");
-				panel.add(pasteSections, "2," + (3 + SectionEditor.numberOfSections) + ",2," + (3 + SectionEditor.numberOfSections) + ",f,f");
+				panel.add(pasteSections, "2," + (3 + SectionEditor.numberOfSections) + ",2,"
+						+ (3 + SectionEditor.numberOfSections) + ",f,f");
 				pasteSections.setEnabled(SectionEditor.clipboardArmed);
 
 				JTextField help = new JTextField("Help");
 				help.setEditable(false);
 				help.setHorizontalAlignment(CENTER);
-				help.setToolTipText("<html><b>Enabled sections must have no overlap.<br>Bar numbers are inclusive and use original MIDI bars.<br>"
-						+ "No decimal numbers allowed, only whole numbers.<br>Bar numbers must be positive and greater than zero.<br>"
-						+ "Clicking APPLY will also disable faulty sections.<br><br>Warning: If 'Remove initial silence' is enabled or the<br>"
-						+ "meter is modified, then the bar counter in lower-right might<br>not match up, unless your preview mode is in 'Original'.</b></html>");
-				panel.add(help, "3," + (3 + SectionEditor.numberOfSections) + ", 3, " + (3 + SectionEditor.numberOfSections) + ",f,f");
+				help.setToolTipText(
+						"<html><b>Enabled sections must have no overlap.<br>Bar numbers are inclusive and use original MIDI bars.<br>"
+								+ "No decimal numbers allowed, only whole numbers.<br>Bar numbers must be positive and greater than zero.<br>"
+								+ "Clicking APPLY will also disable faulty sections.<br><br>Warning: If 'Remove initial silence' is enabled or the<br>"
+								+ "meter is modified, then the bar counter in lower-right might<br>not match up, unless your preview mode is in 'Original'.</b></html>");
+				panel.add(help, "3," + (3 + SectionEditor.numberOfSections) + ", 3, "
+						+ (3 + SectionEditor.numberOfSections) + ",f,f");
 
 				JButton okButton = new JButton("APPLY");
 				okButton.addActionListener(e -> {
@@ -193,7 +201,8 @@ public class TuneEditor {
 						boolean[] booleanArray = new boolean[lastEnd + 1];
 						for (int m = 0; m < lastEnd + 1; m++) {
 							Entry<Integer, TuneLine> entry = tm.floorEntry(m + 1);
-							booleanArray[m] = entry != null && entry.getValue().startBar <= m + 1 && entry.getValue().endBar >= m + 1;
+							booleanArray[m] = entry != null && entry.getValue().startBar <= m + 1
+									&& entry.getValue().endBar >= m + 1;
 						}
 
 						TuneDialog.this.abcSong.tuneBarsModified = booleanArray;
@@ -203,24 +212,29 @@ public class TuneEditor {
 				});
 				okButton.setToolTipText(
 						"<html><b> Apply the effects. </b><br> Note that non-applied effects will not be remembered when closing dialog.<br> Sections that are not enabled will likewise also not be remembered. </html>");
-				panel.add(okButton, "4," + (3 + SectionEditor.numberOfSections) + ", 4, " + (3 + SectionEditor.numberOfSections) + ",f,f");
+				panel.add(okButton, "4," + (3 + SectionEditor.numberOfSections) + ", 4, "
+						+ (3 + SectionEditor.numberOfSections) + ",f,f");
 				/*
-				 * panel.add(new JLabel("Enabled sections must have no overlap."), "0,"+(6+SectionEditor.numberOfSections)+", 4,"
-				 * +(6+SectionEditor.numberOfSections)+", c, c"); panel.add(new JLabel("Bar numbers are inclusive and use original MIDI bars."),
-				 * "0, "+(7+SectionEditor.numberOfSections)+", 4, "+(7+SectionEditor. numberOfSections)+", c, c"); panel.add(new
-				 * JLabel("No decimal numbers allowed, only whole numbers."), "0, "+(8+SectionEditor.numberOfSections)+", 4,"
-				 * +(8+SectionEditor.numberOfSections)+", c, c"); panel.add(new JLabel("Bar numbers must be positive and greater than zero."),
-				 * "0, "+(9+SectionEditor.numberOfSections)+", 4," +(9+SectionEditor.numberOfSections)+", c, c"); panel.add(new
-				 * JLabel("Clicking APPLY will also disable faulty sections."), "0, "+(10+SectionEditor.numberOfSections)+", 4,"
-				 * +(10+SectionEditor.numberOfSections)+", c, c");
+				 * panel.add(new JLabel("Enabled sections must have no overlap."),
+				 * "0,"+(6+SectionEditor.numberOfSections)+", 4," +(6+SectionEditor.numberOfSections)+", c, c");
+				 * panel.add(new JLabel("Bar numbers are inclusive and use original MIDI bars."),
+				 * "0, "+(7+SectionEditor.numberOfSections)+", 4, "+(7+SectionEditor. numberOfSections)+", c, c");
+				 * panel.add(new JLabel("No decimal numbers allowed, only whole numbers."),
+				 * "0, "+(8+SectionEditor.numberOfSections)+", 4," +(8+SectionEditor.numberOfSections)+", c, c");
+				 * panel.add(new JLabel("Bar numbers must be positive and greater than zero."),
+				 * "0, "+(9+SectionEditor.numberOfSections)+", 4," +(9+SectionEditor.numberOfSections)+", c, c");
+				 * panel.add(new JLabel("Clicking APPLY will also disable faulty sections."),
+				 * "0, "+(10+SectionEditor.numberOfSections)+", 4," +(10+SectionEditor.numberOfSections)+", c, c");
 				 * 
-				 * JLabel warn1 = new JLabel("Warning: If 'Remove initial silence' is enabled or the"); JLabel warn2 = new
-				 * JLabel("meter is modified, then the bar counter in lower-right might"); JLabel warn3 = new
-				 * JLabel("not match up, unless your preview mode is in 'Original'."); warn1.setForeground(new Color(1f,0f,0f));
-				 * warn2.setForeground(new Color(1f,0f,0f)); warn3.setForeground(new Color(1f,0f,0f)); panel.add(warn1, "0,"
-				 * +(11+SectionEditor.numberOfSections)+", 4," +(11+SectionEditor.numberOfSections)+", c, c"); panel.add(warn2, "0,"
-				 * +(12+SectionEditor.numberOfSections)+", 4," +(12+SectionEditor.numberOfSections)+", c, c"); panel.add(warn3, "0,"
-				 * +(13+SectionEditor.numberOfSections)+", 4," +(13+SectionEditor.numberOfSections)+", c, c");
+				 * JLabel warn1 = new JLabel("Warning: If 'Remove initial silence' is enabled or the"); JLabel warn2 =
+				 * new JLabel("meter is modified, then the bar counter in lower-right might"); JLabel warn3 = new
+				 * JLabel("not match up, unless your preview mode is in 'Original'."); warn1.setForeground(new
+				 * Color(1f,0f,0f)); warn2.setForeground(new Color(1f,0f,0f)); warn3.setForeground(new Color(1f,0f,0f));
+				 * panel.add(warn1, "0," +(11+SectionEditor.numberOfSections)+", 4,"
+				 * +(11+SectionEditor.numberOfSections)+", c, c"); panel.add(warn2, "0,"
+				 * +(12+SectionEditor.numberOfSections)+", 4," +(12+SectionEditor.numberOfSections)+", c, c");
+				 * panel.add(warn3, "0," +(13+SectionEditor.numberOfSections)+", 4,"
+				 * +(13+SectionEditor.numberOfSections)+", c, c");
 				 */
 				this.getContentPane().add(panel);
 				Window window = SwingUtilities.windowForComponent(this);
@@ -297,7 +311,8 @@ public class TuneEditor {
 				return lastEnd;
 			}
 
-			private int checkForNewLastEnd(TreeMap<Integer, TuneLine> tm, int lastEnd, int k, TuneLine ps, boolean soFarSoGood) {
+			private int checkForNewLastEnd(TreeMap<Integer, TuneLine> tm, int lastEnd, int k, TuneLine ps,
+					boolean soFarSoGood) {
 				if (ps.startBar > 0 && ps.startBar <= ps.endBar && soFarSoGood) {
 					tm.put(ps.startBar, ps);
 					if (ps.endBar > lastEnd)
@@ -321,7 +336,8 @@ public class TuneEditor {
 						number = ps.dialogLine;
 					}
 					if (number >= SectionEditor.numberOfSections || number < 0) {
-						System.err.println("Too many sections in treemap in tune-editor, or line numbers was badly edited in .msx file.");
+						System.err.println(
+								"Too many sections in treemap in tune-editor, or line numbers was badly edited in .msx file.");
 					} else {
 						tuneInputs.get(number).enable.setSelected(true);
 						tuneInputs.get(number).barA.setText(String.valueOf(ps.startBar));

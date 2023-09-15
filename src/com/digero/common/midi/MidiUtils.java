@@ -45,7 +45,8 @@ public class MidiUtils {
 	 */
 	public static long microsecond2tick(Sequence seq, long micros, TempoCache cache) {
 		if (seq.getDivisionType() != Sequence.PPQ) {
-			double dTick = (((double) micros) * ((double) seq.getDivisionType()) * ((double) seq.getResolution())) / ((double) 1000000);
+			double dTick = (((double) micros) * ((double) seq.getDivisionType()) * ((double) seq.getResolution()))
+					/ ((double) 1000000);
 			long tick = (long) dTick;
 			if (cache != null) {
 				cache.currTempo = (int) cache.getTempoMPQAt(tick);
@@ -133,14 +134,16 @@ public class MidiUtils {
 	}
 
 	/**
-	 * convert tick to microsecond with given tempo. Does not take tempo changes into account. Does not work for SMPTE timing!
+	 * convert tick to microsecond with given tempo. Does not take tempo changes into account. Does not work for SMPTE
+	 * timing!
 	 */
 	public static long ticks2microsec(long tick, double tempoMPQ, int resolution) {
 		return (long) (((double) tick) * tempoMPQ / resolution);
 	}
 
 	/**
-	 * convert tempo to microsecond with given tempo Does not take tempo changes into account. Does not work for SMPTE timing!
+	 * convert tempo to microsecond with given tempo Does not take tempo changes into account. Does not work for SMPTE
+	 * timing!
 	 */
 	public static long microsec2ticks(long us, double tempoMPQ, int resolution) {
 		// do not round to nearest tick

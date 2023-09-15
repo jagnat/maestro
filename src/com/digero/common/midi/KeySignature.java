@@ -182,9 +182,11 @@ public class KeySignature implements MidiConstants {
 			"B", //
 			"F#", "C#", "G#", "D#", "A#", "E#", "B#" };
 
-	private static final int[] SHARPS = new int[] { Note.FX.id, Note.CX.id, Note.GX.id, Note.DX.id, Note.AX.id, Note.EX.id, Note.BX.id };
+	private static final int[] SHARPS = new int[] { Note.FX.id, Note.CX.id, Note.GX.id, Note.DX.id, Note.AX.id,
+			Note.EX.id, Note.BX.id };
 
-	private static final int[] FLATS = new int[] { Note.BX.id, Note.EX.id, Note.AX.id, Note.DX.id, Note.GX.id, Note.CX.id, Note.FX.id };
+	private static final int[] FLATS = new int[] { Note.BX.id, Note.EX.id, Note.AX.id, Note.DX.id, Note.GX.id,
+			Note.CX.id, Note.FX.id };
 
 	private static final String[] modeToKeys(KeyMode mode) {
 		switch (mode) {

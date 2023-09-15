@@ -115,10 +115,12 @@ public class NoteFilterTransceiver implements Transceiver, MidiConstants, ICompi
 			}
 		}
 		/*
-		 * if (message instanceof ShortMessage) { ShortMessage m = (ShortMessage) message; if (m.getCommand() == ShortMessage.PROGRAM_CHANGE) { int c
-		 * = m.getChannel(); System.out.println("NoteFilterTransceiver.send: Channel "+c+" patch "+m.getData1()); } } if (message instanceof
-		 * LotroShortMessage) { LotroShortMessage m = (LotroShortMessage) message; if (m.getCommand() == ShortMessage.PROGRAM_CHANGE) { int c =
-		 * m.getChannel(); System.out.println("++NoteFilterTransceiver.send: Channel "+c+" patch "+m.getData1()); } }
+		 * if (message instanceof ShortMessage) { ShortMessage m = (ShortMessage) message; if (m.getCommand() ==
+		 * ShortMessage.PROGRAM_CHANGE) { int c = m.getChannel();
+		 * System.out.println("NoteFilterTransceiver.send: Channel "+c+" patch "+m.getData1()); } } if (message
+		 * instanceof LotroShortMessage) { LotroShortMessage m = (LotroShortMessage) message; if (m.getCommand() ==
+		 * ShortMessage.PROGRAM_CHANGE) { int c = m.getChannel();
+		 * System.out.println("++NoteFilterTransceiver.send: Channel "+c+" patch "+m.getData1()); } }
 		 */
 		receiver.send(message, timeStamp);
 	}

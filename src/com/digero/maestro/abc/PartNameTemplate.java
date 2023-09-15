@@ -149,8 +149,10 @@ public class PartNameTemplate {
 			}
 		});
 		variables.put("$FilePath",
-				new Variable("The path to the ABC file including the ABC file name, " + "if it is in a subdirectory of the LOTRO/Music directory.\n"
-						+ "If the file is saved directly in the LOTRO/Music directory, " + "this will be the same as <b>$FileName</b>.") {
+				new Variable("The path to the ABC file including the ABC file name, "
+						+ "if it is in a subdirectory of the LOTRO/Music directory.\n"
+						+ "If the file is saved directly in the LOTRO/Music directory, "
+						+ "this will be the same as <b>$FileName</b>.") {
 					@Override
 					public String getValue() {
 						if (getMetadataSource().getExportFile() == null)
@@ -161,7 +163,8 @@ public class PartNameTemplate {
 
 						StringBuilder path = new StringBuilder(saveFileName);
 						boolean foundRoot = false;
-						for (File file = getMetadataSource().getExportFile().getParentFile(); file != null; file = file.getParentFile()) {
+						for (File file = getMetadataSource().getExportFile().getParentFile(); file != null; file = file
+								.getParentFile()) {
 							if (root.equals(file)) {
 								foundRoot = true;
 								break;
