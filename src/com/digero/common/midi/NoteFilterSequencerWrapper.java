@@ -1,6 +1,8 @@
 package com.digero.common.midi;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
@@ -88,7 +90,14 @@ public class NoteFilterSequencerWrapper extends SequencerWrapper
 		boolean okay = true;
 		try {
 			device = MidiSystem.getMidiDevice(myInfo);
-			device.open();
+			if (device instanceof com.sun.media.sound.SoftSynthesizer) {
+				Map<String, Object> synthInfo = new HashMap();
+				synthInfo.put("reverb", false);//default is true
+				synthInfo.put("chorus", false);//default is true
+				((com.sun.media.sound.SoftSynthesizer)device).open(null, synthInfo);
+			} else {
+				device.open();
+			}
 			myReciever = device.getReceiver();
 		} catch (MidiUnavailableException e) {
 			okay = false;
