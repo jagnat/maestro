@@ -1216,7 +1216,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		int y = -1;
 		do {
 			showSettingsAgain = false;
-			SettingsDialog dialog = new SettingsDialog(ProjectFrame.this, partAutoNumberer, partNameTemplate,
+			SettingsDialog dialog = new SettingsDialog(ProjectFrame.this, prefs, partAutoNumberer, partNameTemplate,
 					exportFilenameTemplate, saveSettings.getCopy(), miscSettings.getCopy(),
 					instrNameSettings.getCopy());
 			if (x > 0 && y > 0) {
