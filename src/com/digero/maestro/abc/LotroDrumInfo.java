@@ -14,16 +14,14 @@ import java.util.TreeSet;
 
 import com.digero.common.midi.Note;
 
-public class LotroDrumInfo implements Comparable<LotroDrumInfo>
-{
+public class LotroDrumInfo implements Comparable<LotroDrumInfo> {
 	private static Map<Integer, LotroDrumInfo> byId = new HashMap<>();
 	private static SortedMap<String, SortedSet<LotroDrumInfo>> byCategory = new TreeMap<>();
 
 	public static final LotroDrumInfo DISABLED = new LotroDrumInfo(Note.REST, "None", "#None");
 	public static final List<LotroDrumInfo> ALL_DRUMS;
 
-	static
-	{
+	static {
 		byCategory.put(DISABLED.category, new TreeSet<>());
 		byCategory.get(DISABLED.category).add(DISABLED);
 		byId.put(DISABLED.note.id, DISABLED);
@@ -66,42 +64,38 @@ public class LotroDrumInfo implements Comparable<LotroDrumInfo>
 		add(Note.B4, "Conga Mid");
 		add(Note.C5, "Slap");
 		add(Note.Cs5, "Xtra Bass Rock");
-		add(Note.D5,  "Xtra Snare Rock");
+		add(Note.D5, "Xtra Snare Rock");
 		add(Note.Ds5, "Xtra Crash Cymbal");
-		add(Note.E5,  "Xtra Snare March 1");
-		add(Note.F5,  "Xtra Bass Concert");
+		add(Note.E5, "Xtra Snare March 1");
+		add(Note.F5, "Xtra Bass Concert");
 		add(Note.Fs5, "Xtra Bass Metal");
-		add(Note.G5,  "Xtra Snare March 2");
+		add(Note.G5, "Xtra Snare March 2");
 		add(Note.Gs5, "Xtra Bass March");
-		//add(Note.A6,  "Xtra Reverse Cymbal");
-		
+		// add(Note.A6, "Xtra Reverse Cymbal");
 
 		int noteCount = Note.MAX_PLAYABLE.id - Note.MIN_PLAYABLE.id + 1 + LotroCombiDrumInfo.combiNoteCount;
-		if (byId.keySet().size() < noteCount)
-		{
+		if (byId.keySet().size() < noteCount) {
 			List<Integer> unassigned = new ArrayList<>(noteCount);
-			for (int id = Note.MIN_PLAYABLE.id; id <= Note.MAX_PLAYABLE.id; id++)
-			{
+			for (int id = Note.MIN_PLAYABLE.id; id <= Note.MAX_PLAYABLE.id; id++) {
 				unassigned.add(id);
 			}
 			unassigned.removeAll(byId.keySet());
-			for (int id : unassigned)
-			{
+			for (int id : unassigned) {
 				add(Note.fromId(id), "Unassigned");
 			}
 		}
 
 		ALL_DRUMS = Collections.unmodifiableList(new ArrayList<>(new AbstractCollection<LotroDrumInfo>() {
-            @Override
-            public Iterator<LotroDrumInfo> iterator() {
-                return new DrumInfoIterator();
-            }
+			@Override
+			public Iterator<LotroDrumInfo> iterator() {
+				return new DrumInfoIterator();
+			}
 
-            @Override
-            public int size() {
-                return byId.size();
-            }
-        }));
+			@Override
+			public int size() {
+				return byId.size();
+			}
+		}));
 	}
 
 //	private static final Comparator<Note> noteComparator = new Comparator<Note>() {
@@ -117,15 +111,11 @@ public class LotroDrumInfo implements Comparable<LotroDrumInfo>
 //		}
 //	}
 
-	private static void add(Note note, String category)
-	{
+	private static void add(Note note, String category) {
 		SortedSet<LotroDrumInfo> categorySet = byCategory.get(category);
-		if (categorySet == null)
-		{
+		if (categorySet == null) {
 			byCategory.put(category, categorySet = new TreeSet<>());
-		}
-		else if (categorySet.size() == 1)
-		{
+		} else if (categorySet.size() == 1) {
 			// We're about to add a second one to the category...
 			// add the "1" to the name of the existing element
 			Note prevNote = categorySet.first().note;
@@ -137,13 +127,10 @@ public class LotroDrumInfo implements Comparable<LotroDrumInfo>
 		}
 
 		String name;
-		if (categorySet.isEmpty())
-		{
+		if (categorySet.isEmpty()) {
 			// If this is the first item in the category, don't add its number to the list
 			name = category + " (" + note.abc + ")";
-		}
-		else
-		{
+		} else {
 			name = category + " " + (categorySet.size() + 1) + " (" + note.abc + ")";
 		}
 		LotroDrumInfo info = new LotroDrumInfo(note, name, category);
@@ -152,36 +139,33 @@ public class LotroDrumInfo implements Comparable<LotroDrumInfo>
 		byId.put(note.id, info);
 	}
 
-	public static LotroDrumInfo getById(int noteId)
-	{
+	public static LotroDrumInfo getById(int noteId) {
 		return byId.get(noteId);
 	}
 
-	private static class DrumInfoIterator implements Iterator<LotroDrumInfo>
-	{
+	private static class DrumInfoIterator implements Iterator<LotroDrumInfo> {
 		private Iterator<SortedSet<LotroDrumInfo>> outerIter;
 		private Iterator<LotroDrumInfo> innerIter;
 
-		public DrumInfoIterator()
-		{
+		public DrumInfoIterator() {
 			outerIter = byCategory.values().iterator();
 		}
 
-		@Override public boolean hasNext()
-		{
+		@Override
+		public boolean hasNext() {
 			return outerIter.hasNext() || (innerIter != null && innerIter.hasNext());
 		}
 
-		@Override public LotroDrumInfo next()
-		{
+		@Override
+		public LotroDrumInfo next() {
 			while (innerIter == null || !innerIter.hasNext())
 				innerIter = outerIter.next().iterator();
 
 			return innerIter.next();
 		}
 
-		@Override public void remove()
-		{
+		@Override
+		public void remove() {
 			throw new UnsupportedOperationException();
 		}
 	}
@@ -190,36 +174,35 @@ public class LotroDrumInfo implements Comparable<LotroDrumInfo>
 	public final String name;
 	public final String category;
 
-	private LotroDrumInfo(Note note, String name, String category)
-	{
+	private LotroDrumInfo(Note note, String name, String category) {
 		this.note = note;
 		this.name = name;
 		this.category = category;
 	}
 
-	@Override public String toString()
-	{
+	@Override
+	public String toString() {
 		return name;
 	}
 
-	@Override public int compareTo(LotroDrumInfo that)
-	{
+	@Override
+	public int compareTo(LotroDrumInfo that) {
 		if (that == null)
 			return 1;
 
 		return this.note.id - that.note.id;
 	}
 
-	@Override public boolean equals(Object obj)
-	{
+	@Override
+	public boolean equals(Object obj) {
 		if (obj == null || obj.getClass() != this.getClass())
 			return false;
 
 		return this.note.id == ((LotroDrumInfo) obj).note.id;
 	}
 
-	@Override public int hashCode()
-	{
+	@Override
+	public int hashCode() {
 		return this.note.id;
 	}
 }

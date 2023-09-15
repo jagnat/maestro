@@ -30,7 +30,7 @@ public class MaestroMain {
 	public static Logger logger = Logger.getLogger("com.digero.maestro");
 
 	private static ServerSocket serverSocket;
-	
+
 	public MaestroMain() {
 		// ABC Tool calls this to initialize the version.
 		try {

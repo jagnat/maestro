@@ -79,8 +79,7 @@ public class AbcToMidi {
 	private static final int NOTE_TIE = 7;
 
 	/**
-	 * Maps a note name (a, b, c, etc.) to the number of semitones it is above the
-	 * beginning of the octave (c)
+	 * Maps a note name (a, b, c, etc.) to the number of semitones it is above the beginning of the octave (c)
 	 */
 	private static final int[] CHR_NOTE_DELTA = { 9, 11, 0, 2, 4, 5, 7 };
 
@@ -300,12 +299,14 @@ public class AbcToMidi {
 						trackIndex = seq.getTracks().length;
 						channel = getTrackChannel(trackIndex);
 						if (channel > MidiConstants.CHANNEL_COUNT_ABC - 1) {
-							throw new ParseException("Too many parts (max = " + (MidiConstants.CHANNEL_COUNT_ABC - 1) + ")",
-									fileName, partStartLine);
+							throw new ParseException(
+									"Too many parts (max = " + (MidiConstants.CHANNEL_COUNT_ABC - 1) + ")", fileName,
+									partStartLine);
 						}
 						track = seq.createTrack();
 						track.add(MidiFactory.createLotroChangeEvent(info.getInstrument().midi.id(), channel, 0));
-						SequenceInfo.lastTrackInfos.add(new ExportTrackInfo(0,null,null,channel,info.getInstrument().midi.id()));
+						SequenceInfo.lastTrackInfos
+								.add(new ExportTrackInfo(0, null, null, channel, info.getInstrument().midi.id()));
 						if (useLotroInstruments) {
 							track.add(MidiFactory.createChannelVolumeEvent(MidiConstants.MAX_VOLUME, channel, 1));
 							track.add(MidiFactory.createReverbControlEvent(AbcConstants.MIDI_REVERB, channel, 1));
@@ -313,7 +314,7 @@ public class AbcToMidi {
 						}
 
 						abcInfo.setPartInstrument(trackNumber, info.getInstrument());
-						
+
 					}
 
 					Matcher m = NOTE_PATTERN.matcher(line);
@@ -691,7 +692,6 @@ public class AbcToMidi {
 							chordStartTick = noteEndTick;
 						i = m.end();
 					}
-					
 
 					if (tuplet != null)
 						throw new ParseException("Tuplet not finished by end of line", fileName, lineNumber, i);
@@ -875,8 +875,8 @@ public class AbcToMidi {
 	}
 
 	private static int getTrackChannel(int trackNumber) {
-		if (trackNumber < MidiConstants.DRUM_CHANNEL+1)
-			return trackNumber-1;
+		if (trackNumber < MidiConstants.DRUM_CHANNEL + 1)
+			return trackNumber - 1;
 
 		return trackNumber;
 	}

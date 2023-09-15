@@ -27,6 +27,7 @@ package com.digero.common.midi.synth;
 import javax.sound.midi.Instrument;
 import javax.sound.midi.MidiChannel;
 import com.sun.media.sound.*;
+
 /**
  * Software synthesizer internal instrument.
  *
@@ -35,49 +36,45 @@ import com.sun.media.sound.*;
 @SuppressWarnings("restriction")
 public class SoftInstrument extends Instrument {
 
-    private SoftPerformer[] performers;
-    private ModelPerformer[] modelperformers;
-    private Object data;
-    private ModelInstrument ins;
+	private SoftPerformer[] performers;
+	private ModelPerformer[] modelperformers;
+	private Object data;
+	private ModelInstrument ins;
 
-    public SoftInstrument(ModelInstrument ins) {
-        super(ins.getSoundbank(), ins.getPatch(), ins.getName(),
-                ins.getDataClass());
-        data = ins.getData();
-        this.ins = ins;
-        initPerformers(((ModelInstrument)ins).getPerformers());
-    }
+	public SoftInstrument(ModelInstrument ins) {
+		super(ins.getSoundbank(), ins.getPatch(), ins.getName(), ins.getDataClass());
+		data = ins.getData();
+		this.ins = ins;
+		initPerformers(((ModelInstrument) ins).getPerformers());
+	}
 
-    public SoftInstrument(ModelInstrument ins,
-            ModelPerformer[] overrideperformers) {
-        super(ins.getSoundbank(), ins.getPatch(), ins.getName(),
-                ins.getDataClass());
-        data = ins.getData();
-        this.ins = ins;
-        initPerformers(overrideperformers);
-    }
+	public SoftInstrument(ModelInstrument ins, ModelPerformer[] overrideperformers) {
+		super(ins.getSoundbank(), ins.getPatch(), ins.getName(), ins.getDataClass());
+		data = ins.getData();
+		this.ins = ins;
+		initPerformers(overrideperformers);
+	}
 
-    private void initPerformers(ModelPerformer[] modelperformers) {
-        this.modelperformers = modelperformers;
-        performers = new SoftPerformer[modelperformers.length];
-        for (int i = 0; i < modelperformers.length; i++)
-            performers[i] = new SoftPerformer(modelperformers[i]);
-    }
+	private void initPerformers(ModelPerformer[] modelperformers) {
+		this.modelperformers = modelperformers;
+		performers = new SoftPerformer[modelperformers.length];
+		for (int i = 0; i < modelperformers.length; i++)
+			performers[i] = new SoftPerformer(modelperformers[i]);
+	}
 
-    public ModelDirector getDirector(MidiChannel channel,
-            ModelDirectedPlayer player) {
-        return ins.getDirector(modelperformers, channel, player);
-    }
+	public ModelDirector getDirector(MidiChannel channel, ModelDirectedPlayer player) {
+		return ins.getDirector(modelperformers, channel, player);
+	}
 
-    public ModelInstrument getSourceInstrument() {
-        return ins;
-    }
+	public ModelInstrument getSourceInstrument() {
+		return ins;
+	}
 
-    public Object getData() {
-        return data;
-    }
+	public Object getData() {
+		return data;
+	}
 
-    public SoftPerformer[] getPerformers() {
-        return performers;
-    }
+	public SoftPerformer[] getPerformers() {
+		return performers;
+	}
 }

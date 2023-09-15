@@ -41,8 +41,7 @@ public class MidiUtils {
 	public static final int META_TEMPO_TYPE = 0x51;
 
 	/**
-	 * Given a microsecond time, convert to tick. returns tempo at the given time in
-	 * cache.getCurrTempoMPQ
+	 * Given a microsecond time, convert to tick. returns tempo at the given time in cache.getCurrTempoMPQ
 	 */
 	public static long microsecond2tick(Sequence seq, long micros, TempoCache cache) {
 		if (seq.getDivisionType() != Sequence.PPQ) {
@@ -135,16 +134,16 @@ public class MidiUtils {
 	}
 
 	/**
-	 * convert tick to microsecond with given tempo. Does not take tempo changes
-	 * into account. Does not work for SMPTE timing!
+	 * convert tick to microsecond with given tempo. Does not take tempo changes into account. Does not work for SMPTE
+	 * timing!
 	 */
 	public static long ticks2microsec(long tick, double tempoMPQ, int resolution) {
 		return (long) (((double) tick) * tempoMPQ / resolution);
 	}
 
 	/**
-	 * convert tempo to microsecond with given tempo Does not take tempo changes
-	 * into account. Does not work for SMPTE timing!
+	 * convert tempo to microsecond with given tempo Does not take tempo changes into account. Does not work for SMPTE
+	 * timing!
 	 */
 	public static long microsec2ticks(long us, double tempoMPQ, int resolution) {
 		// do not round to nearest tick
@@ -176,8 +175,7 @@ public class MidiUtils {
 	}
 
 	/**
-	 * parses this message for a META tempo message and returns the tempo in MPQ, or
-	 * -1 if this isn't a tempo message
+	 * parses this message for a META tempo message and returns the tempo in MPQ, or -1 if this isn't a tempo message
 	 */
 	public static int getTempoMPQ(MidiMessage midiMsg) {
 		// first check if it is a META message at all

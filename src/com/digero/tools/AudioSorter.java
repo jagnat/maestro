@@ -37,17 +37,14 @@ import com.digero.common.util.ExtensionFileFilter;
 import com.digero.common.view.ColorTable;
 
 @SuppressWarnings("unused")
-public class AudioSorter
-{
-	public static void main(String[] args) throws Exception
-	{
+public class AudioSorter {
+	public static void main(String[] args) throws Exception {
 //		sortMain();
 		copyToFinalNamesMain();
 //		printMain();
 	}
 
-	public static void sortMain() throws Exception
-	{
+	public static void sortMain() throws Exception {
 		File source = new File("F:\\Games\\LOTRO\\u23a\\wav\\instruments");
 		File target = new File("F:\\Games\\LOTRO\\u23a\\wav\\instruments_sorted");
 
@@ -56,8 +53,7 @@ public class AudioSorter
 		sortFolder("lonely_bassoon", source, target);
 	}
 
-	public static void copyToFinalNamesMain() throws Exception
-	{
+	public static void copyToFinalNamesMain() throws Exception {
 		String sourceRoot = "F:\\Games\\LOTRO\\u23a\\wav\\instruments_sorted";
 		String targetRoot = sourceRoot;
 
@@ -67,23 +63,18 @@ public class AudioSorter
 	}
 
 	private static void copyToFinalNames(final String sourceRoot, final String targetRoot, final String instrumentName,
-			final boolean checkEquals) throws IOException
-	{
-		Files.walkFileTree(Paths.get(sourceRoot, instrumentName), new SimpleFileVisitor<Path>()
-		{
+			final boolean checkEquals) throws IOException {
+		Files.walkFileTree(Paths.get(sourceRoot, instrumentName), new SimpleFileVisitor<Path>() {
 			private int i = 35;
 			private Path previous = null;
 
-			@Override public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException
-			{
+			@Override
+			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
 				boolean equals = false;
-				if (checkEquals)
-				{
-					if (previous != null)
-					{
+				if (checkEquals) {
+					if (previous != null) {
 						String line = "";
-						while (line.length() == 0)
-						{
+						while (line.length() == 0) {
 							System.out.print("Equal? (Y/N): ");
 							AudioPlayer.playAudioFile(previous.toFile(), 400);
 							AudioPlayer.playAudioFile(file.toFile(), 400);
@@ -94,19 +85,16 @@ public class AudioSorter
 					}
 				}
 
-				if (!equals)
-				{
+				if (!equals) {
 					i++;
 					previous = file;
-				}
-				else
-				{
+				} else {
 					previous = null;
 				}
 
 				String targetFileName = instrumentName + "_" + i + (equals ? "a" : "") + ".wav";
-				Path target = equals ? Paths.get(targetRoot, "a", targetFileName) : Paths.get(targetRoot,
-						targetFileName);
+				Path target = equals ? Paths.get(targetRoot, "a", targetFileName)
+						: Paths.get(targetRoot, targetFileName);
 
 				System.out.println(target);
 				Files.copy(file, target);
@@ -115,28 +103,22 @@ public class AudioSorter
 		});
 	}
 
-	private static void sortFolder(String instrument, File sourceRoot, File targetRoot) throws IOException
-	{
+	private static void sortFolder(String instrument, File sourceRoot, File targetRoot) throws IOException {
 		sortFolder(new File(sourceRoot, instrument), new File(targetRoot, instrument));
 	}
 
-	private static void sortFolder(File sourceFolder, File targetFolder) throws IOException
-	{
+	private static void sortFolder(File sourceFolder, File targetFolder) throws IOException {
 		SortedSet<FileFft> sorted = new TreeSet<>();
 
 		int compressionFactor = 1;
-		try
-		{
+		try {
 			int octaveDelta = LotroInstrument.findInstrumentName(sourceFolder.getName(), null).octaveDelta;
 			compressionFactor = (octaveDelta <= 0) ? 1 : 2;
-		}
-		catch (IllegalArgumentException e)
-		{
+		} catch (IllegalArgumentException e) {
 		}
 
 		System.out.println("Calculating...");
-		for (File file : sourceFolder.listFiles(new ExtensionFileFilter("", false, "ogg", "wav")))
-		{
+		for (File file : sourceFolder.listFiles(new ExtensionFileFilter("", false, "ogg", "wav"))) {
 			System.out.println(file.getAbsolutePath());
 			sorted.add(new FileFft(file, compressionFactor));
 		}
@@ -147,26 +129,22 @@ public class AudioSorter
 			targetFolder.mkdirs();
 
 		int i = 0;
-		for (FileFft fileFft : sorted)
-		{
+		for (FileFft fileFft : sorted) {
 //			File outputFile = getTargetFileName(fileFft, targetFolder);
-			File outputFile = new File(targetFolder, String.format("%02d0.%05d - %s", ++i, fileFft.number,
-					fileFft.file.getName()));
+			File outputFile = new File(targetFolder,
+					String.format("%02d0.%05d - %s", ++i, fileFft.number, fileFft.file.getName()));
 			System.out.println(outputFile.getAbsolutePath());
 			Files.copy(Paths.get(fileFft.file.getAbsolutePath()), Paths.get(outputFile.getAbsolutePath()),
 					StandardCopyOption.REPLACE_EXISTING);
 		}
 	}
 
-	private static void print(File directory, String instrument) throws IOException
-	{
+	private static void print(File directory, String instrument) throws IOException {
 		File outputRoot = new File("F:\\Games\\LOTRO\\u16\\fft");
 		if (!outputRoot.exists())
 			outputRoot.mkdirs();
-		try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(outputRoot, instrument + ".txt"))))
-		{
-			for (int noteId = 36; noteId <= 72; noteId++)
-			{
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(new File(outputRoot, instrument + ".txt")))) {
+			for (int noteId = 36; noteId <= 72; noteId++) {
 //				System.out.println(noteId);
 				File wavFile = new File(directory, instrument + "_" + noteId + ".wav");
 				if (!wavFile.exists())
@@ -199,34 +177,32 @@ public class AudioSorter
 	static double[] samples = new double[SAMPLE_COUNT];
 	static FastFourierTransformer transformer = new FastFourierTransformer(DftNormalization.STANDARD);
 
-	private static class FileFft implements Comparable<FileFft>
-	{
+	private static class FileFft implements Comparable<FileFft> {
 		public final File file;
 		public final int number;
 
-		public FileFft(File file, int compressionFactor) throws IOException
-		{
+		public FileFft(File file, int compressionFactor) throws IOException {
 			this.file = file;
 			double[] fft = calculateWavFft(file, compressionFactor);
 			fft = calcWindow(calcBuckets(calcWindow(fft)));
 			this.number = getNumber(fft);
 		}
 
-		@Override public boolean equals(Object obj)
-		{
+		@Override
+		public boolean equals(Object obj) {
 			if (obj == null || obj.getClass() != FileFft.class)
 				return false;
 
 			return this.file.equals(((FileFft) obj).file);
 		}
 
-		@Override public int hashCode()
-		{
+		@Override
+		public int hashCode() {
 			return number ^ file.hashCode();
 		}
 
-		@Override public int compareTo(FileFft o)
-		{
+		@Override
+		public int compareTo(FileFft o) {
 			if (o == null)
 				return 1;
 
@@ -237,12 +213,10 @@ public class AudioSorter
 		}
 	}
 
-	private static double[] calculateWavFft(File file, int compressionFactor) throws IOException
-	{
+	private static double[] calculateWavFft(File file, int compressionFactor) throws IOException {
 		double[] output = new double[FFT_WIDTH];
 
-		try (AudioInputStream stream = AudioSystem.getAudioInputStream(file))
-		{
+		try (AudioInputStream stream = AudioSystem.getAudioInputStream(file)) {
 			AudioFormat format = stream.getFormat();
 
 			if (format.getChannels() != 1)
@@ -254,13 +228,11 @@ public class AudioSorter
 
 			int samplesRead;
 			int passCount = 0;
-			while ((samplesRead = stream.read(buffer) / 2) > 0)
-			{
+			while ((samplesRead = stream.read(buffer) / 2) > 0) {
 				if (samplesRead < SAMPLE_COUNT / 2 && passCount > 0)
 					break;
 
-				for (int i = 0; i < samplesRead; i++)
-				{
+				for (int i = 0; i < samplesRead; i++) {
 					int b1 = ((int) buffer[2 * i]) & 0xff;
 					int b2 = ((int) buffer[2 * i + 1]) & 0xff;
 					samples[i] = ((b2 << 8) | b1) / (double) Short.MAX_VALUE;
@@ -271,10 +243,8 @@ public class AudioSorter
 
 				Complex[] fft = transformer.transform(samples, TransformType.FORWARD);
 
-				for (int i = 0; i < output.length; i++)
-				{
-					for (int j = 0; j < compressionFactor; j++)
-					{
+				for (int i = 0; i < output.length; i++) {
+					for (int j = 0; j < compressionFactor; j++) {
 						int k = i * compressionFactor + j;
 						if (k > fft.length / 2)
 							throw new RuntimeException();
@@ -284,62 +254,50 @@ public class AudioSorter
 				passCount++;
 			}
 
-			for (int i = 0; i < output.length; i++)
-			{
+			for (int i = 0; i < output.length; i++) {
 				output[i] /= passCount;
 			}
-		}
-		catch (UnsupportedAudioFileException e)
-		{
+		} catch (UnsupportedAudioFileException e) {
 			throw new RuntimeException(e);
 		}
 
 		return output;
 	}
 
-	private static double[] calcWindow(double[] fft)
-	{
+	private static double[] calcWindow(double[] fft) {
 		double[] fftWindow = new double[fft.length];
-		for (int i = WINDOW_SIZE; i < fft.length - WINDOW_SIZE; i++)
-		{
-			for (int j = i - WINDOW_SIZE; j <= i + WINDOW_SIZE; j++)
-			{
+		for (int i = WINDOW_SIZE; i < fft.length - WINDOW_SIZE; i++) {
+			for (int j = i - WINDOW_SIZE; j <= i + WINDOW_SIZE; j++) {
 				fftWindow[i] += fft[j] / (2 * WINDOW_SIZE + 1);
 			}
 		}
 		return fftWindow;
 	}
 
-	private static double findMax(double[] arr, int index1, int index2)
-	{
+	private static double findMax(double[] arr, int index1, int index2) {
 		int lowerBound = Math.min(index1, index2);
 		int upperBound = Math.max(index1, index2);
 		double max = arr[lowerBound];
-		for (int i = lowerBound + 1; i <= upperBound; i++)
-		{
+		for (int i = lowerBound + 1; i <= upperBound; i++) {
 			if (arr[i] > max)
 				max = arr[i];
 		}
 		return max;
 	}
 
-	private static double[] calcBuckets(double[] fft)
-	{
+	private static double[] calcBuckets(double[] fft) {
 		int maxIndex = getNumber(fft);
 
 		double[] buckets = new double[fft.length / SAMPLES_PER_BUCKET];
-		for (int delta = IGNORE_DC_FREQ_SAMPLES; delta < buckets.length; delta++)
-		{
+		for (int delta = IGNORE_DC_FREQ_SAMPLES; delta < buckets.length; delta++) {
 			int c = 0;
-			for (int j = maxIndex - delta; j > IGNORE_DC_FREQ_SAMPLES; j -= delta)
-			{
+			for (int j = maxIndex - delta; j > IGNORE_DC_FREQ_SAMPLES; j -= delta) {
 				buckets[delta] += fft[j] - findMax(fft, j + delta / 4, j + delta * 3 / 4);
 				c++;
 				if (c == SAMPLES_PER_BUCKET / 2)
 					break;
 			}
-			for (int j = maxIndex + delta; j < fft.length; j += delta)
-			{
+			for (int j = maxIndex + delta; j < fft.length; j += delta) {
 				buckets[delta] += fft[j] - findMax(fft, j - delta * 3 / 4, j - delta / 4);
 				c++;
 				if (c == SAMPLES_PER_BUCKET)
@@ -355,11 +313,9 @@ public class AudioSorter
 		return buckets;
 	}
 
-	private static int getNumber(double[] fft)
-	{
+	private static int getNumber(double[] fft) {
 		int maxIndex = 0;
-		for (int i = IGNORE_DC_FREQ_SAMPLES; i < fft.length; i++)
-		{
+		for (int i = IGNORE_DC_FREQ_SAMPLES; i < fft.length; i++) {
 			if (fft[i] > fft[maxIndex] * 1.1)
 				maxIndex = i;
 		}
@@ -370,8 +326,7 @@ public class AudioSorter
 	static final double MAX_Y = 1200;
 	static final int MAX_X = 1024;// FFT_WIDTH / 8;
 
-	private static void makeGraph(double[] fft, File folder, String instrument, int noteId) throws IOException
-	{
+	private static void makeGraph(double[] fft, File folder, String instrument, int noteId) throws IOException {
 		final int barWidth = 1;
 		final int barPadding = 0;
 		final int barRun = barWidth + barPadding;
@@ -389,8 +344,7 @@ public class AudioSorter
 		int compressionFactor = compress ? 2 : 1;
 
 		g.setColor(ColorTable.NOTE_ENABLED.get());
-		for (int i = 0; i < width; i++)
-		{
+		for (int i = 0; i < width; i++) {
 			int x = barRun * i;
 			int w = barWidth;
 			double value = compress ? (fft[i * 2] + fft[i * 2 + 1]) : fft[i];

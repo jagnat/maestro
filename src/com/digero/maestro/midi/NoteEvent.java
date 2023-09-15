@@ -25,8 +25,7 @@ package com.digero.maestro.midi;
 import com.digero.common.midi.ITempoCache;
 import com.digero.common.midi.Note;
 
-public class NoteEvent implements Comparable<NoteEvent>
-{
+public class NoteEvent implements Comparable<NoteEvent> {
 	private final ITempoCache tempoCache;
 
 	public final Note note;
@@ -42,17 +41,16 @@ public class NoteEvent implements Comparable<NoteEvent>
 	public NoteEvent tiesTo = null;
 	public long continues = 0;
 
-	//public List<NoteEvent> origEvent;
+	// public List<NoteEvent> origEvent;
 	public boolean alreadyMapped = false;
 
-	//private Map<AbcPart, Boolean> pruneMap = null;
+	// private Map<AbcPart, Boolean> pruneMap = null;
 
 	public int origPitch = 0;
 	public boolean doubledNote = false;
 	public int combinePrioritiesScoreMultiplier = 1;// This is a temp variable used by QuantizedTimingInfo
 
-	public NoteEvent(Note note, int velocity, long startTick, long endTick, ITempoCache tempoCache)
-	{
+	public NoteEvent(Note note, int velocity, long startTick, long endTick, ITempoCache tempoCache) {
 		this.note = note;
 		this.velocity = velocity;
 		this.tempoCache = tempoCache;
@@ -60,84 +58,70 @@ public class NoteEvent implements Comparable<NoteEvent>
 		setEndTick(endTick);
 	}
 
-	public ITempoCache getTempoCache()
-	{
+	public ITempoCache getTempoCache() {
 		return tempoCache;
 	}
 
-	public long getStartTick()
-	{
+	public long getStartTick() {
 		return startTick;
 	}
 
-	public long getEndTick()
-	{
+	public long getEndTick() {
 		return endTick;
 	}
 
-	public void setStartTick(long startTick)
-	{
+	public void setStartTick(long startTick) {
 		this.startTick = startTick;
 		this.startMicrosCached = -1;
 	}
 
-	public void setEndTick(long endTick)
-	{
+	public void setEndTick(long endTick) {
 		this.endTick = endTick;
 		this.endMicrosCached = -1;
 	}
 
-	public void setLengthTicks(long tickLength)
-	{
+	public void setLengthTicks(long tickLength) {
 		setEndTick(startTick + tickLength);
 	}
 
-	public long getLengthTicks()
-	{
+	public long getLengthTicks() {
 		return endTick - startTick;
 	}
-	
-	public long getFullLengthTicks()
-	{
+
+	public long getFullLengthTicks() {
 		long fullEndTick = endTick;
-		for (NoteEvent neTie = tiesTo; neTie != null; neTie = neTie.tiesTo)
-		{
+		for (NoteEvent neTie = tiesTo; neTie != null; neTie = neTie.tiesTo) {
 			fullEndTick = neTie.endTick;
 		}
 		return fullEndTick - startTick;
 	}
 
-	public long getStartMicros()
-	{
+	public long getStartMicros() {
 		if (startMicrosCached == -1)
 			startMicrosCached = tempoCache.tickToMicros(startTick);
 
 		return startMicrosCached;
 	}
 
-	public long getEndMicros()
-	{
+	public long getEndMicros() {
 		if (endMicrosCached == -1)
 			endMicrosCached = tempoCache.tickToMicros(endTick);
 
 		return endMicrosCached;
 	}
 
-	public long getLengthMicros()
-	{
+	public long getLengthMicros() {
 		return getEndMicros() - getStartMicros();
 	}
 
-	public NoteEvent getTieStart()
-	{
+	public NoteEvent getTieStart() {
 		if (tiesFrom == null)
 			return this;
 		assert tiesFrom.startTick < this.startTick;
 		return tiesFrom.getTieStart();
 	}
 
-	public NoteEvent getTieEnd()
-	{
+	public NoteEvent getTieEnd() {
 		if (tiesTo == null)
 			return this;
 		assert tiesTo.endTick > this.endTick;
@@ -150,18 +134,15 @@ public class NoteEvent implements Comparable<NoteEvent>
 	 * @param splitPointTick The tick index to split the NoteEvent.
 	 * @return The new NoteEvent that was created starting at splitPointTick.
 	 */
-	public NoteEvent splitWithTieAtTick(long splitPointTick)
-	{
+	public NoteEvent splitWithTieAtTick(long splitPointTick) {
 		assert splitPointTick > startTick && splitPointTick < endTick;
 
 		NoteEvent next = new NoteEvent(note, velocity, splitPointTick, endTick, tempoCache);
 		setEndTick(splitPointTick);
 		next.origPitch = origPitch;
 
-		if (note != Note.REST)
-		{
-			if (this.tiesTo != null)
-			{
+		if (note != Note.REST) {
+			if (this.tiesTo != null) {
 				next.tiesTo = this.tiesTo;
 				this.tiesTo.tiesFrom = next;
 			}
@@ -172,10 +153,9 @@ public class NoteEvent implements Comparable<NoteEvent>
 		return next;
 	}
 
-	@Override public boolean equals(Object obj)
-	{
-		if (obj instanceof NoteEvent)
-		{
+	@Override
+	public boolean equals(Object obj) {
+		if (obj instanceof NoteEvent) {
 			NoteEvent that = (NoteEvent) obj;
 			return (this.startTick == that.startTick) && (this.endTick == that.endTick)
 					&& (this.note.id == that.note.id);
@@ -183,13 +163,13 @@ public class NoteEvent implements Comparable<NoteEvent>
 		return false;
 	}
 
-	@Override public int hashCode()
-	{
+	@Override
+	public int hashCode() {
 		return ((int) startTick) ^ ((int) endTick) ^ note.id;
 	}
 
-	@Override public int compareTo(NoteEvent that)
-	{
+	@Override
+	public int compareTo(NoteEvent that) {
 		if (that == null)
 			return 1;
 
@@ -204,7 +184,7 @@ public class NoteEvent implements Comparable<NoteEvent>
 
 		return 0;
 	}
-	
+
 	public String printout() {
 		return "Note " + note.id + " dura " + getFullLengthTicks() + " |";
 	}
@@ -213,28 +193,15 @@ public class NoteEvent implements Comparable<NoteEvent>
 		midiPan = pan;
 	}
 
-	/*public boolean isPruned(AbcPart abcPart) {
-		if (abcPart == null || pruneMap == null) {
-			return false;
-		}
-		return pruneMap.get(abcPart) != null && pruneMap.get(abcPart) == true;
-	}
-
-	public void prune(AbcPart part) {
-		if (pruneMap == null) {
-			pruneMap = new HashMap<AbcPart, Boolean>();
-		}
-		pruneMap.put(part, true);
-	}
-
-	public void resetPruned(AbcPart part) {
-		if (pruneMap == null) {
-			return;
-		}
-		pruneMap.remove(part);
-	}
-	
-	public void resetAllPruned() {
-		pruneMap = null;
-	}*/
+	/*
+	 * public boolean isPruned(AbcPart abcPart) { if (abcPart == null || pruneMap == null) { return false; } return
+	 * pruneMap.get(abcPart) != null && pruneMap.get(abcPart) == true; }
+	 * 
+	 * public void prune(AbcPart part) { if (pruneMap == null) { pruneMap = new HashMap<AbcPart, Boolean>(); }
+	 * pruneMap.put(part, true); }
+	 * 
+	 * public void resetPruned(AbcPart part) { if (pruneMap == null) { return; } pruneMap.remove(part); }
+	 * 
+	 * public void resetAllPruned() { pruneMap = null; }
+	 */
 }

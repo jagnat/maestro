@@ -1,7 +1,6 @@
 package com.digero.common.midi;
 
-public interface MidiConstants
-{
+public interface MidiConstants {
 	int META_TEXT = 0x01;
 	int META_COPYRIGHT = 0x02;
 	int META_TRACK_NAME = 0x03;
@@ -25,8 +24,8 @@ public interface MidiConstants
 	int DATA_ENTRY_FINE = 0x26;
 	int DATA_BUTTON_INCREMENT = 0x60;
 	int DATA_BUTTON_DECREMENT = 0x61;
-	int BANK_SELECT_MSB = 0x00;//cc data 1
-	int BANK_SELECT_LSB = 0x20;//cc data 1
+	int BANK_SELECT_MSB = 0x00;// cc data 1
+	int BANK_SELECT_LSB = 0x20;// cc data 1
 	int REGISTERED_PARAM_PITCH_BEND_RANGE = 0x0000;
 	int REGISTERED_PARAM_NONE = 0x3FFF;
 
@@ -54,7 +53,7 @@ public interface MidiConstants
 	int DEFAULT_TEMPO_MPQ = 500000;
 	int DEFAULT_INSTRUMENT = 0;
 	int DEFAULT_CHANNEL_VOLUME = 100;
-	int DEFAULT_EXPRESSION     = 127;
+	int DEFAULT_EXPRESSION = 127;
 	int DEFAULT_PITCH_BEND_RANGE_SEMITONES = 2;
 	int DEFAULT_PITCH_BEND_RANGE_CENTS = 0;
 }

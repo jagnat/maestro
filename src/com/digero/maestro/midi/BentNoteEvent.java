@@ -10,16 +10,16 @@ import com.digero.common.midi.ITempoCache;
 import com.digero.common.midi.Note;
 
 public class BentNoteEvent extends NoteEvent {
-	
+
 	private int cacheMin = -1;// These fields will only be used after all bends have been added
 	private int cacheMax = -1;// So its fine to cache them here.
-	
-	public NavigableMap<Long, Integer> bends = new TreeMap<>();// tick -> relative seminote bend 
+
+	public NavigableMap<Long, Integer> bends = new TreeMap<>();// tick -> relative seminote bend
 
 	public BentNoteEvent(Note note, int velocity, long startTick, long endTick, ITempoCache tempoCache) {
 		super(note, velocity, startTick, endTick, tempoCache);
 	}
-	
+
 	/**
 	 * 
 	 * @param tick
@@ -30,25 +30,27 @@ public class BentNoteEvent extends NoteEvent {
 		cacheMin = -1;
 		cacheMax = -1;
 	}
-	
+
 	public void setBends(NavigableMap<Long, Integer> bends) {
 		this.bends = bends;
 		cacheMin = -1;
 		cacheMax = -1;
 	}
-	
+
 	public Integer getBend(long tick) {
 		Entry<Long, Integer> entry = bends.floorEntry(tick);
-		if (entry == null) return null;
+		if (entry == null)
+			return null;
 		return entry.getValue();
 	}
-	
+
 	/**
 	 * 
 	 * @return max seminote relative bend
 	 */
 	public int getMaxBend() {
-		if (cacheMax != -1) return cacheMax;
+		if (cacheMax != -1)
+			return cacheMax;
 		int maxBend = -128;
 		for (int value : bends.values()) {
 			if (value > maxBend) {
@@ -58,13 +60,14 @@ public class BentNoteEvent extends NoteEvent {
 		cacheMax = maxBend;
 		return cacheMax;
 	}
-	
+
 	/**
 	 * 
 	 * @return min seminote relative bend
 	 */
 	public int getMinBend() {
-		if (cacheMin != -1) return cacheMin;
+		if (cacheMin != -1)
+			return cacheMin;
 		int minBend = 128;
 		for (int value : bends.values()) {
 			if (value < minBend) {
@@ -74,7 +77,7 @@ public class BentNoteEvent extends NoteEvent {
 		cacheMin = minBend;
 		return cacheMin;
 	}
-	
+
 	/**
 	 * 
 	 * @return min seminote absolute bend
@@ -82,7 +85,7 @@ public class BentNoteEvent extends NoteEvent {
 	public int getMinNote() {
 		return note.id + getMinBend();
 	}
-	
+
 	/**
 	 * 
 	 * @return max seminote absolute bend
@@ -90,11 +93,10 @@ public class BentNoteEvent extends NoteEvent {
 	public int getMaxNote() {
 		return note.id + getMaxBend();
 	}
-	
+
 	/**
-	 * Split this bent note into smaller note events.
-	 * Will not take actual grid into consideration,
-	 * so is only for bent notes that has a big range.
+	 * Split this bent note into smaller note events. Will not take actual grid into consideration, so is only for bent
+	 * notes that has a big range.
 	 * 
 	 * @return list of NoteEvents
 	 */
@@ -102,15 +104,18 @@ public class BentNoteEvent extends NoteEvent {
 		List<NoteEvent> splits = new ArrayList<>();
 		Entry<Long, Integer> entry = bends.floorEntry(getStartTick());
 		Note currNote = Note.fromId(note.id + entry.getValue());
-		if (currNote == null) return new ArrayList<>();// Too bad, lets cancel
+		if (currNote == null)
+			return new ArrayList<>();// Too bad, lets cancel
 		NoteEvent curr = new NoteEvent(currNote, velocity, getStartTick(), getEndTick(), getTempoCache());
 		curr.setMidiPan(midiPan);
 		for (Long tick : bends.keySet()) {
-			if (tick == getStartTick()) continue;
+			if (tick == getStartTick())
+				continue;
 			curr.setEndTick(tick);
 			splits.add(curr);
 			currNote = Note.fromId(note.id + bends.get(tick));
-			if (currNote == null) return new ArrayList<>();// Too bad, lets cancel
+			if (currNote == null)
+				return new ArrayList<>();// Too bad, lets cancel
 			curr = new NoteEvent(currNote, velocity, tick, getEndTick(), getTempoCache());
 			curr.setMidiPan(midiPan);
 		}

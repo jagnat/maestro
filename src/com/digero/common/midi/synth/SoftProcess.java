@@ -34,11 +34,11 @@ import com.sun.media.sound.*;
 @SuppressWarnings("restriction")
 public interface SoftProcess extends SoftControl {
 
-    public void init(LotroSoftSynthesizer synth);
+	public void init(LotroSoftSynthesizer synth);
 
-    public double[] get(int instance, String name);
+	public double[] get(int instance, String name);
 
-    public void processControlLogic();
+	public void processControlLogic();
 
-    public void reset();
+	public void reset();
 }

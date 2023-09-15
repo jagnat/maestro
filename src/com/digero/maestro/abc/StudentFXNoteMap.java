@@ -122,8 +122,7 @@ public class StudentFXNoteMap extends DrumNoteMap {
 	}
 
 	/**
-	 * This can be used as a backup in the event that loading the drum map from a
-	 * file fails.
+	 * This can be used as a backup in the event that loading the drum map from a file fails.
 	 */
 	@Override
 	public byte[] getFailsafeDefault() {
@@ -132,27 +131,25 @@ public class StudentFXNoteMap extends DrumNoteMap {
 		Arrays.fill(failsafe, DISABLED_NOTE_ID);
 
 		/*
-		 * failsafe[26] = 49; failsafe[27] = 72; failsafe[28] = 70; // failsafe[29] =
-		 * DISABLED_NOTE_ID; // failsafe[30] = DISABLED_NOTE_ID; failsafe[31] = 51;
-		 * failsafe[32] = 50; failsafe[33] = 39; // failsafe[34] = DISABLED_NOTE_ID;
-		 * failsafe[35] = 49;
+		 * failsafe[26] = 49; failsafe[27] = 72; failsafe[28] = 70; // failsafe[29] = DISABLED_NOTE_ID; // failsafe[30]
+		 * = DISABLED_NOTE_ID; failsafe[31] = 51; failsafe[32] = 50; failsafe[33] = 39; // failsafe[34] =
+		 * DISABLED_NOTE_ID; failsafe[35] = 49;
 		 */
 		failsafe[36] = 36;
 		failsafe[37] = 37;
 		failsafe[38] = 38;/*
-							 * failsafe[39] = 53; failsafe[40] = 54; failsafe[41] = 49; failsafe[42] = 37;
-							 * failsafe[43] = 69; failsafe[44] = 59; failsafe[45] = 47; failsafe[46] = 60;
-							 * failsafe[47] = 63; failsafe[48] = 43; failsafe[49] = 57; failsafe[50] = 45;
-							 * failsafe[51] = 55; failsafe[52] = 57; failsafe[53] = 43; failsafe[54] = 46;
-							 * failsafe[55] = 57; failsafe[56] = 45; failsafe[57] = 57; failsafe[58] = 53;
-							 * failsafe[59] = 60; failsafe[60] = 38; failsafe[61] = 69; failsafe[62] = 39;
-							 * failsafe[63] = 70; failsafe[64] = 48; failsafe[65] = 65; failsafe[66] = 64;
-							 * failsafe[67] = 43; failsafe[68] = 47; failsafe[69] = 37; failsafe[70] = 42;
-							 * // failsafe[71] = DISABLED_NOTE_ID; // failsafe[72] = DISABLED_NOTE_ID;
-							 * failsafe[73] = 64; failsafe[74] = 62; failsafe[75] = 43; failsafe[76] = 51;
-							 * failsafe[77] = 67; failsafe[78] = 65; failsafe[79] = 64; failsafe[80] = 43;
-							 * failsafe[81] = 43; failsafe[82] = 42; failsafe[83] = 44; // failsafe[84] =
-							 * DISABLED_NOTE_ID; failsafe[85] = 72; failsafe[86] = 48; failsafe[87] = 58;
+							 * failsafe[39] = 53; failsafe[40] = 54; failsafe[41] = 49; failsafe[42] = 37; failsafe[43]
+							 * = 69; failsafe[44] = 59; failsafe[45] = 47; failsafe[46] = 60; failsafe[47] = 63;
+							 * failsafe[48] = 43; failsafe[49] = 57; failsafe[50] = 45; failsafe[51] = 55; failsafe[52]
+							 * = 57; failsafe[53] = 43; failsafe[54] = 46; failsafe[55] = 57; failsafe[56] = 45;
+							 * failsafe[57] = 57; failsafe[58] = 53; failsafe[59] = 60; failsafe[60] = 38; failsafe[61]
+							 * = 69; failsafe[62] = 39; failsafe[63] = 70; failsafe[64] = 48; failsafe[65] = 65;
+							 * failsafe[66] = 64; failsafe[67] = 43; failsafe[68] = 47; failsafe[69] = 37; failsafe[70]
+							 * = 42; // failsafe[71] = DISABLED_NOTE_ID; // failsafe[72] = DISABLED_NOTE_ID;
+							 * failsafe[73] = 64; failsafe[74] = 62; failsafe[75] = 43; failsafe[76] = 51; failsafe[77]
+							 * = 67; failsafe[78] = 65; failsafe[79] = 64; failsafe[80] = 43; failsafe[81] = 43;
+							 * failsafe[82] = 42; failsafe[83] = 44; // failsafe[84] = DISABLED_NOTE_ID; failsafe[85] =
+							 * 72; failsafe[86] = 48; failsafe[87] = 58;
 							 */
 
 		return failsafe;

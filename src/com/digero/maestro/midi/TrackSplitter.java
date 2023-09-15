@@ -22,8 +22,7 @@ import com.digero.common.midi.MidiInstrument;
 import com.digero.common.midi.MidiStandard;
 
 /**
- * Takes a midi input and expands each instrument to its own track. Works with
- * GM2, XG, GS, GM and GM+
+ * Takes a midi input and expands each instrument to its own track. Works with GM2, XG, GS, GM and GM+
  * 
  */
 public class TrackSplitter {
@@ -189,11 +188,10 @@ public class TrackSplitter {
 	}
 
 	/**
-	 * Its not preceded by a midi ON, so we treat is as a midi ON although, it's
-	 * silent.
+	 * Its not preceded by a midi ON, so we treat is as a midi ON although, it's silent.
 	 * <p>
-	 * TODO: Consider to remove it, cause Maestro will assign +pppp+ to it, and it
-	 * will become audible which is probably not what the midi maker intended.
+	 * TODO: Consider to remove it, cause Maestro will assign +pppp+ to it, and it will become audible which is probably
+	 * not what the midi maker intended.
 	 * 
 	 * @param index
 	 * @param notesOn
@@ -214,8 +212,7 @@ public class TrackSplitter {
 	}
 
 	/**
-	 * We add all program changes for this GM+ port to the first expanded track that
-	 * uses this port.
+	 * We add all program changes for this GM+ port to the first expanded track that uses this port.
 	 * 
 	 * @param newMetaTrack
 	 * @param portPrograms

@@ -24,190 +24,166 @@ import com.digero.maestro.abc.AbcSongEvent;
 import info.clearthought.layout.TableLayoutConstants;
 
 @SuppressWarnings("serial")
-public class PartsList extends JPanel implements
-	IDiscardable, TableLayoutConstants
-{
+public class PartsList extends JPanel implements IDiscardable, TableLayoutConstants {
 	private DefaultListModel<AbcPart> model;
 	private BoxLayout layout;
-	
+
 	private List<PartsListItem> parts = new ArrayList<PartsListItem>();
 	private AbcPart selectedPart = null;
 	private int selectedIndex = -1;
-	
+
 	private SequencerWrapper abcSequencer;
-	
+
 	private final Dimension rowDimension;
-	
-	public PartsList(SequencerWrapper abcSequencer)
-	{
+
+	public PartsList(SequencerWrapper abcSequencer) {
 		this.abcSequencer = abcSequencer;
 		layout = new BoxLayout(this, BoxLayout.Y_AXIS);
 		setLayout(layout);
 		setBackground(new JList<AbcPartMetadataSource>().getBackground());
-		
+
 		rowDimension = PartsListItem.getProtoDimension();
 		rowDimension.height = 8 * rowDimension.height; // min size should fit 8 rows
 		this.setMinimumSize(rowDimension);
-		
+
 		this.abcSequencer.addChangeListener(e -> {
 			if (e.getProperty() == SequencerProperty.SEQUENCE) {
 				updateTrackNumbers();
 			}
 		});
-		
+
 		model = new DefaultListModel<AbcPart>();
 	}
-	
-	public void updateParts()
-	{
+
+	public void updateParts() {
 		parts = new ArrayList<PartsListItem>();
 		removeAll();
-		
-		if (model.getSize() == 0)
-		{
+
+		if (model.getSize() == 0) {
 			selectedIndex = -1;
 			selectedPart = null;
 		}
-		
-		for (int i = 0; i < model.getSize(); i++)
-		{
+
+		for (int i = 0; i < model.getSize(); i++) {
 			addPart(i);
 		}
-		
+
 		this.revalidate();
 		this.repaint();
 	}
-	
-	private void addPart(int idx)
-	{
+
+	private void addPart(int idx) {
 		AbcPart part = model.elementAt(idx);
 		PartsListItem item = new PartsListItem(part);
-		
+
 		item.setItemListener(itemListener);
-		
-		if (part == selectedPart)
-		{
+
+		if (part == selectedPart) {
 			selectedIndex = idx;
 			item.setSelected(true);
 		}
-		
+
 		parts.add(idx, item);
 		add(item);
 	}
-	
-	private void updateTrackNumbers()
-	{
-		for (PartsListItem item : parts)
-		{
+
+	private void updateTrackNumbers() {
+		for (PartsListItem item : parts) {
 			updatePartSoloMute(item.getPart());
 		}
 	}
-	
-	public void selectPart(int idx)
-	{
-		if (idx < 0)
-		{
+
+	public void selectPart(int idx) {
+		if (idx < 0) {
 			selectedIndex = idx;
 			selectedPart = null;
 			return;
 		}
-		
-		for (int i = 0; i < parts.size(); i++)
-		{
+
+		for (int i = 0; i < parts.size(); i++) {
 			PartsListItem item = parts.get(i);
 			item.setSelected(i == idx);
 		}
 		selectedIndex = idx;
 		selectedPart = parts.get(idx).getPart();
-		
-		for (ListSelectionListener listener : listenerList.getListeners(ListSelectionListener.class))
-		{
+
+		for (ListSelectionListener listener : listenerList.getListeners(ListSelectionListener.class)) {
 			ListSelectionEvent event = new ListSelectionEvent(parts.get(idx).getPart(), idx, idx, false);
 			listener.valueChanged(event);
 		}
-		
+
 		revalidate();
 		repaint();
 	}
-	
-	public void init()
-	{
+
+	public void init() {
 		updateParts();
 	}
 
 	@Override
-	public void discard()
-	{
+	public void discard() {
 		removeAll();
 		selectedIndex = -1;
 		selectedPart = null;
 	}
-	
-	int getSelectedIndex()
-	{
+
+	int getSelectedIndex() {
 		return selectedIndex;
 	}
-	
-	AbcPart getSelectedPart()
-	{
-		if (model == null) return null;
+
+	AbcPart getSelectedPart() {
+		if (model == null)
+			return null;
 		return model.elementAt(getSelectedIndex());
 	}
-	
-	private int getIndexOfPart(AbcPart part)
-	{
-		for (int i = 0; i < model.size(); i++)
-		{
+
+	private int getIndexOfPart(AbcPart part) {
+		for (int i = 0; i < model.size(); i++) {
 			if (part.equals(model.get(i)))
 				return i;
 		}
 		return -1;
 	}
-	
-	DefaultListModel<AbcPart> getModel()
-	{
+
+	DefaultListModel<AbcPart> getModel() {
 		return model;
 	}
-	
-	public void setModel(DefaultListModel<AbcPart> model)
-	{
+
+	public void setModel(DefaultListModel<AbcPart> model) {
 		this.model = model;
 		init();
 	}
-	
-	public void addListSelectionListener(ListSelectionListener listener)
-	{
+
+	public void addListSelectionListener(ListSelectionListener listener) {
 		listenerList.add(ListSelectionListener.class, listener);
 	}
-	
-	public void removeListSelectionListener(ListSelectionListener listener)
-	{
+
+	public void removeListSelectionListener(ListSelectionListener listener) {
 		listenerList.remove(ListSelectionListener.class, listener);
 	}
-	
-	void ensureIndexIsVisible(int index)
-	{
-		
+
+	void ensureIndexIsVisible(int index) {
+
 	}
-	
+
 	private void updatePartSoloMute(AbcPart part) {
 		if (part == null) {
 			return;
 		}
-		
+
 		int trackNo = part.getPreviewSequenceTrackNumber();
-		
+
 		if (trackNo >= 0) {
 			abcSequencer.setTrackMute(trackNo, part.isMuted());
 			abcSequencer.setTrackSolo(trackNo, part.isSoloed());
 		}
 	}
-	
+
 	// Listens to the PartsListItems for selection and solo/mute events
 	public Listener<PartsListItem.PartsListItemEvent> itemListener = e -> {
 		PartsListItem item = (PartsListItem) e.getSource();
 		AbcPart part = item.getPart();
-		switch(e.getType()) {
+		switch (e.getType()) {
 		case SELECTION:
 			selectPart(getIndexOfPart(part));
 			break;
@@ -219,9 +195,9 @@ public class PartsList extends JPanel implements
 			break;
 		}
 	};
-	
+
 	public Listener<AbcPartEvent> partListener = e -> {
-		switch(e.getProperty()) {
+		switch (e.getProperty()) {
 		case TRACK_ENABLED:
 		case INSTRUMENT:
 		case TITLE:
@@ -231,14 +207,13 @@ public class PartsList extends JPanel implements
 			break;
 		}
 	};
-	
+
 	public Listener<AbcSongEvent> songListener = e -> {
 		AbcSong song = e.getSource();
 		if (song == null)
 			return;
-		
-		switch(e.getProperty())
-		{
+
+		switch (e.getProperty()) {
 		case PART_ADDED:
 			e.getPart().addAbcListener(partListener);
 			updateParts();

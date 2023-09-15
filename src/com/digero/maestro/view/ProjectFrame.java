@@ -227,9 +227,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private int maxNoteCountTotal = 0;
 	private boolean midiResolved = false;
 	/*
-	 * private static Color BRIGHT_RED = new Color(255, 0, 0); private static Color
-	 * ORANGE = new Color(235, 150, 64); private static Color BLACK = new Color(0,
-	 * 0, 0);
+	 * private static Color BRIGHT_RED = new Color(255, 0, 0); private static Color ORANGE = new Color(235, 150, 64);
+	 * private static Color BLACK = new Color(0, 0, 0);
 	 */
 
 	public ProjectFrame() {
@@ -260,8 +259,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		saveSettings = new SaveAndExportSettings(prefs.node("saveAndExportSettings"));
 		miscSettings = new MiscSettings(prefs.node("miscSettings"),
 				true /*
-						 * Fallback if miscSettings is empty. Maestro 2.5.0.115 and earlier save misc
-						 * settings in saveAndExportSettings
+						 * Fallback if miscSettings is empty. Maestro 2.5.0.115 and earlier save misc settings in
+						 * saveAndExportSettings
 						 */);
 
 		checkVolumeTransceiver();
@@ -364,7 +363,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		generatePartsList();
 
-		JScrollPane partsListScrollPane = wrapPartsList(); 
+		JScrollPane partsListScrollPane = wrapPartsList();
 
 		generateNewPartButton();
 
@@ -514,7 +513,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		midiPartsAndControls.add(partPanel, BorderLayout.CENTER);
 		midiPartsAndControls.add(playControlPanel, BorderLayout.SOUTH);
 		midiPartsAndControls.setBorder(BorderFactory.createTitledBorder("Part Settings"));
-		
+
 		int splitPanePos = prefs.getInt("splitPanePos", -1);
 
 		JSplitPane topLevelSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, abcPartsAndSettings,
@@ -526,7 +525,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			topLevelSplitPane.setDividerLocation(splitPanePos);
 		}
 		topLevelSplitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, e -> {
-			prefs.putInt("splitPanePos", (Integer)e.getNewValue());
+			prefs.putInt("splitPanePos", (Integer) e.getNewValue());
 		});
 		return topLevelSplitPane;
 	}
@@ -718,8 +717,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	}
 
 	/**
-	 * Wrap the part list in a panel that forces the list to the top. Fixes a swing
-	 * bug where clicking after the end of the list will select the last element
+	 * Wrap the part list in a panel that forces the list to the top. Fixes a swing bug where clicking after the end of
+	 * the list will select the last element
 	 */
 	private JScrollPane wrapPartsList() {
 		JPanel partListWrapperPanel = new JPanel(new BorderLayout());
@@ -733,7 +732,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				getRootPane().requestFocus();
 			}
 		});
-		JScrollPane scrollPane = new JScrollPane(partListWrapperPanel, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		JScrollPane scrollPane = new JScrollPane(partListWrapperPanel, VERTICAL_SCROLLBAR_ALWAYS,
+				HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		Dimension sz = scrollPane.getMinimumSize();
 		sz.width = PartsListItem.getProtoDimension().width;
 		scrollPane.setPreferredSize(sz);
@@ -882,23 +882,23 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		timeSignatureField.addPropertyChangeListener("value", evt -> {
 			if (abcSong != null)
 				abcSong.setTimeSignature((TimeSignature) timeSignatureField.getValue());
-			
+
 			if (abcSequencer.isRunning()) {
 				// Breaking up of long notes can depend on time signature for bar lines.
 				refreshPreviewSequence(false);
 			}
 		});
 		timeSignatureField.addActionListener(e -> {
-            // This is for when pressing enter on an illegal time signature
+			// This is for when pressing enter on an illegal time signature
 			// To update the UI back to the meter of last legal from AbcSong.
 			// This is ran after propertychange above. (hopefully always)
 			// TODO: This ugly hack could be done better
-            if (abcSong != null) {
-            	if (!abcSong.getTimeSignature().toString().equals(timeSignatureField.getText())) {
-            		timeSignatureField.setValue(abcSong.getTimeSignature());
-            	}
-            }
-        });
+			if (abcSong != null) {
+				if (!abcSong.getTimeSignature().toString().equals(timeSignatureField.getText())) {
+					timeSignatureField.setValue(abcSong.getTimeSignature());
+				}
+			}
+		});
 	}
 
 	private void generateKeySignatureField() {
@@ -1383,7 +1383,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 						abcSequencer.setDragging(sequencer.isDragging());
 					}
 					maxNoteCountTotal = 0;// Not fool proof for preventing it counts too many notes when skipping
-					maxNoteCount = 0;//      But better than nothing
+					maxNoteCount = 0;// But better than nothing
 				} finally {
 					echoingPosition = false;
 				}
@@ -1555,7 +1555,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		abcModeRadioButton.setEnabled(hasAbcNotes);
 		stopButton.setEnabled((midiLoaded && (sequencer.isRunning() || sequencer.getPosition() != 0))
 				|| (abcSequencer.isLoaded() && (abcSequencer.isRunning() || abcSequencer.getPosition() != 0)));
-					
+
 		newPartButton.setEnabled(abcSong != null);
 		deletePartButton.setEnabled(partsList.getSelectedIndex() != -1);
 		numerateButton.setEnabled(midiLoaded);
@@ -1603,23 +1603,26 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		zoom.setEnabled(midiLoaded);
 		noteButton.setEnabled(midiLoaded);
 		if (midiLoaded) {
-			midiModeRadioButton.setText("Original (" + ((abcSong.getSequenceInfo().standard == MidiStandard.GM && abcSong.getSequenceInfo().hasPorts) ? MidiStandard.GM_PLUS : abcSong.getSequenceInfo().standard)+")");
+			midiModeRadioButton.setText("Original ("
+					+ ((abcSong.getSequenceInfo().standard == MidiStandard.GM && abcSong.getSequenceInfo().hasPorts)
+							? MidiStandard.GM_PLUS
+							: abcSong.getSequenceInfo().standard)
+					+ ")");
 		} else {
 			midiModeRadioButton.setText("Original");
 		}
-		
+
 //		double[] LAYOUT_COLS_DYN = new double[] { partsList.getFixedCellWidth() + 32, FILL };
 		double[] LAYOUT_COLS_DYN = new double[] { 300 + 32, FILL };
 		tableLayout.setColumn(LAYOUT_COLS_DYN);// This call is attempt of fix for no delete button on MacOS part 2
-		
+
 		String partListTitle = "Song Parts";
-		if (abcSong != null)
-		{
+		if (abcSong != null) {
 			partListTitle = partListTitle + " (Count: " + abcSong.getActivePartCount() + ")";
 		}
-		
+
 		partsListPanel.setBorder(BorderFactory.createTitledBorder(partListTitle));
-		
+
 		updateButtonsPending = false;
 	};
 
@@ -1916,11 +1919,11 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			abcSong.discard();
 			abcSong = null;
 		}
-		
+
 		partPanel.setAbcPart(null);
 		partPanel.setNote("");
 		partPanel.noteVisible(false);
-		
+
 		partsList.updateParts();
 
 		allowOverwriteSaveFile = false;
@@ -2019,7 +2022,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 			SequenceInfo sequenceInfo = abcSong.getSequenceInfo();
 			sequencer.setSequence(sequenceInfo.getSequence());
-			
+
 			sequencer.setTickPosition(sequenceInfo.calcFirstNoteTick());
 			midiBarLabel.setBarNumberCache(sequenceInfo.getDataCache());
 
@@ -2195,7 +2198,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			// abcSong.setShowPruned(saveSettings.showPruned);
 			AbcExporter exporter = abcSong.getAbcExporter();
 			exporter.stereoPan = prefs.getInt("stereoPan", 100);
-			SequenceInfo previewSequenceInfo = SequenceInfo.fromAbcParts(exporter, !failedToLoadLotroInstruments, false);
+			SequenceInfo previewSequenceInfo = SequenceInfo.fromAbcParts(exporter, !failedToLoadLotroInstruments,
+					false);
 
 			long tick = sequencer.getTickPosition();
 			abcPreviewStartTick = exporter.getExportStartTick();
@@ -2207,7 +2211,6 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			boolean running = abcSequencer.isRunning();
 			abcSequencer.reset(false);
 			abcSequencer.setSequence(previewSequenceInfo.getSequence());
-			
 
 			if (tick < abcPreviewStartTick)
 				tick = abcPreviewStartTick;
@@ -2288,38 +2291,33 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		File exportFile = abcSong.getExportFile();
 		File allowOverwriteFile = allowOverwriteExportFile ? exportFile : null;
-		
+
 		String defaultFolder = Util.getLotroMusicPath(false).getAbsolutePath();
 		String folder = prefs.get("exportDialogFolder", defaultFolder);
 		if (exportFile != null) // Use previously exported folder if it exists
 			folder = exportFile.getAbsoluteFile().getParent();
 		if (!new File(folder).exists())
 			folder = defaultFolder;
-		
+
 		String fileName = "mySong.abc";
 
 		// Always regenerate setting from pattern export is highest precedent
-		if (exportFilenameTemplate.shouldRegenerateFilename())
-		{
+		if (exportFilenameTemplate.shouldRegenerateFilename()) {
 			fileName = exportFilenameTemplate.formatName();
-		}
-		else if (exportFile != null) // else use abc filename if exists already
+		} else if (exportFile != null) // else use abc filename if exists already
 		{
 			fileName = exportFile.getName();
-		}
-		else if (abcSong.getSaveFile() != null) // else use msx filename if exists already
+		} else if (abcSong.getSaveFile() != null) // else use msx filename if exists already
 		{
 			fileName = abcSong.getSaveFile().getName();
-		}
-		else if (exportFilenameTemplate.isEnabled()) // else use pattern if usage is enabled
+		} else if (exportFilenameTemplate.isEnabled()) // else use pattern if usage is enabled
 		{
 			fileName = exportFilenameTemplate.formatName();
-		}
-		else if (abcSong.getSourceFile() != null) // else default to source file (midi/abc)
+		} else if (abcSong.getSourceFile() != null) // else default to source file (midi/abc)
 		{
 			fileName = abcSong.getSourceFilename();
 		}
-		
+
 		int dot = fileName.lastIndexOf('.');
 		if (dot > 0)
 			fileName = fileName.substring(0, dot);
@@ -2401,7 +2399,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		File saveFile = abcSong.getSaveFile();
 		File allowOverwriteFile = allowOverwriteSaveFile ? saveFile : null;
-		
+
 		String defaultFolder;
 		if (abcSong.getExportFile() != null)
 			defaultFolder = abcSong.getExportFile().getAbsoluteFile().getParent();
@@ -2413,31 +2411,26 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			folder = saveFile.getAbsoluteFile().getParent();
 		if (!new File(folder).exists())
 			folder = defaultFolder;
-		
+
 		String fileName = "mySong.msx";
 
 		// Always regenerate setting from pattern export is highest precedent
-		if (exportFilenameTemplate.shouldRegenerateFilename())
-		{
+		if (exportFilenameTemplate.shouldRegenerateFilename()) {
 			fileName = exportFilenameTemplate.formatName();
-		}
-		else if (saveFile != null) // else use MSX file if exists already
+		} else if (saveFile != null) // else use MSX file if exists already
 		{
 			fileName = saveFile.getName();
-		}
-		else if (abcSong.getExportFile() != null) // else use ABC filename if exists
+		} else if (abcSong.getExportFile() != null) // else use ABC filename if exists
 		{
 			fileName = abcSong.getExportFile().getName();
-		}
-		else if (exportFilenameTemplate.isEnabled()) // else use pattern if enabled
+		} else if (exportFilenameTemplate.isEnabled()) // else use pattern if enabled
 		{
 			fileName = exportFilenameTemplate.formatName();
-		}
-		else if (abcSong.getSourceFile() != null) // else use source (midi/abc) file
+		} else if (abcSong.getSourceFile() != null) // else use source (midi/abc) file
 		{
 			fileName = abcSong.getSourceFilename();
 		}
-		
+
 		int dot = fileName.lastIndexOf('.');
 		if (dot > 0)
 			fileName = fileName.substring(0, dot);
@@ -2586,8 +2579,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	}
 
 	/**
-	 * Slight modification to JFormattedTextField to select the contents when it
-	 * receives focus.
+	 * Slight modification to JFormattedTextField to select the contents when it receives focus.
 	 */
 	private static class MyFormattedTextField extends JFormattedTextField {
 		public MyFormattedTextField(Object value, int columns) {

@@ -9,44 +9,38 @@ import com.digero.common.abc.AbcConstants;
 import com.digero.common.abc.LotroInstrument;
 import com.digero.tools.soundfont.SampleInfo.Key;
 
-public class StandardInstrumentInfo extends InstrumentInfo
-{
+public class StandardInstrumentInfo extends InstrumentInfo {
 	public final NavigableSet<SampleInfo> usedSamples;
 
-	public StandardInstrumentInfo(LotroInstrument lotroInstrument, int notesPerSample, Map<Key, SampleInfo> samples)
-	{
+	public StandardInstrumentInfo(LotroInstrument lotroInstrument, int notesPerSample, Map<Key, SampleInfo> samples) {
 		this(lotroInstrument, lotroInstrument.toString(), lotroInstrument.lowestPlayable.id,
 				lotroInstrument.highestPlayable.id, notesPerSample, samples);
 	}
 
 	public StandardInstrumentInfo(LotroInstrument lotroInstrument, String name, int lowestNoteId, int highestNoteId,
-			int notesPerSample, Map<Key, SampleInfo> samples)
-	{
+			int notesPerSample, Map<Key, SampleInfo> samples) {
 		super(lotroInstrument, name, lowestNoteId, highestNoteId);
 
 		this.usedSamples = new TreeSet<>();
 		int startId = lowestNoteId + (notesPerSample - 1) / 2;
 
-		for (int id = startId; id <= highestNoteId; id++)
-		{
+		for (int id = startId; id <= highestNoteId; id++) {
 			SampleInfo sample = samples.get(new Key(lotroInstrument, id));
-			if (sample != null)
-			{
+			if (sample != null) {
 				usedSamples.add(sample);
 				id += notesPerSample - 1;
 			}
 		}
 	}
 
-	@Override public void print(PrintStream out)
-	{
+	@Override
+	public void print(PrintStream out) {
 		out.println();
 		out.println("    InstrumentName=" + name);
 		out.println();
 
 		int prevHighKey = lowestNoteId - 1;
-		for (SampleInfo sample : usedSamples)
-		{
+		for (SampleInfo sample : usedSamples) {
 			SampleInfo next = usedSamples.higher(sample);
 
 			int lowKey = prevHighKey + 1;

@@ -87,18 +87,18 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 
 	private SaveAndExportSettings saveSettings;
 	private MiscSettings miscSettings;
-	
+
 	private Preferences maestroPrefs;
 
 	private List<InstrumentSpinner> instrumentSpinners = new ArrayList<>();
 	private JComboBox<Integer> incrementComboBox = new JComboBox<>(new Integer[] { 1, 10 });
 
-	public SettingsDialog(JFrame owner, Preferences maestroPrefs, PartAutoNumberer partNumberer, PartNameTemplate nameTemplate,
-			ExportFilenameTemplate exportTemplate, SaveAndExportSettings saveSettings, MiscSettings miscSettings,
-			InstrNameSettings instrNameSettings) {
+	public SettingsDialog(JFrame owner, Preferences maestroPrefs, PartAutoNumberer partNumberer,
+			PartNameTemplate nameTemplate, ExportFilenameTemplate exportTemplate, SaveAndExportSettings saveSettings,
+			MiscSettings miscSettings, InstrNameSettings instrNameSettings) {
 		super(owner, "Options", true);
 		setDefaultCloseOperation(HIDE_ON_CLOSE);
-		
+
 		this.maestroPrefs = maestroPrefs;
 
 		this.partNumbererSettings = partNumberer.getSettingsCopy();
@@ -644,14 +644,14 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 				updateExportFilenameExample();
 			}
 		});
-		
+
 		JCheckBox alwaysRegenerateCheckBox = new JCheckBox("Always regenerate filenames using pattern");
 		alwaysRegenerateCheckBox.setSelected(exportTemplateSettings.shouldAlwaysRegenerateFromPattern());
 		alwaysRegenerateCheckBox.setEnabled(exportTemplateSettings.isExportFilenamePatternEnabled());
-		alwaysRegenerateCheckBox.setToolTipText("<html>Enable this setting to have Maestro always freshly generate filenames using the pattern.<br>"
-				+ "Disable this setting to have Maestro use a filename from a previous export, if available.</html>");
-		alwaysRegenerateCheckBox.addActionListener(e ->
-		{
+		alwaysRegenerateCheckBox.setToolTipText(
+				"<html>Enable this setting to have Maestro always freshly generate filenames using the pattern.<br>"
+						+ "Disable this setting to have Maestro use a filename from a previous export, if available.</html>");
+		alwaysRegenerateCheckBox.addActionListener(e -> {
 			boolean selected = alwaysRegenerateCheckBox.isSelected();
 			exportTemplateSettings.setAlwaysRegenerateFromPattern(selected);
 		});
@@ -661,8 +661,7 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 		enablePatternExportCheckBox.setToolTipText("<html>Select to enable filename generation using patterns.<br>"
 				+ "Define the pattern in the text box below, referencing any variables in the variable list.<br>"
 				+ "An example filename generated from your pattern is shown below the text box.</html>");
-		enablePatternExportCheckBox.addActionListener(e ->
-		{
+		enablePatternExportCheckBox.addActionListener(e -> {
 			boolean selected = enablePatternExportCheckBox.isSelected();
 			exportTemplateSettings.setExportFilenamePatternEnabled(selected);
 			replaceWhitespaceComboBox.setEnabled(selected);
@@ -832,17 +831,15 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 	private JPanel createMiscPanel() {
 		JLabel titleLabel = new JLabel("<html><u><b>Misc</b></u></html>");
 		/*
-		 * final JCheckBox showPrunedCheckBox = new
-		 * JCheckBox("Show discarded notes in yellow");
+		 * final JCheckBox showPrunedCheckBox = new JCheckBox("Show discarded notes in yellow");
 		 * showPrunedCheckBox.setToolTipText("<html>" // +
 		 * "Notes that is going to be discarded due to lotro's limit<br>" // +
-		 * "of 6 simultanious notes will be show as yellow<br>" // +
-		 * "for the selected instrument." // + "</html>");
-		 * showPrunedCheckBox.setSelected(saveSettings.showPruned);
-		 * showPrunedCheckBox.addActionListener(new ActionListener() {
+		 * "of 6 simultanious notes will be show as yellow<br>" // + "for the selected instrument." // + "</html>");
+		 * showPrunedCheckBox.setSelected(saveSettings.showPruned); showPrunedCheckBox.addActionListener(new
+		 * ActionListener() {
 		 * 
-		 * @Override public void actionPerformed(ActionEvent e) {
-		 * saveSettings.showPruned = showPrunedCheckBox.isSelected(); } });
+		 * @Override public void actionPerformed(ActionEvent e) { saveSettings.showPruned =
+		 * showPrunedCheckBox.isSelected(); } });
 		 */
 		final JCheckBox showMaxPolyphonyCheckBox = new JCheckBox("Show polyphony");
 		showMaxPolyphonyCheckBox.setToolTipText(
@@ -943,7 +940,7 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 		});
 		fontBox.setSelectedItem(Integer.toString(miscSettings.fontSize));
 		fontBox.setEnabled(!miscSettings.theme.equals(defaultStr));
-		
+
 		final JLabel bendLabel = new JLabel("Max range for new method of handling pitch bends (Requires restart):");
 		final JComboBox<String> bendBox = new JComboBox<>();
 		bendBox.setToolTipText(
@@ -999,7 +996,7 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 		panel.add(fontSizeLabel, "0, " + row);
 		layout.insertRow(++row, PREFERRED);
 		panel.add(fontBox, "0, " + row);
-		
+
 		layout.insertRow(++row, PREFERRED);
 		panel.add(bendLabel, "0, " + row);
 		layout.insertRow(++row, PREFERRED);

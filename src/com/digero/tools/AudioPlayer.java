@@ -9,22 +9,17 @@ import javax.sound.sampled.DataLine;
 import javax.sound.sampled.FloatControl;
 import javax.sound.sampled.SourceDataLine;
 
-public class AudioPlayer
-{
-	public static void playAudioFile(File file)
-	{
+public class AudioPlayer {
+	public static void playAudioFile(File file) {
 		playAudioFile(file, 0);
 	}
 
-	public static void playAudioFile(File file, int playDurationMillis)
-	{
-		try
-		{
-			// Get AudioInputStream from given file.	
+	public static void playAudioFile(File file, int playDurationMillis) {
+		try {
+			// Get AudioInputStream from given file.
 			AudioInputStream compressedInput = AudioSystem.getAudioInputStream(file);
 			AudioInputStream decodedInput = null;
-			if (compressedInput != null)
-			{
+			if (compressedInput != null) {
 				AudioFormat baseFormat = compressedInput.getFormat();
 				AudioFormat format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, baseFormat.getSampleRate(), 16,
 						baseFormat.getChannels(), baseFormat.getChannels() * 2, baseFormat.getSampleRate(), false);
@@ -40,8 +35,8 @@ public class AudioPlayer
 					playDurationBytes = oneSecondBytes * playDurationMillis / 1000;
 
 				byte[] data = new byte[1024];
-				SourceDataLine line = (SourceDataLine) AudioSystem.getLine(new DataLine.Info(SourceDataLine.class,
-						format));
+				SourceDataLine line = (SourceDataLine) AudioSystem
+						.getLine(new DataLine.Info(SourceDataLine.class, format));
 				line.open(format);
 
 				FloatControl gainControl = (FloatControl) line.getControl(FloatControl.Type.MASTER_GAIN);
@@ -51,18 +46,15 @@ public class AudioPlayer
 				line.start();
 				int bytesRead;
 				int totalBytes = 0;
-				while ((bytesRead = decodedInput.read(data, 0, data.length)) != -1)
-				{
+				while ((bytesRead = decodedInput.read(data, 0, data.length)) != -1) {
 					totalBytes += bytesRead;
 					int playedBytes = totalBytes;
-					if (totalBytes >= playDurationBytes)
-					{
+					if (totalBytes >= playDurationBytes) {
 						bytesRead -= totalBytes - playDurationBytes;
 						playedBytes = playDurationBytes;
 					}
 
-					if (playDurationBytes - playedBytes < fadeOutDurationBytes)
-					{
+					if (playDurationBytes - playedBytes < fadeOutDurationBytes) {
 						float fadePct = ((float) (playDurationBytes - playedBytes)) / fadeOutDurationBytes;
 						gainControl.setValue(initialGain * fadePct + gainControl.getMinimum() * (1.0f - fadePct));
 					}
@@ -80,9 +72,7 @@ public class AudioPlayer
 				decodedInput.close();
 				compressedInput.close();
 			}
-		}
-		catch (Exception e)
-		{
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

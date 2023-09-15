@@ -399,28 +399,28 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 			double extraHeight) {
 		if (ne instanceof BentNoteEvent) {
 			BentNoteEvent be = (BentNoteEvent) ne;
-			
+
 			Set<Entry<Long, Integer>> bendSet = be.bends.entrySet();
 			Object[] bends = bendSet.toArray();
-			
+
 			ITempoCache tempoCache = ne.getTempoCache();
 			for (int i = 0; i < bends.length; i++) {
 				Entry<Long, Integer> bend1 = (Entry<Long, Integer>) bends[i];
-				
+
 				long bend1tick = bend1.getKey();
-				int bend1bend  = bend1.getValue();
+				int bend1bend = bend1.getValue();
 				long bend2tick = Long.MIN_VALUE;
-				if (i != bends.length-1) {
-					bend2tick = ((Entry<Long, Integer>) bends[i+1]).getKey();
+				if (i != bends.length - 1) {
+					bend2tick = ((Entry<Long, Integer>) bends[i + 1]).getKey();
 				} else {
 					bend2tick = ne.getEndTick();
 				}
 				long startMicro = tempoCache.tickToMicros(bend1tick);
-				double width = Math.max(minWidth, tempoCache.tickToMicros(bend2tick)-startMicro);
-				double y = Util.clamp(noteId+bend1bend, MIN_RENDERED, MAX_RENDERED);
+				double width = Math.max(minWidth, tempoCache.tickToMicros(bend2tick) - startMicro);
+				double y = Util.clamp(noteId + bend1bend, MIN_RENDERED, MAX_RENDERED);
 				rectTmp.setRect(startMicro - extraWidth, y - extraHeight, width + 2 * extraWidth,
 						height + 2 * extraHeight);
-				g2.fill(rectTmp);				
+				g2.fill(rectTmp);
 			}
 		} else {
 			double width = Math.max(minWidth, ne.getLengthMicros());

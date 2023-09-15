@@ -58,7 +58,9 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	public static final String MSX_FILE_DESCRIPTION_PLURAL = MaestroMain.APP_NAME + " Songs";
 	public static final String MSX_FILE_EXTENSION_NO_DOT = "msx";
 	public static final String MSX_FILE_EXTENSION = "." + MSX_FILE_EXTENSION_NO_DOT;
-	public static final Version SONG_FILE_VERSION = new Version(3, 0, 1, 300);// Keep build above 117 to make earlier Maestro releases know msx is made by newer version.
+	public static final Version SONG_FILE_VERSION = new Version(3, 0, 1, 300);// Keep build above 117 to make earlier
+																				// Maestro releases know msx is
+																				// made by newer version.
 
 	private String title = "";
 	private String composer = "";
@@ -83,7 +85,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 
 	private final boolean fromAbcFile;
 	private final boolean fromXmlFile;
-	private SequenceInfo sequenceInfo;//TODO: Refactor name to sourceSequenceInfo
+	private SequenceInfo sequenceInfo;// TODO: Refactor name to sourceSequenceInfo
 	private final PartAutoNumberer partAutoNumberer;
 	private final PartNameTemplate partNameTemplate;
 	private final ExportFilenameTemplate exportFilenameTemplate;
@@ -102,7 +104,8 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 
 	public AbcSong(File file, PartAutoNumberer partAutoNumberer, PartNameTemplate partNameTemplate,
 			ExportFilenameTemplate exportFilenameTemplate, InstrNameSettings instrNameSettings,
-			FileResolver fileResolver, MiscSettings miscSettings) throws IOException, InvalidMidiDataException, ParseException, SAXException {
+			FileResolver fileResolver, MiscSettings miscSettings)
+			throws IOException, InvalidMidiDataException, ParseException, SAXException {
 		sourceFile = file;
 
 		this.partAutoNumberer = partAutoNumberer;
@@ -150,13 +153,13 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		tuneBars = null;
 
 		/*
-		 * if (sequenceInfo != null) { // Make life easier for Garbage Collector for
-		 * (TrackInfo ti : sequenceInfo.getTrackList()) { for (NoteEvent ne :
-		 * ti.getEvents()) { ne.resetAllPruned(); } } }
+		 * if (sequenceInfo != null) { // Make life easier for Garbage Collector for (TrackInfo ti :
+		 * sequenceInfo.getTrackList()) { for (NoteEvent ne : ti.getEvents()) { ne.resetAllPruned(); } } }
 		 */
 	}
 
-	private void initFromMidi(File file, MiscSettings miscSettings) throws IOException, InvalidMidiDataException, ParseException {
+	private void initFromMidi(File file, MiscSettings miscSettings)
+			throws IOException, InvalidMidiDataException, ParseException {
 		usingOldVelocities = false;
 		sequenceInfo = SequenceInfo.fromMidi(file, miscSettings, usingOldVelocities);
 		title = sequenceInfo.getTitle();
@@ -166,7 +169,8 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		note = "";
 	}
 
-	private void initFromAbc(File file, MiscSettings miscSettings) throws IOException, InvalidMidiDataException, ParseException {
+	private void initFromAbc(File file, MiscSettings miscSettings)
+			throws IOException, InvalidMidiDataException, ParseException {
 		AbcInfo abcInfo = new AbcInfo();
 
 		AbcToMidi.Params params = new AbcToMidi.Params(file);
@@ -221,7 +225,8 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		note = "";
 	}
 
-	private void initFromXml(File file, FileResolver fileResolver, MiscSettings miscSettings) throws SAXException, IOException, ParseException {
+	private void initFromXml(File file, FileResolver fileResolver, MiscSettings miscSettings)
+			throws SAXException, IOException, ParseException {
 		try {
 			saveFile = file;
 			Document doc = XmlUtil.openDocument(sourceFile);
@@ -237,8 +242,10 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 						"This project may contain new features that this Maestro cannot use. It is suggested to upgrade this Maestro to load this project.",
 						"Warning", JOptionPane.WARNING_MESSAGE);
 			}
-			
-			usingOldVelocities = SaveUtil.parseValue(songEle, "importSettings/@useOldVelocities", true);//must be before tryToLoadFromFile
+
+			usingOldVelocities = SaveUtil.parseValue(songEle, "importSettings/@useOldVelocities", true);// must be
+																										// before
+																										// tryToLoadFromFile
 
 			sourceFile = SaveUtil.parseValue(songEle, "sourceFile", (File) null);
 			if (sourceFile == null) {
@@ -287,8 +294,9 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 																							// decide and it will be
 																							// false.
 
-			//if (mixTiming)
-			//	mixVersion = SaveUtil.parseValue(songEle, "exportSettings/@mixVersion", 1);// default 1 as old projects did not have that available.
+			// if (mixTiming)
+			// mixVersion = SaveUtil.parseValue(songEle, "exportSettings/@mixVersion", 1);// default 1 as old projects
+			// did not have that available.
 
 			priorityActive = SaveUtil.parseValue(songEle, "exportSettings/@combinePriorities", false);
 
@@ -418,10 +426,8 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		if (note.length() > 0)
 			SaveUtil.appendChildTextElement(songEle, "note", note);
 
-
 		appendImportSettings(doc, songEle);
 		appendExportSettings(doc, songEle);
-
 
 		if (tuneBars != null && tuneBarsModified != null) {
 			appendTuneSections(doc, songEle);
@@ -451,12 +457,12 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		exportSettingsEle.setAttribute("mixTiming", String.valueOf(mixTiming));
 		if (mixTiming) {
 			exportSettingsEle.setAttribute("combinePriorities", String.valueOf(priorityActive));
-			//exportSettingsEle.setAttribute("mixVersion", String.valueOf(mixVersion));
+			// exportSettingsEle.setAttribute("mixVersion", String.valueOf(mixVersion));
 		}
 		if (exportSettingsEle.getAttributes().getLength() > 0 || exportSettingsEle.getChildNodes().getLength() > 0)
 			songEle.appendChild(exportSettingsEle);
 	}
-	
+
 	private void appendImportSettings(Document doc, Element songEle) {
 		Element importSettingsEle = doc.createElement("importSettings");
 		importSettingsEle.setAttribute("useOldVelocities", String.valueOf(usingOldVelocities));
@@ -680,14 +686,14 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	public int getMixVersion() {
 		return mixVersion;
 	}
-	
-	public void setMixTiming(boolean mixTiming)	{
+
+	public void setMixTiming(boolean mixTiming) {
 		if (this.mixTiming != mixTiming) {
 			this.mixTiming = mixTiming;
 			fireChangeEvent(AbcSongProperty.MIX_TIMING);
 		}
 	}
-	
+
 	public void setMixVersion(int mixVersion) {
 		if (this.mixVersion != mixVersion) {
 			this.mixVersion = mixVersion;
@@ -714,9 +720,8 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	}
 
 	/*
-	 * public void setShowPruned(boolean showPruned) { if (this.showPruned !=
-	 * showPruned) { this.showPruned = showPruned;
-	 * //fireChangeEvent(AbcSongProperty.SHOW_PRUNED); } }
+	 * public void setShowPruned(boolean showPruned) { if (this.showPruned != showPruned) { this.showPruned =
+	 * showPruned; //fireChangeEvent(AbcSongProperty.SHOW_PRUNED); } }
 	 * 
 	 * public boolean isShowPruned() { return showPruned; }
 	 */
@@ -857,8 +862,8 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		if (abcExporter.isSkipSilenceAtStart() != skipSilenceAtStart)
 			abcExporter.setSkipSilenceAtStart(skipSilenceAtStart);
 
-			// if (abcExporter.isShowPruned() != showPruned)
-			// abcExporter.setShowPruned(showPruned);
+		// if (abcExporter.isShowPruned() != showPruned)
+		// abcExporter.setShowPruned(showPruned);
 
 		return abcExporter;
 	}
@@ -999,18 +1004,16 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	}
 
 	/*
-	 * public boolean isKept(long tickStart) { SequenceInfo se = getSequenceInfo();
-	 * TreeMap<Integer, TuneLine> tree = tuneBars; if (se != null && tree != null) {
-	 * SequenceDataCache data = se.getDataCache(); long barLengthTicks =
+	 * public boolean isKept(long tickStart) { SequenceInfo se = getSequenceInfo(); TreeMap<Integer, TuneLine> tree =
+	 * tuneBars; if (se != null && tree != null) { SequenceDataCache data = se.getDataCache(); long barLengthTicks =
 	 * data.getBarLengthTicks();
 	 * 
 	 * long startTick = barLengthTicks; long endTick = data.getSongLengthTicks();
 	 * 
-	 * int bar = -1; int curBar = 1; for (long barTick = startTick; barTick <=
-	 * endTick+barLengthTicks; barTick += barLengthTicks) { if (tickStart < barTick)
-	 * { bar = curBar; break; } curBar += 1; } if (bar != -1) { Entry<Integer,
-	 * TuneLine> entry = tree.floorEntry(bar); if (entry != null) { if (bar <=
-	 * entry.getValue().endBar) { return !entry.getValue().remove; } } } }
+	 * int bar = -1; int curBar = 1; for (long barTick = startTick; barTick <= endTick+barLengthTicks; barTick +=
+	 * barLengthTicks) { if (tickStart < barTick) { bar = curBar; break; } curBar += 1; } if (bar != -1) {
+	 * Entry<Integer, TuneLine> entry = tree.floorEntry(bar); if (entry != null) { if (bar <= entry.getValue().endBar) {
+	 * return !entry.getValue().remove; } } } }
 	 * 
 	 * return true; }
 	 */

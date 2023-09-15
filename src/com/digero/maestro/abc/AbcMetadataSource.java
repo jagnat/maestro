@@ -2,8 +2,7 @@ package com.digero.maestro.abc;
 
 import java.io.File;
 
-public interface AbcMetadataSource
-{
+public interface AbcMetadataSource {
 	String getSongTitle();
 
 	String getComposer();
@@ -15,16 +14,16 @@ public interface AbcMetadataSource
 	File getExportFile();
 
 	String getPartName(AbcPartMetadataSource abcPart);
-	
+
 	String getGenre();
-	
+
 	String getMood();
-	
+
 	String getAllParts();
-	
+
 	int getActivePartCount();
-	
+
 	String getBadgerTitle();
-	
+
 	String getSourceFilename();
 }

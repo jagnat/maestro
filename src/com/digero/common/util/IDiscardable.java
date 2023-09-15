@@ -1,6 +1,5 @@
 package com.digero.common.util;
 
-public interface IDiscardable
-{
+public interface IDiscardable {
 	void discard();
 }

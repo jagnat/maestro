@@ -9,8 +9,7 @@ import com.digero.common.abc.LotroInstrument;
 import com.digero.common.midi.KeySignature;
 import com.digero.common.midi.TimeSignature;
 
-class TuneInfo
-{
+class TuneInfo {
 	private int partNumber;
 	private String title;
 	private boolean titleIsFromExtendedInfo;
@@ -28,8 +27,7 @@ class TuneInfo
 	private int meterDenominator;
 	private double noteDivisor;
 
-	public TuneInfo()
-	{
+	public TuneInfo() {
 		partNumber = 0;
 		title = "";
 		titleIsFromExtendedInfo = false;
@@ -45,8 +43,7 @@ class TuneInfo
 		noteDivisor = -1.0;
 	}
 
-	public void newPart(int partNumber)
-	{
+	public void newPart(int partNumber) {
 		this.partNumber = partNumber;
 		instrument = LotroInstrument.DEFAULT_INSTRUMENT;
 		instrumentSet = false;
@@ -56,101 +53,80 @@ class TuneInfo
 		curPartTempoMap.clear();
 	}
 
-	public void setTitle(String title, boolean fromExtendedInfo)
-	{
-		if (fromExtendedInfo || !titleIsFromExtendedInfo)
-		{
+	public void setTitle(String title, boolean fromExtendedInfo) {
+		if (fromExtendedInfo || !titleIsFromExtendedInfo) {
 			this.title = title;
 			titleIsFromExtendedInfo = fromExtendedInfo;
 		}
 	}
 
-	public void setKey(String str)
-	{
+	public void setKey(String str) {
 		this.key = new KeySignature(str);
 	}
 
-	public void setNoteDivisor(String str)
-	{
+	public void setNoteDivisor(String str) {
 		this.noteDivisor = parseNoteDivisor(str);
 		calcPPQN();
 	}
-	
+
 	private void calcPPQN() {
-		this.ppqn = (long)(AbcToMidi.DEFAULT_NOTE_TICKS / (this.meterDenominator * this.noteDivisor));
+		this.ppqn = (long) (AbcToMidi.DEFAULT_NOTE_TICKS / (this.meterDenominator * this.noteDivisor));
 	}
-	
+
 	public double getWholeNoteTime() {
 		if (this.noteDivisor > 0.0) {
-			return (60.0/this.primaryTempoBPM) * this.meterDenominator * this.noteDivisor;
+			return (60.0 / this.primaryTempoBPM) * this.meterDenominator * this.noteDivisor;
 		} else {
-			return (60.0/this.primaryTempoBPM) * this.meterDenominator * ((this.meterNumerator/(double)this.meterDenominator)<0.75?1d/16:1d/8);
+			return (60.0 / this.primaryTempoBPM) * this.meterDenominator
+					* ((this.meterNumerator / (double) this.meterDenominator) < 0.75 ? 1d / 16 : 1d / 8);
 		}
 	}
 
-	public void setMeter(String str)
-	{
+	public void setMeter(String str) {
 		str = str.trim();
-		if (str.equals("C"))
-		{
+		if (str.equals("C")) {
 			meterNumerator = 4;
 			meterDenominator = 4;
-		}
-		else if (str.equals("C|"))
-		{
+		} else if (str.equals("C|")) {
 			meterNumerator = 2;
 			meterDenominator = 2;
-		}
-		else
-		{
+		} else {
 			String[] parts = str.split("[/:| ]");
-			if (parts.length != 2)
-			{
-				throw new IllegalArgumentException("The string: \"" + str
-						+ "\" is not a valid time signature (expected format: 4/4)");
+			if (parts.length != 2) {
+				throw new IllegalArgumentException(
+						"The string: \"" + str + "\" is not a valid time signature (expected format: 4/4)");
 			}
 			meterNumerator = Integer.parseInt(parts[0]);
 			meterDenominator = Integer.parseInt(parts[1]);
 		}
-		
+
 		if (this.noteDivisor < 0) {
 			this.ppqn = ((4 * meterNumerator / meterDenominator) < 3 ? 16 : 8) * AbcToMidi.DEFAULT_NOTE_TICKS
-				/ meterDenominator;
+					/ meterDenominator;
 		} else {
 			calcPPQN();
 		}
 		this.compoundMeter = (meterNumerator % 3) == 0;
 	}
 
-	public TimeSignature getMeter()
-	{
-		try
-		{
+	public TimeSignature getMeter() {
+		try {
 			return new TimeSignature(meterNumerator, meterDenominator);
-		}
-		catch (IllegalArgumentException e)
-		{
+		} catch (IllegalArgumentException e) {
 			return TimeSignature.FOUR_FOUR;
 		}
 	}
 
-	private int parseTempo(String str)
-	{
-		try
-		{
+	private int parseTempo(String str) {
+		try {
 			// Apparently LotRO ignores the tempo note length (e.g. Q: 1/4=120)
 			String[] parts = str.split("=");
 			int bpm;
-			if (parts.length == 1)
-			{
+			if (parts.length == 1) {
 				bpm = Integer.parseInt(parts[0]);
-			}
-			else if (parts.length == 2)
-			{
+			} else if (parts.length == 2) {
 				bpm = Integer.parseInt(parts[1]);
-			}
-			else
-			{
+			} else {
 				throw new IllegalArgumentException("Unable to read tempo");
 			}
 
@@ -158,15 +134,12 @@ class TuneInfo
 				throw new IllegalArgumentException("Tempo \"" + bpm + "\" is out of range (expected 1-10000)");
 
 			return bpm;
-		}
-		catch (NumberFormatException nfe)
-		{
+		} catch (NumberFormatException nfe) {
 			throw new IllegalArgumentException("Unable to read tempo");
 		}
 	}
 
-	public void setPrimaryTempoBPM(String str)
-	{
+	public void setPrimaryTempoBPM(String str) {
 		this.primaryTempoBPM = parseTempo(str);
 		if (!allPartsTempoMap.containsKey(0L))
 			allPartsTempoMap.put(0L, this.primaryTempoBPM);
@@ -174,14 +147,12 @@ class TuneInfo
 			curPartTempoMap.put(0L, this.primaryTempoBPM);
 	}
 
-	public void addTempoEvent(long tick, String str)
-	{
+	public void addTempoEvent(long tick, String str) {
 		allPartsTempoMap.put(tick, parseTempo(str));
 		curPartTempoMap.put(tick, parseTempo(str));
 	}
 
-	public int getCurrentTempoBPM(long tick)
-	{
+	public int getCurrentTempoBPM(long tick) {
 		Entry<Long, Integer> entry = curPartTempoMap.floorEntry(tick);
 		if (entry == null)
 			return getPrimaryTempoBPM();
@@ -189,123 +160,93 @@ class TuneInfo
 		return entry.getValue();
 	}
 
-	public NavigableMap<Long, Integer> getAllPartsTempoMap()
-	{
+	public NavigableMap<Long, Integer> getAllPartsTempoMap() {
 		return allPartsTempoMap;
 	}
 
-	/*private int parseDivisor(String str)
-	{
+	/*
+	 * private int parseDivisor(String str) { String[] parts = str.trim().split("[/:| ]"); if (parts.length != 2) {
+	 * throw new IllegalArgumentException("\"" + str + "\" is not a valid note length" +
+	 * " (example of valid note length: 1/4)"); } int numerator = Integer.parseInt(parts[0]); int denominator =
+	 * Integer.parseInt(parts[1]); if (numerator != 1) { throw new
+	 * IllegalArgumentException("The numerator of the note length must be 1" + " (example of valid note length: 1/4)");
+	 * } if (denominator < 1) { throw new IllegalArgumentException("The denominator of the note length must be positive"
+	 * + " (example of valid note length: 1/4)"); }
+	 * 
+	 * return denominator; }
+	 */
+
+	private double parseNoteDivisor(String str) {
 		String[] parts = str.trim().split("[/:| ]");
-		if (parts.length != 2)
-		{
-			throw new IllegalArgumentException("\"" + str + "\" is not a valid note length"
-					+ " (example of valid note length: 1/4)");
+		if (parts.length != 2) {
+			throw new IllegalArgumentException(
+					"\"" + str + "\" is not a valid note length" + " (example of valid note length: 1/4)");
 		}
 		int numerator = Integer.parseInt(parts[0]);
 		int denominator = Integer.parseInt(parts[1]);
-		if (numerator != 1)
-		{
-			throw new IllegalArgumentException("The numerator of the note length must be 1"
-					+ " (example of valid note length: 1/4)");
+		/*
+		 * if (numerator != 1) { throw new IllegalArgumentException("The numerator of the note length must be 1" +
+		 * " (example of valid note length: 1/4)"); }
+		 **/
+		if (numerator < 1) {
+			throw new IllegalArgumentException(
+					"The numerator of the note length must be positive" + " (example of valid note length: 3/8)");
 		}
-		if (denominator < 1)
-		{
-			throw new IllegalArgumentException("The denominator of the note length must be positive"
-					+ " (example of valid note length: 1/4)");
-		}
-
-		return denominator;
-	}*/
-	
-	private double parseNoteDivisor(String str)
-	{
-		String[] parts = str.trim().split("[/:| ]");
-		if (parts.length != 2)
-		{
-			throw new IllegalArgumentException("\"" + str + "\" is not a valid note length"
-					+ " (example of valid note length: 1/4)");
-		}
-		int numerator = Integer.parseInt(parts[0]);
-		int denominator = Integer.parseInt(parts[1]);
-		/*if (numerator != 1)
-		{
-			throw new IllegalArgumentException("The numerator of the note length must be 1"
-					+ " (example of valid note length: 1/4)");
-		}**/
-		if (numerator < 1)
-		{
-			throw new IllegalArgumentException("The numerator of the note length must be positive"
-					+ " (example of valid note length: 3/8)");
-		}
-		if (denominator < 1)
-		{
-			throw new IllegalArgumentException("The denominator of the note length must be positive"
-					+ " (example of valid note length: 3/8)");
+		if (denominator < 1) {
+			throw new IllegalArgumentException(
+					"The denominator of the note length must be positive" + " (example of valid note length: 3/8)");
 		}
 
-		return numerator/(double) denominator;
+		return numerator / (double) denominator;
 	}
 
-	public void setInstrument(LotroInstrument instrument, boolean definitive)
-	{
+	public void setInstrument(LotroInstrument instrument, boolean definitive) {
 		this.instrument = instrument;
 		this.instrumentSet = true;
 		this.instrumentSetHard = definitive;
 	}
 
-	public boolean isInstrumentSet()
-	{
+	public boolean isInstrumentSet() {
 		return instrumentSet;
 	}
-	
-	public boolean isInstrumentDefinitiveSet()
-	{
+
+	public boolean isInstrumentDefinitiveSet() {
 		return instrumentSet && instrumentSetHard;
 	}
 
-	public void setDynamics(String str)
-	{
+	public void setDynamics(String str) {
 		dynamics = Dynamics.valueOf(str);
 	}
 
-	public int getPartNumber()
-	{
+	public int getPartNumber() {
 		return partNumber;
 	}
 
-	public String getTitle()
-	{
+	public String getTitle() {
 		return title;
 	}
 
-	public KeySignature getKey()
-	{
+	public KeySignature getKey() {
 		return key;
 	}
 
-	public long getPpqn()
-	{
+	public long getPpqn() {
 		return ppqn;
 	}
 
-	public boolean isCompoundMeter()
-	{
+	public boolean isCompoundMeter() {
 		return compoundMeter;
 	}
 
-	public int getPrimaryTempoBPM()
-	{
+	public int getPrimaryTempoBPM() {
 		return primaryTempoBPM;
 	}
 
-	public LotroInstrument getInstrument()
-	{
+	public LotroInstrument getInstrument() {
 		return instrument;
 	}
 
-	public Dynamics getDynamics()
-	{
+	public Dynamics getDynamics() {
 		return dynamics;
 	}
 }

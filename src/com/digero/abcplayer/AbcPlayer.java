@@ -177,8 +177,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 	public static void activate(String[] args) {
 		/*
 		 * if (args != null && args.length > 0 && args[0] != null) {
-		 * System.out.println(" Processing file path ("+args[0].length()+" chars):\n"
-		 * +args[0]); }
+		 * System.out.println(" Processing file path ("+args[0].length()+" chars):\n" +args[0]); }
 		 */
 		mainWindow.openSongFromCommandLine(args);
 	}
@@ -335,7 +334,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 					useLotroInstruments = false;
 				}
-				sequencer.createReceiver();//To make sure its there
+				sequencer.createReceiver();// To make sure its there
 			} else {
 				sequencer = new SequencerWrapper();
 			}

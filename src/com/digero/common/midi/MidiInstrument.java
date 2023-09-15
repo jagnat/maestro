@@ -1,7 +1,6 @@
 package com.digero.common.midi;
 
-public enum MidiInstrument
-{
+public enum MidiInstrument {
 	// Official name list is at: https://www.midi.org/specifications-old/item/gm-level-1-sound-set
 	PIANO("Acoustic Grand Piano"), // 0
 	BRIGHT_PIANO("Bright Acoustic Piano"), // 1
@@ -133,11 +132,10 @@ public enum MidiInstrument
 	GUN_SHOT("Gun Shot"), // 127
 	INVALID("Unknown");
 
-	public static final String STANDARD_DRUM_KIT  = "Standard Drum Kit";
+	public static final String STANDARD_DRUM_KIT = "Standard Drum Kit";
 	private static final MidiInstrument[] values = values();
 
-	public static MidiInstrument fromId(int id)
-	{
+	public static MidiInstrument fromId(int id) {
 		if (id < 0 || id >= values.length)
 			return INVALID;
 
@@ -146,18 +144,16 @@ public enum MidiInstrument
 
 	public final String name;
 
-	MidiInstrument(String name)
-	{
+	MidiInstrument(String name) {
 		this.name = name;
 	}
 
-	public int id()
-	{
+	public int id() {
 		return ordinal();
 	}
 
-	@Override public String toString()
-	{
+	@Override
+	public String toString() {
 		return name;
 	}
 }

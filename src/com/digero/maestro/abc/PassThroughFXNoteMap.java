@@ -5,30 +5,28 @@ import org.w3c.dom.Element;
 import com.digero.common.abc.LotroInstrument;
 import com.digero.common.midi.MidiConstants;
 
-public class PassThroughFXNoteMap extends StudentFXNoteMap
-{
-	@Override protected byte getDefaultMapping(byte noteId)
-	{
+public class PassThroughFXNoteMap extends StudentFXNoteMap {
+	@Override
+	protected byte getDefaultMapping(byte noteId) {
 		if (LotroInstrument.STUDENT_FX_FIDDLE.isPlayable(noteId))
 			return noteId;
 		else
 			return DISABLED_NOTE_ID;
 	}
 
-	@Override public byte[] getFailsafeDefault()
-	{
+	@Override
+	public byte[] getFailsafeDefault() {
 		byte[] failsafe = new byte[MidiConstants.NOTE_COUNT];
 
-		for (int i = 0; i < failsafe.length; i++)
-		{
+		for (int i = 0; i < failsafe.length; i++) {
 			failsafe[i] = getDefaultMapping((byte) i);
 		}
 
 		return failsafe;
 	}
 
-	@Override public void saveToXml(Element ele)
-	{
+	@Override
+	public void saveToXml(Element ele) {
 		ele.setAttribute("isPassthrough", String.valueOf(true));
 		super.saveToXml(ele);
 	}

@@ -15,23 +15,21 @@ import com.digero.common.util.Pair;
 import com.digero.common.util.Util;
 import com.digero.maestro.view.SettingsDialog.MockMetadataSource;
 
-public class ExportFilenameTemplate
-{
-	public static final String[] spaceReplaceChars = {" ", "", "_", "-"};
-	public static final String[] spaceReplaceLabels = {"Don't Replace", "Remove Spaces", "_ (Underscore)", "- (Dash)"};
-	
-	public static class Settings
-	{
+public class ExportFilenameTemplate {
+	public static final String[] spaceReplaceChars = { " ", "", "_", "-" };
+	public static final String[] spaceReplaceLabels = { "Don't Replace", "Remove Spaces", "_ (Underscore)",
+			"- (Dash)" };
+
+	public static class Settings {
 		private boolean exportFilenamePatternEnabled;
 		private boolean alwaysRegenerateFromPattern;
 		private String exportFilenamePattern;
 		private String whitespaceReplaceText;
 		private boolean partCountZeroPadded;
-		
+
 		private final Preferences prefs;
 
-		private Settings(Preferences prefs)
-		{
+		private Settings(Preferences prefs) {
 			this.prefs = prefs;
 			exportFilenamePatternEnabled = prefs.getBoolean("exportFilenamePatternEnabled", false);
 			alwaysRegenerateFromPattern = prefs.getBoolean("alwaysRegenerateFromPattern", false);
@@ -40,14 +38,12 @@ public class ExportFilenameTemplate
 			partCountZeroPadded = prefs.getBoolean("partCountZeroPadded", true);
 		}
 
-		public Settings(Settings source)
-		{
+		public Settings(Settings source) {
 			this.prefs = source.prefs;
 			copyFrom(source);
 		}
 
-		private void save()
-		{
+		private void save() {
 			prefs.putBoolean("exportFilenamePatternEnabled", exportFilenamePatternEnabled);
 			prefs.putBoolean("alwaysRegenerateFromPattern", alwaysRegenerateFromPattern);
 			prefs.put("exportFilenamePattern", exportFilenamePattern);
@@ -55,97 +51,82 @@ public class ExportFilenameTemplate
 			prefs.putBoolean("partCountZeroPadded", partCountZeroPadded);
 		}
 
-		private void copyFrom(Settings source)
-		{
+		private void copyFrom(Settings source) {
 			this.exportFilenamePatternEnabled = source.exportFilenamePatternEnabled;
 			this.alwaysRegenerateFromPattern = source.alwaysRegenerateFromPattern;
 			this.exportFilenamePattern = source.exportFilenamePattern;
 			this.whitespaceReplaceText = source.whitespaceReplaceText;
 			this.partCountZeroPadded = source.partCountZeroPadded;
 		}
-		
-		public boolean isExportFilenamePatternEnabled()
-		{
+
+		public boolean isExportFilenamePatternEnabled() {
 			return exportFilenamePatternEnabled;
 		}
-		
-		public void setExportFilenamePatternEnabled(boolean exportFilenamePatternEnabled)
-		{
+
+		public void setExportFilenamePatternEnabled(boolean exportFilenamePatternEnabled) {
 			this.exportFilenamePatternEnabled = exportFilenamePatternEnabled;
 		}
-		
-		public boolean shouldAlwaysRegenerateFromPattern()
-		{
+
+		public boolean shouldAlwaysRegenerateFromPattern() {
 			return alwaysRegenerateFromPattern;
 		}
-		
-		public void setAlwaysRegenerateFromPattern(boolean alwaysRegenerateFromPattern)
-		{
+
+		public void setAlwaysRegenerateFromPattern(boolean alwaysRegenerateFromPattern) {
 			this.alwaysRegenerateFromPattern = alwaysRegenerateFromPattern;
 		}
 
-		public String getExportFilenamePattern()
-		{
+		public String getExportFilenamePattern() {
 			return exportFilenamePattern;
 		}
 
-		public void setExportFilenamePattern(String exportFilenamePattern)
-		{
+		public void setExportFilenamePattern(String exportFilenamePattern) {
 			this.exportFilenamePattern = exportFilenamePattern;
 		}
 
-		public String getWhitespaceReplaceText()
-		{
+		public String getWhitespaceReplaceText() {
 			return whitespaceReplaceText;
 		}
 
-		public void setWhitespaceReplaceText(String whitespaceReplaceText)
-		{
+		public void setWhitespaceReplaceText(String whitespaceReplaceText) {
 			this.whitespaceReplaceText = whitespaceReplaceText;
 		}
-		
-		public boolean isPartCountZeroPadded()
-		{
+
+		public boolean isPartCountZeroPadded() {
 			return partCountZeroPadded;
 		}
-		
-		public void setPartCountZeroPadded(boolean zeroPadded)
-		{
+
+		public void setPartCountZeroPadded(boolean zeroPadded) {
 			partCountZeroPadded = zeroPadded;
 		}
-		
-		public void restoreDefaults()
-		{
+
+		public void restoreDefaults() {
 			try {
 				prefs.clear();
 			} catch (BackingStoreException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
+
 			Settings fresh = new Settings(prefs);
 			this.copyFrom(fresh);
 		}
 	}
 
-	public abstract static class Variable
-	{
+	public abstract static class Variable {
 		private String description;
 
-		private Variable(String description)
-		{
+		private Variable(String description) {
 			this.description = description;
 		}
 
 		public abstract String getValue();
 
-		public String getDescription()
-		{
+		public String getDescription() {
 			return description;
 		}
 
-		@Override public String toString()
-		{
+		@Override
+		public String toString() {
 			return getValue();
 		}
 	}
@@ -156,107 +137,92 @@ public class ExportFilenameTemplate
 
 	private SortedMap<String, Variable> variables;
 
-	public ExportFilenameTemplate(Preferences prefsNode)
-	{
+	public ExportFilenameTemplate(Preferences prefsNode) {
 		this.settings = new Settings(prefsNode);
 
 		Comparator<String> caseInsensitiveStringComparator = String::compareToIgnoreCase;
 
 		variables = new TreeMap<>(caseInsensitiveStringComparator);
 
-		variables.put("$SongTitle", new Variable("The title of the song, as entered in the \"T:\" field")
-		{
-			@Override public String getValue()
-			{
+		variables.put("$SongTitle", new Variable("The title of the song, as entered in the \"T:\" field") {
+			@Override
+			public String getValue() {
 				return getMetadataSource().getSongTitle().trim();
 			}
 		});
-		variables.put("$SongLength", new Variable("The playing time of the song in mm_ss format")
-		{
-			@Override public String getValue()
-			{
+		variables.put("$SongLength", new Variable("The playing time of the song in mm_ss format") {
+			@Override
+			public String getValue() {
 				return Util.formatDuration(getMetadataSource().getSongLengthMicros(), 0, '-');
 			}
 		});
-		variables.put("$SongComposer", new Variable("The song composer's name, as entered in the \"C:\" field")
-		{
-			@Override public String getValue()
-			{
+		variables.put("$SongComposer", new Variable("The song composer's name, as entered in the \"C:\" field") {
+			@Override
+			public String getValue() {
 				return getMetadataSource().getComposer().trim();
 			}
 		});
-		variables.put("$SongTranscriber", new Variable("Your name, as entered in the \"Z:\" field")
-		{
-			@Override public String getValue()
-			{
+		variables.put("$SongTranscriber", new Variable("Your name, as entered in the \"Z:\" field") {
+			@Override
+			public String getValue() {
 				return getMetadataSource().getTranscriber().trim();
 			}
 		});
-		variables.put("$PartCount", new Variable("Number of parts in the ABC file")
-		{
-			@Override public String getValue()
-			{
-				return String.format(settings.partCountZeroPadded? "%02d" : "%d", getMetadataSource().getActivePartCount());
+		variables.put("$PartCount", new Variable("Number of parts in the ABC file") {
+			@Override
+			public String getValue() {
+				return String.format(settings.partCountZeroPadded ? "%02d" : "%d",
+						getMetadataSource().getActivePartCount());
 			}
 		});
-		variables.put("$SourceFile", new Variable("Source file name (midi or ABC)")
-		{
-			@Override public String getValue()
-			{
+		variables.put("$SourceFile", new Variable("Source file name (midi or ABC)") {
+			@Override
+			public String getValue() {
 				String name = getMetadataSource().getSourceFilename();
 				return name.substring(0, name.lastIndexOf('.'));
 			}
 		});
 	}
 
-	public Settings getSettingsCopy()
-	{
+	public Settings getSettingsCopy() {
 		return new Settings(settings);
 	}
 
-	public void setSettings(Settings settings)
-	{
+	public void setSettings(Settings settings) {
 		this.settings.copyFrom(settings);
 		this.settings.save();
 	}
 
-	public AbcMetadataSource getMetadataSource()
-	{
+	public AbcMetadataSource getMetadataSource() {
 		if (metadata == null)
 			metadata = new MockMetadataSource(null);
 
 		return metadata;
 	}
 
-	public void setMetadataSource(AbcMetadataSource metadata)
-	{
+	public void setMetadataSource(AbcMetadataSource metadata) {
 		this.metadata = metadata;
 	}
 
-	public SortedMap<String, Variable> getVariables()
-	{
+	public SortedMap<String, Variable> getVariables() {
 		return Collections.unmodifiableSortedMap(variables);
 	}
-	
-	public boolean isEnabled()
-	{
+
+	public boolean isEnabled() {
 		return settings.isExportFilenamePatternEnabled();
 	}
-	
-	public boolean shouldRegenerateFilename()
-	{
+
+	public boolean shouldRegenerateFilename() {
 		return settings.isExportFilenamePatternEnabled() && settings.shouldAlwaysRegenerateFromPattern();
 	}
 
-	public String formatName()
-	{
+	public String formatName() {
 		return formatName(settings);
 	}
 
-	public String formatName(ExportFilenameTemplate.Settings settings)
-	{
+	public String formatName(ExportFilenameTemplate.Settings settings) {
 		String name = settings.getExportFilenamePattern();
-		
+
 		// hacky but it works - save and restore later
 		boolean zeroPad = this.settings.partCountZeroPadded;
 		this.settings.partCountZeroPadded = settings.partCountZeroPadded;
@@ -266,33 +232,29 @@ public class ExportFilenameTemplate
 		Matcher matcher = regex.matcher(name);
 
 		ArrayList<Pair<Integer, Integer>> matches = new ArrayList<>();
-		while (matcher.find())
-		{
+		while (matcher.find()) {
 			matches.add(new Pair<>(matcher.start(), matcher.end()));
 		}
 
 		ListIterator<Pair<Integer, Integer>> reverseIter = matches.listIterator(matches.size());
-		while (reverseIter.hasPrevious())
-		{
+		while (reverseIter.hasPrevious()) {
 			Pair<Integer, Integer> match = reverseIter.previous();
 			Variable var = variables.get(name.substring(match.first, match.second));
-			if (var != null)
-			{
+			if (var != null) {
 				String value = var.getValue();
 				value = value.replaceAll("\\s+", settings.getWhitespaceReplaceText());
 				name = name.substring(0, match.first) + value + name.substring(match.second);
 			}
 		}
-		
+
 		this.settings.partCountZeroPadded = zeroPad;
-		
+
 		name += ".abc";
-		
+
 		return name;
 	}
-	
-	public void restoreDefaultSettings()
-	{
+
+	public void restoreDefaultSettings() {
 		settings.restoreDefaults();
 	}
 }

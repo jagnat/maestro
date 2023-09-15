@@ -3,10 +3,8 @@ package com.digero.maestro.abc;
 import java.util.EventObject;
 
 @SuppressWarnings("serial")
-public class AbcSongEvent extends EventObject
-{
-	public enum AbcSongProperty
-	{
+public class AbcSongEvent extends EventObject {
+	public enum AbcSongProperty {
 		TITLE, //
 		COMPOSER, //
 		TRANSCRIBER, //
@@ -27,37 +25,32 @@ public class AbcSongEvent extends EventObject
 		GENRE, //
 		MOOD, //
 		MIX_TIMING_COMBINE_PRIORITIES,
-		//SHOW_PRUNED, //
-		TUNE_EDIT,
-		SONG_CLOSING
+		// SHOW_PRUNED, //
+		TUNE_EDIT, SONG_CLOSING
 	}
 
 	private final AbcSongProperty property;
 	private final AbcPart part;
 
-	public AbcSongEvent(AbcSong source, AbcSongProperty property, AbcPart part)
-	{
+	public AbcSongEvent(AbcSong source, AbcSongProperty property, AbcPart part) {
 		super(source);
 		this.property = property;
 		this.part = part;
 	}
 
-	public AbcSongProperty getProperty()
-	{
+	public AbcSongProperty getProperty() {
 		return property;
 	}
 
 	/**
-	 * @return The part associated with this event, or null if this event doesn't apply to a
-	 *         particular part.
+	 * @return The part associated with this event, or null if this event doesn't apply to a particular part.
 	 */
-	public AbcPart getPart()
-	{
+	public AbcPart getPart() {
 		return part;
 	}
 
-	@Override public AbcSong getSource()
-	{
+	@Override
+	public AbcSong getSource() {
 		return (AbcSong) super.getSource();
 	}
 }

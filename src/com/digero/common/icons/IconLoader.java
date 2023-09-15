@@ -11,22 +11,17 @@ import javax.swing.ImageIcon;
 /**
  * This is just here for the purposes of IconLoader.class.getResource()
  */
-public class IconLoader
-{
-	public static ImageIcon getImageIcon(String name)
-	{
+public class IconLoader {
+	public static ImageIcon getImageIcon(String name) {
 		return new ImageIcon(IconLoader.class.getResource(name));
 	}
 
-	public static URL getUrl(String name)
-	{
+	public static URL getUrl(String name) {
 		return IconLoader.class.getResource(name);
 	}
 
-	public static ImageIcon getDisabledIcon(String name)
-	{
-		try
-		{
+	public static ImageIcon getDisabledIcon(String name) {
+		try {
 			BufferedImage img = ImageIO.read(IconLoader.class.getResource(name));
 			int width = img.getWidth();
 			int height = img.getHeight();
@@ -35,11 +30,9 @@ public class IconLoader
 			final int H = 0;
 			final int S = 1;
 			final int B = 2;
-			for (int y = 0; y < height; y++)
-			{
+			for (int y = 0; y < height; y++) {
 				img.getRGB(0, y, width, 1, argbArray, 0, width);
-				for (int x = 0; x < width; x++)
-				{
+				for (int x = 0; x < width; x++) {
 					int argb = argbArray[x];
 					int r = (argb >>> 16) & 0xFF;
 					int g = (argb >>> 8) & 0xFF;
@@ -56,9 +49,7 @@ public class IconLoader
 				img.setRGB(0, y, width, 1, argbArray, 0, width);
 			}
 			return new ImageIcon(img);
-		}
-		catch (IOException e)
-		{
+		} catch (IOException e) {
 			assert false;
 			e.printStackTrace();
 			return new ImageIcon(IconLoader.class.getResource(name));
