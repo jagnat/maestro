@@ -526,7 +526,6 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			topLevelSplitPane.setDividerLocation(splitPanePos);
 		}
 		topLevelSplitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, e -> {
-			System.out.println("old: " + e.getOldValue() + " new: " + e.getNewValue());
 			prefs.putInt("splitPanePos", (Integer)e.getNewValue());
 		});
 		return topLevelSplitPane;
