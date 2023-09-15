@@ -44,6 +44,7 @@ import com.digero.common.midi.NoteFilterSequencerWrapper;
 import com.digero.common.util.ExtensionFileFilter;
 import com.digero.common.util.Util;
 import com.digero.common.view.LinkButton;
+import com.digero.maestro.MaestroMain;
 import com.digero.maestro.abc.AbcMetadataSource;
 import com.digero.maestro.abc.AbcPartMetadataSource;
 import com.digero.maestro.abc.AbcSong;
@@ -86,15 +87,19 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 
 	private SaveAndExportSettings saveSettings;
 	private MiscSettings miscSettings;
+	
+	private Preferences maestroPrefs;
 
 	private List<InstrumentSpinner> instrumentSpinners = new ArrayList<>();
 	private JComboBox<Integer> incrementComboBox = new JComboBox<>(new Integer[] { 1, 10 });
 
-	public SettingsDialog(JFrame owner, PartAutoNumberer partNumberer, PartNameTemplate nameTemplate,
+	public SettingsDialog(JFrame owner, Preferences maestroPrefs, PartAutoNumberer partNumberer, PartNameTemplate nameTemplate,
 			ExportFilenameTemplate exportTemplate, SaveAndExportSettings saveSettings, MiscSettings miscSettings,
 			InstrNameSettings instrNameSettings) {
 		super(owner, "Options", true);
 		setDefaultCloseOperation(HIDE_ON_CLOSE);
+		
+		this.maestroPrefs = maestroPrefs;
 
 		this.partNumbererSettings = partNumberer.getSettingsCopy();
 
@@ -918,6 +923,8 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 		themeBox.addActionListener(e -> {
 			miscSettings.theme = (String) themeBox.getSelectedItem();
 			fontBox.setEnabled(!miscSettings.theme.equals(defaultStr));
+
+			maestroPrefs.putInt("splitPanePos", -1);
 		});
 		themeBox.setSelectedItem(miscSettings.theme);
 
@@ -930,6 +937,7 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 		fontBox.addActionListener(e -> {
 			try {
 				miscSettings.fontSize = Integer.parseInt((String) fontBox.getSelectedItem());
+				Preferences.userNodeForPackage(MaestroMain.class).putInt("splitPanePos", -1);
 			} catch (Exception ex) {
 			}
 		});
