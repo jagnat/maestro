@@ -151,7 +151,6 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private InstrNameSettings instrNameSettings;
 	private SaveAndExportSettings saveSettings;
 	private MiscSettings miscSettings;
-	private boolean usingNativeVolume;
 
 	private JPanel content;
 	private JTextField songTitleField;
@@ -235,7 +234,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		super(MaestroMain.APP_NAME);
 		if ("32".equals(System.getProperty("sun.arch.data.model"))) {
 			JOptionPane.showMessageDialog(null,
-					"You are running with 32 bit Java.\nPlease start with 64 bit Java instead,\nto ensure Maestro do not out of memory.\n",
+					"You are running with 32 bit Java.\nPlease start with 64 bit Java instead,\nto ensure Maestro do not run out of memory.\n",
 					"32 bit detected", JOptionPane.ERROR_MESSAGE);
 			System.err.println(
 					"You are running with 32 bit Java.\nPlease start with 64 bit Java instead.\n Find Configure Java program in Start menu and\n configure it to start the 64 bit per default.\n\n");
@@ -990,17 +989,11 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	}
 
 	private void checkVolumeTransceiver() {
-		usingNativeVolume = MaestroMain.isNativeVolumeSupported();
-		if (usingNativeVolume) {
-			volumeTransceiver = null;
-			abcVolumeTransceiver = null;
-		} else {
-			volumeTransceiver = new VolumeTransceiver();
-			volumeTransceiver.setVolume(prefs.getInt("volumizer", NativeVolumeBar.MAX_VOLUME));
+		volumeTransceiver = new VolumeTransceiver();
+		volumeTransceiver.setVolume(prefs.getInt("volumizer", NativeVolumeBar.MAX_VOLUME));
 
-			abcVolumeTransceiver = new VolumeTransceiver();
-			abcVolumeTransceiver.setVolume(volumeTransceiver.getVolume());
-		}
+		abcVolumeTransceiver = new VolumeTransceiver();
+		abcVolumeTransceiver.setVolume(volumeTransceiver.getVolume());
 	}
 
 	private void handleInputMaps() {
@@ -1315,28 +1308,20 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private class VolumeManager implements NativeVolumeBar.Callback {
 		@Override
 		public void setVolume(int volume) {
-			if (usingNativeVolume) {
-				MaestroMain.setVolume((float) volume / NativeVolumeBar.MAX_VOLUME);
-			} else {
-				if (volumeTransceiver != null)
-					volumeTransceiver.setVolume(volume);
-				if (abcVolumeTransceiver != null)
-					abcVolumeTransceiver.setVolume(volume);
-				prefs.putInt("volumizer", volume);
-			}
+			if (volumeTransceiver != null)
+				volumeTransceiver.setVolume(volume);
+			if (abcVolumeTransceiver != null)
+				abcVolumeTransceiver.setVolume(volume);
+			prefs.putInt("volumizer", volume);
 		}
 
 		@Override
 		public int getVolume() {
-			if (usingNativeVolume) {
-				return (int) (MaestroMain.getVolume() * NativeVolumeBar.MAX_VOLUME);
-			} else {
-				if (volumeTransceiver != null)
-					return volumeTransceiver.getVolume();
-				if (abcVolumeTransceiver != null)
-					return abcVolumeTransceiver.getVolume();
-				return NativeVolumeBar.MAX_VOLUME;
-			}
+			if (volumeTransceiver != null)
+				return volumeTransceiver.getVolume();
+			if (abcVolumeTransceiver != null)
+				return abcVolumeTransceiver.getVolume();
+			return NativeVolumeBar.MAX_VOLUME;
 		}
 	}
 

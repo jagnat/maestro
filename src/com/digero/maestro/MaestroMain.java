@@ -75,16 +75,6 @@ public class MaestroMain {
 			mainWindow.getRootPane().requestFocus();
 			openSongFromCommandLine(args);
 		});
-		try {
-			// DDE.addActivationListener(mainWindow);
-			// DDE.ready();
-			ready();
-		} catch (UnsatisfiedLinkError err) {
-			// Ignore (we weren't started via WinRun4J)
-			// System.err.println("we weren't started via WinRun4J");
-			// logger.info("we weren't started via WinRun4J 32 bit");
-			// System.exit(0);
-		}
 	}
 
 	public static void setMIDIFileResolved() {
@@ -92,9 +82,6 @@ public class MaestroMain {
 			return;
 		mainWindow.setMIDIFileResolved();
 	}
-
-	/** Tells the WinRun4J launcher that we're ready to accept activate() calls. */
-	public static native void ready();
 
 	/** A new activation from WinRun4J 32bit (a.k.a. a file was opened) */
 	public static void activate(final String[] args) {
@@ -126,23 +113,6 @@ public class MaestroMain {
 				mainWindow.openFile(file);
 		}
 	}
-
-	/** @deprecated Use isNativeVolumeSupported() instead. */
-	@Deprecated
-	public static native boolean isVolumeSupported();
-
-	public static boolean isNativeVolumeSupported() {
-		try {
-			return isVolumeSupported();
-		} catch (UnsatisfiedLinkError err) {
-			// logger.info("isNativeVolumeSupported = false");
-			return false;
-		}
-	}
-
-	public static native float getVolume();
-
-	public static native void setVolume(float volume);
 
 	public static void onVolumeChanged() {
 		if (mainWindow != null)
