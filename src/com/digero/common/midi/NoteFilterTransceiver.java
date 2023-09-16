@@ -9,6 +9,9 @@ import javax.sound.midi.ShortMessage;
 
 import com.digero.common.util.ICompileConstants;
 
+/**
+ * The purpose of this class is to facilitate drum track soloing of specific notes.
+ */
 public class NoteFilterTransceiver implements Transceiver, MidiConstants, ICompileConstants {
 	private Receiver receiver = null;
 	private boolean hasAbcPart = false;
@@ -89,11 +92,15 @@ public class NoteFilterTransceiver implements Transceiver, MidiConstants, ICompi
 		}
 	}
 
+	/**
+	 * This method is very time consuming considering its inserted into midi core message loop.
+	 * There must be some way to skip this code if no notes have been soloed. ~Aifel
+	 */
 	@Override
 	public void send(MidiMessage message, long timeStamp) {
 		if (receiver == null)
 			return;
-		// if (message instanceof LotroShortMessage) System.out.println("So far..");
+
 		if (hasAbcPart && message instanceof ShortMessage) {
 			ShortMessage m = (ShortMessage) message;
 			int cmd = m.getCommand();
@@ -101,9 +108,9 @@ public class NoteFilterTransceiver implements Transceiver, MidiConstants, ICompi
 
 				int c = m.getChannel();
 				int noteId = m.getData1();
-				int speed = m.getData2();
-				boolean noteOnMsg = (cmd == ShortMessage.NOTE_ON) && speed > 0;
-				boolean noteOffMsg = (cmd == ShortMessage.NOTE_OFF) || (cmd == ShortMessage.NOTE_ON && speed == 0);
+				int velocity = m.getData2();
+				boolean noteOnMsg = (cmd == ShortMessage.NOTE_ON) && velocity > 0;
+				boolean noteOffMsg = (cmd == ShortMessage.NOTE_OFF) || (cmd == ShortMessage.NOTE_ON && velocity == 0);
 
 				if (!isNoteActive(noteId) && !(isNoteOn(c, noteId) && noteOffMsg))
 					return;
@@ -114,14 +121,7 @@ public class NoteFilterTransceiver implements Transceiver, MidiConstants, ICompi
 					setNoteOn(c, noteId, false);
 			}
 		}
-		/*
-		 * if (message instanceof ShortMessage) { ShortMessage m = (ShortMessage) message; if (m.getCommand() ==
-		 * ShortMessage.PROGRAM_CHANGE) { int c = m.getChannel();
-		 * System.out.println("NoteFilterTransceiver.send: Channel "+c+" patch "+m.getData1()); } } if (message
-		 * instanceof LotroShortMessage) { LotroShortMessage m = (LotroShortMessage) message; if (m.getCommand() ==
-		 * ShortMessage.PROGRAM_CHANGE) { int c = m.getChannel();
-		 * System.out.println("++NoteFilterTransceiver.send: Channel "+c+" patch "+m.getData1()); } }
-		 */
+		
 		receiver.send(message, timeStamp);
 	}
 }
