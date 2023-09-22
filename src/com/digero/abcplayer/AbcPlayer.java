@@ -1,8 +1,5 @@
 package com.digero.abcplayer;
 
-import info.clearthought.layout.TableLayout;
-import info.clearthought.layout.TableLayoutConstants;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -24,7 +21,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -53,7 +49,6 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -62,7 +57,6 @@ import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JProgressBar;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
@@ -71,7 +65,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
-import javax.swing.filechooser.FileFilter;
 
 import com.digero.abcplayer.view.HighlightAbcNotesFrame;
 import com.digero.abcplayer.view.TrackListPanel;
@@ -81,8 +74,8 @@ import com.digero.common.abctomidi.AbcInfo;
 import com.digero.common.abctomidi.AbcToMidi;
 import com.digero.common.abctomidi.FileAndData;
 import com.digero.common.icons.IconLoader;
-import com.digero.common.midi.MidiConstants;
 import com.digero.common.midi.LotroSequencerWrapper;
+import com.digero.common.midi.MidiConstants;
 import com.digero.common.midi.SequencerEvent.SequencerProperty;
 import com.digero.common.midi.SequencerWrapper;
 import com.digero.common.midi.VolumeTransceiver;
@@ -93,11 +86,15 @@ import com.digero.common.util.ParseException;
 import com.digero.common.util.Util;
 import com.digero.common.util.Version;
 import com.digero.common.view.AboutDialog;
+import com.digero.common.view.AudioExportManager;
 import com.digero.common.view.BarNumberLabel;
 import com.digero.common.view.NativeVolumeBar;
 import com.digero.common.view.SongPositionBar;
 import com.digero.common.view.SongPositionLabel;
 import com.digero.common.view.TempoBar;
+
+import info.clearthought.layout.TableLayout;
+import info.clearthought.layout.TableLayoutConstants;
 
 @SuppressWarnings("serial")
 public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConstants, TrackListPanelCallback {
@@ -105,8 +102,6 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 	public static final String APP_NAME = "ABC Player";
 	private static final String APP_NAME_LONG = APP_NAME + " for The Lord of the Rings Online";
 	private static final String APP_URL = "https://github.com/digero/maestro/";
-	private static final String LAME_URL = "http://lame.sourceforge.net/";
-	private static final String FF_URL = "https://ffmpeg.org/";
 	static Version APP_VERSION = new Version(0, 0, 0);
 
 	private static AbcPlayer mainWindow = null;
@@ -230,6 +225,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 	private JFileChooser exportFileDialog;
 
 	private HighlightAbcNotesFrame abcViewFrame;
+	
+	private AudioExportManager audioExporter;
 
 	private final Map<Integer, LotroInstrument> instrumentOverrideMap = new HashMap<>();
 	private List<FileAndData> abcData;
@@ -237,7 +234,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 	private Preferences prefs = Preferences.userNodeForPackage(AbcPlayer.class);
 
-	private boolean isExporting = false;
+//	private boolean isExporting = false;
 
 	public AbcPlayer() {
 		super(APP_NAME);
@@ -430,6 +427,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		add(titleLabel, "0, 0, 2, 0");
 		add(trackListScroller, "0, 2, 2, 2");
 		add(controlPanel, "1, 4");
+		
+		audioExporter = new AudioExportManager(this, AbcPlayer.APP_NAME + AbcPlayer.APP_VERSION, prefs);
 
 		initMenu();
 
@@ -619,11 +618,14 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		exportMp3MenuItem.setMnemonic(KeyEvent.VK_M);
 		exportMp3MenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK));
 		exportMp3MenuItem.addActionListener(e -> {
-			if (!sequencer.isLoaded() || isExporting) {
+			if (!sequencer.isLoaded() || audioExporter.isExporting()) {
 				Toolkit.getDefaultToolkit().beep();
 				return;
 			}
-			exportMp3();
+			File abcFile = null;
+			if (!abcData.isEmpty())
+				abcFile = abcData.get(0).file;
+			audioExporter.exportMp3Lame(sequencer, abcFile, abcInfo.getTitle(), abcInfo.getComposer());
 		});
 
 		final JMenuItem exportMp3MenuItemNew = fileMenu.add(new JMenuItem("Save as MP3 file (FFmpeg)..."));
@@ -631,11 +633,14 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		// exportMp3MenuItemNew.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E,
 		// InputEvent.CTRL_DOWN_MASK));
 		exportMp3MenuItemNew.addActionListener(e -> {
-			if (!sequencer.isLoaded() || isExporting) {
+			if (!sequencer.isLoaded() || audioExporter.isExporting()) {
 				Toolkit.getDefaultToolkit().beep();
 				return;
 			}
-			exportMp3New();
+			File abcFile = null;
+			if (!abcData.isEmpty())
+				abcFile = abcData.get(0).file;
+			audioExporter.exportMp3Ffmpeg(sequencer, abcFile, abcInfo.getTitle(), abcInfo.getComposer());
 		});
 
 		final JMenuItem exportWavMenuItem = fileMenu.add(new JMenuItem("Save as Wave file..."));
@@ -643,11 +648,14 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		exportWavMenuItem.setAccelerator(
 				KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
 		exportWavMenuItem.addActionListener(e -> {
-			if (!sequencer.isLoaded() || isExporting) {
+			if (!sequencer.isLoaded() || audioExporter.isExporting()) {
 				Toolkit.getDefaultToolkit().beep();
 				return;
 			}
-			exportWav();
+			File abcFile = null;
+			if (!abcData.isEmpty())
+				abcFile = abcData.get(0).file;
+			audioExporter.exportWav(sequencer, abcFile);
 		});
 
 		fileMenu.addSeparator();
@@ -666,9 +674,9 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 				boolean saveEnabled = sequencer.isLoaded();
 				saveMenuItem.setEnabled(saveEnabled);
-				exportWavMenuItem.setEnabled(saveEnabled && !isExporting);
-				exportMp3MenuItem.setEnabled(saveEnabled && !isExporting);
-				exportMp3MenuItemNew.setEnabled(saveEnabled && !isExporting);
+				exportWavMenuItem.setEnabled(saveEnabled && !audioExporter.isExporting());
+				exportMp3MenuItem.setEnabled(saveEnabled && !audioExporter.isExporting());
+				exportMp3MenuItemNew.setEnabled(saveEnabled && !audioExporter.isExporting());
 			}
 
 			@Override
@@ -1308,542 +1316,6 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		playButton.setIcon(sequencer.isRunning() ? pauseIcon : playIcon);
 		playButton.setDisabledIcon(sequencer.isRunning() ? pauseIconDisabled : playIconDisabled);
 		stopButton.setEnabled(loaded && (sequencer.isRunning() || sequencer.getPosition() != 0));
-	}
-
-	private class WaitDialog extends JDialog {
-		public WaitDialog(JFrame owner, File saveFile) {
-			super(owner, APP_NAME, false);
-			JPanel waitContent = new JPanel(new BorderLayout(5, 5));
-			setContentPane(waitContent);
-			waitContent.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-			waitContent.add(new JLabel("Saving " + saveFile.getName() + ". Please wait..."), BorderLayout.CENTER);
-			JProgressBar waitProgress = new JProgressBar();
-			waitProgress.setIndeterminate(true);
-			waitContent.add(waitProgress, BorderLayout.SOUTH);
-			pack();
-			setLocation(getOwner().getX() + (getOwner().getWidth() - getWidth()) / 2,
-					getOwner().getY() + (getOwner().getHeight() - getHeight()) / 2);
-			setResizable(false);
-			setEnabled(false);
-			setIconImages(AbcPlayer.this.getIconImages());
-		}
-	}
-
-	private void exportWav() {
-		if (exportFileDialog == null) {
-			exportFileDialog = new JFileChooser(
-					prefs.get("exportFileDialog.currentDirectory", Util.getUserMusicPath().getAbsolutePath()));
-
-			File openedFile = null;
-			if (!abcData.isEmpty())
-				openedFile = abcData.get(0).file;
-
-			if (openedFile != null) {
-				String openedName = openedFile.getName();
-				int dot = openedName.lastIndexOf('.');
-				if (dot >= 0) {
-					openedName = openedName.substring(0, dot);
-				}
-				openedName += ".wav";
-				exportFileDialog.setSelectedFile(new File(exportFileDialog.getCurrentDirectory() + "/" + openedName));
-			}
-		}
-
-		exportFileDialog.setFileFilter(new ExtensionFileFilter("WAV Files", "wav"));
-
-		int result = exportFileDialog.showSaveDialog(this);
-		if (result == JFileChooser.APPROVE_OPTION) {
-			prefs.put("exportFileDialog.currentDirectory", exportFileDialog.getCurrentDirectory().getAbsolutePath());
-
-			File saveFile = exportFileDialog.getSelectedFile();
-			if (saveFile.getName().indexOf('.') < 0) {
-				saveFile = new File(saveFile.getParent() + "/" + saveFile.getName() + ".wav");
-				exportFileDialog.setSelectedFile(saveFile);
-			}
-
-			JDialog waitFrame = new WaitDialog(this, saveFile);
-			waitFrame.setVisible(true);
-			new Thread(new ExportWavTask(sequencer.getSequence(), saveFile, waitFrame)).start();
-		}
-	}
-
-	private class ExportWavTask implements Runnable {
-		private Sequence sequence;
-		private File file;
-		private JDialog waitFrame;
-
-		public ExportWavTask(Sequence sequence, File file, JDialog waitFrame) {
-			this.sequence = sequence;
-			this.file = file;
-			this.waitFrame = waitFrame;
-		}
-
-		@Override
-		public void run() {
-			isExporting = true;
-			Exception error = null;
-			try {
-				try (FileOutputStream fos = new FileOutputStream(file)) {
-					MidiToWav.render(sequence, fos);
-				}
-			} catch (Exception e) {
-				error = e;
-			} finally {
-				isExporting = false;
-				SwingUtilities.invokeLater(new ExportWavFinishedTask(error, waitFrame));
-			}
-		}
-	}
-
-	private class ExportWavFinishedTask implements Runnable {
-		private Exception error;
-		private JDialog waitFrame;
-
-		public ExportWavFinishedTask(Exception error, JDialog waitFrame) {
-			this.error = error;
-			this.waitFrame = waitFrame;
-		}
-
-		@Override
-		public void run() {
-			if (error != null) {
-				JOptionPane.showMessageDialog(AbcPlayer.this, error.getMessage(), "Error saving WAV file",
-						JOptionPane.ERROR_MESSAGE);
-			}
-			waitFrame.setVisible(false);
-		}
-	}
-
-	// Cached result of isLame()
-	private static File notLameExe = null;
-
-	private boolean isLame(File lameExe) {
-		if (!lameExe.exists() || lameExe.equals(notLameExe))
-			return false;
-
-		LameChecker checker = new LameChecker(lameExe);
-		checker.start();
-		try {
-			// Wait up to 3 seconds for the program to respond
-			checker.join(3000);
-		} catch (InterruptedException e) {
-		}
-		if (checker.isAlive())
-			checker.process.destroy();
-		if (!checker.isLame) {
-			notLameExe = lameExe;
-			return false;
-		}
-
-		return true;
-	}
-
-	private static class LameChecker extends Thread {
-		private boolean isLame = false;
-		private File lameExe;
-		private Process process;
-
-		public LameChecker(File lameExe) {
-			this.lameExe = lameExe;
-		}
-
-		@Override
-		public void run() {
-			try {
-				process = Runtime.getRuntime().exec(new String[] { Util.quote(lameExe.getAbsolutePath()), " -?" });
-				BufferedReader rdr = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-				String line;
-				while ((line = rdr.readLine()) != null) {
-					if (line.contains("LAME")) {
-						isLame = true;
-						break;
-					}
-				}
-			} catch (IOException e) {
-			}
-		}
-	}
-
-	private static File notFFExe = null;
-
-	private boolean isFF(File ffExe) {
-		if (!ffExe.exists() || ffExe.equals(notFFExe))
-			return false;
-
-		FFChecker checker = new FFChecker(ffExe);
-		checker.start();
-		try {
-			// Wait up to 3 seconds for the program to respond
-			checker.join(3000);
-		} catch (InterruptedException e) {
-		}
-		if (checker.isAlive() && checker.process != null) {
-			checker.process.destroy();
-		}
-		if (!checker.isFF) {
-			notFFExe = ffExe;
-			return false;
-		}
-
-		return true;
-	}
-
-	private static class FFChecker extends Thread {
-		private boolean isFF = false;
-		private File ffExe;
-		private Process process;
-
-		public FFChecker(File ffExe) {
-			this.ffExe = ffExe;
-		}
-
-		@Override
-		public void run() {
-			try {
-				process = Runtime.getRuntime().exec(new String[] { Util.quote(ffExe.getAbsolutePath()), "-help" });
-				BufferedReader rdr = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-				String line;
-				long start = System.currentTimeMillis();
-				while ((line = rdr.readLine()) != null || System.currentTimeMillis() - start < 50) {
-					if (line != null && line.toLowerCase().contains("ffmpeg")) {
-						// System.out.println("ERR:"+line);
-						isFF = true;
-						break;
-					} else if (line != null) {
-						// System.out.println("ERR:"+line);
-					}
-				}
-			} catch (IOException e) {
-			}
-		}
-	}
-
-	private void exportMp3() {
-		File openedFile = null;
-		if (!abcData.isEmpty())
-			openedFile = abcData.get(0).file;
-
-		Preferences mp3Prefs = prefs.node("mp3");
-		File lameExe = new File(mp3Prefs.get("lameExe", "./lame.exe"));
-		if (!lameExe.exists()) {
-			outerLoop: for (File dir : new File(".").listFiles()) {
-				if (dir.isDirectory()) {
-					for (File file : dir.listFiles()) {
-						if (file.getName().equalsIgnoreCase("lame.exe")) {
-							lameExe = file;
-							break outerLoop;
-						}
-					}
-				}
-			}
-		}
-
-		JLabel hyperlink = new JLabel("<html><a href='" + LAME_URL + "'>" + LAME_URL + "</a></html>");
-		hyperlink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-		hyperlink.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON1) {
-					Util.openURL(LAME_URL);
-				}
-			}
-		});
-
-		boolean overrideAndUseExe = false;
-		for (int i = 0; (!overrideAndUseExe && !isLame(lameExe)) || !lameExe.exists(); i++) {
-			if (i > 0) {
-				JFileChooser fc = new JFileChooser();
-				fc.setFileFilter(new FileFilter() {
-					@Override
-					public boolean accept(File f) {
-						return f.isDirectory() || f.getName().equalsIgnoreCase("lame.exe");
-					}
-
-					@Override
-					public String getDescription() {
-						return "lame.exe";
-					}
-				});
-				fc.setSelectedFile(lameExe);
-				int result = fc.showOpenDialog(this);
-
-				if (result == JFileChooser.ERROR_OPTION)
-					continue; // Try again
-				else if (result != JFileChooser.APPROVE_OPTION)
-					return;
-				lameExe = fc.getSelectedFile();
-			}
-
-			if (!lameExe.exists()) {
-				Object message;
-				int icon;
-				if (i == 0) {
-					message = new Object[] {
-							"Exporting to MP3 requires LAME, a free MP3 encoder.\n" + "To download LAME, visit: ",
-							hyperlink, "\nAfter you download and unzip it, click OK to locate lame.exe", };
-					icon = JOptionPane.INFORMATION_MESSAGE;
-				} else {
-					message = "File does not exist:\n" + lameExe.getAbsolutePath();
-					icon = JOptionPane.ERROR_MESSAGE;
-				}
-				int result = JOptionPane.showConfirmDialog(this, message, "Export to MP3 requires LAME",
-						JOptionPane.OK_CANCEL_OPTION, icon);
-				if (result != JOptionPane.OK_OPTION)
-					return;
-			} else if (!isLame(lameExe)) {
-				Object[] message = new Object[] {
-						"The MP3 converter you selected \"" + lameExe.getName() + "\" doesn't appear to be LAME.\n"
-								+ "You can download LAME from: ",
-						hyperlink, "\nWould you like to use \"" + lameExe.getName() + "\" anyways?\n"
-								+ "If you choose No, you'll be prompted to locate lame.exe" };
-				int result = JOptionPane.showConfirmDialog(this, message, "Export to MP3 requires LAME",
-						JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
-				if (result == JOptionPane.YES_OPTION)
-					overrideAndUseExe = true;
-				else if (result == JOptionPane.NO_OPTION)
-					continue; // Try again
-				else
-					return;
-			}
-
-			mp3Prefs.put("lameExe", lameExe.getAbsolutePath());
-		}
-
-		ExportMp3Dialog mp3Dialog = new ExportMp3Dialog(this, lameExe, mp3Prefs, openedFile, abcInfo.getTitle(),
-				abcInfo.getComposer());
-		mp3Dialog.setIconImages(AbcPlayer.this.getIconImages());
-		mp3Dialog.addActionListener(e -> {
-			ExportMp3Dialog dialog = (ExportMp3Dialog) e.getSource();
-			JDialog waitFrame = new WaitDialog(AbcPlayer.this, dialog.getSaveFile());
-			waitFrame.setVisible(true);
-			new Thread(new ExportMp3Task(sequencer.getSequence(), dialog, waitFrame)).start();
-		});
-		mp3Dialog.setVisible(true);
-	}
-
-	private class ExportMp3Task implements Runnable {
-		private Sequence sequence;
-		private ExportMp3Dialog mp3Dialog;
-		private JDialog waitFrame;
-
-		public ExportMp3Task(Sequence sequence, ExportMp3Dialog mp3Dialog, JDialog waitFrame) {
-			this.sequence = sequence;
-			this.mp3Dialog = mp3Dialog;
-			this.waitFrame = waitFrame;
-		}
-
-		@Override
-		public void run() {
-			isExporting = true;
-			Exception error = null;
-			String lameExeSav = null;
-			Preferences mp3Prefs = mp3Dialog.getPreferencesNode();
-			try {
-				lameExeSav = mp3Prefs.get("lameExe", null);
-				mp3Prefs.put("lameExe", "");
-				File wavFile = File.createTempFile("AbcPlayer-", ".wav");
-				try (FileOutputStream fos = new FileOutputStream(wavFile)) {
-					MidiToWav.render(sequence, fos);
-					fos.close();
-					Process p = Runtime.getRuntime().exec(mp3Dialog.getCommandLine(wavFile));
-					if (p.waitFor() != 0)
-						throw new Exception("LAME failed");
-				} finally {
-					wavFile.delete();
-				}
-			} catch (Exception e) {
-				error = e;
-			} finally {
-				if (lameExeSav != null) {
-					mp3Prefs.put("lameExe", lameExeSav);
-				}
-				isExporting = false;
-				SwingUtilities.invokeLater(new ExportMp3FinishedTask(error, waitFrame));
-			}
-		}
-	}
-
-	private void exportMp3New() {
-		File openedFile = null;
-		if (!abcData.isEmpty())
-			openedFile = abcData.get(0).file;
-
-		Preferences mp3Prefs = prefs.node("mp3");
-		File ffExe = new File(mp3Prefs.get("ffExe", "./ffmpeg.exe"));
-		if (System.getProperty("os.name").contains("Windows")) {
-
-			if (!ffExe.exists()) {
-				outerLoop: for (File dir : new File(".").listFiles()) {
-					if (dir.isDirectory()) {
-						for (File file : dir.listFiles()) {
-							if (file.getName().equalsIgnoreCase("ffmpeg.exe")) {
-								ffExe = file;
-								break outerLoop;
-							}
-						}
-					}
-				}
-			}
-
-			JLabel hyperlink = new JLabel("<html><a href='" + FF_URL + "'>" + FF_URL + "</a></html>");
-			hyperlink.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-			hyperlink.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseClicked(MouseEvent e) {
-					if (e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON1) {
-						Util.openURL(FF_URL);
-					}
-				}
-			});
-
-			boolean overrideAndUseExe = false;
-			for (int i = 0; !ffExe.exists() || (!overrideAndUseExe && !isFF(ffExe)); i++) {
-				if (i > 0) {
-					JFileChooser fc = new JFileChooser();
-					fc.setFileFilter(new FileFilter() {
-						@Override
-						public boolean accept(File f) {
-							return f.isDirectory() || f.getName().equalsIgnoreCase("ffmpeg.exe");
-						}
-
-						@Override
-						public String getDescription() {
-							return "ffmpeg.exe";
-						}
-					});
-					fc.setSelectedFile(ffExe);
-					int result = fc.showOpenDialog(this);
-
-					if (result == JFileChooser.ERROR_OPTION)
-						continue; // Try again
-					else if (result != JFileChooser.APPROVE_OPTION)
-						return;
-					ffExe = fc.getSelectedFile();
-				}
-
-				if (!ffExe.exists()) {
-					Object message;
-					int icon;
-					if (i == 0) {
-						message = new Object[] {
-								"Exporting to MP3 requires FFmpeg, a free MP3 encoder.\n"
-										+ "To download FFmpeg, visit: ",
-								hyperlink, "\nAfter you download and unzip it, click OK to locate ffmpeg.exe", };
-						icon = JOptionPane.INFORMATION_MESSAGE;
-					} else {
-						message = "File does not exist:\n" + ffExe.getAbsolutePath();
-						icon = JOptionPane.ERROR_MESSAGE;
-					}
-					int result = JOptionPane.showConfirmDialog(this, message, "Export to MP3 requires FFmpeg",
-							JOptionPane.OK_CANCEL_OPTION, icon);
-					if (result != JOptionPane.OK_OPTION)
-						return;
-				} else if (!isFF(ffExe)) {
-					Object[] message = new Object[] {
-							"The MP3 converter you selected \"" + ffExe.getName() + "\" doesn't appear to be FFmpeg.\n"
-									+ "You can download FFmpeg from: ",
-							hyperlink, "\nWould you like to use \"" + ffExe.getName() + "\" anyways?\n"
-									+ "If you choose No, you'll be prompted to locate ffmpeg.exe" };
-					int result = JOptionPane.showConfirmDialog(this, message, "Export to MP3 requires FFmpeg",
-							JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.WARNING_MESSAGE);
-					if (result == JOptionPane.YES_OPTION)
-						overrideAndUseExe = true;
-					else if (result == JOptionPane.NO_OPTION)
-						continue; // Try again
-					else
-						return;
-				}
-
-				mp3Prefs.put("ffExe", ffExe.getAbsolutePath());
-			}
-		}
-		ExportMp3Dialog mp3Dialog = new ExportMp3Dialog(this, ffExe, mp3Prefs, openedFile, abcInfo.getTitle(),
-				abcInfo.getComposer());
-		mp3Dialog.setIconImages(AbcPlayer.this.getIconImages());
-		mp3Dialog.addActionListener(e -> {
-			ExportMp3Dialog dialog = (ExportMp3Dialog) e.getSource();
-			JDialog waitFrame = new WaitDialog(AbcPlayer.this, dialog.getSaveFile());
-			waitFrame.setVisible(true);
-			new Thread(new ExportMp3TaskNew(sequencer.getSequence(), dialog, waitFrame)).start();
-		});
-		mp3Dialog.setVisible(true);
-	}
-
-	private class ExportMp3TaskNew implements Runnable {
-		private Sequence sequence;
-		private ExportMp3Dialog mp3Dialog;
-		private JDialog waitFrame;
-
-		public ExportMp3TaskNew(Sequence sequence, ExportMp3Dialog mp3Dialog, JDialog waitFrame) {
-			this.sequence = sequence;
-			this.mp3Dialog = mp3Dialog;
-			this.waitFrame = waitFrame;
-		}
-
-		@Override
-		public void run() {
-			isExporting = true;
-			Exception error = null;
-			String ffExeSav = null;
-			Preferences mp3Prefs = mp3Dialog.getPreferencesNode();
-			try {
-				if (System.getProperty("os.name").contains("Windows")) {
-					ffExeSav = mp3Prefs.get("ffExe", null);
-					mp3Prefs.put("ffExe", "");
-				}
-				File wavFile = File.createTempFile("AbcPlayer-", ".wav");
-				try (FileOutputStream fos = new FileOutputStream(wavFile)) {
-					MidiToWav.render(sequence, fos);
-					fos.close();
-					String[] args = mp3Dialog.getCommandLineNew(wavFile).toArray(new String[0]);
-
-					ProcessBuilder ps = new ProcessBuilder(args);
-
-					ps.redirectErrorStream(true);
-
-					Process p = ps.start();
-
-					BufferedReader in = new BufferedReader(new InputStreamReader(p.getInputStream()));
-					String line;
-
-					while ((line = in.readLine()) != null) {
-						System.out.println(line);
-					}
-					if (p.waitFor() != 0) {
-						throw new Exception("FFmpeg failed");
-					}
-				} finally {
-					wavFile.delete();
-				}
-			} catch (Exception e) {
-				error = e;
-			} finally {
-				if (ffExeSav != null && System.getProperty("os.name").contains("Windows"))
-					mp3Prefs.put("ffExe", ffExeSav);
-			}
-			isExporting = false;
-			SwingUtilities.invokeLater(new ExportMp3FinishedTask(error, waitFrame));
-		}
-	}
-
-	private class ExportMp3FinishedTask implements Runnable {
-		private Exception error;
-		private JDialog waitFrame;
-
-		public ExportMp3FinishedTask(Exception error, JDialog waitFrame) {
-			this.error = error;
-			this.waitFrame = waitFrame;
-		}
-
-		@Override
-		public void run() {
-			if (error != null) {
-				JOptionPane.showMessageDialog(AbcPlayer.this, error.getMessage(), "Error saving MP3 file",
-						JOptionPane.ERROR_MESSAGE);
-			}
-			waitFrame.setVisible(false);
-		}
-
 	}
 
 	private void refreshSequence() {
