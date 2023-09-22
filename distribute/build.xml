@@ -84,7 +84,7 @@
 	</target>
 
 	<target name="LotroInstruments.CheckUpToDate">
-		<uptodate property="LotroInstruments.uptodate" targetfile="${target}/LotroInstruments.sf2">
+		<uptodate property="LotroInstruments.uptodate" targetfile="${build}/LotroInstruments.sf2">
 			<srcfiles dir="${basedir}/${audio}/LotroInstruments" />
 		</uptodate>
 	</target>
@@ -95,7 +95,7 @@
 			<arg value="-m" />
 			<arg value="-i" />
 			<arg value="${audio_backslash}\LotroInstruments\LotroInstruments.txt" />
-			<arg value="${target}\LotroInstruments.sf2" />
+			<arg value="${build}\LotroInstruments.sf2" />
 		</exec>
 	</target>
 
