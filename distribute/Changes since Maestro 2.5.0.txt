@@ -46,6 +46,9 @@ Thanks to all who gave feedback of features, bugs plus suggestions.
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
 
+Version 3.0.2
+- Support for exporting ABC preview MP3/WAV files from Maestro, in addition to ABC Player.
+
 Version 3.0.1
 - Support for midi expression messages. This will in some MIDIs give increased dynamic range on note volumes.
     MSX project files saved with an older Maestro will not use this new note volume system.
