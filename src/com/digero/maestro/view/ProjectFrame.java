@@ -252,7 +252,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		ToolTipManager.sharedInstance().setDismissDelay(8000);
 
-		handleInputMaps();
+		disableSpaceFocus();
 
 		String welcomeMessage = formatInfoMessage("Hello Maestro",
 				"Drag and drop a MIDI or ABC file to open it.\n" + "Or use File > Open.");
@@ -367,7 +367,14 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		updateButtons(true);
 
 		// Add support for using spacebar for pause/play.
-		ActionListener spaceBarListener = generateSpaceBarListener();
+		ActionListener spaceBarListener = e -> {
+			if (!sequencer.isLoaded()) {
+				return;
+			}
+			updateSequencer();
+			// Attempt to fix a bug where spacebar will later affect focused components
+			disableSpaceFocus();
+		};
 		this.getRootPane().registerKeyboardAction(spaceBarListener, KeyStroke.getKeyStroke(' '),
 				JComponent.WHEN_IN_FOCUSED_WINDOW);
 
@@ -877,15 +884,6 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		midiPartsAndControls.setBorder(BorderFactory.createTitledBorder("Part Settings"));
 	}
 
-	private ActionListener generateSpaceBarListener() {
-		return ae -> {
-			if (!sequencer.isLoaded()) {
-				return;
-			}
-			updateSequencer();
-		};
-	}
-
 	private void updateSequencer() {
 		SequencerWrapper curSequencer = abcPreviewMode ? abcSequencer : sequencer;
 
@@ -946,7 +944,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		abcVolumeTransceiver.setVolume(volumeTransceiver.getVolume());
 	}
 
-	private void handleInputMaps() {
+	private void disableSpaceFocus() {
 		InputMap im = (InputMap) UIManager.get("Button.focusInputMap");
 		if (im != null) {
 			im.put(KeyStroke.getKeyStroke("pressed SPACE"), "none");
@@ -959,13 +957,6 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			im.put(KeyStroke.getKeyStroke("released SPACE"), "none");
 		}
 	}
-
-//	private JPanel createSettingsPanel(TableLayout settingsLayout) {
-//	}
-
-//	private void fillSettingsPanel(TableLayout settingsLayout, JPanel settingsPanel) {
-//		
-//	}
 
 	private static void discardObject(IDiscardable object) {
 		if (object != null)

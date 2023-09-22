@@ -65,6 +65,7 @@ public class InstrumentComboBox extends JComboBox<LotroInstrument> {
 		while (!(items.get(selectedIndex) instanceof LotroInstrument))
 			selectedIndex++;
 
+		setFocusable(false);
 		setMaximumRowCount(items.size());
 		setModel(new Model());
 		setRenderer(new Renderer());
