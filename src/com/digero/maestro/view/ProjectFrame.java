@@ -14,10 +14,12 @@ import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -103,6 +105,7 @@ import com.digero.common.util.Listener;
 import com.digero.common.util.ParseException;
 import com.digero.common.util.Util;
 import com.digero.common.view.AboutDialog;
+import com.digero.common.view.AudioExportManager;
 import com.digero.common.view.BarNumberLabel;
 import com.digero.common.view.ColorTable;
 import com.digero.common.view.NativeVolumeBar;
@@ -179,6 +182,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private JMenuItem exportMenuItem;
 	private JMenuItem exportAsMenuItem;
 	private JMenuItem saveExpandedMidiMenuItem;
+	private JMenuItem exportMp3LameMenuItem;
+	private JMenuItem exportMp3FfmpegMenuItem;
+	private JMenuItem exportWavMenuItem;
 	private JMenuItem closeProject;
 
 	private JPanel partsListPanel;
@@ -231,6 +237,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private int maxNoteCount = 0;
 	private int maxNoteCountTotal = 0;
 	private boolean midiResolved = false;
+	
+	private AudioExportManager audioExporter;
 	/*
 	 * private static Color BRIGHT_RED = new Color(255, 0, 0); private static Color ORANGE = new Color(235, 150, 64);
 	 * private static Color BLACK = new Color(0, 0, 0);
@@ -360,6 +368,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		abcSequencerListener = new AbcSequencerListener();
 		abcSequencer.addChangeListener(abcSequencerListener);
+		
+		audioExporter = new AudioExportManager(this, MaestroMain.APP_NAME + MaestroMain.APP_VERSION, prefs);
 
 		initMenu();
 		onSaveAndExportSettingsChanged();
@@ -1048,6 +1058,35 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		saveExpandedMidiMenuItem.addActionListener(e -> expandMidi());
 
 		fileMenu.addSeparator();
+		
+		exportMp3LameMenuItem = fileMenu.add(new JMenuItem("Save as MP3 file (LAME)..."));
+		exportMp3LameMenuItem.addActionListener(e -> {
+			if (!abcSequencer.isLoaded() || abcSong == null || audioExporter.isExporting()) {
+				Toolkit.getDefaultToolkit().beep();
+				return;
+			}
+			audioExporter.exportMp3Lame(abcSequencer, getAbcExportFile(), abcSong.getTitle(), abcSong.getComposer());
+		});
+
+		exportMp3FfmpegMenuItem = fileMenu.add(new JMenuItem("Save as MP3 file (FFmpeg)..."));
+		exportMp3FfmpegMenuItem.addActionListener(e -> {
+			if (!abcSequencer.isLoaded() || abcSong == null || audioExporter.isExporting()) {
+				Toolkit.getDefaultToolkit().beep();
+				return;
+			}
+			audioExporter.exportMp3Ffmpeg(abcSequencer, getAbcExportFile(), abcSong.getTitle(), abcSong.getComposer());
+		});
+
+		exportWavMenuItem = fileMenu.add(new JMenuItem("Save as Wave file..."));
+		exportWavMenuItem.addActionListener(e -> {
+			if (!abcSequencer.isLoaded() || abcSong == null || audioExporter.isExporting()) {
+				Toolkit.getDefaultToolkit().beep();
+				return;
+			}
+			audioExporter.exportWav(abcSequencer, getAbcExportFile());
+		});
+		
+		fileMenu.addSeparator();
 
 		closeProject = fileMenu.add(new JMenuItem("Close Project"));
 		closeProject.addActionListener(e -> closeSong());
@@ -1435,6 +1474,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		saveMenuItem.setEnabled(abcSong != null);
 		saveAsMenuItem.setEnabled(abcSong != null);
 		saveExpandedMidiMenuItem.setEnabled(abcSong != null);
+		exportMp3LameMenuItem.setEnabled(abcSong != null);
+		exportMp3FfmpegMenuItem.setEnabled(abcSong != null);
+		exportWavMenuItem.setEnabled(abcSong != null);
 		closeProject.setEnabled(midiLoaded);
 
 		songTitleField.setEnabled(midiLoaded);
@@ -2149,17 +2191,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			return selectedFile;
 		}
 	}
-
-	private boolean exportAbcAs() {
-		exportSuccessfulLabel.setVisible(false);
-
-		if (abcSong == null) {
-			JOptionPane.showMessageDialog(this, "No ABC Song is open", "Error", JOptionPane.ERROR_MESSAGE);
-			return false;
-		}
-
+	
+	private File getAbcExportFile() {
 		File exportFile = abcSong.getExportFile();
-		File allowOverwriteFile = allowOverwriteExportFile ? exportFile : null;
 
 		String defaultFolder = Util.getLotroMusicPath(false).getAbsolutePath();
 		String folder = prefs.get("exportDialogFolder", defaultFolder);
@@ -2196,6 +2230,20 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		fileName += ".abc";
 
 		exportFile = new File(folder, fileName);
+		
+		return exportFile;
+	}
+
+	private boolean exportAbcAs() {
+		exportSuccessfulLabel.setVisible(false);
+
+		if (abcSong == null) {
+			JOptionPane.showMessageDialog(this, "No ABC Song is open", "Error", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		
+		File exportFile = getAbcExportFile();
+		File allowOverwriteFile = allowOverwriteExportFile ? abcSong.getExportFile() : null;
 
 		exportFile = doSaveDialog(exportFile, allowOverwriteFile, ".abc",
 				new ExtensionFileFilter("ABC files (*.abc, *.txt)", "abc", "txt"));
