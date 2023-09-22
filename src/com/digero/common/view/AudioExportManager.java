@@ -47,9 +47,10 @@ public class AudioExportManager {
 	}
 	
 	public void exportWav(SequencerWrapper sequencer, File abcFile) {
+		Preferences mp3Prefs = prefs.node("mp3");
 		if (exportFileDialog == null) {
 			exportFileDialog = new JFileChooser(
-					prefs.get("exportFileDialog.currentDirectory", Util.getUserMusicPath().getAbsolutePath()));
+					mp3Prefs.get("saveDirectory", abcFile.getParentFile().getAbsolutePath()));
 
 			if (abcFile != null) {
 				String openedName = abcFile.getName();
@@ -66,7 +67,7 @@ public class AudioExportManager {
 
 		int result = exportFileDialog.showSaveDialog(parentWindow);
 		if (result == JFileChooser.APPROVE_OPTION) {
-			prefs.put("exportFileDialog.currentDirectory", exportFileDialog.getCurrentDirectory().getAbsolutePath());
+			mp3Prefs.put("saveDirectory", exportFileDialog.getCurrentDirectory().getAbsolutePath());
 
 			File saveFile = exportFileDialog.getSelectedFile();
 			if (saveFile.getName().indexOf('.') < 0) {
