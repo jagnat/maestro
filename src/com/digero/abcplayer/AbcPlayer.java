@@ -335,6 +335,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 			} else {
 				sequencer = new SequencerWrapper();
 			}
+			
+			sequencer.setUseSequenceTempoFactor(true);
 
 			if (volumeTransceiver != null)
 				sequencer.addTransceiver(volumeTransceiver);

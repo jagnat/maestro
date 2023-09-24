@@ -1638,6 +1638,10 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		case TEMPO_FACTOR:
 			if (getTempo() != abcSong.getTempoBPM())
 				tempoSpinner.setValue(abcSong.getTempoBPM());
+			if (abcSequencer.isRunning())
+				refreshPreviewSequence(false);
+			else if (abcPreviewMode)
+				refreshPreviewSequence(false);
 			break;
 		case TRANSPOSE:
 			if (getTranspose() != abcSong.getTranspose())

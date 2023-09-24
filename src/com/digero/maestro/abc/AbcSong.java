@@ -628,10 +628,21 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		}
 	}
 
+	/**
+	 * Get the main export tempo.
+	 * 
+	 * @return bpm
+	 */
 	public int getTempoBPM() {
 		return Math.round(tempoFactor * sequenceInfo.getPrimaryTempoBPM());
 	}
 
+	/**
+	 * Set the the main tempo for export and preview.
+	 * Will call setTempoFactor()
+	 * 
+	 * @param tempoBPM new tempo
+	 */
 	public void setTempoBPM(int tempoBPM) {
 		setTempoFactor((float) tempoBPM / sequenceInfo.getPrimaryTempoBPM());
 	}
@@ -853,8 +864,9 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		if (abcExporter == null) {
 			abcExporter = new AbcExporter(parts, qtm, key, this);
 		}
-		if (abcExporter.getTimingInfo() != qtm)
+		if (abcExporter.getTimingInfo() != qtm) {
 			abcExporter.setTimingInfo(qtm);
+		}
 
 		if (abcExporter.getKeySignature() != key)
 			abcExporter.setKeySignature(key);

@@ -41,6 +41,12 @@ public class SequencerWrapper implements MidiConstants, ITempoCache, IDiscardabl
 	private boolean lastRunning = false;
 	private TempoCacheSlow cache = null;
 	private long hoursPlus = 0L;
+	private float tempoFactor = 1.f;
+	
+	// For AbcPlayer, we should send the tempo factor to the sequence.
+	// For Maestro, the tempo factor is factored into midi tempo messages
+	// when the sequence is refreshed, so it shouldn't be sent to the sequence.
+	private boolean useSequenceTempoFactor = false;
 
 	private ListenerList<SequencerEvent> listeners = null;
 
@@ -444,12 +450,18 @@ public class SequencerWrapper implements MidiConstants, ITempoCache, IDiscardabl
 	}
 
 	public float getTempoFactor() {
-		return sequencer.getTempoFactor();
+		return tempoFactor;
 	}
 
 	public void setTempoFactor(float tempo) {
 		if (tempo != getTempoFactor()) {
-			sequencer.setTempoFactor(tempo);
+			this.tempoFactor = tempo;
+			// As of 3.0.2 - no need to set factor on sequence in Maestro,
+			// since tempo change events are scaled by the factor during preview refresh.
+			// Still need to do it for AbcPlayer.
+			if (isUseSequenceTempoFactor()) {
+				sequencer.setTempoFactor(tempo);
+			}
 			fireChangeEvent(SequencerProperty.TEMPO);
 		}
 	}
@@ -666,5 +678,13 @@ public class SequencerWrapper implements MidiConstants, ITempoCache, IDiscardabl
 
 	public void close() {
 		sequencer.close();
+	}
+
+	public boolean isUseSequenceTempoFactor() {
+		return useSequenceTempoFactor;
+	}
+
+	public void setUseSequenceTempoFactor(boolean useSequenceTempoFactor) {
+		this.useSequenceTempoFactor = useSequenceTempoFactor;
 	}
 }

@@ -471,6 +471,10 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 		}
 	}
 
+	/**
+	 * 
+	 * @return source MIDI/ABC main tempo BPM
+	 */
 	public int getPrimaryTempoMPQ() {
 		return primaryTempoMPQ;
 	}
@@ -483,6 +487,10 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 		return (int) Math.round(primaryTempoMPQ / exportTempoFactor);
 	}
 
+	/**
+	 * 
+	 * @return export ABC main tempo BPM
+	 */
 	public int getPrimaryExportTempoBPM() {
 		return (int) Math.round(MidiUtils.convertTempo((double) primaryTempoMPQ / exportTempoFactor));
 	}
