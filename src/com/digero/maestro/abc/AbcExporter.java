@@ -626,12 +626,12 @@ public class AbcExporter {
 			if (event.tick > exportEndTick)
 				break;
 
-			track0.add(MidiFactory.createTempoEvent(event.info.getTempoMPQ(), event.tick));
+			track0.add(MidiFactory.createTempoEvent(event.info.getExportTempoMPQ(), event.tick));
 
 			if (event.tick == 0) {
 				// The Java MIDI sequencer can sometimes miss a tempo event at tick 0
 				// Add another tempo event at tick 1 to work around the bug
-				track0.add(MidiFactory.createTempoEvent(event.info.getTempoMPQ(), 1));
+				track0.add(MidiFactory.createTempoEvent(event.info.getExportTempoMPQ(), 1));
 			}
 		}
 	}
