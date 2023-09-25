@@ -48,6 +48,8 @@ Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 
 Version 3.0.2
 - Support for exporting ABC preview MP3/WAV files from Maestro, in addition to ABC Player.
+- File menu options for reloading an MSX project's MIDI file without closing Maestro (shortcut Ctrl-R), or changing the source MIDI file of a project.
+- Maestro maintains a list of recently opened project files in the file menu for quick access.
 
 Version 3.0.1
 - Support for midi expression messages. This will in some MIDIs give increased dynamic range on note volumes.
@@ -61,7 +63,7 @@ Version 3.0.0
 - Fix Maestro would fail silently at loading a midi with a timesignature that was missing some data, but otherwise was correct.
 - Add any missing EndOfTrack events when loading MIDI.
 - Add solo/mute buttons for ABC preview to the parts list.
-- Add ability to ctrl-right-click or middle-mouse-click a track to solo all parts which use that track.
+- Add ability to ctrl-right-click a track to solo all parts which use that track.
 - Remove reverb and chorus on Gervill MIDI out device when that is selected to play source midi.
 - Semi-fix for polyphony counting too high when skipping in song during playback.
 - Maestro and Abc Player can now preview 24 part songs, and export them to MP3.

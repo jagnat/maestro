@@ -19,7 +19,6 @@ import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
-import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -34,6 +33,7 @@ import java.lang.management.ThreadMXBean;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.prefs.Preferences;
 
@@ -124,6 +124,7 @@ import com.digero.maestro.abc.PartAutoNumberer;
 import com.digero.maestro.abc.PartNameTemplate;
 import com.digero.maestro.midi.SequenceInfo;
 import com.digero.maestro.util.FileResolver;
+import com.digero.maestro.util.RecentlyOpenedList;
 import com.digero.maestro.util.XmlUtil;
 
 import info.clearthought.layout.TableLayout;
@@ -177,15 +178,21 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private JButton exportButton;
 	private JLabel exportSuccessfulLabel;
 	private Timer exportLabelHideTimer;
+	private JMenu openRecentMenu;
 	private JMenuItem saveMenuItem;
 	private JMenuItem saveAsMenuItem;
 	private JMenuItem exportMenuItem;
 	private JMenuItem exportAsMenuItem;
 	private JMenuItem saveExpandedMidiMenuItem;
+	private JMenu exportAudioMenu;
 	private JMenuItem exportMp3LameMenuItem;
 	private JMenuItem exportMp3FfmpegMenuItem;
 	private JMenuItem exportWavMenuItem;
+	private JMenuItem chooseMidiFileMenuItem;
+	private JMenuItem reloadMidiFileMenuItem;
 	private JMenuItem closeProject;
+	
+	private RecentlyOpenedList recentlyOpenedList;
 
 	private JPanel partsListPanel;
 	private PartsList partsList;
@@ -1023,6 +1030,13 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				}
 			}
 		});
+		
+		recentlyOpenedList = new RecentlyOpenedList(prefs.node("recentlyOpened"));
+		
+		openRecentMenu = new JMenu("Open Recent Projects");
+		fileMenu.add(openRecentMenu);
+		
+		updateOpenRecentMenu();
 
 		fileMenu.addSeparator();
 
@@ -1059,7 +1073,11 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		fileMenu.addSeparator();
 		
-		exportMp3LameMenuItem = fileMenu.add(new JMenuItem("Save as MP3 file (LAME)..."));
+		exportAudioMenu = new JMenu("Export Audio");
+		
+		fileMenu.add(exportAudioMenu);
+		
+		exportMp3LameMenuItem = exportAudioMenu.add(new JMenuItem("Export MP3 file (LAME)..."));
 		exportMp3LameMenuItem.addActionListener(e -> {
 			if (!abcSequencer.isLoaded() || abcSong == null || audioExporter.isExporting()) {
 				Toolkit.getDefaultToolkit().beep();
@@ -1068,7 +1086,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			audioExporter.exportMp3Lame(abcSequencer, getAbcExportFile(), abcSong.getTitle(), abcSong.getComposer());
 		});
 
-		exportMp3FfmpegMenuItem = fileMenu.add(new JMenuItem("Save as MP3 file (FFmpeg)..."));
+		exportMp3FfmpegMenuItem = exportAudioMenu.add(new JMenuItem("Export MP3 file (FFmpeg)..."));
 		exportMp3FfmpegMenuItem.addActionListener(e -> {
 			if (!abcSequencer.isLoaded() || abcSong == null || audioExporter.isExporting()) {
 				Toolkit.getDefaultToolkit().beep();
@@ -1077,13 +1095,59 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			audioExporter.exportMp3Ffmpeg(abcSequencer, getAbcExportFile(), abcSong.getTitle(), abcSong.getComposer());
 		});
 
-		exportWavMenuItem = fileMenu.add(new JMenuItem("Save as Wave file..."));
+		exportWavMenuItem = exportAudioMenu.add(new JMenuItem("Export WAV file..."));
 		exportWavMenuItem.addActionListener(e -> {
 			if (!abcSequencer.isLoaded() || abcSong == null || audioExporter.isExporting()) {
 				Toolkit.getDefaultToolkit().beep();
 				return;
 			}
 			audioExporter.exportWav(abcSequencer, getAbcExportFile());
+		});
+		
+		fileMenu.addSeparator();
+		
+		chooseMidiFileMenuItem = fileMenu.add(new JMenuItem("Change MIDI file..."));
+		chooseMidiFileMenuItem.addActionListener(e -> {
+			if (abcSong == null || abcSong.getSourceFile() == null || abcSong.getSaveFile() == null) {
+				return; // should be an invalid state, item is disabled if no msx file
+			}
+			
+			File saveFile = abcSong.getSaveFile();
+			
+			JFileChooser openMidiChooser = new JFileChooser(abcSong.getSourceFile().getAbsoluteFile().getParent());
+			openMidiChooser.setMultiSelectionEnabled(false);
+			openMidiChooser.setFileFilter(
+					new ExtensionFileFilter("MIDI and ABC files", "mid",
+							"midi", "kar", "abc", "txt"));
+
+			int result = openMidiChooser.showOpenDialog(ProjectFrame.this);
+			if (result != JFileChooser.APPROVE_OPTION) {
+				return;
+			}
+			
+			abcSong.setSourceFile(openMidiChooser.getSelectedFile());
+			finishSave();
+			openFile(saveFile);
+		});
+		
+		reloadMidiFileMenuItem = fileMenu.add(new JMenuItem("Reload MIDI file"));
+		reloadMidiFileMenuItem.setMnemonic(KeyEvent.VK_R);
+		reloadMidiFileMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, CTRL_DOWN_MASK));
+		reloadMidiFileMenuItem.addActionListener(e -> {
+			if (abcSong == null || abcSong.getSaveFile() == null) {
+				return; // should be an invalid state, item is disabled if no msx file
+			}
+			File file = abcSong.getSaveFile();
+			
+			finishSave();
+			
+//			if (abcSong != null) {
+//				abcSong.getParts().getListModel().removeListDataListener(partsListListener);
+//				abcSong.discard();
+//				abcSong = null;
+//			}
+			
+			openFile(file);
 		});
 		
 		fileMenu.addSeparator();
@@ -1118,6 +1182,36 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		aboutItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0));
 		aboutItem.addActionListener(e -> AboutDialog.show(ProjectFrame.this, MaestroMain.APP_NAME,
 				MaestroMain.APP_VERSION, MaestroMain.APP_URL, "maestro_64.png"));
+	}
+	
+	private void updateOpenRecentMenu() {
+		openRecentMenu.removeAll();
+		
+		LinkedList<File> recentList = recentlyOpenedList.getList();
+		
+		if (recentList.isEmpty()) {
+			openRecentMenu.setEnabled(false);
+			return;
+		}
+		
+		openRecentMenu.setEnabled(true);
+		
+		for (File file : recentList) {
+			JMenuItem item = openRecentMenu.add(new JMenuItem(file.getName()));
+			item.setToolTipText(file.getAbsolutePath());
+			item.addActionListener(e -> {
+				JMenuItem src = (JMenuItem)e.getSource();
+				openFile(new File(src.getToolTipText()));
+			});
+		}
+			
+		openRecentMenu.addSeparator();
+		
+		JMenuItem clearMenuItem = openRecentMenu.add(new JMenuItem("Clear List"));
+		clearMenuItem.addActionListener(e -> {
+			recentlyOpenedList.clearList();
+			updateOpenRecentMenu();
+		});
 	}
 
 	private int currentSettingsDialogTab = 0;
@@ -1474,9 +1568,16 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		saveMenuItem.setEnabled(abcSong != null);
 		saveAsMenuItem.setEnabled(abcSong != null);
 		saveExpandedMidiMenuItem.setEnabled(abcSong != null);
+		exportAudioMenu.setEnabled(abcSong != null);
 		exportMp3LameMenuItem.setEnabled(abcSong != null);
 		exportMp3FfmpegMenuItem.setEnabled(abcSong != null);
 		exportWavMenuItem.setEnabled(abcSong != null);
+		String errStr = "<html><p style='color:red;'>Must save as an MSX project first</p></html>";
+		chooseMidiFileMenuItem.setEnabled(abcSong != null && abcSong.getSaveFile() != null);
+		chooseMidiFileMenuItem.setToolTipText(abcSong != null && abcSong.getSaveFile() == null ? errStr : "");
+		reloadMidiFileMenuItem.setEnabled(abcSong != null && abcSong.getSaveFile() != null);
+		reloadMidiFileMenuItem.setToolTipText(abcSong != null && abcSong.getSaveFile() == null ? errStr : "");
+		
 		closeProject.setEnabled(midiLoaded);
 
 		songTitleField.setEnabled(midiLoaded);
@@ -1981,6 +2082,11 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			partPanel.showInfoMessage(formatErrorMessage("Could not open " + file.getName(), e.getMessage()));
 			midiResolved = false;
 		}
+		
+		if (file.getAbsolutePath().endsWith(AbcSong.MSX_FILE_EXTENSION)) {
+			recentlyOpenedList.addOpenedFile(file);
+			updateOpenRecentMenu();
+		}
 	}
 
 	private void setPartsListModel() {
@@ -2395,6 +2501,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			JOptionPane.showMessageDialog(this, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
+		
+		recentlyOpenedList.addOpenedFile(abcSong.getSaveFile());
+		updateOpenRecentMenu();
 
 		setAbcSongModified(false);
 		return true;
