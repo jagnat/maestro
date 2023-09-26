@@ -1112,13 +1112,18 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				return; // should be an invalid state, item is disabled if no msx file
 			}
 			
+			int result = JOptionPane.showConfirmDialog(ProjectFrame.this, "If this doesn't work, your project will remain unaffected. For best results, pick a file similar to the current midi file of the project. Would you like to continue?", "Proceed?",
+					JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+			if (result != JOptionPane.YES_OPTION)
+				return;
+			
 			JFileChooser openMidiChooser = new JFileChooser(abcSong.getSourceFile().getAbsoluteFile().getParent());
 			openMidiChooser.setMultiSelectionEnabled(false);
 			openMidiChooser.setFileFilter(
 					new ExtensionFileFilter("MIDI and ABC files", "mid",
 							"midi", "kar", "abc", "txt"));
 
-			int result = openMidiChooser.showOpenDialog(ProjectFrame.this);
+			result = openMidiChooser.showOpenDialog(ProjectFrame.this);
 			if (result != JFileChooser.APPROVE_OPTION) {
 				return;
 			}
