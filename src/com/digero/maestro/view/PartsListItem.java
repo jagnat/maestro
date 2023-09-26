@@ -85,6 +85,7 @@ public class PartsListItem extends JPanel implements IDiscardable, TableLayoutCo
 		String soloText = part.isSoloed() ? "<html><b>S</b></html>" : "<html>S</html>";
 		Color soloColor = part.isSoloed() ? Color.decode("#7e7eff") : new JButton().getBackground();
 		soloButton = new JButton(soloText);
+		soloButton.setToolTipText("Solo/Unsolo Part");
 		soloButton.setBackground(soloColor);
 		soloButton.setPreferredSize(buttonSize);
 		soloButton.setMargin(new Insets(0, 0, 0, 0));
@@ -105,6 +106,7 @@ public class PartsListItem extends JPanel implements IDiscardable, TableLayoutCo
 		String muteText = part.isMuted() ? "<html><b>M</b></html>" : "<html>M</html>";
 		Color muteColor = part.isMuted() ? Color.decode("#ff7777") : new JButton().getBackground();
 		muteButton = new JButton(muteText);
+		muteButton.setToolTipText("Mute/Unmute Part");
 		muteButton.setBackground(muteColor);
 		muteButton.setPreferredSize(buttonSize);
 		muteButton.setMargin(new Insets(0, 0, 0, 0));
