@@ -1112,8 +1112,6 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				return; // should be an invalid state, item is disabled if no msx file
 			}
 			
-			File saveFile = abcSong.getSaveFile();
-			
 			JFileChooser openMidiChooser = new JFileChooser(abcSong.getSourceFile().getAbsoluteFile().getParent());
 			openMidiChooser.setMultiSelectionEnabled(false);
 			openMidiChooser.setFileFilter(
@@ -1125,9 +1123,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				return;
 			}
 			
-			abcSong.setSourceFile(openMidiChooser.getSelectedFile());
-			finishSave();
-			openFile(saveFile);
+			reloadWithNewSource(openMidiChooser.getSelectedFile());
 		});
 		
 		reloadMidiFileMenuItem = fileMenu.add(new JMenuItem("Reload MIDI file"));
@@ -1137,17 +1133,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			if (abcSong == null || abcSong.getSaveFile() == null) {
 				return; // should be an invalid state, item is disabled if no msx file
 			}
-			File file = abcSong.getSaveFile();
-			
-			finishSave();
-			
-//			if (abcSong != null) {
-//				abcSong.getParts().getListModel().removeListDataListener(partsListListener);
-//				abcSong.discard();
-//				abcSong = null;
-//			}
-			
-			openFile(file);
+			File sourceFile = abcSong.getSourceFile();
+			reloadWithNewSource(sourceFile);
 		});
 		
 		fileMenu.addSeparator();
@@ -1971,8 +1958,12 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		return true;
 	}
-
+	
 	public void openFile(File file) {
+		openFile(file, true);
+	}
+
+	public void openFile(File file, boolean updateLastOpenedList) {
 		if (!closeSong())
 			return;
 
@@ -2083,10 +2074,42 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			midiResolved = false;
 		}
 		
-		if (file.getAbsolutePath().endsWith(AbcSong.MSX_FILE_EXTENSION)) {
+		// Don't update last opened list when reading tmp msx file for midi reloading
+		if (updateLastOpenedList && file.getAbsolutePath().endsWith(AbcSong.MSX_FILE_EXTENSION)) {
 			recentlyOpenedList.addOpenedFile(file);
 			updateOpenRecentMenu();
 		}
+	}
+	
+	private boolean reloadWithNewSource(File newSource) {
+		File originalMsx = abcSong.getSaveFile();
+		File oldSource = abcSong.getSourceFile();
+		boolean modified = abcSongModified;
+		File tmpMsx;
+		try {
+			tmpMsx = File.createTempFile("tmpproj", ".msx");
+		} catch (IOException e) {
+			return false;
+		}
+		
+		abcSong.setSaveFile(tmpMsx);
+		abcSong.setSourceFile(newSource);
+		
+		if (!finishSave(false)) {
+			// failed to save tmp - restore
+			abcSong.setSaveFile(originalMsx);
+			abcSong.setSourceFile(oldSource);
+			return false;
+		}
+		
+		openFile(tmpMsx, false);
+		if (abcSong != null) {
+			abcSong.setSaveFile(originalMsx);
+			setAbcSongModified(newSource != oldSource || modified);	
+			updateTitle();
+		}
+		
+		return true;
 	}
 
 	private void setPartsListModel() {
@@ -2486,8 +2509,12 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		return finishSave();
 	}
-
+	
 	private boolean finishSave() {
+		return finishSave(true);
+	}
+
+	private boolean finishSave(boolean updateRecentlyOpenedFiles) {
 		commitAllFields();
 
 		try {
@@ -2502,8 +2529,10 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			return false;
 		}
 		
-		recentlyOpenedList.addOpenedFile(abcSong.getSaveFile());
-		updateOpenRecentMenu();
+		if (updateRecentlyOpenedFiles) {
+			recentlyOpenedList.addOpenedFile(abcSong.getSaveFile());
+			updateOpenRecentMenu();
+		}
 
 		setAbcSongModified(false);
 		return true;
