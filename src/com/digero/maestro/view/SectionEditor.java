@@ -2,9 +2,7 @@ package com.digero.maestro.view;
 
 import static javax.swing.SwingConstants.CENTER;
 
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ActionListener;
@@ -15,6 +13,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import javax.swing.BorderFactory;
 import javax.swing.ButtonModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -26,14 +25,14 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 
 import com.digero.common.util.Listener;
+import com.digero.common.view.PatchedJScrollPane;
 import com.digero.maestro.abc.AbcPart;
 import com.digero.maestro.abc.AbcPartEvent;
+import com.digero.maestro.abc.AbcPartEvent.AbcPartProperty;
 import com.digero.maestro.abc.AbcSongEvent;
 import com.digero.maestro.abc.PartSection;
-import com.digero.maestro.abc.AbcPartEvent.AbcPartProperty;
 
 import info.clearthought.layout.TableLayout;
 
@@ -104,17 +103,19 @@ public class SectionEditor {
 					}
 				});
 
-				int rowHeight = 16;
-				int auxHeight = 24;
-				Font font = UIManager.getFont("defaultFont");
-				Graphics graphics = jf.getGraphics();
-				if (font != null && graphics != null) // Using a flat theme - resize panel based on text size
-				{
-					FontMetrics metrics = graphics.getFontMetrics(font);
-					int fontHeight = metrics.getHeight();
-					rowHeight = fontHeight + Math.max(4, (int) (fontHeight * 0.3));
-					auxHeight = (int) (rowHeight * 1.5);
-				}
+				double rowHeight = TableLayout.PREFERRED;
+				double auxHeight = TableLayout.PREFERRED;
+//				int rowHeight = 16;
+//				int auxHeight = 24;
+//				Font font = UIManager.getFont("defaultFont");
+//				Graphics graphics = jf.getGraphics();
+//				if (font != null && graphics != null) // Using a flat theme - resize panel based on text size
+//				{
+//					FontMetrics metrics = graphics.getFontMetrics(font);
+//					int fontHeight = metrics.getHeight();
+//					rowHeight = fontHeight + Math.max(4, (int) (fontHeight * 0.3));
+//					auxHeight = (int) (rowHeight * 1.5);
+//				}
 
 				JPanel panel = new JPanel();
 
@@ -149,10 +150,12 @@ public class SectionEditor {
 				 * 
 				 */
 				TableLayout layout = new TableLayout(LAYOUT_COLS, LAYOUT_ROWS);
-				int vg = layout.getVGap();
-				int w = 34 * rowHeight;
-				int h = (numberOfSections + 1) * rowHeight + 5 * auxHeight + (4 + numberOfSections) * vg + rowHeight;
-				this.setSize(w, h);
+//				int vg = layout.getVGap();
+//				int w = 34 * rowHeight;
+//				int h = (numberOfSections + 1) * rowHeight + 5 * auxHeight + (4 + numberOfSections) * vg + rowHeight;
+//				int w = 1200;
+//				int h = 900;
+//				this.setSize(w, h);
 
 				panel.setLayout(new TableLayout(LAYOUT_COLS, LAYOUT_ROWS));
 
@@ -203,6 +206,10 @@ public class SectionEditor {
 						+ (firstRowIndex + numberOfSections) + ", f, f");
 				// panel.add(new JLabel("Rest of the track"), "1, "+(3+numberOfSections)+", 2, "+(3+numberOfSections)+",
 				// c, c");
+				
+				panel.revalidate();
+				Dimension sz = panel.getPreferredSize();
+				System.out.println("w: " + sz.width + " h: " + sz.height);
 
 				for (int j = 0; j < numberOfSections; j++) {
 					SectionEditorLine l = new SectionEditorLine();
@@ -495,14 +502,18 @@ public class SectionEditor {
 				 * +(10+numberOfSections)+", c, c"); panel.add(new JLabel("notes that is not covered by sections."),
 				 * "7, "+(11+numberOfSections)+", 10," +(11+numberOfSections)+", c, c");
 				 */
+				
+				PatchedJScrollPane scrollPane = new PatchedJScrollPane(panel);
+				scrollPane.setViewportBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-				this.getContentPane().add(panel);
+				this.getContentPane().add(scrollPane);
+				this.pack();
 				Window window = SwingUtilities.windowForComponent(this);
 				if (window != null) {
 					// Lets keep the dialog inside the screen, in case the screen changed resolution since it was last
 					// popped up
-					int maxX = window.getBounds().width - w;
-					int maxY = window.getBounds().height - h;
+					int maxX = window.getBounds().width - this.getWidth();
+					int maxY = window.getBounds().height - this.getHeight();
 					int x = Math.max(0, Math.min(maxX, SectionEditor.lastLocation.x));
 					int y = Math.max(0, Math.min(maxY, SectionEditor.lastLocation.y));
 					this.setLocation(new Point(x, y));

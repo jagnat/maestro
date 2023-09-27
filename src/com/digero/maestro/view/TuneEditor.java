@@ -2,9 +2,6 @@ package com.digero.maestro.view;
 
 import static javax.swing.SwingConstants.CENTER;
 
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Window;
 import java.awt.event.ActionListener;
@@ -16,6 +13,7 @@ import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -25,9 +23,9 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 
 import com.digero.common.util.Listener;
+import com.digero.common.view.PatchedJScrollPane;
 import com.digero.maestro.abc.AbcSong;
 import com.digero.maestro.abc.AbcSongEvent;
 import com.digero.maestro.abc.TuneLine;
@@ -82,17 +80,19 @@ public class TuneEditor {
 						openDialog = null;
 					}
 				});
-				int rowHeight = 16;
-				int auxHeight = 24;
-				Font font = UIManager.getFont("defaultFont");
-				Graphics graphics = jf.getGraphics();
-				if (font != null && graphics != null) // Using a flat theme - resize panel based on text size
-				{
-					FontMetrics metrics = graphics.getFontMetrics(font);
-					int fontHeight = metrics.getHeight();
-					rowHeight = fontHeight + Math.max(4, (int) (fontHeight * 0.3));
-					auxHeight = (int) (rowHeight * 1.5);
-				}
+				double rowHeight = TableLayout.PREFERRED;
+//				double auxHeight = TableLayout.PREFERRED;
+//				int rowHeight = 16;
+//				int auxHeight = 24;
+//				Font font = UIManager.getFont("defaultFont");
+//				Graphics graphics = jf.getGraphics();
+//				if (font != null && graphics != null) // Using a flat theme - resize panel based on text size
+//				{
+//					FontMetrics metrics = graphics.getFontMetrics(font);
+//					int fontHeight = metrics.getHeight();
+//					rowHeight = fontHeight + Math.max(4, (int) (fontHeight * 0.3));
+//					auxHeight = (int) (rowHeight * 1.5);
+//				}
 
 				JPanel panel = new JPanel();
 
@@ -118,12 +118,12 @@ public class TuneEditor {
 				 */
 
 				TableLayout layout = new TableLayout(LAYOUT_COLS, LAYOUT_ROWS);
-				int vg = layout.getVGap();
-				int w = 25 * rowHeight;
-				// int h = 153+(rowHeight+0)*SectionEditor.numberOfSections;
-				int h = (SectionEditor.numberOfSections) * rowHeight + 4 * auxHeight
-						+ (3 + SectionEditor.numberOfSections) * vg;
-				this.setSize(w, h);
+//				int vg = layout.getVGap();
+//				int w = 25 * rowHeight;
+//				// int h = 153+(rowHeight+0)*SectionEditor.numberOfSections;
+//				int h = (SectionEditor.numberOfSections) * rowHeight + 4 * auxHeight
+//						+ (3 + SectionEditor.numberOfSections) * vg;
+//				this.setSize(w, h);
 
 				panel.setLayout(layout);
 				// panel.add(new JLabel("<html><b> " + abcSong.getTitle() + "</html>"), "0, 0,
@@ -236,13 +236,17 @@ public class TuneEditor {
 				 * panel.add(warn3, "0," +(13+SectionEditor.numberOfSections)+", 4,"
 				 * +(13+SectionEditor.numberOfSections)+", c, c");
 				 */
-				this.getContentPane().add(panel);
+
+				PatchedJScrollPane scrollPane = new PatchedJScrollPane(panel);
+				scrollPane.setViewportBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+				this.getContentPane().add(scrollPane);
+				this.pack();
 				Window window = SwingUtilities.windowForComponent(this);
 				if (window != null) {
 					// Lets keep the dialog inside the screen, in case the screen changed resolution
 					// since it was last popped up
-					int maxX = window.getBounds().width - w;
-					int maxY = window.getBounds().height - h;
+					int maxX = window.getBounds().width - this.getWidth();
+					int maxY = window.getBounds().height - this.getHeight();
 					int x = Math.max(0, Math.min(maxX, TuneEditor.lastLocation.x));
 					int y = Math.max(0, Math.min(maxY, TuneEditor.lastLocation.y));
 					this.setLocation(new Point(x, y));
