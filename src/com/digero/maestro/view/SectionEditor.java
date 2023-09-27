@@ -22,7 +22,6 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -151,7 +150,7 @@ public class SectionEditor {
 				 * 
 				 */
 				TableLayout layout = new TableLayout(LAYOUT_COLS, LAYOUT_ROWS);
-				int vg = layout.getVGap();
+//				int vg = layout.getVGap();
 //				int w = 34 * rowHeight;
 //				int h = (numberOfSections + 1) * rowHeight + 5 * auxHeight + (4 + numberOfSections) * vg + rowHeight;
 //				int w = 1200;

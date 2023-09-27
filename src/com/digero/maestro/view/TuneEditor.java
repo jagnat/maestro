@@ -20,7 +20,6 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -82,7 +81,7 @@ public class TuneEditor {
 					}
 				});
 				double rowHeight = TableLayout.PREFERRED;
-				double auxHeight = TableLayout.PREFERRED;
+//				double auxHeight = TableLayout.PREFERRED;
 //				int rowHeight = 16;
 //				int auxHeight = 24;
 //				Font font = UIManager.getFont("defaultFont");
@@ -119,7 +118,7 @@ public class TuneEditor {
 				 */
 
 				TableLayout layout = new TableLayout(LAYOUT_COLS, LAYOUT_ROWS);
-				int vg = layout.getVGap();
+//				int vg = layout.getVGap();
 //				int w = 25 * rowHeight;
 //				// int h = 153+(rowHeight+0)*SectionEditor.numberOfSections;
 //				int h = (SectionEditor.numberOfSections) * rowHeight + 4 * auxHeight
