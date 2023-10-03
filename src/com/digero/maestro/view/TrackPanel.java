@@ -1,14 +1,9 @@
 package com.digero.maestro.view;
 
-import info.clearthought.layout.TableLayout;
-import info.clearthought.layout.TableLayoutConstants;
-import info.clearthought.layout.TableLayoutConstraints;
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.LayoutManager;
@@ -26,13 +21,18 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.event.MenuEvent;
+import javax.swing.event.MenuListener;
+
 import com.digero.common.abc.LotroInstrument;
 import com.digero.common.midi.MidiConstants;
 import com.digero.common.midi.Note;
@@ -47,7 +47,6 @@ import com.digero.common.util.Listener;
 import com.digero.common.util.ParseException;
 import com.digero.common.util.Util;
 import com.digero.common.view.ColorTable;
-import com.digero.common.view.LinkButton;
 import com.digero.maestro.abc.AbcPart;
 import com.digero.maestro.abc.AbcPartEvent;
 import com.digero.maestro.abc.AbcPartEvent.AbcPartProperty;
@@ -55,6 +54,10 @@ import com.digero.maestro.abc.DrumNoteMap;
 import com.digero.maestro.midi.BentNoteEvent;
 import com.digero.maestro.midi.NoteEvent;
 import com.digero.maestro.midi.TrackInfo;
+
+import info.clearthought.layout.TableLayout;
+import info.clearthought.layout.TableLayoutConstants;
+import info.clearthought.layout.TableLayoutConstraints;
 
 @SuppressWarnings("serial")
 public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConstants, ICompileConstants {
@@ -92,6 +95,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 	private static double[] LAYOUT_COLS = new double[] { GUTTER_WIDTH, TITLE_WIDTH_DEFAULT, PRIORITY_WIDTH_DEFAULT,
 			CONTROL_WIDTH_DEFAULT, FILL };
 	private static double[] LAYOUT_ROWS = new double[] { ROW_HEIGHT_DEFAULT, PREFERRED };
+	
+	private static ArrayList<Boolean> drumClipboard = null;
 
 	public static class TrackDimensions {
 		public TrackDimensions() {
@@ -124,7 +129,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 	private JCheckBox priorityBox;
 	private JSpinner transposeSpinner;
 	private TrackVolumeBar trackVolumeBar;
-	private JPanel drumSavePanel;
+	private JMenuBar drumControlBar;
 	private TrackNoteGraph noteGraph;
 	private ArrayList<DrumPanel> dPanels;
 
@@ -403,37 +408,119 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 					ROW_HEIGHT_DEFAULT);
 		}
 	}
+	
+	static public void clearDrumClipboard() {
+		drumClipboard = null;
+	}
 
 	private void initDrumSavePanel() {
-		JLabel intro = new JLabel("Drum Map: ");
-		intro.setForeground(ColorTable.PANEL_TEXT_DISABLED.get());
-
-		LinkButton saveButton = new LinkButton("Export");
-		saveButton.setForeground(ColorTable.PANEL_LINK.get());
-		saveButton.addActionListener(e -> {
-			if (!abcPart.isFXPart()) {
-				saveDrumMapping();
-			}
-		});
-
-		JLabel divider = new JLabel(" | ");
-		divider.setForeground(ColorTable.PANEL_TEXT_DISABLED.get());
-
-		LinkButton loadButton = new LinkButton("Import");
-		loadButton.setForeground(ColorTable.PANEL_LINK.get());
-		loadButton.addActionListener(e -> {
+		// Match colors of the parts panel for selected items
+		// Restore defaults after these components are created
+		Color bg = (Color)UIManager.get("MenuBar.selectionBackground");
+		Color fg = (Color)UIManager.get("MenuBar.selectionForeground");
+		UIManager.put("MenuBar.selectionBackground",ColorTable.GRAPH_BACKGROUND_DISABLED.get());
+		UIManager.put("MenuBar.selectionForeground",ColorTable.PANEL_TEXT_DISABLED.get());
+		
+		drumControlBar = new JMenuBar();
+		
+		JMenu drumMapMenu = new JMenu("Drum Map");
+		JMenuItem importItem = drumMapMenu.add(new JMenuItem("Import..."));
+		importItem.addActionListener(e -> {
 			if (!abcPart.isFXPart()) {
 				loadDrumMapping();
 			}
 		});
+		JMenuItem exportItem = drumMapMenu.add(new JMenuItem("Export..."));
+		exportItem.addActionListener(e -> {
+			if (!abcPart.isFXPart()) {
+				saveDrumMapping();
+			}
+		});
+		
+		JMenu selectMenu = new JMenu("Select");
+		drumControlBar.setOpaque(true);
+		drumControlBar.setForeground(ColorTable.PANEL_TEXT_DISABLED.get());
+		drumControlBar.setFocusable(false);
+		drumControlBar.setBackground(ColorTable.GRAPH_BACKGROUND_ENABLED.get());
+		drumControlBar.setBorder(BorderFactory.createEmptyBorder());
+		drumControlBar.add(drumMapMenu);
+		drumControlBar.add(selectMenu);
+		JMenuItem selectAll = selectMenu.add(new JMenuItem("Select All"));
+		selectAll.addActionListener(e -> {
+			if (dPanels == null) {
+				return;
+			}
+			for (DrumPanel dp : dPanels) {
+				dp.setSelected(true);
+				dp.repaint();
+			}
+		});
+		JMenuItem selectNone = selectMenu.add(new JMenuItem("Select None"));
+		selectNone.addActionListener(e -> {
+			if (dPanels == null) {
+				return;
+			}
+			for (DrumPanel dp : dPanels) {
+				dp.setSelected(false);
+				dp.repaint();
+			}
+		});
+		JMenuItem invertSelection = selectMenu.add(new JMenuItem("Invert Selection"));
+		invertSelection.addActionListener(e -> {
+			if (dPanels == null) {
+				return;
+			}
+			for (DrumPanel dp : dPanels) {
+				dp.setSelected(!dp.isSelected());
+				dp.repaint();
+			}
+		});
+		JMenuItem copySelection = selectMenu.add(new JMenuItem("Copy Selection"));
+		JMenuItem pasteSelection = selectMenu.add(new JMenuItem("Paste Selection"));
+		pasteSelection.setEnabled(drumClipboard != null);
+		pasteSelection.addActionListener(e -> {
+			if (dPanels == null) {
+				return;
+			}
+			int i = 0;
+			for (DrumPanel dp : dPanels) {
+				if (i >= drumClipboard.size()) {
+					break;
+				}
+				dp.setSelected(drumClipboard.get(i));
+				dp.repaint();
+				i++;
+			}
+		});
+		copySelection.addActionListener(e -> {
+			if (dPanels == null) {
+				return;
+			}
+			drumClipboard = new ArrayList<Boolean>();
+			for (DrumPanel dp : dPanels) {
+				drumClipboard.add(dp.isSelected());
+			}
+		});
+		selectMenu.addMenuListener(new MenuListener() {
 
-		drumSavePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 2, 0));
-		drumSavePanel.setBorder(BorderFactory.createEmptyBorder(0, 4, 4, 0));
-		drumSavePanel.setOpaque(false);
-		drumSavePanel.add(intro);
-		drumSavePanel.add(loadButton);
-		drumSavePanel.add(divider);
-		drumSavePanel.add(saveButton);
+			@Override
+			public void menuCanceled(MenuEvent arg0) {
+			}
+
+			@Override
+			public void menuDeselected(MenuEvent arg0) {
+				pasteSelection.setEnabled(drumClipboard != null);
+			}
+
+			@Override
+			public void menuSelected(MenuEvent arg0) {
+				pasteSelection.setEnabled(drumClipboard != null);
+			}
+		});
+		
+		// Restore LAF colors
+		UIManager.put("MenuBar.selectionBackground", bg);
+		UIManager.put("MenuBar.selectionForeground", fg);
 	}
 
 	public TrackInfo getTrackInfo() {
@@ -691,15 +778,15 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 					remove(i);
 				}
 			}
-			dPanels = null;
-			if (drumSavePanel != null)
-				remove(drumSavePanel);
+			dPanels = new ArrayList<DrumPanel>();
+			if (drumControlBar != null)
+				remove(drumControlBar);
 
 			if (showDrumPanels) {
-				if (drumSavePanel == null)
+				if (drumControlBar == null)
 					initDrumSavePanel();
 
-				add(drumSavePanel, TITLE_COLUMN + ", 1," + CONTROL_COLUMN + ", 1, l, c");
+				add(drumControlBar, TITLE_COLUMN + ", 1," + CONTROL_COLUMN + ", 1");
 				int row = LAYOUT_ROWS.length;
 				for (int noteId : trackInfo.getNotesInUse()) {
 					DrumPanel panel = new DrumPanel(trackInfo, seq, abcPart, noteId, abcSequencer, trackVolumeBar);
@@ -710,6 +797,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 						dPanels = new ArrayList<>();
 					dPanels.add(panel);
 				}
+				// this array ends up being in reverse order from what is displayed, since we add the top row each time
+				Collections.reverse(dPanels);
 			}
 
 			updateTitleText();

@@ -198,6 +198,15 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 
 		updateState();
 	}
+	
+	public void setSelected(boolean selected) {
+		checkBox.setSelected(selected);
+		abcPart.setDrumEnabled(trackInfo.getTrackNumber(), drumId, checkBox.isSelected());
+	}
+	
+	public boolean isSelected() {
+		return checkBox.isSelected();
+	}
 
 	@Override
 	public void discard() {
