@@ -428,7 +428,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 
 	private Listener<AbcSongEvent> songListener = e -> {
 		if (e.getProperty() == AbcSongProperty.TRANSPOSE) {
-			fireChangeEvent(AbcPartProperty.BASE_TRANSPOSE, !isDrumPart() /* affectsAbcPreview */);
+			fireChangeEvent(AbcPartProperty.BASE_TRANSPOSE, !isPercussionPart() /* affectsAbcPreview */);
 		}
 		if (e.getProperty() == AbcSongProperty.MIX_TIMING_COMBINE_PRIORITIES
 				|| e.getProperty() == AbcSongProperty.MIX_TIMING) {
@@ -449,7 +449,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		if (!getAudible(track, tickStart)) {
 			return null;
 		}
-		if (isDrumPart()) {
+		if (isPercussionPart()) {
 			if (!isTrackEnabled(track) || !isDrumEnabled(track, noteId))
 				return null;
 
@@ -485,7 +485,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		if (!getAudible(track, tickStart)) {
 			return null;
 		}
-		if (isDrumPart()) {
+		if (isPercussionPart()) {
 			if (!isTrackEnabled(track) || !isDrumEnabled(track, noteId))
 				return null;
 
@@ -871,7 +871,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	}
 
 	public int getTrackTranspose(int track) {
-		return isDrumPart() ? 0 : trackTranspose[track];
+		return isPercussionPart() ? 0 : trackTranspose[track];
 	}
 
 	public void setTrackTranspose(int track, int transpose) {
@@ -882,7 +882,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	}
 
 	public int getTranspose(int track, long tickStart) {
-		if (isDrumPart())
+		if (isPercussionPart())
 			return 0;
 		return abcSong.getTranspose() + abcSong.getTuneTranspose(tickStart) + trackTranspose[track]
 				- getInstrument().octaveDelta * 12 + getSectionTranspose(tickStart, track);
@@ -1184,8 +1184,12 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	// DRUMS
 	//
 
-	public boolean isDrumPart() {
+	public boolean isPercussionPart() {
 		return instrument.isPercussion;
+	}
+	
+	public boolean isDrumPart() {
+		return instrument == LotroInstrument.BASIC_DRUM;
 	}
 
 	public boolean isCowbellPart() {

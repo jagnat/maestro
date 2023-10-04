@@ -130,6 +130,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 	private JSpinner transposeSpinner;
 	private TrackVolumeBar trackVolumeBar;
 	private JMenuBar drumControlBar;
+	private JMenu drumMapMenu;
 	private TrackNoteGraph noteGraph;
 	private ArrayList<DrumPanel> dPanels;
 
@@ -348,8 +349,9 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		updateTitleText();
 
 		abcPart.addAbcListener(abcListener = e -> {
+			
 			if (e.isNoteGraphRelated()) {
-				updateState();
+				updateState(true);
 				noteGraph.repaint();
 				updateBadTooltipText();
 				updateTitleText();
@@ -413,7 +415,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		drumClipboard = null;
 	}
 
-	private void initDrumSavePanel() {
+	private void initDrumMenuBar() {
 		// Match colors of the parts panel for selected items
 		// Restore defaults after these components are created
 		Color bg = (Color)UIManager.get("MenuBar.selectionBackground");
@@ -422,8 +424,19 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		UIManager.put("MenuBar.selectionForeground",ColorTable.PANEL_TEXT_DISABLED.get());
 		
 		drumControlBar = new JMenuBar();
+		drumControlBar.setOpaque(true);
+		drumControlBar.setForeground(ColorTable.PANEL_TEXT_DISABLED.get());
+		drumControlBar.setFocusable(false);
+		drumControlBar.setBackground(ColorTable.GRAPH_BACKGROUND_ENABLED.get());
+		drumControlBar.setBorder(BorderFactory.createEmptyBorder());
 		
-		JMenu drumMapMenu = new JMenu("Drum Map");
+		JMenu selectMenu = new JMenu("Select");
+		drumMapMenu = new JMenu("Drum Map");
+		drumMapMenu.setVisible(abcPart.isDrumPart());
+		
+		drumControlBar.add(drumMapMenu);
+		drumControlBar.add(selectMenu);
+
 		JMenuItem importItem = drumMapMenu.add(new JMenuItem("Import..."));
 		importItem.addActionListener(e -> {
 			if (!abcPart.isFXPart()) {
@@ -437,14 +450,6 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			}
 		});
 		
-		JMenu selectMenu = new JMenu("Select");
-		drumControlBar.setOpaque(true);
-		drumControlBar.setForeground(ColorTable.PANEL_TEXT_DISABLED.get());
-		drumControlBar.setFocusable(false);
-		drumControlBar.setBackground(ColorTable.GRAPH_BACKGROUND_ENABLED.get());
-		drumControlBar.setBorder(BorderFactory.createEmptyBorder());
-		drumControlBar.add(drumMapMenu);
-		drumControlBar.add(selectMenu);
 		JMenuItem selectAll = selectMenu.add(new JMenuItem("Select All"));
 		selectAll.addActionListener(e -> {
 			if (dPanels == null) {
@@ -702,7 +707,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			noteGraph.setBadNoteColor(ColorTable.NOTE_BAD_OFF);
 		} else // disabled (lighter colored) notes for playing tracks not in the current part
 		{
-			boolean pseudoOff = !abcPreviewMode && (abcPart.isDrumPart() != trackInfo.isDrumTrack());
+			boolean pseudoOff = !abcPreviewMode && (abcPart.isPercussionPart() != trackInfo.isDrumTrack());
 			noteGraph.setNoteColor(pseudoOff ? ColorTable.NOTE_OFF : ColorTable.NOTE_DISABLED);
 			noteGraph.setBadNoteColor(pseudoOff ? ColorTable.NOTE_BAD_OFF : ColorTable.NOTE_BAD_DISABLED);
 		}
@@ -710,7 +715,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		if (trackEnabled) {
 			checkBox.setForeground(ColorTable.PANEL_TEXT_ENABLED.get());
 		} else {
-			boolean inputEnabled = abcPart.isDrumPart() == trackInfo.isDrumTrack();
+			boolean inputEnabled = abcPart.isPercussionPart() == trackInfo.isDrumTrack();
 			checkBox.setForeground(
 					inputEnabled ? ColorTable.PANEL_TEXT_DISABLED.get() : ColorTable.PANEL_TEXT_OFF.get());
 		}
@@ -733,7 +738,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		// Update the visibility of controls
 		trackVolumeBar.setVisible(trackEnabled);
 		if (transposeSpinner != null)
-			transposeSpinner.setVisible(trackEnabled && !abcPart.isDrumPart());
+			transposeSpinner.setVisible(trackEnabled && !abcPart.isPercussionPart());
 		if (sectionButton != null)
 			sectionButton.setVisible(trackEnabled);
 
@@ -758,18 +763,18 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			noteGraph.setDeltaVolume(abcPart.getTrackVolumeAdjust(trackInfo.getTrackNumber()));
 		}
 
-		boolean showDrumPanelsNew = abcPart.isDrumPart() && trackEnabled;
+		boolean showDrumPanelsNew = abcPart.isPercussionPart() && trackEnabled;
 
 		if (showDrumPanelsNew || initDrumPanels) {
 			this.setPreferredSize(null);
 		}
 
-		if (initDrumPanels || showDrumPanels != showDrumPanelsNew || wasDrumPart != abcPart.isDrumPart()) {
+		if (initDrumPanels || showDrumPanels != showDrumPanelsNew || wasDrumPart != abcPart.isPercussionPart()) {
 			if (showDrumPanels != showDrumPanelsNew) {
 				noteGraph.repaint();
 				showDrumPanels = showDrumPanelsNew;
 			}
-			wasDrumPart = abcPart.isDrumPart();
+			wasDrumPart = abcPart.isPercussionPart();
 
 			for (int i = getComponentCount() - 1; i >= 0; --i) {
 				Component child = getComponent(i);
@@ -779,12 +784,15 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 				}
 			}
 			dPanels = new ArrayList<DrumPanel>();
-			if (drumControlBar != null)
+			if (drumControlBar != null) {
 				remove(drumControlBar);
+			}
 
 			if (showDrumPanels) {
 				if (drumControlBar == null)
-					initDrumSavePanel();
+					initDrumMenuBar();
+				
+				drumMapMenu.setVisible(abcPart.isDrumPart());
 
 				add(drumControlBar, TITLE_COLUMN + ", 1," + CONTROL_COLUMN + ", 1");
 				int row = LAYOUT_ROWS.length;
@@ -994,7 +1002,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			if (midId < MidiConstants.LOWEST_NOTE_ID || midId > MidiConstants.HIGHEST_NOTE_ID)
 				return false;
 
-			if (abcPart.isDrumPart())
+			if (abcPart.isPercussionPart())
 				return abcPart.isDrumPlayable(trackInfo.getTrackNumber(), ne.note.id);
 
 			if (trackInfo.isDrumTrack() && !abcPart.isTrackEnabled(trackInfo.getTrackNumber()))
