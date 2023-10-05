@@ -1592,10 +1592,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		tuneEditorButton.setEnabled(midiLoaded);
 		if (midiLoaded && abcSong.tuneBars != null) {
 			tuneEditorButton.setForeground(new Color(0.2f, 0.8f, 0.2f));
-		} else if (midiLoaded) {
-			tuneEditorButton.setForeground(Color.black);
 		} else {
-			tuneEditorButton.setForeground(Color.gray);
+			Color c = UIManager.getColor("Button.foreground");
+			tuneEditorButton.setForeground(c);
 		}
 		resetTempoButton.setEnabled(midiLoaded && abcSong != null && abcSong.getTempoFactor() != 1.0f);
 		resetTempoButton.setVisible(resetTempoButton.isEnabled());
@@ -1900,6 +1899,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 	private boolean closeSong() {
 		SectionEditor.clearClipboard();
+		TrackPanel.clearDrumClipboard();
 		sequencer.stop();
 		abcSequencer.stop();
 

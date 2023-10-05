@@ -1145,7 +1145,7 @@ public class AbcExporter {
 						velocity = (int) ((velocity + part.getTrackVolumeAdjust(t) + sva[0]) * 0.01f * (float) sva[1]);
 
 						NoteEvent newNE = createNoteEvent(ne, mappedNote, velocity, startTick, endTick, qtm);
-						if (!part.isDrumPart()) {
+						if (!part.isPercussionPart()) {
 							int origId = part.mapNoteFullOctaves(t, ne.note.id, ne.getStartTick());
 							if (mappedNote.id != origId) {
 								newNE.origPitch = origId;

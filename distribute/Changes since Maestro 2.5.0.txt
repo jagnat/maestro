@@ -50,6 +50,7 @@ Version 3.0.2
 - Support for exporting ABC preview MP3/WAV files from Maestro, in addition to ABC Player.
 - File menu options for reloading an MSX project's MIDI file without closing Maestro (shortcut Ctrl-R), or changing the source MIDI file of a project.
 - Maestro maintains a list of recently opened project files in the file menu for quick access.
+- Add selection controls for selecting enabled drum hits. Select all, select none, invert selection, copy/paste selection between parts.
 
 Version 3.0.1
 - Support for midi expression messages. This will in some MIDIs give increased dynamic range on note volumes.
