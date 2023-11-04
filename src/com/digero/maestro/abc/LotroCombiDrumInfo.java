@@ -55,9 +55,10 @@ public class LotroCombiDrumInfo {
 
 		combiNoteCount = firstNotes.size();
 
-		// TODO:
-		//
-		// Solo for these is silent, but can live with that
+	}
+	
+	public static boolean noteIdIsXtraNote(int noteId) {
+		return noteId >= minCombi.id && noteId <= maxCombi.id;
 	}
 
 	public static NoteEvent getId1(NoteEvent ne, Note extraNote) {

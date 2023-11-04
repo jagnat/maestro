@@ -238,9 +238,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private MainSequencerListener mainSequencerListener;
 	private AbcSequencerListener abcSequencerListener;
 	private boolean failedToLoadLotroInstruments = false;
-	private JButton zoom = new JButton("Zoom");
-	private JButton noteButton = new JButton("Note");
-	private JLabel noteCountLabel = new JLabel();
+	private JButton zoomButton;
+	private JButton noteButton;
+	private JLabel noteCountLabel;
 	private int maxNoteCount = 0;
 	private int maxNoteCountTotal = 0;
 	private boolean midiResolved = false;
@@ -802,12 +802,6 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			updateNoteCountLabel();
 		});
 
-		JPanel playButtonPanel = new JPanel(new TableLayout(//
-				new double[] { 0.5, 0.5 }, //
-				new double[] { PREFERRED }));
-		playButtonPanel.add(playButton, "0, 0");
-		playButtonPanel.add(stopButton, "1, 0");
-
 		ActionListener modeButtonListener = e -> {
 			updatePreviewMode(abcModeRadioButton.isSelected());
 			if (partPanel != null) {
@@ -830,15 +824,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		midiModeRadioButton.setSelected(true);
 		abcPreviewMode = abcModeRadioButton.isSelected();
 
-		JPanel modeButtonPanel = new JPanel(new BorderLayout());
-		modeButtonPanel.add(midiModeRadioButton, BorderLayout.NORTH);
-		modeButtonPanel.add(abcModeRadioButton, BorderLayout.SOUTH);
-		// modeButtonPanel.add(tuneEditorButton, BorderLayout.WEST);
-
 		volumeSlider = new JSlider(0, MidiConstants.MAX_VOLUME, getVolume());
 		volumeSlider.setFocusable(false);
 		volumeSlider.addChangeListener(e -> {
-//			System.out.println("val: " + jStereo.getValue() + ", adj: " + jStereo.getValueIsAdjusting());
 			setVolume(volumeSlider.getValue());
 		});
 
@@ -860,39 +848,21 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		abcBarLabel.setToolTipText("ABC Preview Bar number");
 		abcBarLabel.setVisible(!midiBarLabel.isVisible());
 
-		JPanel flowP = new JPanel(new FlowLayout());
+		noteButton = new JButton("Note");
 		noteButton.addActionListener(e -> partPanel.noteToggle());
 		noteButton.setToolTipText("<html>Show notepad where custom notes can be entered.<br>"
 				+ "Will be saved in msx project file.</html>");
-		// playControlPanel.add(noteButton, "6, 2, C, C");
 
-		zoom.addActionListener(e -> partPanel.zoom());
-		// playControlPanel.add(zoom, "7, 2, C, C");
-
-		flowP.add(zoom);
-		flowP.add(noteButton);
+		zoomButton = new JButton("Zoom");
+		zoomButton.addActionListener(e -> partPanel.zoom());
 		
+		noteCountLabel = new JLabel();
 		noteCountLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
 		noteCountLabel.setBorder(new EmptyBorder(0, 0, 0, 20));// top,left,bottom,right
 		noteCountLabel.setToolTipText("<html>Number of simultanious notes<br>" + "that is playing.<br>"
 				+ "Use as rough (as it for tech reasons typically overestimates)<br>"
 				+ "guide to estimate how much of lotro max<br>" + "polyphony the song will consume.<br>"
 				+ "Stopped notes that are in release phase also counts.</html>");
-
-//		JPanel playControlPanel = new JPanel(new TableLayout(//
-////				new double[] { PREFERRED, 0.50, 4, PREFERRED, 4, 0.25, 0.25, PREFERRED, PREFERRED, 4 }, //
-//				new double[] { .167, .167, 4, .167, 4, .167, .167, .166, .166, 4 }, //
-//				new double[] { PREFERRED, 4, PREFERRED }));
-//		playControlPanel.add(playButtonPanel, "3, 0, 3, 2, C, C");
-//		playControlPanel.add(tuneEditorButton, "0, 0, 0, 2, L, C");
-//		playControlPanel.add(modeButtonPanel, "1, 0, 1, 2, C, F");
-//		playControlPanel.add(volumePanel, "5, 0, 5, 2, C, C");
-//		playControlPanel.add(stereoPanel, "6, 0, 6, 2, C, C");
-//		playControlPanel.add(midiPositionLabel, "8, 0, R, B");
-//		playControlPanel.add(abcPositionLabel, "8, 0, R, B");
-//		playControlPanel.add(midiBarLabel, "8, 2, R, T");
-//		playControlPanel.add(abcBarLabel, "8, 2, R, T");
-//		playControlPanel.add(flowP, "7, 2, C, C");
 		
 		JPanel playControlPanel = new JPanel(new MigLayout("fillx, hidemode 3, wrap 9",
 				"[][][][][][][grow -1][grow -1]"));
@@ -910,13 +880,10 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		playControlPanel.add(abcModeRadioButton);
 		playControlPanel.add(new JLabel("Stereo:"), "right");
 		playControlPanel.add(panSlider);
-		playControlPanel.add(zoom, "right");
+		playControlPanel.add(zoomButton, "right");
 		playControlPanel.add(noteButton);
 		playControlPanel.add(midiBarLabel);
 		playControlPanel.add(abcBarLabel);
-
-
-//		playControlPanel.add(noteCountLabel, "7, 0, 7, 0, L, C");
 
 		midiPartsAndControls = new JPanel(new BorderLayout(HGAP, VGAP));
 		midiPartsAndControls.add(partPanel, BorderLayout.CENTER);
@@ -1619,7 +1586,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		tripletCheckBox.setEnabled(midiLoaded);
 		mixCheckBox.setEnabled(midiLoaded);
 		prioCheckBox.setEnabled(midiLoaded && mixCheckBox.isSelected());
-		zoom.setEnabled(midiLoaded);
+		zoomButton.setEnabled(midiLoaded);
 		noteButton.setEnabled(midiLoaded);
 		if (midiLoaded) {
 			midiModeRadioButton.setText("Original ("
