@@ -8,6 +8,7 @@ import javax.sound.midi.Receiver;
 import javax.sound.midi.ShortMessage;
 
 import com.digero.common.util.ICompileConstants;
+import com.digero.maestro.abc.LotroCombiDrumInfo;
 
 /**
  * The purpose of this class is to facilitate drum track soloing of specific notes.
@@ -27,6 +28,7 @@ public class NoteFilterTransceiver implements Transceiver, MidiConstants, ICompi
 	}
 
 	public void setNoteSolo(int drumId, boolean solo) {
+		System.out.println("Setting " + drumId + " to solo state: " + solo);
 		solos.set(drumId, solo);
 		if (solo)
 			turnOffInactiveNotes();

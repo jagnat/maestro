@@ -58,6 +58,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
@@ -92,6 +93,7 @@ import com.digero.common.view.NativeVolumeBar;
 import com.digero.common.view.SongPositionBar;
 import com.digero.common.view.SongPositionLabel;
 import com.digero.common.view.TempoBar;
+import com.formdev.flatlaf.themes.FlatMacLightLaf;
 
 import info.clearthought.layout.TableLayout;
 import info.clearthought.layout.TableLayoutConstants;
@@ -131,7 +133,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		System.setProperty("sun.sound.useNewAudioEngine", "true");
 
 		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+//			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+			UIManager.setLookAndFeel(new FlatMacLightLaf());
 		} catch (Exception e) {
 		}
 
@@ -405,7 +408,9 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		JLabel volumeLabel = new JLabel("Volume");
 		volumeLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		volumePanel.add(volumeLabel, BorderLayout.NORTH);
-		volumePanel.add(volumeBar, BorderLayout.CENTER);
+		JSlider slider = new JSlider(0, MidiConstants.MAX_VOLUME);
+		slider.setFocusable(false);
+		volumePanel.add( slider, BorderLayout.CENTER);
 
 		controlPanel.add(songPositionBar, "1, 1, 9, 1");
 		controlPanel.add(songPositionLabel, "11, 1");

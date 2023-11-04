@@ -143,19 +143,25 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 			private int soloAbcDrumId = -1;
 			private int soloTrack = -1;
 			private int soloDrumId = -1;
+			private boolean prevSoloState = false;
 
 			@Override
 			public void mousePressed(MouseEvent e) {
 				if (e.getButton() == MouseEvent.BUTTON3) {
 					int trackNumber = trackInfo.getTrackNumber();
+					System.out.println("abcprevmod: " + isAbcPreviewMode() + " instanc: " + (abcSequencer instanceof NoteFilterSequencerWrapper));
 					if (isAbcPreviewMode() && abcSequencer instanceof NoteFilterSequencerWrapper) {
 						if (abcPart.isTrackEnabled(trackNumber)) {
 							soloAbcTrack = abcPart.getPreviewSequenceTrackNumber();
 							Note soloDrumNote = abcPart.mapNote(trackNumber, drumId, 0);
 							soloAbcDrumId = (soloDrumNote == null) ? -1 : soloDrumNote.id;
 						}
+						
+						System.out.println("soloAbcTrack: " + soloAbcTrack + " soloAbcDrumId: " + soloAbcDrumId);
 
 						if (soloAbcTrack >= 0 && soloAbcDrumId >= 0) {
+							prevSoloState = abcPart.isSoloed();
+							System.out.println("drumId: " + soloAbcDrumId);
 							((NoteFilterSequencerWrapper) abcSequencer).setNoteSolo(soloAbcTrack, soloAbcDrumId, true);
 						}
 					} else {
@@ -171,6 +177,7 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 				if (e.getButton() == MouseEvent.BUTTON3) {
 					if (soloAbcTrack >= 0 && soloAbcDrumId >= 0 && abcSequencer instanceof NoteFilterSequencerWrapper) {
 						((NoteFilterSequencerWrapper) abcSequencer).setNoteSolo(soloAbcTrack, soloAbcDrumId, false);
+						abcSequencer.setTrackSolo(soloAbcTrack, prevSoloState);
 					}
 					soloAbcTrack = -1;
 					soloAbcDrumId = -1;
@@ -314,6 +321,7 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 	}
 
 	public void setAbcPreviewMode(boolean isAbcPreviewMode) {
+		System.out.println("set abc prev");
 		if (this.isAbcPreviewMode != isAbcPreviewMode) {
 			this.isAbcPreviewMode = isAbcPreviewMode;
 			updateState();
@@ -321,6 +329,7 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 	}
 
 	private boolean isAbcPreviewMode() {
+//		System.out.println("abcsn: " + (abcSequencer != null) + " abcp: " + isAbcPreviewMode);
 		return abcSequencer != null && isAbcPreviewMode;
 	}
 
