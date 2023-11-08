@@ -51,6 +51,7 @@ Version 3.0.3
 - File menu options for reloading an MSX project's MIDI file without closing Maestro (shortcut Ctrl-R), or changing the source MIDI file of a project.
 - Maestro maintains a list of recently opened project files in the file menu for quick access.
 - Add selection controls for selecting enabled drum hits. Select all, select none, invert selection, copy/paste selection between parts.
+- Experimental change to tune/section editors to fix Linux issue.
 - Add support for right-click soloing Xtra drum notes
 - New bigger sliders for volume/pan control in Maestro
 - Fix bug where deleting a soloed part would result in Maestro being silent
