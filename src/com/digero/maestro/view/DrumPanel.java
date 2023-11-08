@@ -143,6 +143,7 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 			private int soloAbcDrumId = -1;
 			private int soloTrack = -1;
 			private int soloDrumId = -1;
+			private boolean prevSoloState = false;
 
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -154,8 +155,9 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 							Note soloDrumNote = abcPart.mapNote(trackNumber, drumId, 0);
 							soloAbcDrumId = (soloDrumNote == null) ? -1 : soloDrumNote.id;
 						}
-
+						
 						if (soloAbcTrack >= 0 && soloAbcDrumId >= 0) {
+							prevSoloState = abcPart.isSoloed();
 							((NoteFilterSequencerWrapper) abcSequencer).setNoteSolo(soloAbcTrack, soloAbcDrumId, true);
 						}
 					} else {
@@ -171,6 +173,7 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 				if (e.getButton() == MouseEvent.BUTTON3) {
 					if (soloAbcTrack >= 0 && soloAbcDrumId >= 0 && abcSequencer instanceof NoteFilterSequencerWrapper) {
 						((NoteFilterSequencerWrapper) abcSequencer).setNoteSolo(soloAbcTrack, soloAbcDrumId, false);
+						abcSequencer.setTrackSolo(soloAbcTrack, prevSoloState);
 					}
 					soloAbcTrack = -1;
 					soloAbcDrumId = -1;

@@ -219,7 +219,10 @@ public class PartsList extends JPanel implements IDiscardable, TableLayoutConsta
 			updateParts();
 			break;
 		case BEFORE_PART_REMOVED:
-			e.getPart().removeAbcListener(partListener);
+			AbcPart part = e.getPart();
+			part.removeAbcListener(partListener);
+			part.setSoloed(false);
+			updatePartSoloMute(part);
 			break;
 		case PART_LIST_ORDER:
 			updateParts();

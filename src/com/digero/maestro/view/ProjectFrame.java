@@ -60,6 +60,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JSpinner;
 import javax.swing.JSplitPane;
 import javax.swing.JTextField;
@@ -108,9 +109,7 @@ import com.digero.common.view.AboutDialog;
 import com.digero.common.view.AudioExportManager;
 import com.digero.common.view.BarNumberLabel;
 import com.digero.common.view.ColorTable;
-import com.digero.common.view.NativeVolumeBar;
 import com.digero.common.view.SongPositionLabel;
-import com.digero.common.view.StereoBar;
 import com.digero.maestro.MaestroMain;
 import com.digero.maestro.abc.AbcConversionException;
 import com.digero.maestro.abc.AbcExporter;
@@ -129,6 +128,7 @@ import com.digero.maestro.util.XmlUtil;
 
 import info.clearthought.layout.TableLayout;
 import info.clearthought.layout.TableLayoutConstants;
+import net.miginfocom.swing.MigLayout;
 
 @SuppressWarnings("serial")
 public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompileConstants {
@@ -211,8 +211,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private JToggleButton midiModeRadioButton;
 	private JButton playButton;
 	private JButton stopButton;
-	private NativeVolumeBar volumeBar;
-	private StereoBar stereoBar;
+	private JSlider volumeSlider;
+	private JSlider panSlider;
 	private SongPositionLabel midiPositionLabel;
 	private SongPositionLabel abcPositionLabel;
 	private BarNumberLabel midiBarLabel;
@@ -238,9 +238,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private MainSequencerListener mainSequencerListener;
 	private AbcSequencerListener abcSequencerListener;
 	private boolean failedToLoadLotroInstruments = false;
-	private JButton zoom = new JButton("Zoom");
-	private JButton noteButton = new JButton("Note");
-	private JLabel noteCountLabel = new JLabel();
+	private JButton zoomButton;
+	private JButton noteButton;
+	private JLabel noteCountLabel;
 	private int maxNoteCount = 0;
 	private int maxNoteCountTotal = 0;
 	private boolean midiResolved = false;
@@ -802,12 +802,6 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			updateNoteCountLabel();
 		});
 
-		JPanel playButtonPanel = new JPanel(new TableLayout(//
-				new double[] { 0.5, 0.5 }, //
-				new double[] { PREFERRED }));
-		playButtonPanel.add(playButton, "0, 0");
-		playButtonPanel.add(stopButton, "1, 0");
-
 		ActionListener modeButtonListener = e -> {
 			updatePreviewMode(abcModeRadioButton.isSelected());
 			if (partPanel != null) {
@@ -830,24 +824,17 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		midiModeRadioButton.setSelected(true);
 		abcPreviewMode = abcModeRadioButton.isSelected();
 
-		JPanel modeButtonPanel = new JPanel(new BorderLayout());
-		modeButtonPanel.add(midiModeRadioButton, BorderLayout.NORTH);
-		modeButtonPanel.add(abcModeRadioButton, BorderLayout.SOUTH);
-		// modeButtonPanel.add(tuneEditorButton, BorderLayout.WEST);
+		volumeSlider = new JSlider(0, MidiConstants.MAX_VOLUME, getVolume());
+		volumeSlider.setFocusable(false);
+		volumeSlider.addChangeListener(e -> {
+			setVolume(volumeSlider.getValue());
+		});
 
-		volumeBar = new NativeVolumeBar(new VolumeManager());
-		JPanel volumePanel = new JPanel(new TableLayout(//
-				new double[] { PREFERRED }, //
-				new double[] { PREFERRED, PREFERRED }));
-		volumePanel.add(new JLabel("Volume"), "0, 0, c, c");
-		volumePanel.add(volumeBar, "0, 1, f, c");
-
-		stereoBar = new StereoBar(new PanManager());
-		JPanel stereoPanel = new JPanel(new TableLayout(//
-				new double[] { PREFERRED }, //
-				new double[] { PREFERRED, PREFERRED }));
-		stereoPanel.add(new JLabel("Stereo"), "0, 0, c, c");
-		stereoPanel.add(stereoBar, "0, 1, f, c");
+		panSlider = new JSlider(0, 100, getPan());
+		panSlider.setFocusable(false);
+		panSlider.addChangeListener(e -> {
+			setPan(panSlider.getValue());
+		});
 
 		midiPositionLabel = new SongPositionLabel(sequencer);
 
@@ -861,39 +848,42 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		abcBarLabel.setToolTipText("ABC Preview Bar number");
 		abcBarLabel.setVisible(!midiBarLabel.isVisible());
 
-		JPanel flowP = new JPanel(new FlowLayout());
+		noteButton = new JButton("Note");
 		noteButton.addActionListener(e -> partPanel.noteToggle());
 		noteButton.setToolTipText("<html>Show notepad where custom notes can be entered.<br>"
 				+ "Will be saved in msx project file.</html>");
-		// playControlPanel.add(noteButton, "6, 2, C, C");
 
-		zoom.addActionListener(e -> partPanel.zoom());
-		// playControlPanel.add(zoom, "7, 2, C, C");
-
-		flowP.add(zoom);
-		flowP.add(noteButton);
-
-		JPanel playControlPanel = new JPanel(new TableLayout(//
-				new double[] { PREFERRED, 0.50, 4, PREFERRED, 4, 0.25, 0.25, PREFERRED, PREFERRED, 4 }, //
-				new double[] { PREFERRED, 4, PREFERRED }));
-		playControlPanel.add(playButtonPanel, "3, 0, 3, 2, C, C");
-		playControlPanel.add(tuneEditorButton, "0, 0, 0, 2, L, C");
-		playControlPanel.add(modeButtonPanel, "1, 0, 1, 2, C, F");
-		playControlPanel.add(volumePanel, "5, 0, 5, 2, C, C");
-		playControlPanel.add(stereoPanel, "6, 0, 6, 2, C, C");
-		playControlPanel.add(midiPositionLabel, "8, 0, R, B");
-		playControlPanel.add(abcPositionLabel, "8, 0, R, B");
-		playControlPanel.add(midiBarLabel, "8, 2, R, T");
-		playControlPanel.add(abcBarLabel, "8, 2, R, T");
-		playControlPanel.add(flowP, "7, 2, C, C");
-
+		zoomButton = new JButton("Zoom");
+		zoomButton.addActionListener(e -> partPanel.zoom());
+		
+		noteCountLabel = new JLabel();
 		noteCountLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
 		noteCountLabel.setBorder(new EmptyBorder(0, 0, 0, 20));// top,left,bottom,right
 		noteCountLabel.setToolTipText("<html>Number of simultanious notes<br>" + "that is playing.<br>"
 				+ "Use as rough (as it for tech reasons typically overestimates)<br>"
 				+ "guide to estimate how much of lotro max<br>" + "polyphony the song will consume.<br>"
 				+ "Stopped notes that are in release phase also counts.</html>");
-		playControlPanel.add(noteCountLabel, "7, 0, 7, 0, L, C");
+		
+		JPanel playControlPanel = new JPanel(new MigLayout("fillx, hidemode 3, wrap 9",
+				"[][][][][][][grow -1][grow -1]"));
+		playControlPanel.add(tuneEditorButton, "spany 2");
+		playControlPanel.add(midiModeRadioButton);
+		playControlPanel.add(playButton, "spany 2, right");
+		playControlPanel.add(stopButton, "spany 2");
+		playControlPanel.add(new JLabel("Volume:"), "right");
+		playControlPanel.add(volumeSlider);
+		playControlPanel.add(noteCountLabel, "span 2, center");
+		playControlPanel.add(midiPositionLabel);
+		playControlPanel.add(abcPositionLabel, "wrap");
+		
+		
+		playControlPanel.add(abcModeRadioButton);
+		playControlPanel.add(new JLabel("Stereo:"), "right");
+		playControlPanel.add(panSlider);
+		playControlPanel.add(zoomButton, "right");
+		playControlPanel.add(noteButton);
+		playControlPanel.add(midiBarLabel);
+		playControlPanel.add(abcBarLabel);
 
 		midiPartsAndControls = new JPanel(new BorderLayout(HGAP, VGAP));
 		midiPartsAndControls.add(partPanel, BorderLayout.CENTER);
@@ -955,7 +945,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 	private void checkVolumeTransceiver() {
 		volumeTransceiver = new VolumeTransceiver();
-		volumeTransceiver.setVolume(prefs.getInt("volumizer", NativeVolumeBar.MAX_VOLUME));
+		volumeTransceiver.setVolume(prefs.getInt("volumizer", MidiConstants.MAX_VOLUME));
 
 		abcVolumeTransceiver = new VolumeTransceiver();
 		abcVolumeTransceiver.setVolume(volumeTransceiver.getVolume());
@@ -1286,11 +1276,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			exportAsMenuItem.setVisible(true);
 			exportMenuItem.setText("Export ABC");
 		}
-
-		if (shouldExportAbcAs())
-			exportButton.setText("Export ABC As...");
-		else
-			exportButton.setText("Export ABC");
+		
+		updateExportOrExportAsButton();
 
 		if (abcSong != null)
 			abcSong.setSkipSilenceAtStart(saveSettings.skipSilenceAtStart);
@@ -1309,52 +1296,53 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		}
 		updateButtons(false);
 	}
+	
+	private void updateExportOrExportAsButton() {
+		String exportText = shouldExportAbcAs() ? "Export ABC As..." : "Export ABC";
+		if (!exportButton.getText().equals(exportText)) {
+			exportButton.setText(exportText);
+			exportButton.repaint();
+		}
+	}
 
 	public void onVolumeChanged() {
-		volumeBar.repaint();
+		volumeSlider.setValue(getVolume());
+		volumeSlider.repaint();
 	}
-
-	private class VolumeManager implements NativeVolumeBar.Callback {
-		@Override
-		public void setVolume(int volume) {
-			if (volumeTransceiver != null)
-				volumeTransceiver.setVolume(volume);
-			if (abcVolumeTransceiver != null)
-				abcVolumeTransceiver.setVolume(volume);
-			prefs.putInt("volumizer", volume);
-		}
-
-		@Override
-		public int getVolume() {
-			if (volumeTransceiver != null)
-				return volumeTransceiver.getVolume();
-			if (abcVolumeTransceiver != null)
-				return abcVolumeTransceiver.getVolume();
-			return NativeVolumeBar.MAX_VOLUME;
-		}
+	
+	private void setVolume(int volume) {
+		if (volumeTransceiver != null)
+			volumeTransceiver.setVolume(volume);
+		if (abcVolumeTransceiver != null)
+			abcVolumeTransceiver.setVolume(volume);
+		prefs.putInt("volumizer", volume);
 	}
+	
+	public int getVolume() {
+		if (volumeTransceiver != null)
+			return volumeTransceiver.getVolume();
+		if (abcVolumeTransceiver != null)
+			return abcVolumeTransceiver.getVolume();
+		return MidiConstants.MAX_VOLUME;
+	}
+	
+	public void setPan(int pan) {
+		if (pan != prefs.getInt("stereoPan", 100)) {
+			prefs.putInt("stereoPan", pan);
+			SequencerWrapper curSequencer = abcPreviewMode ? abcSequencer : sequencer;
 
-	private class PanManager implements StereoBar.Callback {
-		@Override
-		public void setPan(int pan) {
-			if (pan != prefs.getInt("stereoPan", 100)) {
-				prefs.putInt("stereoPan", pan);
-				SequencerWrapper curSequencer = abcPreviewMode ? abcSequencer : sequencer;
-
-				boolean running = curSequencer.isRunning();
-				if (abcPreviewMode && running) {
-					// curSequencer.setRunning(false);
-					refreshPreviewSequence(true);
-					// curSequencer.setRunning(true);
-				}
-				saveSettings.saveToPrefs();
+			boolean running = curSequencer.isRunning();
+			if (abcPreviewMode && running) {
+				// curSequencer.setRunning(false);
+				refreshPreviewSequence(true);
+				// curSequencer.setRunning(true);
 			}
+			saveSettings.saveToPrefs();
 		}
-
-		@Override
-		public int getPan() {
-			return prefs.getInt("stereoPan", 100);
-		}
+	}
+	
+	public int getPan() {
+		return prefs.getInt("stereoPan", 100);
 	}
 
 	private class MainSequencerListener implements Listener<SequencerEvent> {
@@ -1401,16 +1389,16 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		// String pad1 = (maxNoteCount < 10)?"&ensp;":"&nbsp;</pre>";
 		// String pad2 = (maxNoteCountTotal < 10)?"&ensp;":"&nbsp;";
 
-		String strAdd1 = String.format("<html>Notes: " + maxColor + "%02d", maxNoteCount);
+		String strAdd1 = String.format("<html><nobr>Notes: " + maxColor + "%02d", maxNoteCount);
 		String strAdd3 = String.format("(Peak: " + totalColor + "%02d", maxNoteCountTotal);
 
 		String strAdd2 = " </font>";
 		if (maxNoteCount > 63) {
 			strAdd2 = "</font>";
 		}
-		String strAdd4 = "</font> )</html>";
+		String strAdd4 = "</font>)</nobr></html>";
 		if (maxNoteCountTotal > 63) {
-			strAdd4 = "</font>)</html>";
+			strAdd4 = "</font>)</nobr></html>";
 		}
 		// System.err.println(strAdd1+strAdd2+strAdd3+strAdd4);
 
@@ -1603,7 +1591,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		tripletCheckBox.setEnabled(midiLoaded);
 		mixCheckBox.setEnabled(midiLoaded);
 		prioCheckBox.setEnabled(midiLoaded && mixCheckBox.isSelected());
-		zoom.setEnabled(midiLoaded);
+		zoomButton.setEnabled(midiLoaded);
 		noteButton.setEnabled(midiLoaded);
 		if (midiLoaded) {
 			midiModeRadioButton.setText("Original ("
@@ -1697,6 +1685,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		if (e.isAbcPreviewRelated() && partPanel != null) {
 			partPanel.repaint();
 		}
+		
+		updateExportOrExportAsButton();
 	};
 
 	private Listener<AbcSongEvent> abcSongListener = e -> {
@@ -1847,6 +1837,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			break;
 		}
 
+		updateExportOrExportAsButton();
 		setAbcSongModified(true);
 	};
 
@@ -2398,8 +2389,13 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	}
 
 	private boolean shouldExportAbcAs() {
+		boolean regeneratedFilenameIsDifferent =
+				abcSong != null && abcSong.getExportFile() != null &&
+				exportFilenameTemplate.shouldRegenerateFilename() &&
+				!exportFilenameTemplate.formatName().equals(abcSong.getExportFile().getName());
+
 		return saveSettings.showExportFileChooser || !allowOverwriteExportFile || abcSong.getExportFile() == null
-				|| !abcSong.getExportFile().exists();
+				|| !abcSong.getExportFile().exists() || regeneratedFilenameIsDifferent;
 	}
 
 	private boolean exportAbc() {

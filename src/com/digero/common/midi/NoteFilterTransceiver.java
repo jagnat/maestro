@@ -8,6 +8,7 @@ import javax.sound.midi.Receiver;
 import javax.sound.midi.ShortMessage;
 
 import com.digero.common.util.ICompileConstants;
+import com.digero.maestro.abc.LotroCombiDrumInfo;
 
 /**
  * The purpose of this class is to facilitate drum track soloing of specific notes.
@@ -27,7 +28,16 @@ public class NoteFilterTransceiver implements Transceiver, MidiConstants, ICompi
 	}
 
 	public void setNoteSolo(int drumId, boolean solo) {
+		// Handle solo for Xtra notes - also add the two underlying 'real' notes to the solo set
+		if (LotroCombiDrumInfo.noteIdIsXtraNote(drumId)) {
+			int id1 = LotroCombiDrumInfo.firstNotes.get(Note.fromId(drumId)).id;
+			int id2 = LotroCombiDrumInfo.secondNotes.get(Note.fromId(drumId)).id;
+			solos.set(id1, solo);
+			solos.set(id2, solo);
+		}
+
 		solos.set(drumId, solo);
+
 		if (solo)
 			turnOffInactiveNotes();
 	}

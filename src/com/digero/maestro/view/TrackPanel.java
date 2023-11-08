@@ -351,7 +351,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		abcPart.addAbcListener(abcListener = e -> {
 			
 			if (e.isNoteGraphRelated()) {
-				updateState(true);
+				updateState();
 				noteGraph.repaint();
 				updateBadTooltipText();
 				updateTitleText();
@@ -791,13 +791,12 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			if (showDrumPanels) {
 				if (drumControlBar == null)
 					initDrumMenuBar();
-				
-				drumMapMenu.setVisible(abcPart.isDrumPart());
 
 				add(drumControlBar, TITLE_COLUMN + ", 1," + CONTROL_COLUMN + ", 1");
 				int row = LAYOUT_ROWS.length;
 				for (int noteId : trackInfo.getNotesInUse()) {
 					DrumPanel panel = new DrumPanel(trackInfo, seq, abcPart, noteId, abcSequencer, trackVolumeBar);
+					panel.setAbcPreviewMode(isAbcPreviewMode);
 					if (row <= layout.getNumRow())
 						layout.insertRow(row, PREFERRED);
 					add(panel, "0, " + row + ", " + NOTE_COLUMN + ", " + row);
@@ -812,6 +811,10 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			updateTitleText();
 
 			revalidate();
+		}
+		
+		if (showDrumPanels) {
+			drumMapMenu.setVisible(abcPart.isDrumPart());
 		}
 	}
 

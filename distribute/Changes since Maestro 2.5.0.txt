@@ -46,11 +46,15 @@ Thanks to all who gave feedback of features, bugs plus suggestions.
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
 
-Version 3.0.2
+Version 3.0.3
 - Support for exporting ABC preview MP3/WAV files from Maestro, in addition to ABC Player.
 - File menu options for reloading an MSX project's MIDI file without closing Maestro (shortcut Ctrl-R), or changing the source MIDI file of a project.
 - Maestro maintains a list of recently opened project files in the file menu for quick access.
 - Add selection controls for selecting enabled drum hits. Select all, select none, invert selection, copy/paste selection between parts.
+- Add support for right-click soloing Xtra drum notes
+- New bigger sliders for volume/pan control in Maestro
+- Fix bug where deleting a soloed part would result in Maestro being silent
+- Fix bug where releasing right-click solo on a drum track would reset the state of soloed parts
 
 Version 3.0.1
 - Support for midi expression messages. This will in some MIDIs give increased dynamic range on note volumes.
