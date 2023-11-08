@@ -1276,11 +1276,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			exportAsMenuItem.setVisible(true);
 			exportMenuItem.setText("Export ABC");
 		}
-
-		if (shouldExportAbcAs())
-			exportButton.setText("Export ABC As...");
-		else
-			exportButton.setText("Export ABC");
+		
+		updateExportOrExportAsButton();
 
 		if (abcSong != null)
 			abcSong.setSkipSilenceAtStart(saveSettings.skipSilenceAtStart);
@@ -1298,6 +1295,14 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			abcSong.setBadger(miscSettings.showBadger);
 		}
 		updateButtons(false);
+	}
+	
+	private void updateExportOrExportAsButton() {
+		String exportText = shouldExportAbcAs() ? "Export ABC As..." : "Export ABC";
+		if (!exportButton.getText().equals(exportText)) {
+			exportButton.setText(exportText);
+			exportButton.repaint();
+		}
 	}
 
 	public void onVolumeChanged() {
@@ -1680,6 +1685,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		if (e.isAbcPreviewRelated() && partPanel != null) {
 			partPanel.repaint();
 		}
+		
+		updateExportOrExportAsButton();
 	};
 
 	private Listener<AbcSongEvent> abcSongListener = e -> {
@@ -1830,6 +1837,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			break;
 		}
 
+		updateExportOrExportAsButton();
 		setAbcSongModified(true);
 	};
 
@@ -2381,8 +2389,13 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	}
 
 	private boolean shouldExportAbcAs() {
+		boolean regeneratedFilenameIsDifferent =
+				abcSong != null && abcSong.getExportFile() != null &&
+				exportFilenameTemplate.shouldRegenerateFilename() &&
+				!exportFilenameTemplate.formatName().equals(abcSong.getExportFile().getName());
+
 		return saveSettings.showExportFileChooser || !allowOverwriteExportFile || abcSong.getExportFile() == null
-				|| !abcSong.getExportFile().exists();
+				|| !abcSong.getExportFile().exists() || regeneratedFilenameIsDifferent;
 	}
 
 	private boolean exportAbc() {
