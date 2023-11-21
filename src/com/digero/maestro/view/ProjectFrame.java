@@ -241,6 +241,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private JButton zoomButton;
 	private JButton noteButton;
 	private JLabel noteCountLabel;
+	private JLabel peakLabel;
 	private int maxNoteCount = 0;
 	private int maxNoteCountTotal = 0;
 	private boolean midiResolved = false;
@@ -857,9 +858,14 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		zoomButton.addActionListener(e -> partPanel.zoom());
 		
 		noteCountLabel = new JLabel();
-		noteCountLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
-		noteCountLabel.setBorder(new EmptyBorder(0, 0, 0, 20));// top,left,bottom,right
+//		noteCountLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+//		noteCountLabel.setBorder(new EmptyBorder(0, 0, 0, 20));// top,left,bottom,right
 		noteCountLabel.setToolTipText("<html>Number of simultanious notes<br>" + "that is playing.<br>"
+				+ "Use as rough (as it for tech reasons typically overestimates)<br>"
+				+ "guide to estimate how much of lotro max<br>" + "polyphony the song will consume.<br>"
+				+ "Stopped notes that are in release phase also counts.</html>");
+		peakLabel = new JLabel();
+		peakLabel.setToolTipText("<html>Number of simultanious notes<br>" + "that is playing.<br>"
 				+ "Use as rough (as it for tech reasons typically overestimates)<br>"
 				+ "guide to estimate how much of lotro max<br>" + "polyphony the song will consume.<br>"
 				+ "Stopped notes that are in release phase also counts.</html>");
@@ -872,7 +878,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		playControlPanel.add(stopButton, "spany 2");
 		playControlPanel.add(new JLabel("Volume:"), "right");
 		playControlPanel.add(volumeSlider);
-		playControlPanel.add(noteCountLabel, "span 2, center");
+		playControlPanel.add(noteCountLabel, "right");
+		playControlPanel.add(peakLabel, "left");
 		playControlPanel.add(midiPositionLabel);
 		playControlPanel.add(abcPositionLabel, "wrap");
 		
@@ -1286,6 +1293,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		// abcSong.setShowPruned(saveSettings.showPruned);
 
 		noteCountLabel.setVisible(miscSettings.showMaxPolyphony);
+		peakLabel.setVisible(miscSettings.showMaxPolyphony);
 		if (!miscSettings.showMaxPolyphony) {
 			maxNoteCount = 0;
 			maxNoteCountTotal = 0;
@@ -1386,23 +1394,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		} else if (maxNoteCount > 53) {
 			maxColor = "<font color=ORANGE>";
 		}
-		// String pad1 = (maxNoteCount < 10)?"&ensp;":"&nbsp;</pre>";
-		// String pad2 = (maxNoteCountTotal < 10)?"&ensp;":"&nbsp;";
-
-		String strAdd1 = String.format("<html><nobr>Notes: " + maxColor + "%02d", maxNoteCount);
-		String strAdd3 = String.format("(Peak: " + totalColor + "%02d", maxNoteCountTotal);
-
-		String strAdd2 = " </font>";
-		if (maxNoteCount > 63) {
-			strAdd2 = "</font>";
-		}
-		String strAdd4 = "</font>)</nobr></html>";
-		if (maxNoteCountTotal > 63) {
-			strAdd4 = "</font>)</nobr></html>";
-		}
-		// System.err.println(strAdd1+strAdd2+strAdd3+strAdd4);
-
-		noteCountLabel.setText(strAdd1 + strAdd2 + strAdd3 + strAdd4);
+		
+		noteCountLabel.setText("<html><nobr>Notes: " + maxColor + String.format("%02d", maxNoteCount) + "</font></nobr></html>");
+		peakLabel.setText("<html><nobr>(Peak: " + totalColor + String.format("%02d", maxNoteCountTotal) + "</font>)</nobr></html>");
 	}
 
 	private class AbcSequencerListener implements Listener<SequencerEvent> {
@@ -1432,6 +1426,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		private void updateNoteCount() {
 			noteCountLabel.setVisible(miscSettings.showMaxPolyphony);
+			peakLabel.setVisible(miscSettings.showMaxPolyphony);
 			if (!miscSettings.showMaxPolyphony) {
 				return;
 			}
