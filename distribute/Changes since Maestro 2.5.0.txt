@@ -51,7 +51,7 @@ Version 3.0.4
 - Maestro is now installed in the 64-bit programs folder (C:\Program Files\Maestro)
 - Maestro and AbcPlayer can now be pinned to the Windows taskbar.
 - Added a Windows context menu entry, so you can right-click ABC or MIDI files and choose "Edit with Maestro".
-- Fix not playing initial notes, when starting Maestro with a MSX association.
+- Fix not playing initial ABC notes, when Maestro first starts playing a file.
     The fix only applies to parts lower than 15. Large songs will still skip initial notes at first playback.
 
 Version 3.0.3
