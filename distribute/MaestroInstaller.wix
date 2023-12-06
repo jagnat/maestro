@@ -131,6 +131,7 @@
 								IconIndex="0"
 								Advertise="yes">
 								<!-- App user model ID guid (https://learn.microsoft.com/en-us/windows/win32/properties/props-system-appusermodel-id) -->
+								<!-- Allows for taskbar pinning -->
 								<ShortcutProperty Key="{9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3}, 5" Value="$(var.MaestroAppUserModelId)" />
 							</Shortcut>
 						</File>
