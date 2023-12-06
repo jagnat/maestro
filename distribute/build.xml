@@ -9,12 +9,12 @@
 	<property name="tools" location="tools" />
 	<property name="basename.AbcPlayer" value="AbcPlayer" />
 	<property name="basename.Maestro" value="Maestro" />
-	<property name="basename.AbcMergeTool" value="AbcTools" />
+	<property name="basename.AbcTools" value="AbcTools" />
 	<property file="${src}/com/digero/abcplayer/version.txt" />
 	<!-- For version.AbcPlayer -->
 	<property file="${src}/com/digero/maestro/version.txt" />
 	<!-- For version.Maestro -->
-	<property name="version.AbcMergeTool" value="${version.AbcPlayer}" />
+	<property name="version.AbcTools" value="${version.AbcPlayer}" />
 	<condition property="isWindows">
 		<os family="windows" />
 	</condition>
@@ -47,10 +47,9 @@
 		<copy file="abcfile.ico" todir="${build}" />
 		<copy file="midifile.ico" todir="${build}" />
 		<copy file="msxfile.ico" todir="${build}" />
-		<!--copy file="abcmergetool.ico" todir="${build}" /-->
-		<copy file="Start Maestro.bat" todir="${build}" />
+		<!--<copy file="Start Maestro.bat" todir="${build}" />
 		<copy file="Start AbcPlayer.bat" todir="${build}" />
-		<copy file="Start ABC Tools.bat" todir="${build}" />
+		<copy file="Start ABC Tools.bat" todir="${build}" />-->
 		<copy file="Changes since Maestro 2.5.0.txt" todir="${build}" />
 		<copy todir="${build}">
 			<fileset dir="${target}" includes="*.jar" />
@@ -67,6 +66,29 @@
 		<copy todir="${target}/com/digero/common/icons">
 			<fileset dir="${src}/com/digero/common/icons" includes="*.png" />
 		</copy>-->
+	</target>
+	
+	<target name="GenerateExeFiles.CheckUpToDate">
+		<condition property="Exe.Exists">
+			<and>
+				<available file="${build}/Maestro.exe"/>
+				<available file="${build}/AbcPlayer.exe"/>
+				<available file="${build}/AbcTools.exe"/>
+			</and>
+		</condition>
+	</target>
+	
+	<target name="GenerateExeFiles" depends="GenerateExeFiles.CheckUpToDate" unless="Exe.Exists">
+		<echo>Generating EXE files</echo>
+		<exec executable="${tools}/launch4j/launch4jc.exe" failonerror="true">
+			<arg value="launch4j_maestro.xml" />
+		</exec>
+		<exec executable="${tools}/launch4j/launch4jc.exe" failonerror="true">
+			<arg value="launch4j_abcplayer.xml" />
+		</exec>
+		<exec executable="${tools}/launch4j/launch4jc.exe" failonerror="true">
+			<arg value="launch4j_abctools.xml" />
+		</exec>
 	</target>
 
 	<target name="GenerateSoundFontInfo.CheckUpToDate">
@@ -99,7 +121,7 @@
 		</exec>
 	</target>
 
-	<target name="preStuff" depends="CopyThings,LotroInstruments"/>
+	<target name="preStuff" depends="CopyThings,LotroInstruments,GenerateExeFiles"/>
 
 	<target name="Installer" depends="preStuff">
 		<mkdir dir="${output}" />
@@ -107,9 +129,11 @@
 		<echo>Building msi: ${msipath}</echo>
 		<exec executable="${tools}/wix/candle.exe" failonerror="true">
 			<arg value="-nologo" />
+			<arg value="-arch" />
+			<arg value="x64" />
 			<arg value="-dMaestroVersion=${version.Maestro}" />
 			<arg value="-dAbcPlayerVersion=${version.AbcPlayer}" />
-			<arg value="-dAbcMergeToolVersion=${version.AbcMergeTool}" />
+			<arg value="-dAbcToolsVersion=${version.AbcTools}" />
 			<arg value="-o" />
 			<arg value="${build}/MaestroInstaller.wixobj" />
 			<arg value="MaestroInstaller.wix" />
@@ -135,15 +159,14 @@
 		<zip destfile="${output}/${basename.Maestro}_v${version.Maestro}.zip" basedir="${build}">
 			<include name="${basename.Maestro}.jar" />
 			<include name="${basename.AbcPlayer}.jar" />
-			<include name="${basename.AbcMergeTool}.jar" />
+			<include name="${basename.AbcTools}.jar" />
 			<include name="LotroInstruments.sf2" />
 			<include name="midifile.ico" />
 			<include name="abcfile.ico" />
 			<include name="msxfile.ico" />
-			<!--include name="abcmergetool.ico" /-->
-			<include name="Start Maestro.bat" />
-			<include name="Start AbcPlayer.bat" />
-			<include name="Start ABC Tools.bat" />
+			<include name="Maestro.exe" />
+			<include name="AbcPlayer.exe" />
+			<include name="AbcTools.exe" />
 			<include name="Changes since Maestro 2.5.0.txt" />
 		</zip>
 	</target>

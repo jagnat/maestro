@@ -6,13 +6,13 @@
 		This Setup Wizard will install:
 		[MaestroAppName] v[MaestroVersion]
 		[AbcPlayerAppName] v[AbcPlayerVersion]
-		[AbcMergeToolAppName] v[AbcMergeToolVersion]
+		[AbcToolsAppName] v[AbcToolsVersion]
 
 		Click Next to continue or Cancel to exit the Setup Wizard.
 	</String>
 
 	<String Id="ExitDialogDescription">
-		Installation was successful! You can find [MaestroAppName], [AbcMergeToolAppName] and [AbcPlayerAppName] in the Start menu.
+		Installation was successful! You can find [MaestroAppName], [AbcToolsAppName] and [AbcPlayerAppName] in the Start menu.
 
 
 		Click the Finish button to exit the Setup Wizard.
