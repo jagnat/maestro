@@ -25,18 +25,27 @@ public class LotroSequencerWrapper extends NoteFilterSequencerWrapper {
 		}
 	}
 
+	/**
+	 * Only affects channels larger than 16.
+	 * Will stop all active notes. And then inject a patch change to each channel
+	 * since java don't do that properly with 16+ channels.
+	 * 
+	 * @param doControllers Stop all midi controllers also
+	 */
 	public void injectPatchChanges(boolean doControllers) {
 		List<ExportTrackInfo> infos = SequenceInfo.lastTrackInfos;
 		if (infos != null) {
 			for (ExportTrackInfo info : infos) {
-				receiver.send(MidiFactory.createAllNotesOff(info.channel), -1L);
-				receiver.send(MidiFactory.createSustainOff(info.channel), -1L);// -1 means real-time
-				if (doControllers) {
-					// We only do this when stopping to play
-					receiver.send(MidiFactory.createAllControllersOff(info.channel), -1L);
+				if (info.channel + 1 > MidiConstants.CHANNEL_COUNT) {
+					receiver.send(MidiFactory.createAllNotesOff(info.channel), -1L);
+					receiver.send(MidiFactory.createSustainOff(info.channel), -1L);// -1 means real-time
+					if (doControllers) {
+						// We only do this when stopping to play
+						receiver.send(MidiFactory.createAllControllersOff(info.channel), -1L);
+					}
+					receiver.send(MidiFactory.createLotroChangeEvent(info.patch, info.channel, sequencer.getTickPosition())
+							.getMessage(), -1L);
 				}
-				receiver.send(MidiFactory.createLotroChangeEvent(info.patch, info.channel, sequencer.getTickPosition())
-						.getMessage(), -1L);
 			}
 		}
 	}
