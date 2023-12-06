@@ -48,6 +48,7 @@ Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 
 Version 3.0.4
 - Switched to launching Maestro using exe files rather than bat files. No more blank icons!
+- Maestro is now installed in the 64-bit programs folder (C:\Program Files\Maestro)
 - Maestro and AbcPlayer can now be pinned to the Windows taskbar.
 - Added a Windows context menu entry, so you can right-click ABC or MIDI files and choose "Edit with Maestro".
 
