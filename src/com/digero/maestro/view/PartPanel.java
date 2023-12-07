@@ -585,17 +585,12 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			}
 		}
 		noteGraphPanel.revalidate();
-		System.out.println(!zoomed? "zooming" : "unzooming");
-		
 //		noteGraphPanel.setPreferredSize(!zoomed? new Dimension(horiz, getPreferredSize().height) : null);
 //		noteGraphPanel.revalidate();
 		
 		revalidate();
 		repaint();
 		
-		System.out.println("pr ng: " + noteGraphPanel.getPreferredSize().width + " cp: " + controlPanel.getPreferredSize().width);
-		System.out.println("ac ng: " + noteGraphPanel.getSize().width + " cp: " + controlPanel.getSize().width);
-		System.out.println("sp ng: " + noteGraphScrollPane.getSize().width + " cp: " + controlScrollPane.getSize().width);
 		zoomed = !zoomed;
 	}
 
