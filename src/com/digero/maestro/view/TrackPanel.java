@@ -30,6 +30,7 @@ import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.border.CompoundBorder;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
@@ -58,9 +59,10 @@ import com.digero.maestro.midi.TrackInfo;
 import info.clearthought.layout.TableLayout;
 import info.clearthought.layout.TableLayoutConstants;
 import info.clearthought.layout.TableLayoutConstraints;
+import net.miginfocom.swing.MigLayout;
 
 @SuppressWarnings("serial")
-public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConstants, ICompileConstants {
+public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConstants, ICompileConstants, PartPanelItem {
 
 	private static final String DRUM_NOTE_MAP_DIR_PREF_KEY = "DrumNoteMap.directory";
 
@@ -131,8 +133,14 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 	private TrackVolumeBar trackVolumeBar;
 	private JMenuBar drumControlBar;
 	private JMenu drumMapMenu;
+	// Wrap main note graph and potentially any drum note graphs
+	private JPanel noteGraphPanel;
 	private TrackNoteGraph noteGraph;
-	private ArrayList<DrumPanel> dPanels;
+	private ArrayList<DrumPanel> drumPanels;
+
+	public ArrayList<DrumPanel> getDrumPanels() {
+		return drumPanels;
+	}
 
 	private Listener<AbcPartEvent> abcListener;
 	private Listener<SequencerEvent> seqListener;
@@ -150,7 +158,9 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			SequencerWrapper abcSequencer_) {
 		super(new TableLayout(LAYOUT_COLS, LAYOUT_ROWS));
 
-		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, ColorTable.PANEL_BORDER.get()));
+		setBorder(new CompoundBorder(
+					BorderFactory.createMatteBorder(0, 0, 1, 0, ColorTable.PANEL_BORDER.get()),
+					BorderFactory.createMatteBorder(0, 0, 0, 1, new Color(0x555555))));
 
 		this.trackInfo = info;
 		this.seq = sequencer;
@@ -194,7 +204,11 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		 * System.out.println("No such font"); }
 		 */
 
+		noteGraphPanel = new JPanel(new MigLayout("wrap 1, gap 0, ins 0, novisualpadding, fillx"));
+		
 		noteGraph = new TrackNoteGraph(seq, trackInfo);
+		noteGraph.setPreferredSize(new Dimension(noteGraph.getPreferredSize().width, getPreferredSize().height));
+		noteGraph.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, ColorTable.PANEL_BORDER.get()));
 		noteGraph.addMouseListener(new MouseAdapter() {
 			// soloAbcTracks will contain one track if only right click is used
 			// if ctrl-right click is used, it will contain all abc preview tracks that have the midi track enabled
@@ -274,6 +288,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 				}
 			}
 		});
+		
+		noteGraphPanel.add(noteGraph, "grow");
 
 		if (!trackInfo.isDrumTrack()) {
 			int currentTranspose = abcPart.getTrackTranspose(trackInfo.getTrackNumber());
@@ -304,7 +320,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		sectionButton.addActionListener(e -> {
 			int track = trackInfo.getTrackNumber();
 			SectionEditor.show((JFrame) sectionButton.getTopLevelAncestor(), noteGraph, abcPart, track,
-					abcPart.getInstrument().isPercussion, dPanels);// super hack! :(
+					abcPart.getInstrument().isPercussion, drumPanels);// super hack! :(
 		});
 
 		priorityBox = new JCheckBox();
@@ -343,7 +359,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		add(checkBox, checkBoxLayout_ControlsHidden);
 		add(priorityBox, PRIORITY_COLUMN + ", 0, f, c");
 		add(controlPanel, CONTROL_COLUMN + ", 0, f, c");
-		add(noteGraph, NOTE_COLUMN + ", 0, " + NOTE_COLUMN + ", 1");
+//		add(noteGraph, NOTE_COLUMN + ", 0, " + NOTE_COLUMN + ", 1");
 
 		updateBadTooltipText();
 		updateTitleText();
@@ -378,6 +394,28 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		addPropertyChangeListener("enabled", evt -> updateState());
 
 		updateState(true);
+	}
+	
+	public JPanel getNoteGraph() {
+		return noteGraphPanel;
+	}
+	
+	public void setRowHeight(int rowHeight) {
+		if (drumPanels.size() > 0) {
+			return;
+		}
+		TableLayout tableLayout = (TableLayout) getLayout();
+		double[] rowDims = tableLayout.getRow();
+		rowDims[0] = rowHeight;
+		tableLayout.setRow(rowDims);
+		noteGraph.setPreferredSize(new Dimension(noteGraph.getPreferredSize().width, rowHeight + 1));
+		noteGraph.revalidate();
+		revalidate();
+	}
+	
+	public void setNoteGraphWidth(int noteGraphWidth) {
+		noteGraph.setPreferredSize(new Dimension(noteGraphWidth, noteGraph.getPreferredSize().height));
+		noteGraph.revalidate();
 	}
 
 	// returns <titleWidth, priorityWidth, controlWidth
@@ -452,30 +490,30 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		
 		JMenuItem selectAll = selectMenu.add(new JMenuItem("Select All"));
 		selectAll.addActionListener(e -> {
-			if (dPanels == null) {
+			if (drumPanels == null) {
 				return;
 			}
-			for (DrumPanel dp : dPanels) {
+			for (DrumPanel dp : drumPanels) {
 				dp.setSelected(true);
 				dp.repaint();
 			}
 		});
 		JMenuItem selectNone = selectMenu.add(new JMenuItem("Select None"));
 		selectNone.addActionListener(e -> {
-			if (dPanels == null) {
+			if (drumPanels == null) {
 				return;
 			}
-			for (DrumPanel dp : dPanels) {
+			for (DrumPanel dp : drumPanels) {
 				dp.setSelected(false);
 				dp.repaint();
 			}
 		});
 		JMenuItem invertSelection = selectMenu.add(new JMenuItem("Invert Selection"));
 		invertSelection.addActionListener(e -> {
-			if (dPanels == null) {
+			if (drumPanels == null) {
 				return;
 			}
-			for (DrumPanel dp : dPanels) {
+			for (DrumPanel dp : drumPanels) {
 				dp.setSelected(!dp.isSelected());
 				dp.repaint();
 			}
@@ -484,11 +522,11 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		JMenuItem pasteSelection = selectMenu.add(new JMenuItem("Paste Selection"));
 		pasteSelection.setEnabled(drumClipboard != null);
 		pasteSelection.addActionListener(e -> {
-			if (dPanels == null) {
+			if (drumPanels == null) {
 				return;
 			}
 			int i = 0;
-			for (DrumPanel dp : dPanels) {
+			for (DrumPanel dp : drumPanels) {
 				if (i >= drumClipboard.size()) {
 					break;
 				}
@@ -498,11 +536,11 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			}
 		});
 		copySelection.addActionListener(e -> {
-			if (dPanels == null) {
+			if (drumPanels == null) {
 				return;
 			}
 			drumClipboard = new ArrayList<Boolean>();
-			for (DrumPanel dp : dPanels) {
+			for (DrumPanel dp : drumPanels) {
 				drumClipboard.add(dp.isSelected());
 			}
 		});
@@ -629,6 +667,9 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		super.setBackground(bg);
 		if (trackVolumeBar != null)
 			trackVolumeBar.setBackground(bg);
+		if (noteGraph != null) {
+			noteGraph.setBackground(bg);
+		}
 	}
 
 	private void updateColors() {
@@ -771,7 +812,6 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 
 		if (initDrumPanels || showDrumPanels != showDrumPanelsNew || wasDrumPart != abcPart.isPercussionPart()) {
 			if (showDrumPanels != showDrumPanelsNew) {
-				noteGraph.repaint();
 				showDrumPanels = showDrumPanelsNew;
 			}
 			wasDrumPart = abcPart.isPercussionPart();
@@ -783,7 +823,13 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 					remove(i);
 				}
 			}
-			dPanels = new ArrayList<DrumPanel>();
+			
+			noteGraphPanel.removeAll();
+			noteGraph.setPreferredSize(new Dimension(noteGraph.getPreferredSize().width, calculateTrackDims().rowHeight + 1));
+			noteGraph.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, ColorTable.PANEL_BORDER.get()));
+			noteGraphPanel.add(noteGraph, "grow");
+			
+			drumPanels = new ArrayList<DrumPanel>();
 			if (drumControlBar != null) {
 				remove(drumControlBar);
 			}
@@ -793,6 +839,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 					initDrumMenuBar();
 
 				add(drumControlBar, TITLE_COLUMN + ", 1," + CONTROL_COLUMN + ", 1");
+				int controlHeight = getPreferredSize().height;
+				
 				int row = LAYOUT_ROWS.length;
 				for (int noteId : trackInfo.getNotesInUse()) {
 					DrumPanel panel = new DrumPanel(trackInfo, seq, abcPart, noteId, abcSequencer, trackVolumeBar);
@@ -800,22 +848,42 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 					if (row <= layout.getNumRow())
 						layout.insertRow(row, PREFERRED);
 					add(panel, "0, " + row + ", " + NOTE_COLUMN + ", " + row);
-					if (dPanels == null)
-						dPanels = new ArrayList<>();
-					dPanels.add(panel);
+					if (drumPanels == null)
+						drumPanels = new ArrayList<>();
+					drumPanels.add(panel);
 				}
+				
+//				noteGraph.setPreferredSize(new Dimension(noteGraph.getPreferredSize().width, getPreferredSize().height));
+
 				// this array ends up being in reverse order from what is displayed, since we add the top row each time
-				Collections.reverse(dPanels);
+				Collections.reverse(drumPanels);
+				
+				// Rebuild note graph panel
+				noteGraph.setBorder(BorderFactory.createEmptyBorder());
+				noteGraph.setPreferredSize(new Dimension(noteGraph.getPreferredSize().width, controlHeight));
+				DrumPanel last = null;
+				for (DrumPanel panel : drumPanels) {
+					noteGraphPanel.add(panel.getNoteGraph(), "grow");
+					last = panel;
+				}
+				last.getNoteGraph().setBorder(BorderFactory.createCompoundBorder(
+						BorderFactory.createMatteBorder(0, 0, 1, 0, ColorTable.PANEL_BORDER.get()),
+						BorderFactory.createMatteBorder(1, 0, 0, 0, ColorTable.OCTAVE_LINE.get())));
 			}
 
 			updateTitleText();
 
 			revalidate();
+			noteGraphPanel.revalidate();
 		}
 		
 		if (showDrumPanels) {
 			drumMapMenu.setVisible(abcPart.isDrumPart());
 		}
+	}
+	
+	public boolean hasDrumPanels() {
+		return drumPanels != null && !drumPanels.isEmpty();
 	}
 
 	private boolean saveDrumMapping() {
@@ -901,11 +969,12 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 				((IDiscardable) child).discard();
 			}
 		}
-		dPanels = null;
+		drumPanels = null;
 		abcPart.removeAbcListener(abcListener);
 		seq.removeChangeListener(seqListener);
 		if (abcSequencer != null)
 			abcSequencer.removeChangeListener(seqListener);
+		noteGraphPanel.removeAll();
 		noteGraph.discard();
 	}
 
@@ -926,7 +995,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		}
 	}
 
-	private class TrackNoteGraph extends NoteGraph {
+	public class TrackNoteGraph extends NoteGraph {
 		private boolean showingAbcNotesOn = true;
 
 		public TrackNoteGraph(SequencerWrapper sequencer, TrackInfo trackInfo) {

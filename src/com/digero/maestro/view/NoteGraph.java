@@ -25,7 +25,10 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.swing.BorderFactory;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
 
@@ -38,6 +41,7 @@ import com.digero.common.midi.SequencerWrapper;
 import com.digero.common.util.IDiscardable;
 import com.digero.common.util.Listener;
 import com.digero.common.util.Util;
+import com.digero.common.view.BarNumberLabel;
 import com.digero.common.view.ColorTable;
 import com.digero.maestro.midi.BentNoteEvent;
 import com.digero.maestro.midi.NoteEvent;
@@ -100,6 +104,10 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 		this.MAX_RENDERED = maxRenderedNoteId;
 		this.NOTE_WIDTH_PX = noteWidthPx;
 		this.NOTE_HEIGHT_PX = noteHeightPx;
+		
+//		this.setBorder(BorderFactory.createEmptyBorder());
+		
+//		this.setOpaque(true);
 
 		this.sequencer.addChangeListener(this);
 
@@ -113,7 +121,7 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 		addMouseListener(mouseListener);
 		addMouseMotionListener(mouseListener);
 
-		setOpaque(false);
+		setOpaque(true);
 		setPreferredSize(new Dimension(200, 16));
 
 		addComponentListener(new ComponentAdapter() {
@@ -498,6 +506,7 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 
 	@Override
 	protected void paintComponent(Graphics g) {
+		super.paintComponent(g);
 		Graphics2D g2 = (Graphics2D) g;
 
 		Object hintAntialiasSav = g2.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
@@ -874,6 +883,8 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 	}
 
 	private class MyMouseListener extends MouseAdapter {
+		JPopupMenu barIndicator = new JPopupMenu();
+		JLabel barLabel = new JLabel();
 		private long positionFromEvent(MouseEvent e) {
 			AffineTransform xform = getTransform();
 			Point2D.Double pt = new Point2D.Double(e.getX(), e.getY());
@@ -909,6 +920,13 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 			if (e.getButton() == MouseEvent.BUTTON1 && sequenceInfo != null) {
 				sequencer.setDragging(true);
 				sequencer.setDragPosition(positionFromEvent(e));
+				barLabel = new JLabel("Bar " + BarNumberLabel.getBarString(sequencer, sequenceInfo.getDataCache()));
+				barLabel.setFocusable(false);
+				barLabel.setBorder(BorderFactory.createEmptyBorder(5, 25, 5, 5));
+		        barIndicator = new JPopupMenu();
+		        barIndicator.add(barLabel);
+		        barIndicator.show(NoteGraph.this, e.getX(), e.getY());
+		        barIndicator.setVisible(true);
 			}
 		}
 
@@ -918,8 +936,11 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 				if (!isDragCanceled(e)) {
 					sequencer.setDragging(true);
 					sequencer.setDragPosition(positionFromEvent(e));
+					barLabel.setText("Bar " + BarNumberLabel.getBarString(sequencer, sequenceInfo.getDataCache()));
+					barIndicator.show(NoteGraph.this, e.getX(), e.getY());
 				} else {
 					sequencer.setDragging(false);
+					barIndicator.setVisible(false);
 				}
 			}
 		}
@@ -928,6 +949,7 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 		public void mouseReleased(MouseEvent e) {
 			if (e.getButton() == MouseEvent.BUTTON1) {
 				sequencer.setDragging(false);
+				barIndicator.setVisible(false);
 				if (!isDragCanceled(e)) {
 					sequencer.setPosition(positionFromEvent(e));
 				}

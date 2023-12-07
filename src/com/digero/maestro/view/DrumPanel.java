@@ -3,6 +3,7 @@ package com.digero.maestro.view;
 import info.clearthought.layout.TableLayout;
 import info.clearthought.layout.TableLayoutConstants;
 
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.LayoutManager;
 import java.awt.event.ActionListener;
@@ -45,7 +46,7 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 	private static final int COMBO_WIDTH = 122;
 	private static final int TITLE_WIDTH = TrackPanel.TITLE_WIDTH_DEFAULT + TrackPanel.HGAP
 			+ TrackPanel.PRIORITY_WIDTH_DEFAULT + TrackPanel.CONTROL_WIDTH_DEFAULT - COMBO_WIDTH;
-	private static double[] LAYOUT_COLS = new double[] { GUTTER_WIDTH, TITLE_WIDTH, COMBO_WIDTH, FILL };
+	private static double[] LAYOUT_COLS = new double[] { GUTTER_WIDTH, TITLE_WIDTH, COMBO_WIDTH/*, FILL*/ };
 	private static final double[] LAYOUT_ROWS = new double[] { PREFERRED };
 
 	private TrackInfo trackInfo;
@@ -82,7 +83,7 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 
 		dims = TrackPanel.calculateTrackDims();
 
-		int totalW = dims.titleWidth + TrackPanel.HGAP + dims.priorityWidth + dims.controlWidth;
+		int totalW = dims.titleWidth + dims.priorityWidth + dims.controlWidth - TrackPanel.HGAP * 2;
 		int div2 = totalW / 2;
 
 		dims.titleWidth = div2 + (div2 + div2 == totalW ? 0 : 1);
@@ -135,7 +136,7 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 		if (abcSequencer != null)
 			abcSequencer.addChangeListener(sequencerListener);
 		abcPart.addAbcListener(abcPartListener);
-
+		
 		noteGraph = new DrumNoteGraph(seq, trackInfo);
 		noteGraph.setBorder(BorderFactory.createMatteBorder(1, 0, 0, 0, ColorTable.OCTAVE_LINE.get()));
 		noteGraph.addMouseListener(new MouseAdapter() {
@@ -197,9 +198,13 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 		add(checkBox, "1, 0");
 		add(drumComboBox, "2, 0, f, c");
 		add(drumComboBoxFX, "2, 0, f, c");
-		add(noteGraph, "3, 0");
 
 		updateState();
+		noteGraph.setPreferredSize(new Dimension(noteGraph.getPreferredSize().width, getPreferredSize().height));
+	}
+	
+	public DrumNoteGraph getNoteGraph() {
+		return noteGraph;
 	}
 	
 	public void setSelected(boolean selected) {
@@ -300,18 +305,21 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 			noteGraph.setBadNoteColor(ColorTable.NOTE_DRUM_OFF);
 
 			setBackground(ColorTable.GRAPH_BACKGROUND_OFF.get());
+			noteGraph.setBackground(ColorTable.GRAPH_BACKGROUND_OFF.get());
 			checkBox.setForeground(ColorTable.PANEL_TEXT_OFF.get());
 		} else if (trackEnabled && abcPart.isDrumEnabled(trackNumber, drumId)) {
 			noteGraph.setNoteColor(ColorTable.NOTE_DRUM_ENABLED);
 			noteGraph.setBadNoteColor(ColorTable.NOTE_BAD_ENABLED);
 
 			setBackground(ColorTable.GRAPH_BACKGROUND_ENABLED.get());
+			noteGraph.setBackground(ColorTable.GRAPH_BACKGROUND_ENABLED.get());
 			checkBox.setForeground(ColorTable.PANEL_TEXT_ENABLED.get());
 		} else {
 			noteGraph.setNoteColor(ColorTable.NOTE_DRUM_OFF);
 			noteGraph.setBadNoteColor(ColorTable.NOTE_BAD_OFF);
 
 			setBackground(ColorTable.GRAPH_BACKGROUND_OFF.get());
+			noteGraph.setBackground(ColorTable.GRAPH_BACKGROUND_OFF.get());
 			checkBox.setForeground(ColorTable.PANEL_TEXT_OFF.get());
 		}
 	}
@@ -335,7 +343,7 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 		return LotroStudentFXInfo.getById(abcPart.getFXMap(trackInfo.getTrackNumber()).get(drumId));
 	}
 
-	private class DrumNoteGraph extends NoteGraph {
+	public class DrumNoteGraph extends NoteGraph {
 		private boolean showingAbcNotesOn = true;
 
 		public DrumNoteGraph(SequencerWrapper sequencer, TrackInfo trackInfo) {

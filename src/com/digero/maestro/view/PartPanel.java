@@ -1,12 +1,15 @@
 package com.digero.maestro.view;
-
-import info.clearthought.layout.TableLayout;
-import info.clearthought.layout.TableLayoutConstants;
-
+//import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED;
+//import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS;
+//import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER;
+//import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
+//import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED;
+//import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER;
 import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED;
 import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER;
 import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
 import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED;
+import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -17,14 +20,16 @@ import java.awt.Toolkit;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.text.ParseException;
 
 import javax.swing.BorderFactory;
-import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
@@ -43,12 +48,17 @@ import com.digero.common.util.IDiscardable;
 import com.digero.common.util.Listener;
 import com.digero.common.view.ColorTable;
 import com.digero.common.view.InstrumentComboBox;
+import com.digero.common.view.PatchedJScrollPane;
 import com.digero.maestro.abc.AbcPart;
 import com.digero.maestro.abc.AbcPartEvent;
 import com.digero.maestro.abc.AbcPartEvent.AbcPartProperty;
 import com.digero.maestro.abc.PartAutoNumberer;
 import com.digero.maestro.midi.TrackInfo;
 import com.digero.maestro.view.TrackPanel.TrackDimensions;
+
+import info.clearthought.layout.TableLayout;
+import info.clearthought.layout.TableLayoutConstants;
+import net.miginfocom.swing.MigLayout;
 
 @SuppressWarnings("serial")
 public class PartPanel extends JPanel implements ICompileConstants, TableLayoutConstants {
@@ -68,12 +78,20 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 	private JComboBox<LotroInstrument> instrumentComboBox;
 	private JLabel messageLabel;
 
-	private JScrollPane trackScrollPane;
+//	private JScrollPane trackScrollPane;
+	
+	private JPanel splitPanel;
+	
+	private PatchedJScrollPane controlScrollPane;
+	private JPanel controlPanel;
+	
+	private PatchedJScrollPane noteGraphScrollPane;
+	private JPanel noteGraphPanel;
 
-	private JPanel trackListPanel;
-	private GroupLayout trackListLayout;
-	private GroupLayout.Group trackListVGroup;
-	private GroupLayout.Group trackListHGroup;
+//	private JPanel trackListPanel;
+//	private GroupLayout trackListLayout;
+//	private GroupLayout.Group trackListVGroup;
+//	private GroupLayout.Group trackListHGroup;
 
 	private boolean initialized = false;
 
@@ -155,23 +173,82 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		dataPanel.add(dataPanel2, BorderLayout.WEST);
 		dataPanel.add(nameTextField, BorderLayout.CENTER);
 
-		trackListPanel = new JPanel();
-		trackListLayout = new GroupLayout(trackListPanel);
-		trackListLayout.setVerticalGroup(trackListVGroup = trackListLayout.createSequentialGroup());
-		trackListLayout.setHorizontalGroup(trackListHGroup = trackListLayout.createParallelGroup());
-		trackListLayout.setHonorsVisibility(true);
-		trackListPanel.setLayout(trackListLayout);
-		trackListPanel.setBackground(ColorTable.PANEL_BACKGROUND_DISABLED.get());
-
-		trackScrollPane = new JScrollPane(trackListPanel, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED);
+//		trackListPanel = new JPanel();
+//		trackListLayout = new GroupLayout(trackListPanel);
+//		trackListLayout.setVerticalGroup(trackListVGroup = trackListLayout.createSequentialGroup());
+//		trackListLayout.setHorizontalGroup(trackListHGroup = trackListLayout.createParallelGroup());
+//		trackListLayout.setHonorsVisibility(true);
+//		trackListPanel.setLayout(trackListLayout);
+//		trackListPanel.setBackground(ColorTable.PANEL_BACKGROUND_DISABLED.get());
+		
+		boolean dbg = false;
+//		dbg = true;
+//		splitPanel = new JPanel(new MigLayout((dbg? "debug, " : "") + "wrap 2, gap 0, ins 0, novisualpadding, filly", "[]0[grow]"));
+		splitPanel = new JPanel(new TableLayout(new double[] { PREFERRED, FILL }, //
+				new double[] { FILL }));
+		splitPanel.setBorder(BorderFactory.createEmptyBorder());
+		splitPanel.setBackground(ColorTable.PANEL_BACKGROUND_DISABLED.get());
+		
+		controlPanel = new JPanel(new MigLayout((dbg? "debug, " : "") + "wrap 1, gap 0, novisualpadding, ins 0"));
+		controlPanel.setBackground(ColorTable.PANEL_BACKGROUND_DISABLED.get());
+		
+		controlScrollPane = new PatchedJScrollPane(controlPanel, VERTICAL_SCROLLBAR_NEVER, HORIZONTAL_SCROLLBAR_NEVER);
+		controlScrollPane.setBorder(BorderFactory.createEmptyBorder());
 		// Remove focus from text boxes if area under midi tracks is clicked
-		trackScrollPane.addMouseListener(new MouseAdapter() {
+		controlScrollPane.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				getRootPane().requestFocus();
 			}
 		});
+		
+		controlScrollPane.setWheelScrollingEnabled(false);
+		controlScrollPane.addMouseWheelListener(new MouseWheelListener() {
+		    public void mouseWheelMoved(MouseWheelEvent e) {
+		        noteGraphScrollPane.dispatchEvent(e);
+		    }
+		});
+		
+		noteGraphPanel = new JPanel(new MigLayout((dbg? "debug, " : "") + "wrap 1, gap 0, ins 0, novisualpadding, fillx"));
+		noteGraphPanel.setBackground(ColorTable.PANEL_BACKGROUND_DISABLED.get());
+		
+		noteGraphScrollPane = new PatchedJScrollPane(noteGraphPanel, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED);
+		noteGraphScrollPane.setBorder(BorderFactory.createEmptyBorder());
+		noteGraphScrollPane.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				getRootPane().requestFocus();
+			}
+		});
+		
+		// Link control scroll bar model to note graph scroll bar
+		// so they're both controlled by note graph scroll bar
+		JScrollBar controlBar = controlScrollPane.getVerticalScrollBar();
+		JScrollBar noteGraphBar = noteGraphScrollPane.getVerticalScrollBar();
+		controlBar.setModel(noteGraphBar.getModel());
+		
+		noteGraphBar.setUnitIncrement(TrackPanel.calculateTrackDims().rowHeight / 2);
 
+		
+		splitPanel.add(controlScrollPane, "0, 0");
+		splitPanel.add(noteGraphScrollPane, "1, 0");
+		
+//		splitPanel.add(controlScrollPane, "top");
+//		splitPanel.add(noteGraphScrollPane, "top");
+		
+//		horizInnerScrollPane.add()
+		
+		
+
+//		trackScrollPane = new JScrollPane(trackListPanel, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED);
+//		// Remove focus from text boxes if area under midi tracks is clicked
+//		trackScrollPane.addMouseListener(new MouseAdapter() {
+//			@Override
+//			public void mouseClicked(MouseEvent e) {
+//				getRootPane().requestFocus();
+//			}
+//		});
+		
 		messageLabel = new JLabel();
 		messageLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		messageLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 20));
@@ -186,7 +263,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 
 		add(dataPanel, "0, 0");
 		add(messageLabel, "0, 1, C, C");
-		add(trackScrollPane, "0, 1");
+		add(splitPanel, "0, 1");
 
 		// Remove focus if any empty space in the window is clicked
 		MouseAdapter listenForFocus = new MouseAdapter() {
@@ -265,10 +342,8 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 				TempoPanel tempoPanel = new TempoPanel(abcPart.getSequenceInfo(), sequencer, abcSequencer,
 						abcPart.getAbcSong());
 				tempoPanel.setAbcPreviewMode(isAbcPreviewMode);
-				trackScrollPane.getVerticalScrollBar().setUnitIncrement(tempoPanel.getPreferredSize().height);
-				trackListVGroup.addComponent(tempoPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE,
-						GroupLayout.PREFERRED_SIZE);
-				trackListHGroup.addComponent(tempoPanel);
+				controlPanel.add(tempoPanel);
+				noteGraphPanel.add(tempoPanel.getNoteGraph(), "growx");
 			}
 
 			for (TrackInfo track : abcPart.getSequenceInfo().getTrackList()) {
@@ -276,10 +351,15 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 				if (track.hasEvents()) {
 					TrackPanel trackPanel = new TrackPanel(track, sequencer, abcPart, abcSequencer);
 					trackPanel.setAbcPreviewMode(isAbcPreviewMode);
-					trackScrollPane.getVerticalScrollBar().setUnitIncrement(trackPanel.getPreferredSize().height);
-					trackListVGroup.addComponent(trackPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE,
-							GroupLayout.PREFERRED_SIZE);
-					trackListHGroup.addComponent(trackPanel);
+					controlPanel.add(trackPanel);
+					noteGraphPanel.add(trackPanel.getNoteGraph(), "growx");
+					
+//					if (trackPanel.hasDrumPanels()) {
+//						ArrayList<DrumPanel> drums = trackPanel.getDrumPanels();
+//						for (DrumPanel dp : drums) {
+//							noteGraphPanel.add(dp.getNoteGraph(), "growx");
+//						}
+//					}
 
 					if (MUTE_DISABLED_TRACKS)
 						sequencer.setTrackMute(trackNumber, !abcPart.isTrackEnabled(trackNumber));
@@ -290,6 +370,21 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 
 				sequencer.setTrackSolo(trackNumber, false);
 			}
+			
+			// add dummy space at the end to fix scroll bar calcuation swing bug
+			
+			int scrollbarHeight = new JScrollPane().getHorizontalScrollBar().getPreferredSize().height;
+			JPanel dummy1 = new JPanel();
+			dummy1.setPreferredSize(new Dimension(200, scrollbarHeight * 2));
+			dummy1.setOpaque(true);
+			dummy1.setBackground(ColorTable.PANEL_BACKGROUND_DISABLED.get());
+			controlPanel.add(dummy1);
+			
+			JPanel dummy2 = new JPanel();
+			dummy2.setPreferredSize(new Dimension(200, scrollbarHeight * 2));
+			dummy2.setOpaque(true);
+			dummy2.setBackground(ColorTable.PANEL_BACKGROUND_DISABLED.get());
+			noteGraphPanel.add(dummy2, "growx");
 		}
 
 		this.abcPart = abcPart;
@@ -340,10 +435,9 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 				TempoPanel tempoPanel = new TempoPanel(abcPart.getSequenceInfo(), sequencer, abcSequencer,
 						abcPart.getAbcSong());
 				tempoPanel.setAbcPreviewMode(isAbcPreviewMode);
-				trackScrollPane.getVerticalScrollBar().setUnitIncrement(tempoPanel.getPreferredSize().height);
-				trackListVGroup.addComponent(tempoPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE,
-						GroupLayout.PREFERRED_SIZE);
-				trackListHGroup.addComponent(tempoPanel);
+				tempoPanel.revalidate();
+				controlPanel.add(tempoPanel);
+				noteGraphPanel.add(tempoPanel.getNoteGraph(), "growx");
 			}
 
 			for (TrackInfo track : abcPart.getSequenceInfo().getTrackList()) {
@@ -351,10 +445,15 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 				if (track.hasEvents()) {
 					TrackPanel trackPanel = new TrackPanel(track, sequencer, abcPart, abcSequencer);
 					trackPanel.setAbcPreviewMode(isAbcPreviewMode);
-					trackScrollPane.getVerticalScrollBar().setUnitIncrement(trackPanel.getPreferredSize().height);
-					trackListVGroup.addComponent(trackPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE,
-							GroupLayout.PREFERRED_SIZE);
-					trackListHGroup.addComponent(trackPanel);
+					controlPanel.add(trackPanel);
+					noteGraphPanel.add(trackPanel.getNoteGraph(), "growx");
+
+//					if (trackPanel.hasDrumPanels()) {
+//						ArrayList<DrumPanel> drums = trackPanel.getDrumPanels();
+//						for (DrumPanel dp : drums) {
+//							noteGraphPanel.add(dp.getNoteGraph(), "growx");
+//						}
+//					}
 
 					if (MUTE_DISABLED_TRACKS)
 						sequencer.setTrackMute(trackNumber, !abcPart.isTrackEnabled(trackNumber));
@@ -384,7 +483,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 	public void setAbcPreviewMode(boolean isAbcPreviewMode) {
 		if (this.isAbcPreviewMode != isAbcPreviewMode) {
 			this.isAbcPreviewMode = isAbcPreviewMode;
-			for (Component child : trackListPanel.getComponents()) {
+			for (Component child : controlPanel.getComponents()) {
 				if (child instanceof TrackPanel) {
 					((TrackPanel) child).setAbcPreviewMode(isAbcPreviewMode);
 				} else if (child instanceof DrumPanel) {
@@ -414,18 +513,18 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		boolean percussion = abcPart.getInstrument().isPercussion;
 		boolean setHeight = false;
 
-		for (Component child : trackListPanel.getComponents()) {
+		for (Component child : controlPanel.getComponents()) {
 			if (child instanceof TrackPanel) {
 				TrackPanel trackPanel = (TrackPanel) child;
 				child.setEnabled(percussion || trackPanel.getTrackInfo().hasEvents());
 				if (!setHeight && !percussion) {
-					trackScrollPane.getVerticalScrollBar().setUnitIncrement(child.getPreferredSize().height);
+//					controlScrollPane.getVerticalScrollBar().setUnitIncrement(child.getPreferredSize().height);
 					setHeight = true;
 				}
 			} else if (child instanceof DrumPanel) {
 				child.setVisible(percussion);
 				if (!setHeight && percussion) {
-					trackScrollPane.getVerticalScrollBar().setUnitIncrement(child.getPreferredSize().height);
+//					controlScrollPane.getVerticalScrollBar().setUnitIncrement(child.getPreferredSize().height);
 					setHeight = true;
 				}
 			}
@@ -433,14 +532,18 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 	}
 
 	private void clearTrackListPanel() {
-		for (Component child : trackListPanel.getComponents()) {
+		for (Component child : controlPanel.getComponents()) {
 			if (child instanceof IDiscardable) {
 				((IDiscardable) child).discard();
 			}
 		}
-		trackListPanel.removeAll();
-		trackListLayout.setVerticalGroup(trackListVGroup = trackListLayout.createSequentialGroup());
-		trackListLayout.setHorizontalGroup(trackListHGroup = trackListLayout.createParallelGroup());
+		for (Component child : noteGraphPanel.getComponents()) {
+			if (child instanceof IDiscardable) {
+				((IDiscardable) child).discard();
+			}
+		}
+		controlPanel.removeAll();
+		noteGraphPanel.removeAll();
 		zoomed = false;
 	}
 
@@ -476,21 +579,27 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 
 		int scaledHeight = (int) (dims.rowHeight * 1.25);
 
-		for (Component child : trackListPanel.getComponents()) {
+		for (Component child : controlPanel.getComponents()) {
 			if (child instanceof TrackPanel) {
 				if (!zoomed && child.getHeight() == dims.rowHeight + 1) {
-					((TrackPanel) child).setVerticalSize(scaledHeight);
-					child.setPreferredSize(new Dimension(horiz, scaledHeight + 1));
+//					((TrackPanel)child).getNoteGraph().setPreferredSize(new Dimension(horiz, scaledHeight+1));
+					((TrackPanel)child).setRowHeight(scaledHeight);
+					((TrackPanel)child).setNoteGraphWidth(horiz);
 				} else {
-					((TrackPanel) child).setVerticalSize(dims.rowHeight);
-					child.setPreferredSize(null);
+//					((TrackPanel)child).getNoteGraph().setPreferredSize(new Dimension(200, dims.rowHeight + 1));
+					((TrackPanel)child).setRowHeight(dims.rowHeight);
+					((TrackPanel)child).setNoteGraphWidth(200);
 				}
-				child.validate();
-				child.invalidate();
+				child.revalidate();
 			}
 		}
+		noteGraphPanel.revalidate();
+//		noteGraphPanel.setPreferredSize(!zoomed? new Dimension(horiz, getPreferredSize().height) : null);
+//		noteGraphPanel.revalidate();
+		
 		revalidate();
 		repaint();
+		
 		zoomed = !zoomed;
 	}
 

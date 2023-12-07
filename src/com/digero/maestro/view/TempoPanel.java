@@ -3,6 +3,8 @@ package com.digero.maestro.view;
 import info.clearthought.layout.TableLayout;
 import info.clearthought.layout.TableLayoutConstants;
 
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +28,7 @@ import com.digero.maestro.midi.SequenceInfo;
 import com.digero.maestro.view.TrackPanel.TrackDimensions;
 
 @SuppressWarnings("serial")
-public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConstants {
+public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConstants, PartPanelItem {
 	// 0 1 2 3
 	// +---+-------------------+-----------+---------------------+
 	// | | | | +---------------+ |
@@ -44,7 +46,7 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 			+ TrackPanel.PRIORITY_WIDTH_DEFAULT;
 	private static final int TEMPO_WIDTH = TrackPanel.CONTROL_WIDTH_DEFAULT;
 
-	private static double[] LAYOUT_COLS = new double[] { GUTTER_WIDTH, TITLE_WIDTH, TEMPO_WIDTH, FILL };
+	private static double[] LAYOUT_COLS = new double[] { GUTTER_WIDTH, TITLE_WIDTH, TEMPO_WIDTH/*, FILL*/ };
 	private static double[] LAYOUT_ROWS = new double[] { 32 };
 
 	private final SequenceInfo sequenceInfo;
@@ -65,7 +67,7 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 		tableLayout.setHGap(TrackPanel.HGAP);
 
 		TrackDimensions dims = TrackPanel.calculateTrackDims();
-		LAYOUT_COLS[1] = dims.titleWidth + TrackPanel.HGAP + dims.priorityWidth;
+		LAYOUT_COLS[1] = dims.titleWidth + TrackPanel.HGAP * 2 + dims.priorityWidth;
 		LAYOUT_COLS[2] = dims.controlWidth;
 		tableLayout.setColumn(LAYOUT_COLS);
 
@@ -90,6 +92,9 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 		gutter.setBackground(ColorTable.PANEL_HIGHLIGHT_OTHER_PART.get());
 
 		this.tempoGraph = new TempoNoteGraph(sequenceInfo, sequencer, minBPM, maxBPM);
+		tempoGraph.setBackground(ColorTable.GRAPH_BACKGROUND_DISABLED.get());
+		tempoGraph.setPreferredSize(new Dimension(tempoGraph.getPreferredSize().width, getPreferredSize().height));
+		tempoGraph.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, ColorTable.PANEL_BORDER.get()));
 		setBackground(ColorTable.GRAPH_BACKGROUND_DISABLED.get());
 
 		JLabel titleLabel = new JLabel("Tempo");
@@ -104,10 +109,14 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 		add(gutter, GUTTER_COLUMN + ", 0");
 		add(titleLabel, TITLE_COLUMN + ", 0");
 		add(currentTempoLabel, TEMPO_COLUMN + ", 0, R, C");
-		add(tempoGraph, GRAPH_COLUMN + ", 0");
+//		add(tempoGraph, GRAPH_COLUMN + ", 0");
 
 		sequencer.addChangeListener(sequencerListener);
 		abcSequencer.addChangeListener(sequencerListener);
+	}
+	
+	public TempoNoteGraph getNoteGraph() {
+		return tempoGraph;
 	}
 
 	@Override
@@ -163,7 +172,7 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 		return (bpm - minBPM) * (Note.MAX.id - Note.MIN.id) / (maxBPM - minBPM) + Note.MIN.id;
 	}
 
-	private class TempoNoteGraph extends NoteGraph {
+	public class TempoNoteGraph extends NoteGraph {
 		private final int minBPM;
 		private final int maxBPM;
 		private List<NoteEvent> events;

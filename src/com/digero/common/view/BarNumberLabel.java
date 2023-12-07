@@ -59,29 +59,40 @@ public class BarNumberLabel extends JLabel implements Listener<SequencerEvent>, 
 		}
 	}
 
-	private int lastPrintedBarNumber = -1;
-	private int lastPrintedBarCount = -1;
-
-	private void update() {
-		if (barNumberCache == null) {
-			if (lastPrintedBarNumber != -1 || lastPrintedBarCount != -1) {
-				lastPrintedBarNumber = -1;
-				lastPrintedBarCount = -1;
-				setText("");
-			}
-			return;
+	private String lastPrintedBars = "-/-";
+	
+	public static String getBarString(SequencerWrapper sequencer, IBarNumberCache barNumberCache) {
+		return getBarString(sequencer, barNumberCache, 0);
+	}
+	
+	public static String getBarString(SequencerWrapper sequencer, IBarNumberCache barNumberCache, long initialOffsetTick) {
+		if (barNumberCache == null || sequencer == null) {
+			return "-/-";
 		}
-
+		
 		long tickLength = Math.max(0, sequencer.getTickLength() - initialOffsetTick);
 		long tick = Math.min(tickLength, sequencer.getThumbTick() - initialOffsetTick);
 
 		int barNumber = (tick < 0) ? 0 : (barNumberCache.tickToBarNumber(tick) + 1);
 		int barCount = barNumberCache.tickToBarNumber(tickLength) + 1;
+		
+		return barNumber + "/" +  barCount;
+	}
 
-		if (barNumber != lastPrintedBarNumber || barCount != lastPrintedBarCount) {
-			lastPrintedBarNumber = barNumber;
-			lastPrintedBarCount = barCount;
-			setText(barNumber + "/" + barCount);
+	private void update() {
+		if (barNumberCache == null) {
+			if (!lastPrintedBars.equals("-/-")) {
+				lastPrintedBars = "-/-";
+				setText(lastPrintedBars);
+			}
+			return;
+		}
+		
+		String bars = getBarString(sequencer, barNumberCache, initialOffsetTick);
+
+		if (!bars.equals("-/-")) {
+			lastPrintedBars = bars;
+			setText(bars);
 		}
 	}
 }
