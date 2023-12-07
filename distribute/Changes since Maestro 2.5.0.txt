@@ -53,6 +53,10 @@ Version 3.0.4
 - Added a Windows context menu entry, so you can right-click ABC or MIDI files and choose "Edit with Maestro".
 - Fix not playing initial ABC notes, when Maestro first starts playing a file.
     The fix only applies to parts lower than 15. Large songs will still skip initial notes at first playback.
+- When you use the zoom feature, the controls are now locked to the left side.
+- Made the track delay window modal, so you can use Maestro while it's open.
+- Added a bar position indicator while dragging the playhead. Helpful for figuring out the bar ranges for a section or tune edit.
+- Fixed a bug with the note and peak counters rendering weird on the old theme. Font is now consistent with the rest of the UI.
 
 Version 3.0.3
 - Support for exporting ABC preview MP3/WAV files from Maestro, in addition to ABC Player.
