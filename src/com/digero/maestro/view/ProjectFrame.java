@@ -1395,8 +1395,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			maxColor = "<font color=ORANGE>";
 		}
 		
-		noteCountLabel.setText("<html><nobr>Notes: " + maxColor + String.format("%02d", maxNoteCount) + "</font></nobr></html>");
-		peakLabel.setText("<html><nobr>(Peak: " + totalColor + String.format("%02d", maxNoteCountTotal) + "</font>)</nobr></html>");
+		noteCountLabel.setText("<html><nobr>Notes: " + maxColor + String.format("%03d", maxNoteCount) + "</font></nobr></html>");
+		peakLabel.setText("<html><nobr>(Peak: " + totalColor + String.format("%03d", maxNoteCountTotal) + "</font>)</nobr></html>");
 	}
 
 	private class AbcSequencerListener implements Listener<SequencerEvent> {
