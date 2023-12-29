@@ -182,7 +182,7 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 		}
 
 		private void recalcTempoEvents() {
-			System.out.println("recalcTempoEvents()");
+			//System.out.println("recalcTempoEvents()");
 			// Make fake note events for every tempo event
 			events = new ArrayList<>();
 			Entry<Long, Integer> prevEvent = null;
@@ -193,7 +193,7 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 			for (Entry<Long, Integer> event : PolyphonyHistogram.getAll()) {
 				if (prevEvent != null) {
 					int id = Math.min(100,prevEvent.getValue());
-					if (id > 60) System.out.println(id);
+					//if (id > 60) System.out.println(id);
 					events.add(new NoteEvent(Note.fromId(id), 127, dataCache.microsToTick(prevEvent.getKey()), dataCache.microsToTick(event.getKey()), dataCache));
 				}
 				prevEvent = event;
