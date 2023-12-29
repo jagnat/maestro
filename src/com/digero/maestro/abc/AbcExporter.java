@@ -1318,6 +1318,8 @@ public class AbcExporter {
 		List<Chord> chords = new ArrayList<>(events.size() / 2);
 		List<NoteEvent> tmpEvents = new ArrayList<>();
 
+		PolyphonyHistogram.count(part, events);
+		
 		// Combine notes that play at the same time into chords
 		Chord curChord = new Chord(events.get(0));
 		chords.add(curChord);

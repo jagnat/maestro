@@ -77,6 +77,8 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	private final InstrNameSettings instrNameSettings;
 	private boolean muted = false;
 	private boolean soloed = false;
+	
+	public boolean discarded = false;
 
 	public AbcPart(AbcSong abcSong) {
 		this.abcSong = abcSong;
@@ -132,6 +134,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		sections = null;
 		sectionsModified = null;
 		delay = 0;
+		discarded = true;
 	}
 
 	public void saveToXml(Element ele) {
