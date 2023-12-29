@@ -110,6 +110,16 @@ public class PolyphonyHistogram {
 	}
 	
 	/**
+	 * Request the number of concurrently playing notes.
+	 * Be sure to call sumUp first if is dirty.
+	 * 
+	 * @return Number of notes being played
+	 */
+	public static Set<Entry<Long, Integer>> getAll() {
+		return sum.entrySet();
+	}
+	
+	/**
 	 * If the sum might need to be recalculated before result is reliable.
 	 * 
 	 * @return dirty boolean
