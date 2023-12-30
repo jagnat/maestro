@@ -35,6 +35,8 @@ public class PolyphonyHistogram {
 			long end = event.getEndMicros() + part.delay*1000;
 			if (part.getInstrument().isSustainable(event.note.id)) {
 				end += 200000L;// 200ms
+			} else {
+				end = start + 1000000L; 
 			}
 			Integer oldStart = partMap.get(start);
 			if (oldStart == null) {
