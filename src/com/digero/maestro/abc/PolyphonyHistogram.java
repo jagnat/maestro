@@ -15,6 +15,7 @@ public class PolyphonyHistogram {
 	private static Map<AbcPart, TreeMap<Long, Integer>> histogramData = new HashMap<>();
 	private static TreeMap<Long, Integer> sum = new TreeMap<>();
 	private static boolean dirty = false;
+	private static int max = 0;
 	public static boolean enabled = false;// set to true to enable this system, set to false to save cpu power.
 
 	/**
@@ -59,6 +60,7 @@ public class PolyphonyHistogram {
 	 */
 	public static void sumUp(AbcSong song) {
 		sum = new TreeMap<>();
+		max = 0;
 		Set<AbcPart> partSet = new HashSet<>(histogramData.keySet());
 		Set<TreeMap<Long, Integer>> treeSet = new HashSet<TreeMap<Long, Integer>>();
 		for (AbcPart part : partSet) {
@@ -89,6 +91,9 @@ public class PolyphonyHistogram {
 		for (Entry<Long, Integer> entry : entrySongSet) {
 			polyphony += entry.getValue();
 			sum.put(entry.getKey(), polyphony);
+			if (polyphony > max) {
+				max = polyphony;
+			}
 		}
 		assert polyphony == 0;
 		dirty = false;
@@ -126,5 +131,9 @@ public class PolyphonyHistogram {
 	 */
 	public static boolean isDirty() {
 		return dirty;
+	}
+
+	public static int max() {
+		return max;
 	}
 }

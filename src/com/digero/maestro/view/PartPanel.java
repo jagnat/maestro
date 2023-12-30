@@ -70,6 +70,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 	private NoteFilterSequencerWrapper sequencer;
 	private SequencerWrapper abcSequencer;
 	private boolean isAbcPreviewMode = false;
+	private boolean showMaxPolyphony = false;
 
 	private JSpinner numberSpinner;
 	private SpinnerNumberModel numberSpinnerModel;
@@ -102,7 +103,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 	private boolean syncUpdate = false;
 
 	public PartPanel(NoteFilterSequencerWrapper sequencer, PartAutoNumberer partAutoNumberer,
-			SequencerWrapper abcSequencer) {
+			SequencerWrapper abcSequencer, boolean showMaxPolyphony) {
 		super(new TableLayout(//
 				new double[] { FILL, PREFERRED }, //
 				new double[] { PREFERRED, FILL }));
@@ -112,6 +113,8 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		layout.setVGap(VGAP);
 
 		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, ColorTable.PANEL_BORDER.get()));
+		
+		this.showMaxPolyphony = showMaxPolyphony;
 
 		this.sequencer = sequencer;
 		this.abcSequencer = abcSequencer;
@@ -296,6 +299,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			numberSpinner.setValue(abcPart.getPartNumber());
 		}
 	};
+	
 
 	public void settingsChanged() {
 		numberSpinnerModel.setStepSize(partAutoNumberer.getIncrement());
@@ -344,6 +348,16 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 				tempoPanel.setAbcPreviewMode(isAbcPreviewMode);
 				controlPanel.add(tempoPanel);
 				noteGraphPanel.add(tempoPanel.getNoteGraph(), "growx");
+			}
+			
+			// Add the histogram panel
+			if (true) {
+				HistogramPanel histogramPanel = new HistogramPanel(abcPart.getSequenceInfo(), sequencer, abcSequencer,
+						abcPart.getAbcSong());
+				histogramPanel.setAbcPreviewMode(isAbcPreviewMode, showMaxPolyphony);
+				histogramPanel.revalidate();
+				controlPanel.add(histogramPanel);
+				noteGraphPanel.add(histogramPanel.getNoteGraph(), "growx");
 			}
 
 			for (TrackInfo track : abcPart.getSequenceInfo().getTrackList()) {
@@ -439,6 +453,18 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 				controlPanel.add(tempoPanel);
 				noteGraphPanel.add(tempoPanel.getNoteGraph(), "growx");
 			}
+			
+			// Add the histogram panel
+			if (true) {
+				HistogramPanel histogramPanel = new HistogramPanel(abcPart.getSequenceInfo(), sequencer, abcSequencer,
+						abcPart.getAbcSong());
+				histogramPanel.setAbcPreviewMode(isAbcPreviewMode, showMaxPolyphony);
+				histogramPanel.revalidate();
+				controlPanel.add(histogramPanel);
+				noteGraphPanel.add(histogramPanel.getNoteGraph(), "growx");
+			}
+			
+			
 
 			for (TrackInfo track : abcPart.getSequenceInfo().getTrackList()) {
 				int trackNumber = track.getTrackNumber();
@@ -481,7 +507,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 	}
 
 	public void setAbcPreviewMode(boolean isAbcPreviewMode) {
-		if (this.isAbcPreviewMode != isAbcPreviewMode) {
+		//if (this.isAbcPreviewMode != isAbcPreviewMode) {
 			this.isAbcPreviewMode = isAbcPreviewMode;
 			for (Component child : controlPanel.getComponents()) {
 				if (child instanceof TrackPanel) {
@@ -490,9 +516,11 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 					((DrumPanel) child).setAbcPreviewMode(isAbcPreviewMode);
 				} else if (child instanceof TempoPanel) {
 					((TempoPanel) child).setAbcPreviewMode(isAbcPreviewMode);
+				} else if (child instanceof HistogramPanel) {
+					((HistogramPanel) child).setAbcPreviewMode(isAbcPreviewMode, showMaxPolyphony);
 				}
 			}
-		}
+		//}
 	}
 
 	public boolean isAbcPreviewMode() {
@@ -624,5 +652,10 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 
 	public void setNote(String note) {
 		noteContent.setText(note);
+	}
+
+	public void setPolyphony(boolean showMaxPolyphony) {
+		this.showMaxPolyphony = showMaxPolyphony;
+		setAbcPreviewMode(isAbcPreviewMode());
 	}
 }

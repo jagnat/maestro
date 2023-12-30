@@ -773,7 +773,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	}
 
 	private void generateMidiPartsAndControlsPanel() {
-		partPanel = new PartPanel(sequencer, partAutoNumberer, abcSequencer);
+		partPanel = new PartPanel(sequencer, partAutoNumberer, abcSequencer, miscSettings.showMaxPolyphony);
 		partPanel.addSettingsActionListener(e -> doSettingsDialog(SettingsDialog.NUMBERING_TAB));
 
 		tuneEditorButton = new JButton();
@@ -1238,10 +1238,11 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 				saveSettings.copyFrom(dialog.getSaveAndExportSettings());
 				saveSettings.saveToPrefs();
-				onSaveAndExportSettingsChanged();
 
 				miscSettings.copyFrom(dialog.getMiscSettings());
 				miscSettings.saveToPrefs();
+				
+				onSaveAndExportSettingsChanged();
 			} else if (dialog.isSettingPageReset()) {
 				tab = dialog.getResetPageIndex();
 				switch (tab) {
@@ -1269,6 +1270,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				showSettingsAgain = true;
 				x = dialog.getLocation().x;
 				y = dialog.getLocation().y;
+				onSaveAndExportSettingsChanged();
 			}
 			currentSettingsDialogTab = dialog.getActiveTab();
 			dialog.dispose();
@@ -1292,8 +1294,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		// if (abcSong != null)
 		// abcSong.setShowPruned(saveSettings.showPruned);
 
-		noteCountLabel.setVisible(miscSettings.showMaxPolyphony);
-		peakLabel.setVisible(miscSettings.showMaxPolyphony);
+		noteCountLabel.setVisible(miscSettings.showMaxPolyphony && false);
+		peakLabel.setVisible(miscSettings.showMaxPolyphony && false);
+		partPanel.setPolyphony(miscSettings.showMaxPolyphony);
 		if (!miscSettings.showMaxPolyphony) {
 			maxNoteCount = 0;
 			maxNoteCountTotal = 0;
@@ -1425,8 +1428,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		}
 
 		private void updateNoteCount() {
-			noteCountLabel.setVisible(miscSettings.showMaxPolyphony);
-			peakLabel.setVisible(miscSettings.showMaxPolyphony);
+			noteCountLabel.setVisible(miscSettings.showMaxPolyphony && false);
+			peakLabel.setVisible(miscSettings.showMaxPolyphony && false);
 			if (!miscSettings.showMaxPolyphony) {
 				return;
 			}

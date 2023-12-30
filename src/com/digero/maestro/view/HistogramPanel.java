@@ -51,14 +51,13 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 	private static final int TEMPO_WIDTH = TrackPanel.CONTROL_WIDTH_DEFAULT;
 
 	private static double[] LAYOUT_COLS = new double[] { GUTTER_WIDTH, TITLE_WIDTH, TEMPO_WIDTH/*, FILL*/ };
-	private static double[] LAYOUT_ROWS = new double[] { 32 };
+	private static double[] LAYOUT_ROWS = new double[] { 64 };
 
-	private final SequenceInfo sequenceInfo;
 	private final SequencerWrapper sequencer;
 	private final SequencerWrapper abcSequencer;
 	private boolean abcPreviewMode = false;
 
-	private HistogramNoteGraph tempoGraph;
+	private HistogramNoteGraph histoGraph;
 	private JLabel currentTempoLabel;
 
 	private AbcSong abcSong;
@@ -68,7 +67,7 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 		super(new TableLayout(LAYOUT_COLS, LAYOUT_ROWS));
 		this.abcSong = abcSong;
 		
-		PolyphonyHistogram.enabled = true;//TODO
+		
 		
 		TableLayout tableLayout = (TableLayout) getLayout();
 		tableLayout.setHGap(TrackPanel.HGAP);
@@ -80,28 +79,17 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 
 		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, ColorTable.PANEL_BORDER.get()));
 
-		this.sequenceInfo = sequenceInfo;
 		this.sequencer = sequencer;
 		this.abcSequencer = abcSequencer;
-
-		int minBPM = 1;
-		int maxBPM = 127;
-		/*for (TempoEvent event : sequenceInfo.getDataCache().getTempoEvents().values()) {
-			int bpm = (int) Math.round(MidiUtils.convertTempo(event.tempoMPQ));
-			if (bpm < minBPM)
-				minBPM = bpm;
-			if (bpm > maxBPM)
-				maxBPM = bpm;
-		}*/
 
 		JPanel gutter = new JPanel();
 		gutter.setOpaque(true);
 		gutter.setBackground(ColorTable.PANEL_HIGHLIGHT_OTHER_PART.get());
 
-		this.tempoGraph = new HistogramNoteGraph(sequenceInfo, sequencer, minBPM, maxBPM);
-		tempoGraph.setBackground(ColorTable.GRAPH_BACKGROUND_DISABLED.get());
-		tempoGraph.setPreferredSize(new Dimension(tempoGraph.getPreferredSize().width, getPreferredSize().height));
-		tempoGraph.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, ColorTable.PANEL_BORDER.get()));
+		this.histoGraph = new HistogramNoteGraph(sequenceInfo, sequencer);
+		histoGraph.setBackground(ColorTable.GRAPH_BACKGROUND_DISABLED.get());
+		histoGraph.setPreferredSize(new Dimension(histoGraph.getPreferredSize().width, getPreferredSize().height));
+		histoGraph.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, ColorTable.PANEL_BORDER.get()));
 		setBackground(ColorTable.GRAPH_BACKGROUND_DISABLED.get());
 
 		JLabel titleLabel = new JLabel("Polyphony");
@@ -123,7 +111,7 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 	}
 	
 	public HistogramNoteGraph getNoteGraph() {
-		return tempoGraph;
+		return histoGraph;
 	}
 
 	@Override
@@ -134,45 +122,50 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 			abcSequencer.removeChangeListener(sequencerListener);
 	}
 
-	public void setAbcPreviewMode(boolean abcPreviewMode) {
+	public void setAbcPreviewMode(boolean abcPreviewMode, boolean showMaxPolyphony) {
 		if (this.abcPreviewMode != abcPreviewMode) {
 			this.abcPreviewMode = abcPreviewMode;
 			updateTempoLabel();
 		}
+		setVisible(abcPreviewMode && showMaxPolyphony);
+		histoGraph.setVisible(abcPreviewMode && showMaxPolyphony);
+		if (abcPreviewMode && showMaxPolyphony) {
+			setMaximumSize(null);
+			histoGraph.setMaximumSize(null);
+		} else {
+			setMaximumSize(new Dimension(0,0));
+			histoGraph.setMaximumSize(new Dimension(0,0));
+		}
+		PolyphonyHistogram.enabled = showMaxPolyphony;//TODO
 	}
 
 	public boolean isAbcPreviewMode() {
 		return abcPreviewMode;
 	}
 
-	private int lastRenderedBPM = -1;
+	private int lastRenderedNotes = -1;
 
 	private void updateTempoLabel() {
-		int bpm = PolyphonyHistogram.get(sequencer.getThumbPosition());;
-		if (bpm != lastRenderedBPM) {
-			currentTempoLabel.setText(bpm + " notes ");
-			lastRenderedBPM = bpm;
+		int notes = PolyphonyHistogram.get(sequencer.getThumbPosition());
+		if (notes != lastRenderedNotes) {
+			currentTempoLabel.setText(notes + " notes (" + PolyphonyHistogram.max() + ")");
+			lastRenderedNotes = notes;
 		}
 	}
 
 	private Listener<SequencerEvent> sequencerListener = e -> {
-		if (e.getProperty().isInMask(SequencerProperty.THUMB_POSITION_MASK | SequencerProperty.TEMPO.mask))
+		if (e.getProperty().isInMask(SequencerProperty.THUMB_POSITION_MASK))
 			updateTempoLabel();
 
 		if (e.getProperty() == SequencerProperty.IS_RUNNING)
-			tempoGraph.repaint();
+			histoGraph.repaint();
 	};
 
 	public class HistogramNoteGraph extends NoteGraph {
-		private final int minBPM;
-		private final int maxBPM;
-		private List<NoteEvent> events;
+		private List<NoteEvent> events = new ArrayList<>();;
 
-		public HistogramNoteGraph(SequenceInfo sequenceInfo, SequencerWrapper sequencer, int minBPM, int maxBPM) {
-			super(sequencer, sequenceInfo, 0, 100);
-
-			this.minBPM = minBPM;
-			this.maxBPM = maxBPM;
+		public HistogramNoteGraph(SequenceInfo sequenceInfo, SequencerWrapper sequencer) {
+			super(sequencer, sequenceInfo, null, 0, 70, 1, 2);// Show from 0 to 70 notes
 
 			setOctaveLinesVisible(false);
 			setNoteColor(ColorTable.NOTE_TEMPO);
@@ -183,7 +176,7 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 
 		private void recalcTempoEvents() {
 			//System.out.println("recalcTempoEvents()");
-			// Make fake note events for every tempo event
+			// Make fake note events for every count event
 			events = new ArrayList<>();
 			Entry<Long, Integer> prevEvent = null;
 			
@@ -192,21 +185,25 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 			SequenceDataCache dataCache = sequenceInfo.getDataCache();
 			for (Entry<Long, Integer> event : PolyphonyHistogram.getAll()) {
 				if (prevEvent != null) {
-					int id = Math.min(100,prevEvent.getValue());
-					//if (id > 60) System.out.println(id);
+					int id = Math.min(70,prevEvent.getValue());
 					events.add(new NoteEvent(Note.fromId(id), 127, dataCache.microsToTick(prevEvent.getKey()), dataCache.microsToTick(event.getKey()), dataCache));
 				}
 				prevEvent = event;
 			}
 
 			if (prevEvent != null) {
-				int id = Math.min(100,prevEvent.getValue());
+				int id = Math.min(70,prevEvent.getValue());
 				events.add(
 						new NoteEvent(Note.fromId(id), 127, dataCache.microsToTick(prevEvent.getKey()), dataCache.getSongLengthTicks(), dataCache));
 			} else {
 				int id = 0;
 				events.add(new NoteEvent(Note.fromId(id), 127, 0, dataCache.getSongLengthTicks(), dataCache));
 			}
+		}
+		
+		@Override
+		protected boolean isNotePlayable(NoteEvent ne, int addition) {
+			return ne.note.id < 45;// Over 45 and they go orange color. The limit is 64, but emotes and dances also fill.
 		}
 		
 		@Override
@@ -223,10 +220,10 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 
 		@Override
 		protected boolean[] getSectionsModified() {
-			if (abcSong == null) {
+			//if (abcSong == null) {
 				return null;
-			}
-			return abcSong.tuneBarsModified;
+			//}
+			//return abcSong.tuneBarsModified;
 		}
 	}
 }
