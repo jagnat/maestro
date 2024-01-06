@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.TreeMap;
 
+import com.digero.common.abc.LotroInstrumentSampleDuration;
 import com.digero.common.midi.Note;
 import com.digero.maestro.midi.NoteEvent;
 
@@ -36,7 +37,13 @@ public class PolyphonyHistogram {
 			if (part.getInstrument().isSustainable(event.note.id)) {
 				end += 200000L;// 200ms
 			} else {
-				end = start + 1000000L; 
+				Double seconds = LotroInstrumentSampleDuration.getDura(part.getInstrument().friendlyName, event.note.id);
+				if (seconds == null) {
+					System.err.println("Error: LotroInstrumentSampleDuration has no "+part.getInstrument().friendlyName+" with note "+event.note.id);
+					seconds = 1.0d;
+				}
+				long dura = (long) (1000000L * seconds);
+				end = start + dura;
 			}
 			Integer oldStart = partMap.get(start);
 			if (oldStart == null) {

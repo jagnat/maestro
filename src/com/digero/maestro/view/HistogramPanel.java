@@ -47,8 +47,8 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 
 	private static final int GUTTER_WIDTH = TrackPanel.GUTTER_WIDTH;
 	private static final int TITLE_WIDTH = TrackPanel.TITLE_WIDTH_DEFAULT + TrackPanel.HGAP
-			+ TrackPanel.PRIORITY_WIDTH_DEFAULT;
-	private static final int TEMPO_WIDTH = TrackPanel.CONTROL_WIDTH_DEFAULT;
+			+ TrackPanel.PRIORITY_WIDTH_DEFAULT-50;
+	private static final int TEMPO_WIDTH = TrackPanel.CONTROL_WIDTH_DEFAULT+50;
 
 	private static double[] LAYOUT_COLS = new double[] { GUTTER_WIDTH, TITLE_WIDTH, TEMPO_WIDTH/*, FILL*/ };
 	private static double[] LAYOUT_ROWS = new double[] { 64 };
@@ -73,8 +73,8 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 		tableLayout.setHGap(TrackPanel.HGAP);
 
 		TrackDimensions dims = TrackPanel.calculateTrackDims();
-		LAYOUT_COLS[1] = dims.titleWidth + TrackPanel.HGAP * 2 + dims.priorityWidth;
-		LAYOUT_COLS[2] = dims.controlWidth;
+		LAYOUT_COLS[1] = dims.titleWidth + TrackPanel.HGAP * 2 + dims.priorityWidth - 50;
+		LAYOUT_COLS[2] = dims.controlWidth + 50;
 		tableLayout.setColumn(LAYOUT_COLS);
 
 		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, ColorTable.PANEL_BORDER.get()));
@@ -148,7 +148,7 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 	private void updateTempoLabel() {
 		int notes = PolyphonyHistogram.get(sequencer.getThumbPosition());
 		if (notes != lastRenderedNotes) {
-			currentTempoLabel.setText(notes + " notes (" + PolyphonyHistogram.max() + ")");
+			currentTempoLabel.setText(notes + " notes (Peak: " + PolyphonyHistogram.max() + ")");
 			lastRenderedNotes = notes;
 		}
 	}
