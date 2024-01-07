@@ -878,8 +878,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		playControlPanel.add(stopButton, "spany 2");
 		playControlPanel.add(new JLabel("Volume:"), "right");
 		playControlPanel.add(volumeSlider);
-		playControlPanel.add(noteCountLabel, "right");
-		playControlPanel.add(peakLabel, "left");
+		playControlPanel.add(noteCountLabel, "right, hidemode 0");
+		playControlPanel.add(peakLabel, "left, hidemode 0");
 		playControlPanel.add(midiPositionLabel);
 		playControlPanel.add(abcPositionLabel, "wrap");
 		
