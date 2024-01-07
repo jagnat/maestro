@@ -1406,7 +1406,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		@Override
 		public void onEvent(SequencerEvent evt) {
 			updateButtons(false);
-			updateNoteCount();
+			//updateNoteCount();
 			if (evt.getProperty() == SequencerProperty.IS_RUNNING) {
 				if (abcSequencer.isRunning())
 					sequencer.stop();

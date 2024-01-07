@@ -46,6 +46,10 @@ Thanks to all who gave feedback of features, bugs plus suggestions.
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
 
+Version 3.1.1
+- Added a histogram of note count polyphony. Should be more accurate than the note count indicator was.
+- Removed note count indicator text.
+
 Version 3.1.0
 - Switched to launching Maestro using exe files rather than bat files. No more blank icons!
 - Maestro is now installed in the 64-bit programs folder (C:\Program Files\Maestro)
