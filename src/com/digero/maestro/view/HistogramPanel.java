@@ -169,13 +169,13 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 			super(sequencer, sequenceInfo, null, 0, CLIP_MAX_NOTES, 1, 2);
 
 			setOctaveLinesVisible(false);
-			setNoteColor(ColorTable.NOTE_TEMPO);
-			setNoteOnColor(ColorTable.NOTE_TEMPO_ON);
+			setNoteColor(ColorTable.NOTE_POLYPHONY);
+			setNoteOnColor(ColorTable.NOTE_POLYPHONY_ON);
 			setNoteOnExtraHeightPix(0);
 			setNoteOnOutlineWidthPix(0);
 		}
 
-		private void recalcTempoEvents() {
+		private void recalcPolyphonyEvents() {
 			//System.out.println("recalcTempoEvents()");
 			// Make fake note events for every count event
 			events = new ArrayList<>();
@@ -215,7 +215,7 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 		@Override
 		protected List<NoteEvent> getEvents() {
 			if (PolyphonyHistogram.isDirty())
-				recalcTempoEvents();
+				recalcPolyphonyEvents();
 			return events;
 		}
 
