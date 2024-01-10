@@ -59,7 +59,7 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 	private boolean abcPreviewMode = false;
 
 	private HistogramNoteGraph histoGraph;
-	private JLabel currentTempoLabel;
+	private JLabel currentCountLabel;
 
 	private AbcSong abcSong;
 
@@ -96,13 +96,14 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 		titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
 		titleLabel.setForeground(ColorTable.PANEL_TEXT_DISABLED.get());
 
-		currentTempoLabel = new JLabel();
-		currentTempoLabel.setForeground(ColorTable.PANEL_TEXT_DISABLED.get());
-		updateTempoLabel();
+		currentCountLabel = new JLabel();
+		currentCountLabel.setForeground(ColorTable.PANEL_TEXT_DISABLED.get());
+		currentCountLabel.setToolTipText("Number of concurrent playing notes.\nThis is useful due to lotro limitation of 64 sounds.\nIncluded in those 64 is dance footsteps and emotes.");
+		updateCountLabel();
 
 		add(gutter, GUTTER_COLUMN + ", 0");
 		add(titleLabel, TITLE_COLUMN + ", 0");
-		add(currentTempoLabel, COUNT_COLUMN + ", 0, R, C");
+		add(currentCountLabel, COUNT_COLUMN + ", 0, R, C");
 //		add(tempoGraph, GRAPH_COLUMN + ", 0");
 
 		sequencer.addChangeListener(sequencerListener);
@@ -124,7 +125,7 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 	public void setAbcPreviewMode(boolean abcPreviewMode, boolean showMaxPolyphony) {
 		if (this.abcPreviewMode != abcPreviewMode) {
 			this.abcPreviewMode = abcPreviewMode;
-			updateTempoLabel();
+			updateCountLabel();
 		}
 		setVisible(abcPreviewMode && showMaxPolyphony);
 		histoGraph.setVisible(abcPreviewMode && showMaxPolyphony);
@@ -144,17 +145,17 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 
 	private int lastRenderedNotes = -1;
 
-	private void updateTempoLabel() {
+	private void updateCountLabel() {
 		int notes = PolyphonyHistogram.get(sequencer.getThumbPosition());
 		if (notes != lastRenderedNotes) {
-			currentTempoLabel.setText(notes + " notes (Peak: " + PolyphonyHistogram.max() + ")");
+			currentCountLabel.setText(notes + " notes (Peak: " + PolyphonyHistogram.max() + ")");
 			lastRenderedNotes = notes;
 		}
 	}
 
 	private Listener<SequencerEvent> sequencerListener = e -> {
 		if (e.getProperty().isInMask(SequencerProperty.THUMB_POSITION_MASK))
-			updateTempoLabel();
+			updateCountLabel();
 
 		if (e.getProperty() == SequencerProperty.IS_RUNNING)
 			histoGraph.repaint();

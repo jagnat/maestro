@@ -36,7 +36,7 @@ public class MidiToWav {
 			if (opened)
 				synth.close();
 
-			Map<String, Object> synthInfo = new HashMap();
+			Map<String, Object> synthInfo = new HashMap<>();
 			synthInfo.put("midi channels", MidiConstants.CHANNEL_COUNT_ABC);// default is 16
 			synthInfo.put("reverb", false);// default is true
 			synthInfo.put("chorus", false);// default is true

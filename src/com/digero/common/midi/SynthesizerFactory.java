@@ -48,7 +48,7 @@ public class SynthesizerFactory {
 	@SuppressWarnings("restriction")
 	public static void initLotroSynthesizer(Synthesizer synth)
 			throws MidiUnavailableException, InvalidMidiDataException, IOException {
-		Map<String, Object> synthInfo = new HashMap();
+		Map<String, Object> synthInfo = new HashMap<>();
 		synthInfo.put("midi channels", MidiConstants.CHANNEL_COUNT_ABC);// default is 16
 		synthInfo.put("reverb", false);// default is true
 		synthInfo.put("chorus", false);// default is true
@@ -70,7 +70,7 @@ public class SynthesizerFactory {
 	@SuppressWarnings("restriction")
 	public static void initAudioSynthesizer(Synthesizer synth)
 			throws MidiUnavailableException, InvalidMidiDataException, IOException {
-		Map<String, Object> synthInfo = new HashMap();
+		Map<String, Object> synthInfo = new HashMap<>();
 		synthInfo.put("midi channels", MidiConstants.CHANNEL_COUNT_ABC);// default is 16
 		synthInfo.put("reverb", false);// default is true
 		synthInfo.put("chorus", false);// default is true

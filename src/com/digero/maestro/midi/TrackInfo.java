@@ -42,9 +42,6 @@ public class TrackInfo implements MidiConstants {
 	private List<NoteEvent> noteEvents;
 	private SortedSet<Integer> notesInUse;// Used for knowing which drum sounds to display in DrumPanel
 	private boolean isDrumTrack;
-	private boolean isXGDrumTrack;
-	private boolean isGSDrumTrack;
-	private boolean isGM2DrumTrack;
 	private final int minVelocity;
 	private final int maxVelocity;
 
@@ -57,9 +54,6 @@ public class TrackInfo implements MidiConstants {
 		// TempoCache tempoCache = new TempoCache(parent.getSequence());
 		this.trackNumber = trackNumber;
 
-		this.isXGDrumTrack = isXGDrumTrack;
-		this.isGSDrumTrack = isGSDrumTrack;
-		this.isGM2DrumTrack = isGM2DrumTrack;
 
 		if (isXGDrumTrack || isGSDrumTrack || isDrumsTrack || isGM2DrumTrack) {
 			isDrumTrack = true;

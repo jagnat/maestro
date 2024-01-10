@@ -85,7 +85,7 @@ public class NoteFilterSequencerWrapper extends SequencerWrapper {
 		try {
 			device = MidiSystem.getMidiDevice(myInfo);
 			if (device instanceof com.sun.media.sound.SoftSynthesizer) {
-				Map<String, Object> synthInfo = new HashMap();
+				Map<String, Object> synthInfo = new HashMap<>();
 				synthInfo.put("reverb", false);// default is true
 				synthInfo.put("chorus", false);// default is true
 				((com.sun.media.sound.SoftSynthesizer) device).open(null, synthInfo);

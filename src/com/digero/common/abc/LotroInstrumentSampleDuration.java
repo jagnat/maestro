@@ -1,7 +1,6 @@
 package com.digero.common.abc;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -67,7 +66,7 @@ public class LotroInstrumentSampleDuration {
 				System.err.println("\nWrong number of entries in " + fileName + ":");
 				System.exit(1);
 			}
-			String lookupString = splits[1].trim();
+			
 			String instr = splits[0].trim();
 			int note = Integer.parseInt(splits[1].trim());
 			double dura = Double.parseDouble(splits[2].trim());
