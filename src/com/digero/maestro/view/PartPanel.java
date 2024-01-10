@@ -60,6 +60,9 @@ import info.clearthought.layout.TableLayout;
 import info.clearthought.layout.TableLayoutConstants;
 import net.miginfocom.swing.MigLayout;
 
+/**
+ * We should really rename this class. It has nothing to do with parts. Very confusing. ~Aifel
+ */
 @SuppressWarnings("serial")
 public class PartPanel extends JPanel implements ICompileConstants, TableLayoutConstants {
 	private static final int HGAP = 4;
