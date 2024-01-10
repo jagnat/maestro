@@ -1,5 +1,6 @@
 package com.digero.maestro.abc;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -24,8 +25,9 @@ public class PolyphonyHistogram {
 	 * 
 	 * @param part
 	 * @param events
+	 * @throws IOException 
 	 */
-	public static void count(AbcPart part, List<NoteEvent> events) {
+	public static void count(AbcPart part, List<NoteEvent> events) throws IOException {
 		if (!enabled) return;
 		TreeMap<Long, Integer> partMap = new TreeMap<>();
 		for (NoteEvent event : events) {

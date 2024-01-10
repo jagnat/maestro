@@ -65,7 +65,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 	private static final int HGAP = 4;
 	private static final int VGAP = 4;
 
-	private AbcPart abcPart;
+	private AbcPart abcPart;// The currently selected abcPart in left part panel
 	private PartAutoNumberer partAutoNumberer;
 	private NoteFilterSequencerWrapper sequencer;
 	private SequencerWrapper abcSequencer;
@@ -534,27 +534,35 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		messageLabel.setVisible(true);
 	}
 
+	/**
+	 * This method confuses me. Why set drumpanel invisible when only disabling trackpanel??
+	 * ~Aifel
+	 */
 	private void updateTracksVisible() {
 		if (abcPart == null)
 			return;
 
 		boolean percussion = abcPart.getInstrument().isPercussion;
-		boolean setHeight = false;
+//		boolean setHeight = false;
 
 		for (Component child : controlPanel.getComponents()) {
 			if (child instanceof TrackPanel) {
 				TrackPanel trackPanel = (TrackPanel) child;
-				child.setEnabled(percussion || trackPanel.getTrackInfo().hasEvents());
-				if (!setHeight && !percussion) {
+				trackPanel.setEnabled(percussion || trackPanel.getTrackInfo().hasEvents());
+//				if (!setHeight && !percussion) {
 //					controlScrollPane.getVerticalScrollBar().setUnitIncrement(child.getPreferredSize().height);
-					setHeight = true;
-				}
+//					setHeight = true;
+//				}
 			} else if (child instanceof DrumPanel) {
 				child.setVisible(percussion);
-				if (!setHeight && percussion) {
+//				if (!setHeight && percussion) {
 //					controlScrollPane.getVerticalScrollBar().setUnitIncrement(child.getPreferredSize().height);
-					setHeight = true;
-				}
+//					setHeight = true;
+//				}
+			} else if (child instanceof TempoPanel) {
+				
+			} else if (child instanceof HistogramPanel) {
+				
 			}
 		}
 	}
@@ -591,7 +599,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 	}
 
 	public void zoom() {
-		// Notice that when instruement track selection is changed clearTrackListPanel()
+		// Notice that when instrument track selection is changed clearTrackListPanel()
 		// will be called and view will be unzoomed.
 		int horiz = 1920 * 3;
 		try {
@@ -606,6 +614,8 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		TrackDimensions dims = TrackPanel.calculateTrackDims();
 
 		int scaledHeight = (int) (dims.rowHeight * 1.25);
+		
+		boolean didWeUnZoom = false;
 
 		for (Component child : controlPanel.getComponents()) {
 			if (child instanceof TrackPanel) {
@@ -617,6 +627,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 //					((TrackPanel)child).getNoteGraph().setPreferredSize(new Dimension(200, dims.rowHeight + 1));
 					((TrackPanel)child).setRowHeight(dims.rowHeight);
 					((TrackPanel)child).setNoteGraphWidth(200);
+					didWeUnZoom = true;
 				}
 				child.revalidate();
 			}
@@ -629,6 +640,9 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		repaint();
 		
 		zoomed = !zoomed;
+		if (didWeUnZoom) {
+			zoomed = false;
+		}
 	}
 
 	public void noteToggle() {

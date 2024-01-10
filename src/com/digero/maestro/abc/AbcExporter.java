@@ -1,5 +1,6 @@
 package com.digero.maestro.abc;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
@@ -1317,8 +1318,12 @@ public class AbcExporter {
 
 		List<Chord> chords = new ArrayList<>(events.size() / 2);
 		List<NoteEvent> tmpEvents = new ArrayList<>();
-
-		PolyphonyHistogram.count(part, events);
+		
+		try {
+			PolyphonyHistogram.count(part, events);
+		} catch (IOException e) {
+			throw new AbcConversionException("Failed to read instrument sample durations.", e);
+		}
 		
 		// Combine notes that play at the same time into chords
 		Chord curChord = new Chord(events.get(0));

@@ -19,8 +19,9 @@ public class LotroInstrumentSampleDuration {
 	 * @param friendlyName Name of instrument
 	 * @param note Note id
 	 * @return duration in seconds
+	 * @throws IOException 
 	 */
-	public static Double getDura(String friendlyName, int note) {
+	public static Double getDura(String friendlyName, int note) throws IOException {
 		if (db == null) {
 			parse();
 		}
@@ -28,7 +29,7 @@ public class LotroInstrumentSampleDuration {
 		return dura;
 	}
 	
-	public static LotroInstrumentSampleDuration getInstance() {
+	public static LotroInstrumentSampleDuration getInstance() throws IOException {
 		if (instance != null) {
 			return instance;
 		}
@@ -40,25 +41,17 @@ public class LotroInstrumentSampleDuration {
 		return instance;
 	}
 	
-	private static void parse() {
+	private static void parse() throws IOException {
 		String fileName = "noteDurations.txt";
 		db = new HashMap<>(); 
-		try {			
-			InputStream in = getInstance().getClass().getResourceAsStream(fileName);
-			if (in == null) {
-				System.err.println(fileName + " not readable.");
-				return;
-			}
-			BufferedReader theFileReader = new BufferedReader(new InputStreamReader(in));			
-			readLines(fileName, theFileReader);
-			theFileReader.close();
-		} catch (FileNotFoundException e) {
+		InputStream in = getInstance().getClass().getResourceAsStream(fileName);
+		if (in == null) {
 			System.err.println(fileName + " not readable.");
-			e.printStackTrace();
-		} catch (IOException e) {
-			System.err.println(fileName + " line failed to read.");
-			e.printStackTrace();
+			return;
 		}
+		BufferedReader theFileReader = new BufferedReader(new InputStreamReader(in));			
+		readLines(fileName, theFileReader);
+		theFileReader.close();
 	}
 
 	private static void readLines(String fileName, BufferedReader theFileReader) throws IOException {

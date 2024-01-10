@@ -843,11 +843,7 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 		 */
 		final JCheckBox showMaxPolyphonyCheckBox = new JCheckBox("Show polyphony");
 		showMaxPolyphonyCheckBox.setToolTipText(
-				"<html>Show number of simultanious notes<br>" + "that is playing above the Zoom button.<br>"
-						+ "Use as rough (as it for tech reasons typically overestimates)<br>"
-						+ "guide to estimate how much of lotro max<br>" + "polyphony the song will consume.<br>"
-						+ "Stopped notes that are in release phase also counts.<br>"
-						+ "Enabling this might impact preview playback performance.</html>");
+				"<html>Show number of simultanious notes<br>" + "that is playing as histogram.</html>");
 		showMaxPolyphonyCheckBox.setSelected(miscSettings.showMaxPolyphony);
 		showMaxPolyphonyCheckBox
 				.addActionListener(e -> miscSettings.showMaxPolyphony = showMaxPolyphonyCheckBox.isSelected());
