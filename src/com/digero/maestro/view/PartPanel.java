@@ -164,7 +164,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 				PartPanel.this.partAutoNumberer.setInstrument(abcPart, newInstrument);
 				abcPart.replaceTitleInstrument(newInstrument, oldInstrument);
 				nameTextField.setText(abcPart.getTitle());
-				updateTracksVisible();
+				//updateTracksVisible();
 			}
 		});
 
@@ -280,7 +280,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		};
 		addMouseListener(listenForFocus);
 
-		setAbcPart(null);
+		setAbcPart(null, false);
 		initialized = true;
 	}
 
@@ -302,16 +302,15 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			numberSpinner.setValue(abcPart.getPartNumber());
 		}
 	};
-	
 
 	public void settingsChanged() {
 		numberSpinnerModel.setStepSize(partAutoNumberer.getIncrement());
 	}
 
-	public void setAbcPart(AbcPart abcPart) {
+	public void setAbcPart(AbcPart abcPart, boolean force) {
 		messageLabel.setVisible(false);
 
-		if (this.abcPart == abcPart && initialized)
+		if (this.abcPart == abcPart && initialized && !force)
 			return;
 
 		if (this.abcPart != null) {
@@ -349,20 +348,20 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 				TempoPanel tempoPanel = new TempoPanel(abcPart.getSequenceInfo(), sequencer, abcSequencer,
 						abcPart.getAbcSong());
 				tempoPanel.setAbcPreviewMode(isAbcPreviewMode);
+				tempoPanel.revalidate();
 				controlPanel.add(tempoPanel);
 				noteGraphPanel.add(tempoPanel.getNoteGraph(), "growx");
 			}
 			
 			// Add the histogram panel
-			if (true) {
-				HistogramPanel histogramPanel = new HistogramPanel(abcPart.getSequenceInfo(), sequencer, abcSequencer,
+			HistogramPanel histogramPanel = new HistogramPanel(abcPart.getSequenceInfo(), sequencer, abcSequencer,
 						abcPart.getAbcSong());
-				histogramPanel.setAbcPreviewMode(isAbcPreviewMode, showMaxPolyphony);
-				histogramPanel.revalidate();
-				controlPanel.add(histogramPanel);
-				noteGraphPanel.add(histogramPanel.getNoteGraph(), "growx");
-			}
+			histogramPanel.setAbcPreviewMode(isAbcPreviewMode, showMaxPolyphony);
+			histogramPanel.revalidate();
+			controlPanel.add(histogramPanel);
+			noteGraphPanel.add(histogramPanel.getNoteGraph(), "growx");
 
+			// Add the tracks and note graphs
 			for (TrackInfo track : abcPart.getSequenceInfo().getTrackList()) {
 				int trackNumber = track.getTrackNumber();
 				if (track.hasEvents()) {
@@ -409,98 +408,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			this.abcPart.addAbcListener(abcPartListener);
 		}
 
-		updateTracksVisible();
-		validate();
-		repaint();
-	}
-
-	public void tuneUpdated(AbcPart abcPart) {
-		messageLabel.setVisible(false);
-
-		if (this.abcPart != null) {
-			try {
-				numberSpinner.commitEdit();
-			} catch (ParseException e) {
-			}
-			this.abcPart.removeAbcListener(abcPartListener);
-			this.abcPart = null;
-		}
-
-		if (abcPart == null) {
-			numberSpinner.setEnabled(false);
-			nameTextField.setEnabled(false);
-			instrumentComboBox.setEnabled(false);
-
-			numberSpinner.setValue(0);
-			nameTextField.setText("");
-			instrumentComboBox.setSelectedItem(LotroInstrument.DEFAULT_INSTRUMENT);
-
-			clearTrackListPanel();
-		} else {
-			numberSpinner.setEnabled(true);
-			nameTextField.setEnabled(true);
-			instrumentComboBox.setEnabled(true);
-
-			numberSpinner.setValue(abcPart.getPartNumber());
-			nameTextField.setText(abcPart.getTitle());
-			instrumentComboBox.setSelectedItem(abcPart.getInstrument());
-
-			clearTrackListPanel();
-
-			// Add the tempo panel if this song contains tempo changes
-			if (abcPart.getSequenceInfo().hasTempoChanges() || abcPart.getAbcSong().tuneBarsModified != null) {
-				TempoPanel tempoPanel = new TempoPanel(abcPart.getSequenceInfo(), sequencer, abcSequencer,
-						abcPart.getAbcSong());
-				tempoPanel.setAbcPreviewMode(isAbcPreviewMode);
-				tempoPanel.revalidate();
-				controlPanel.add(tempoPanel);
-				noteGraphPanel.add(tempoPanel.getNoteGraph(), "growx");
-			}
-			
-			// Add the histogram panel
-			if (true) {
-				HistogramPanel histogramPanel = new HistogramPanel(abcPart.getSequenceInfo(), sequencer, abcSequencer,
-						abcPart.getAbcSong());
-				histogramPanel.setAbcPreviewMode(isAbcPreviewMode, showMaxPolyphony);
-				histogramPanel.revalidate();
-				controlPanel.add(histogramPanel);
-				noteGraphPanel.add(histogramPanel.getNoteGraph(), "growx");
-			}
-			
-			
-
-			for (TrackInfo track : abcPart.getSequenceInfo().getTrackList()) {
-				int trackNumber = track.getTrackNumber();
-				if (track.hasEvents()) {
-					TrackPanel trackPanel = new TrackPanel(track, sequencer, abcPart, abcSequencer);
-					trackPanel.setAbcPreviewMode(isAbcPreviewMode);
-					controlPanel.add(trackPanel);
-					noteGraphPanel.add(trackPanel.getNoteGraph(), "growx");
-
-//					if (trackPanel.hasDrumPanels()) {
-//						ArrayList<DrumPanel> drums = trackPanel.getDrumPanels();
-//						for (DrumPanel dp : drums) {
-//							noteGraphPanel.add(dp.getNoteGraph(), "growx");
-//						}
-//					}
-
-					if (MUTE_DISABLED_TRACKS)
-						sequencer.setTrackMute(trackNumber, !abcPart.isTrackEnabled(trackNumber));
-				}
-
-				if (!MUTE_DISABLED_TRACKS)
-					sequencer.setTrackMute(trackNumber, false);
-
-				sequencer.setTrackSolo(trackNumber, false);
-			}
-		}
-
-		this.abcPart = abcPart;
-		if (this.abcPart != null) {
-			this.abcPart.addAbcListener(abcPartListener);
-		}
-
-		updateTracksVisible();
+		//updateTracksVisible();
 		validate();
 		repaint();
 	}
@@ -531,7 +439,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 	}
 
 	public void showInfoMessage(String message) {
-		setAbcPart(null);
+		setAbcPart(null, false);
 
 		messageLabel.setText(message);
 		messageLabel.setVisible(true);
@@ -539,6 +447,10 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 
 	/**
 	 * This method confuses me. Why set drumpanel invisible when only disabling trackpanel??
+	 * And why not run it when abcPart is null??
+	 * 
+	 * Disabled calling it for now, as it would anyways always set visible and drumpanels never exist as child of controlPanel
+	 * 
 	 * ~Aifel
 	 */
 	private void updateTracksVisible() {
@@ -588,9 +500,9 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 
 	public void setSequencer(NoteFilterSequencerWrapper sequencer) {
 		AbcPart abcPartTmp = this.abcPart;
-		setAbcPart(null);
+		setAbcPart(null, false);
 		this.sequencer = sequencer;
-		setAbcPart(abcPartTmp);
+		setAbcPart(abcPartTmp, false);
 	}
 
 	public void commitAllFields() {

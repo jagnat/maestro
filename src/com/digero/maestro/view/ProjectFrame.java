@@ -517,7 +517,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			AbcPart abcPart = partsList.getSelectedPart();
 			sequencer.getFilter().onAbcPartChanged(abcPart != null);
 			abcSequencer.getFilter().onAbcPartChanged(abcPart != null);
-			partPanel.setAbcPart(abcPart);
+			partPanel.setAbcPart(abcPart, false);
 			if (abcPart != null) {
 				updateButtons(false);
 			} else {
@@ -1767,7 +1767,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			updateButtons(false);
 			if (partsList.getSelectedPart() != null) {
 				// We do this to show the tempo panel if tune editor has changed something
-				partPanel.tuneUpdated(partsList.getSelectedPart());
+				partPanel.setAbcPart(partsList.getSelectedPart(), true);
 			}
 			if (abcSequencer.isRunning())
 				refreshPreviewSequence(false);
@@ -1915,7 +1915,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			abcSong = null;
 		}
 
-		partPanel.setAbcPart(null);
+		partPanel.setAbcPart(null, false);
 		partPanel.setNote("");
 		partPanel.noteVisible(false);
 
