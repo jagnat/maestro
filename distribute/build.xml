@@ -23,13 +23,13 @@
 		<os family="unix" />
 	</condition>
 
-	<target name="mvn_windows" if="isWindows">
+	<target name="-mvn_windows" if="isWindows" description="Maven clean and compile (Windows)">
 		<exec dir=".." executable="cmd" failonerror="true">
 			<arg line="/c mvn clean install" />
 		</exec>
 	</target>
 
-	<target name="mvn_unix" if="isUnix">
+	<target name="-mvn_unix" if="isUnix" description="Maven clean and compile (Linux)">
 		<exec dir=".." executable="sh" failonerror="true">
 			<arg line="-c 'mvn clean install'" />
 		</exec>
@@ -39,7 +39,7 @@
 		<delete dir="${build}" />
 	</target>
 
-	<target name="CopyThings" depends="mvn_windows, mvn_unix" description="Copy icons,jars and txt files to build folder">
+	<target name="-CopyThings" depends="-mvn_windows, -mvn_unix" description="Copy icons,jars and txt files to build folder">
 		<mkdir dir="${build}" />
 		<delete>
 			<fileset dir="${build}" includes="*.log" />
@@ -68,7 +68,7 @@
 		</copy>-->
 	</target>
 	
-	<target name="GenerateExeFiles.CheckUpToDate" description="Test if exe files needs making">
+	<target name="-GenerateExeFiles.CheckUpToDate" description="Test if exe files needs making">
 		<condition property="Exe.Exists">
 			<and>
 				<available file="${build}/Maestro.exe"/>
@@ -78,7 +78,7 @@
 		</condition>
 	</target>
 	
-	<target name="GenerateExeFiles" depends="GenerateExeFiles.CheckUpToDate" unless="Exe.Exists" description="Make exe files">
+	<target name="-GenerateExeFiles" depends="-GenerateExeFiles.CheckUpToDate" unless="Exe.Exists" description="Make exe files">
 		<echo>Generating EXE files</echo>
 		<exec executable="${tools}/launch4j/launch4jc.exe" failonerror="true">
 			<arg value="launch4j_maestro.xml" />
@@ -91,7 +91,7 @@
 		</exec>
 	</target>
 
-	<target name="GenerateSoundFontInfo.CheckUpToDate" description="Test if LotroInstruments.txt needs making">
+	<target name="-GenerateSoundFontInfo.CheckUpToDate" description="Test if LotroInstruments.txt needs making">
 		<uptodate property="GenerateSoundFontInfo.uptodate" value="true" targetfile="${basedir}/${audio}/LotroInstruments/LotroInstruments.txt">
 			<srcfiles dir="${src}/com/digero/tools/soundfont/" />
 			<!-- Since classes are rebuilt every run, we check against the src files instead -->
@@ -99,21 +99,21 @@
 		<echo message="GenerateSoundFontInfo.uptodate is now ${GenerateSoundFontInfo.uptodate}."/>
 	</target>
 	
-	<target name="GenerateSoundFontInfo" depends="GenerateSoundFontInfo.CheckUpToDate" unless="GenerateSoundFontInfo.uptodate" description="Make LotroInstruments.txt">
+	<target name="GenerateSoundFontInfo" depends="-GenerateSoundFontInfo.CheckUpToDate" unless="GenerateSoundFontInfo.uptodate" description="Make LotroInstruments.txt">
 		<java classname="com.digero.tools.soundfont.GenerateSoundFontInfo" classpath="${target}/classes" fork="yes" failonerror="yes">
 			<arg value="${basedir}/${audio}/LotroInstruments" />
 			<arg value="${basedir}/${audio}/LotroInstruments/LotroInstruments.txt" />
 		</java>
 	</target>
 
-	<target name="LotroInstruments.CheckUpToDate" description="Test if SF2 needs making">
+	<target name="-LotroInstruments.CheckUpToDate" description="Test if SF2 needs making">
 		<uptodate property="LotroInstruments.uptodate" value="true" targetfile="${build}/LotroInstruments.sf2">
 			<srcfiles dir="${basedir}/${audio}/LotroInstruments" />
 		</uptodate>
 		<echo message="LotroInstruments.uptodate is now ${LotroInstruments.uptodate}."/>
 	</target>
 
-	<target name="LotroInstruments" depends="GenerateSoundFontInfo,LotroInstruments.CheckUpToDate" unless="LotroInstruments.uptodate" description="Make SF2 file">
+	<target name="LotroInstruments" depends="GenerateSoundFontInfo,-LotroInstruments.CheckUpToDate" unless="LotroInstruments.uptodate" description="Make SF2 file">
 		<exec executable="${tools}/sf2comp.exe" failonerror="true">
 			<arg value="c" />
 			<arg value="-m" />
@@ -123,9 +123,9 @@
 		</exec>
 	</target>
 
-	<target name="preStuff" depends="CopyThings,LotroInstruments,GenerateExeFiles" description="Make all except ZIP and MSI files"/>
+	<target name="Build" depends="-CopyThings,LotroInstruments,-GenerateExeFiles" description="Make all except ZIP and MSI files"/>
 
-	<target name="Installer" depends="preStuff" description="Make MSI file">
+	<target name="Installer" depends="Build" description="Make MSI file">
 		<mkdir dir="${output}" />
 		<property name="msipath" location="${output}/${basename.Maestro}_v${version.Maestro}.msi" />
 		<echo>Building msi: ${msipath}</echo>
@@ -156,7 +156,7 @@
 		</exec>
 	</target>
 
-	<target name="ZipFile" depends="preStuff" description="Make ZIP file">
+	<target name="ZipFile" depends="Build" description="Make ZIP file">
 		<mkdir dir="${output}" />
 		<zip destfile="${output}/${basename.Maestro}_v${version.Maestro}.zip" basedir="${build}">
 			<include name="${basename.Maestro}.jar" />
