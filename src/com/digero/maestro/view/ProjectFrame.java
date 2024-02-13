@@ -602,11 +602,11 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 				abcSequencer.setTempoFactor(abcSong.getTempoFactor());
 
-				if (abcSequencer.isRunning()) {
-					float delta = abcPreviewTempoFactor / abcSequencer.getTempoFactor();
-					if (Math.max(delta, 1 / delta) > 1.5f)
+				//if (abcSequencer.isRunning()) {
+					//float delta = abcPreviewTempoFactor / abcSequencer.getTempoFactor();
+					//if (Math.max(delta, 1 / delta) > 1.5f)
 						refreshPreviewSequence(false);
-				}
+				//}
 			} else {
 				abcSequencer.setTempoFactor(1.0f);
 			}
@@ -635,10 +635,10 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			if (abcSong != null)
 				abcSong.setTimeSignature((TimeSignature) timeSignatureField.getValue());
 
-			if (abcSequencer.isRunning()) {
+			//if (abcSequencer.isRunning()) {
 				// Breaking up of long notes can depend on time signature for bar lines.
 				refreshPreviewSequence(false);
-			}
+			//}
 		});
 		timeSignatureField.addActionListener(e -> {
 			// This is for when pressing enter on an illegal time signature
@@ -672,7 +672,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			if (abcSong != null)
 				abcSong.setTripletTiming(tripletCheckBox.isSelected());
 
-			if (abcSequencer.isRunning())
+			//if (abcSequencer.isRunning())
 				refreshPreviewSequence(false);
 		});
 
@@ -685,7 +685,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			if (abcSong != null)
 				abcSong.setMixTiming(mixCheckBox.isSelected());
 
-			if (abcSequencer.isRunning())
+			//if (abcSequencer.isRunning())
 				refreshPreviewSequence(false);
 		});
 
@@ -697,7 +697,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			if (abcSong != null)
 				abcSong.setPriorityActive(prioCheckBox.isSelected());
 
-			if (abcSequencer.isRunning())
+			//if (abcSequencer.isRunning())
 				refreshPreviewSequence(false);
 		});
 
@@ -901,8 +901,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		boolean running = !curSequencer.isRunning();
 
-		if (abcPreviewMode && running) {
-			if (!refreshPreviewSequence(true))
+		if (abcPreviewMode) {
+			if (!refreshPreviewSequence(true) && running)
 				running = false;
 		}
 
@@ -1673,10 +1673,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		setAbcSongModified(true);
 
-		if (e.isAbcPreviewRelated() && abcSequencer.isRunning())
+		if (e.isAbcPreviewRelated()) {
 			refreshPreviewSequence(false);
-		else if (e.isAbcPreviewRelated() && abcPreviewMode)
-			refreshPreviewSequence(false);
+		}
 
 		if (e.isAbcPreviewRelated() && partPanel != null) {
 			partPanel.repaint();
@@ -1716,10 +1715,10 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		case TEMPO_FACTOR:
 			if (getTempo() != abcSong.getTempoBPM())
 				tempoSpinner.setValue(abcSong.getTempoBPM());
-			if (abcSequencer.isRunning())
+			//if (abcSequencer.isRunning())
 				refreshPreviewSequence(false);
-			else if (abcPreviewMode)
-				refreshPreviewSequence(false);
+			//else if (abcPreviewMode)
+			//	refreshPreviewSequence(false);
 			break;
 		case TRANSPOSE:
 			if (getTranspose() != abcSong.getTranspose())
@@ -2172,6 +2171,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 					SequencerWrapper oldSequencer = abcPreviewMode ? abcSequencer : sequencer;
 					oldSequencer.stop();
 				}
+			} else {
+				// for histogram
+				refreshPreviewSequence(false);
 			}
 
 			midiPositionLabel.setVisible(!newAbcPreviewMode);
