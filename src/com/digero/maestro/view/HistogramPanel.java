@@ -143,19 +143,19 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 		return abcPreviewMode;
 	}
 
-	private int lastRenderedNotes = -1;
-
 	private void updateCountLabel() {
-		int notes = PolyphonyHistogram.get(sequencer.getThumbPosition());
-		if (notes != lastRenderedNotes) {
-			currentCountLabel.setText(notes + " notes (Peak: " + PolyphonyHistogram.max() + ")");
-			lastRenderedNotes = notes;
+		if (!abcSequencer.isRunning()) {
+			currentCountLabel.setText("ABC preview stopped");
+			return;
 		}
+		int notes = PolyphonyHistogram.get(sequencer.getThumbPosition());
+		currentCountLabel.setText(notes + " notes (Peak: " + PolyphonyHistogram.max() + ")");
 	}
 
 	private Listener<SequencerEvent> sequencerListener = e -> {
-		if (e.getProperty().isInMask(SequencerProperty.THUMB_POSITION_MASK))
+		//if (e.getProperty().isInMask(SequencerProperty.THUMB_POSITION_MASK)) {
 			updateCountLabel();
+		//}
 
 		if (e.getProperty() == SequencerProperty.IS_RUNNING)
 			histoGraph.repaint();
@@ -212,6 +212,10 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 
 		@Override
 		protected List<NoteEvent> getEvents() {
+			if (!abcSequencer.isRunning()) {
+				// Do not show notes when abc preview is not running, as its not reliable.
+				return new ArrayList<>();
+			}
 			if (PolyphonyHistogram.isDirty() || events.size() == 0)
 				recalcPolyphonyEvents();
 			return events;
