@@ -144,6 +144,11 @@ public class PolyphonyHistogram {
 		return dirty;
 	}
 
+	/**
+	 * Peak notes during song
+	 * 
+	 * @return peak
+	 */
 	public static int max() {
 		return max;
 	}
