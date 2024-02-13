@@ -18,7 +18,7 @@ public class PolyphonyHistogram {
 	private static TreeMap<Long, Integer> sum = new TreeMap<>();
 	private static boolean dirty = false;
 	private static int max = 0;
-	public static boolean enabled = false;// set to true to enable this system, set to false to save cpu power.
+	public static boolean enabled = true;// set to true to enable this system, set to false to save cpu power.
 
 	/**
 	 * Called from AbcExporter.java
@@ -47,6 +47,8 @@ public class PolyphonyHistogram {
 				long dura = (long) (1000000L * seconds);
 				end = start + dura;
 			}
+			if (end == start) continue;
+			
 			Integer oldStart = partMap.get(start);
 			if (oldStart == null) {
 				oldStart = 0;
@@ -59,6 +61,8 @@ public class PolyphonyHistogram {
 			}
 			oldEnd -= 1;
 			partMap.put(end, oldEnd);
+			
+			assert end - start > 0L;
 		}
 		histogramData.put(part, partMap);
 		dirty = true;
