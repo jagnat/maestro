@@ -460,6 +460,11 @@ public class AbcExporter {
 				List<Chord> chords = combineAndQuantize(part, false, exportStartTick, exportEndTick);
 				chordsMade.put(part, chords);
 			} else {
+				try {
+					PolyphonyHistogram.count(part, new ArrayList<>());
+				} catch (IOException e) {
+					throw new AbcConversionException("Failed to read instrument sample durations.", e);
+				}
 				chordsMade.put(part, null);
 			}
 		}
@@ -1189,8 +1194,14 @@ public class AbcExporter {
 			}
 		}
 
-		if (events.isEmpty())
+		if (events.isEmpty()) {
+			try {
+				PolyphonyHistogram.count(part, events);
+			} catch (IOException e) {
+				throw new AbcConversionException("Failed to read instrument sample durations.", e);
+			}
 			return Collections.emptyList();
+		}
 
 		Collections.sort(events);
 
