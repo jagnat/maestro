@@ -76,6 +76,15 @@ public class LotroInstrumentSampleDuration {
 				db.put(instr, instrMap);
 			}
 			instrMap.put(note, dura);
+			if (instr.equals(LotroInstrument.BASIC_FIDDLE.friendlyName) && note > 42) {
+				// Student fiddle need the basic fiddle notes also above 42.
+				Map<Integer, Double> instrMap2 = db.get(LotroInstrument.STUDENT_FIDDLE.friendlyName);
+				if (instrMap2 == null) {
+					instrMap2 = new HashMap<>();
+					db.put(LotroInstrument.STUDENT_FIDDLE.friendlyName, instrMap2);
+				}
+				instrMap2.put(note, dura);
+			}
 			line = theFileReader.readLine();
 		}
 	}
