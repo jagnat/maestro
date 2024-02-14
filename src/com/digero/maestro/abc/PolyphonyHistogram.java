@@ -111,7 +111,6 @@ public class PolyphonyHistogram {
 			}
 		}
 		assert polyphony == 0;
-		dirty = false;
 	}
 	
 	/**
@@ -155,5 +154,9 @@ public class PolyphonyHistogram {
 	 */
 	public static int max() {
 		return max;
+	}
+
+	public static void setClean() {
+		dirty = false;
 	}
 }

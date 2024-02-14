@@ -144,7 +144,10 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 	}
 
 	private void updateCountLabel() {
-		int notes = PolyphonyHistogram.get(sequencer.getThumbPosition());
+		if (PolyphonyHistogram.isDirty()) {
+			PolyphonyHistogram.sumUp(abcSong);
+		}
+		int notes = PolyphonyHistogram.get(sequencer.getThumbPosition());//TODO: Why midi seq here instead of abcseq.?
 		currentCountLabel.setText(notes + " notes (Peak: " + PolyphonyHistogram.max() + ")");
 	}
 
@@ -153,7 +156,7 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 			updateCountLabel();
 		//}
 
-		if (e.getProperty() == SequencerProperty.IS_RUNNING)
+		//if (e.getProperty() == SequencerProperty.IS_RUNNING)
 			histoGraph.repaint();
 	};
 
@@ -176,6 +179,7 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 			Entry<Long, Integer> prevEvent = null;
 			
 			PolyphonyHistogram.sumUp(abcSong);
+			PolyphonyHistogram.setClean();
 
 			SequenceDataCache dataCache = sequenceInfo.getDataCache();
 			for (Entry<Long, Integer> event : PolyphonyHistogram.getAll()) {
