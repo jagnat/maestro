@@ -152,12 +152,12 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 	}
 
 	private Listener<SequencerEvent> sequencerListener = e -> {
-		//if (e.getProperty().isInMask(SequencerProperty.THUMB_POSITION_MASK)) {
-			updateCountLabel();
-		//}
-
 		//if (e.getProperty() == SequencerProperty.IS_RUNNING)
 			histoGraph.repaint();
+		
+		//if (e.getProperty().isInMask(SequencerProperty.THUMB_POSITION_MASK)) {
+			updateCountLabel();
+		//}		
 	};
 
 	public class HistogramNoteGraph extends NoteGraph {
