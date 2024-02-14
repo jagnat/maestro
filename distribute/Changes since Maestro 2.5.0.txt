@@ -45,6 +45,9 @@ Thanks to all who gave feedback of features, bugs plus suggestions.
 
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
+Version 3.1.4
+- Fix for histogram getting glitchy.
+- Fix for Student's FX Fiddle stopped working.
 
 Version 3.1.2
 - Added a histogram of note count polyphony. Is more accurate than the note count indicator was.
