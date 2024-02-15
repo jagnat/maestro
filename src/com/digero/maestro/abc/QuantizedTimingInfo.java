@@ -544,23 +544,35 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 
 	/**
 	 * Microseconds to tick. Does take export tempo change into consideration. Returns micros in the ABC song.
+	 * TODO: Should be division, not multiplication?
 	 */
 	public long tickToMicrosABC(long tick) {
 		TimingInfoEvent e = getTimingEventForTick(tick);
 		return (long) ((e.micros
 				+ MidiUtils.ticks2microsec(tick - e.tick, e.info.getTempoMPQ(), e.info.getResolutionPPQ()))
-				* getExportTempoFactor());
+				/ getExportTempoFactor());
+	}
+	
+	/**
+	 * Microseconds to tick. Does take export tempo change into consideration. Returns micros in the ABC song.
+	 * Used only by PolyphonyHistogram
+	 */
+	public long tickToMicrosABC(long tick, AbcPart part) {
+		TimingInfoEvent e = getTimingEventForTick(tick, part);
+		return (long) ((e.micros
+				+ MidiUtils.ticks2microsec(tick - e.tick, e.info.getTempoMPQ(), e.info.getResolutionPPQ()))
+				/ getExportTempoFactor());
 	}
 
 	/**
 	 * Tick to microseconds. Does take export tempo change into consideration. The micro is in the ABC song.
 	 */
 	public long microsToTickABC(long micros) {
-		micros = (long) (micros / getExportTempoFactor());
+		micros = (long) (micros * getExportTempoFactor());
 		TimingInfoEvent e = getTimingEventForMicros(micros);
 		return e.tick + MidiUtils.microsec2ticks(micros - e.micros, e.info.getTempoMPQ(), e.info.getResolutionPPQ());
 	}
-
+	
 	@Override
 	public int tickToBarNumber(long tick) {
 		TimingInfoEvent e = getTimingEventForTick(tick);

@@ -22,6 +22,7 @@ import com.digero.common.util.Listener;
 import com.digero.common.view.ColorTable;
 import com.digero.maestro.abc.AbcSong;
 import com.digero.maestro.abc.PolyphonyHistogram;
+import com.digero.maestro.abc.QuantizedTimingInfo;
 import com.digero.maestro.midi.NoteEvent;
 import com.digero.maestro.midi.SequenceDataCache;
 import com.digero.maestro.midi.SequenceInfo;
@@ -152,6 +153,8 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 	}
 
 	private Listener<SequencerEvent> sequencerListener = e -> {
+		// TODO: Should this listen only to abcSequencer? Consider carefully
+		
 		//if (e.getProperty() == SequencerProperty.IS_RUNNING)
 			histoGraph.repaint();
 		
@@ -165,7 +168,7 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 
 		public HistogramNoteGraph(SequenceInfo sequenceInfo, SequencerWrapper sequencer) {
 			super(sequencer, sequenceInfo, null, 0, CLIP_MAX_NOTES, 1, 2);
-				
+			
 			setOctaveLinesVisible(false);
 			setNoteColor(ColorTable.NOTE_POLYPHONY);
 			setNoteOnColor(ColorTable.NOTE_POLYPHONY_ON);
@@ -176,6 +179,8 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 		private void recalcPolyphonyEvents() {
 			// Make fake note events for every count event
 			events = new ArrayList<>();
+			if (abcSong.getQTM() == null) return;
+			
 			Entry<Long, Integer> prevEvent = null;
 			
 			PolyphonyHistogram.sumUp(abcSong);
@@ -185,7 +190,7 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 			for (Entry<Long, Integer> event : PolyphonyHistogram.getAll()) {
 				if (prevEvent != null) {
 					int id = Math.min(CLIP_MAX_NOTES,prevEvent.getValue());
-					events.add(new NoteEvent(Note.fromId(id), 127, dataCache.microsToTick(prevEvent.getKey()), dataCache.microsToTick(event.getKey()), dataCache));
+					events.add(new NoteEvent(Note.fromId(id), 127, abcSong.getQTM().microsToTickABC(prevEvent.getKey()), abcSong.getQTM().microsToTickABC(event.getKey()), dataCache));
 				}
 				prevEvent = event;
 			}
@@ -193,7 +198,7 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 			if (prevEvent != null) {
 				int id = Math.min(CLIP_MAX_NOTES,prevEvent.getValue());
 				events.add(
-						new NoteEvent(Note.fromId(id), 127, dataCache.microsToTick(prevEvent.getKey()), dataCache.getSongLengthTicks(), dataCache));
+						new NoteEvent(Note.fromId(id), 127, abcSong.getQTM().microsToTickABC(prevEvent.getKey()), dataCache.getSongLengthTicks(), dataCache));
 			} else {
 				int id = 0;
 				events.add(new NoteEvent(Note.fromId(id), 127, 0, dataCache.getSongLengthTicks(), dataCache));

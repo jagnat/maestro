@@ -1018,6 +1018,10 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	public boolean isUsingOldVelocities() {
 		return usingOldVelocities;
 	}
+	
+	public QuantizedTimingInfo getQTM() {
+		return timingInfo;
+	}
 
 	/*
 	 * public boolean isKept(long tickStart) { SequenceInfo se = getSequenceInfo(); TreeMap<Integer, TuneLine> tree =

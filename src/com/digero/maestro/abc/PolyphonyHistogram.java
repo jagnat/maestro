@@ -10,12 +10,13 @@ import java.util.List;
 import java.util.TreeMap;
 
 import com.digero.common.abc.LotroInstrumentSampleDuration;
+import com.digero.common.midi.ITempoCache;
 import com.digero.common.midi.Note;
 import com.digero.maestro.midi.NoteEvent;
 
 public class PolyphonyHistogram {
 	private static Map<AbcPart, TreeMap<Long, Integer>> histogramData = new HashMap<>();
-	private static TreeMap<Long, Integer> sum = new TreeMap<>();
+	private static TreeMap<Long, Integer> sum = new TreeMap<>();// <micros,numberOfNotes>
 	private static boolean dirty = false;
 	private static int max = 0;
 	public static boolean enabled = true;// set to true to enable this system, set to false to save cpu power.
@@ -34,8 +35,10 @@ public class PolyphonyHistogram {
 			if (event.note.id == Note.REST.id) {
 				continue;
 			}
-			long start = event.getStartMicros() + part.delay*1000;
-			long end = event.getEndMicros() + part.delay*1000;
+			ITempoCache tc = event.getTempoCache();
+			QuantizedTimingInfo qtm = (QuantizedTimingInfo) tc; 
+			long start = qtm.tickToMicrosABC(event.getStartTick(), part) + part.delay*1000;
+			long end   = qtm.tickToMicrosABC(event.getEndTick(), part)   + part.delay*1000;
 			if (part.getInstrument().isSustainable(event.note.id)) {
 				end += 200000L;// 200ms
 			} else {
@@ -90,8 +93,8 @@ public class PolyphonyHistogram {
 			Set<Entry<Long, Integer>> entrySet = partMap.entrySet();
 			
 			for (Entry<Long, Integer> entry : entrySet) {
-				long key = entry.getKey();
-				int value = entry.getValue();
+				long key = entry.getKey();//micros
+				int value = entry.getValue();//number of notes
 				
 				Integer oldValue = songMap.get(key);
 				if (oldValue == null) {
