@@ -1599,6 +1599,11 @@ public class AbcExporter {
 					qtm.microsToTick(
 							ne.getStartMicros() + (long) (TimingInfo.LONGEST_NOTE_MICROS * qtm.getExportTempoFactor())),
 					part);
+			
+			// quantize:            tunedit + mixtimings 
+			// microsToTick:        tunedit + mixtimings
+			// getStartMicros:      tunedit + mixtimings
+			// LONGEST_NOTE_MICROS: tunedit + mixtimings + tempoedit (hence why export tempo factor is applied onto it
 
 			// Make a hard break for notes that are longer than LotRO can play
 			// Bagpipe notes up to B2 can sustain indefinitely; don't break them
