@@ -209,7 +209,7 @@ public class SectionEditor {
 				
 				panel.revalidate();
 				Dimension sz = panel.getPreferredSize();
-				System.out.println("w: " + sz.width + " h: " + sz.height);
+				//System.out.println("w: " + sz.width + " h: " + sz.height);
 
 				for (int j = 0; j < numberOfSections; j++) {
 					SectionEditorLine l = new SectionEditorLine();
