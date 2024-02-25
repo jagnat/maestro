@@ -8,6 +8,7 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.prefs.Preferences;
@@ -1012,8 +1013,10 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		SequenceInfo se = getSequenceInfo();
 		int delta = 0;// volume offset
 		int factor = 100;// current fade-out volume factor
+		int factorTune = 100;// current fade-out volume factor (for tuneeditor)
+		NavigableMap<Integer, TuneLine> tuneMap = abcSong.tuneBars;
 		TreeMap<Integer, PartSection> tree = sections.get(track);
-		if (se != null && tree != null) {
+		if (se != null && (tree != null || tuneMap != null)) {
 			SequenceDataCache data = se.getDataCache();
 			long barLengthTicks = data.getBarLengthTicks();
 
@@ -1031,24 +1034,41 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 				curBar += 1;
 			}
 			if (bar != -1) {
-				Entry<Integer, PartSection> entry = tree.floorEntry(bar);
-				if (entry != null) {
-					if (bar <= entry.getValue().endBar) {
-						delta = entry.getValue().volumeStep;
-						if (entry.getValue().fade > 0) {
-							factor = map(ne.getStartTick(), entry.getValue().startBar * barLengthTicks - barLengthTicks,
-									entry.getValue().endBar * barLengthTicks, 100, 100 - entry.getValue().fade);
-						} else if (entry.getValue().fade < 0) {
-							factor = map(ne.getStartTick(), entry.getValue().startBar * barLengthTicks - barLengthTicks,
-									entry.getValue().endBar * barLengthTicks, 100 + entry.getValue().fade, 100);
+				if (tree != null) {
+					Entry<Integer, PartSection> entry = tree.floorEntry(bar);
+					if (entry != null) {
+						if (bar <= entry.getValue().endBar) {
+							delta = entry.getValue().volumeStep;
+							if (entry.getValue().fade > 0) {
+								factor = map(ne.getStartTick(), entry.getValue().startBar * barLengthTicks - barLengthTicks,
+										entry.getValue().endBar * barLengthTicks, 100, 100 - entry.getValue().fade);
+							} else if (entry.getValue().fade < 0) {
+								factor = map(ne.getStartTick(), entry.getValue().startBar * barLengthTicks - barLengthTicks,
+										entry.getValue().endBar * barLengthTicks, 100 + entry.getValue().fade, 100);
+							}
+						}
+					}
+				}
+				if (tuneMap != null) {
+					Entry<Integer, TuneLine> entry = tuneMap.floorEntry(bar);
+					if (entry != null) {
+						if (bar <= entry.getValue().endBar) {
+							if (entry.getValue().fade > 0) {
+								factorTune = map(ne.getStartTick(), entry.getValue().startBar * barLengthTicks - barLengthTicks,
+										entry.getValue().endBar * barLengthTicks, 100, 100 - entry.getValue().fade);
+							} else if (entry.getValue().fade < 0) {
+								factorTune = map(ne.getStartTick(), entry.getValue().startBar * barLengthTicks - barLengthTicks,
+										entry.getValue().endBar * barLengthTicks, 100 + entry.getValue().fade, 100);
+							}
 						}
 					}
 				}
 			}
 		}
-		int[] retur = new int[2];
+		int[] retur = new int[3];
 		retur[0] = delta;
 		retur[1] = factor;
+		retur[2] = factorTune;		
 		return retur;
 	}
 

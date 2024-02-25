@@ -5,6 +5,7 @@ public class TuneLine {
 //	public boolean remove = false;
 	public int dialogLine = -1;
 	public int tempo = 0;
+	public int fade = 0;
 
 	// inclusive:
 	public int startBar = 0;

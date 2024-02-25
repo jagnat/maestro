@@ -1148,7 +1148,7 @@ public class AbcExporter {
 
 						int[] sva = part.getSectionVolumeAdjust(t, ne);
 						int velocity = part.getSectionNoteVelocity(t, ne);
-						velocity = (int) ((velocity + part.getTrackVolumeAdjust(t) + sva[0]) * 0.01f * (float) sva[1]);
+						velocity = (int) ((velocity + part.getTrackVolumeAdjust(t) + sva[0]) * 0.01f * (float) sva[1] * 0.01f * (float) sva[2]);
 
 						NoteEvent newNE = createNoteEvent(ne, mappedNote, velocity, startTick, endTick, qtm);
 						if (!part.isPercussionPart()) {

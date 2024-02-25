@@ -58,7 +58,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	public static final String MSX_FILE_DESCRIPTION_PLURAL = MaestroMain.APP_NAME + " Songs";
 	public static final String MSX_FILE_EXTENSION_NO_DOT = "msx";
 	public static final String MSX_FILE_EXTENSION = "." + MSX_FILE_EXTENSION_NO_DOT;
-	public static final Version SONG_FILE_VERSION = new Version(3, 0, 1, 300);// Keep build above 117 to make earlier
+	public static final Version SONG_FILE_VERSION = new Version(3, 1, 6, 300);// Keep build above 117 to make earlier
 																				// Maestro releases know msx is
 																				// made by newer version.
 
@@ -361,6 +361,10 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 			tl.endBar = SaveUtil.parseValue(tuneEle, "endBar", 0);
 			tl.seminoteStep = SaveUtil.parseValue(tuneEle, "seminoteStep", 0);
 			tl.tempo = SaveUtil.parseValue(tuneEle, "tempoChange", 0);
+			int fade = SaveUtil.parseValue(tuneEle, "fade", 0);
+			if (fade != 0) {
+				tl.fade = fade;
+			}
 			tl.dialogLine = SaveUtil.parseValue(tuneEle, "dialogLine", -1);
 			if (tl.startBar > 0 && tl.endBar >= tl.startBar) {
 				if (tuneBars == null) {
@@ -477,6 +481,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 			SaveUtil.appendChildTextElement(tuneEle, "endBar", String.valueOf(tuneLine.endBar));
 			SaveUtil.appendChildTextElement(tuneEle, "seminoteStep", String.valueOf(tuneLine.seminoteStep));
 			SaveUtil.appendChildTextElement(tuneEle, "tempoChange", String.valueOf(tuneLine.tempo));
+			SaveUtil.appendChildTextElement(tuneEle, "fade", String.valueOf(tuneLine.fade));
 			SaveUtil.appendChildTextElement(tuneEle, "dialogLine", String.valueOf(tuneLine.dialogLine));
 		}
 	}

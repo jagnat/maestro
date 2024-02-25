@@ -45,7 +45,7 @@ public class TuneEditor {
 		@SuppressWarnings("serial")
 		class TuneDialog extends JDialog {
 
-			private final double[] LAYOUT_COLS = new double[] { 0.16, 0.21, 0.21, 0.21, 0.21 };
+			private final double[] LAYOUT_COLS = new double[] { 0.13, 0.17, 0.17, 0.17, 0.17, 0.17 };
 			private double[] LAYOUT_ROWS;
 			private AbcSong abcSong;
 
@@ -133,6 +133,7 @@ public class TuneEditor {
 				panel.add(new JLabel("To bar"), "2, 2, c, c");
 				panel.add(new JLabel("Seminote"), "3, 2, c, c");
 				panel.add(new JLabel("Tempo"), "4, 2, c, c");
+				panel.add(new JLabel("Fade %"), "5, 2, c, c");
 				// panel.add(new JLabel("Remove"), "4, 2, c, c");
 
 				for (int j = 0; j < SectionEditor.numberOfSections; j++) {
@@ -265,6 +266,7 @@ public class TuneEditor {
 				String transpose = "<html><b> Transpose this area some seminotes up or down. </b><br> Enter a positive or negative number. </html>";
 				// String remove = "<html><b> Remove this area. </b></html>";
 				String tempo = "<html><b> Change Tempo. </b></html>";
+				String fade = "<html><b> Fade in/out the volume of this section for all parts. </b><br> 0 = no fading <br> 100 = fade out full <br> -100 = fade in full <br> 150 = fade out before section ends <br> Etc. etc.. </html>";
 
 				for (int i = 0; i < SectionEditor.numberOfSections; i++) {
 					tuneInputs.get(i).tempo.setToolTipText(tempo);
@@ -273,17 +275,20 @@ public class TuneEditor {
 					tuneInputs.get(i).barB.setToolTipText(barB);
 					tuneInputs.get(i).barA.setToolTipText(barA);
 					tuneInputs.get(i).enable.setToolTipText(enable);
+					tuneInputs.get(i).fade.setToolTipText(fade);
 
 					tuneInputs.get(i).barA.setHorizontalAlignment(CENTER);
 					tuneInputs.get(i).barB.setHorizontalAlignment(CENTER);
 					tuneInputs.get(i).transpose.setHorizontalAlignment(CENTER);
 					tuneInputs.get(i).tempo.setHorizontalAlignment(CENTER);
+					tuneInputs.get(i).fade.setHorizontalAlignment(CENTER);
 
 					panel.add(tuneInputs.get(i).enable, "0," + (3 + i) + ",C,C");
 					panel.add(tuneInputs.get(i).barA, "1," + (3 + i) + ",f,f");
 					panel.add(tuneInputs.get(i).barB, "2," + (3 + i) + ",f,f");
 					panel.add(tuneInputs.get(i).transpose, "3," + (3 + i) + ",f,f");
 					panel.add(tuneInputs.get(i).tempo, "4," + (3 + i) + ",f,f");
+					panel.add(tuneInputs.get(i).fade, "5," + (3 + i) + ",f,f");
 					// panel.add(tuneInputs.get(i).remove, "5,"+(3+i)+",c,f");
 				}
 			}
@@ -305,6 +310,7 @@ public class TuneEditor {
 							ps.startBar = Integer.parseInt(tuneInputs.get(k).barA.getText());
 							ps.endBar = Integer.parseInt(tuneInputs.get(k).barB.getText());
 							ps.tempo = Integer.parseInt(tuneInputs.get(k).tempo.getText());
+							ps.fade = Integer.parseInt(tuneInputs.get(k).fade.getText());
 							// ps.remove = tuneInputs.get(k).remove.isSelected();
 							lastEnd = checkForNewLastEnd(tm, lastEnd, k, ps, soFarSoGood(tm, ps));
 						} catch (NumberFormatException nfe) {
@@ -348,6 +354,7 @@ public class TuneEditor {
 						tuneInputs.get(number).barB.setText(String.valueOf(ps.endBar));
 						tuneInputs.get(number).transpose.setText(String.valueOf(ps.seminoteStep));
 						tuneInputs.get(number).tempo.setText(String.valueOf(ps.tempo));
+						tuneInputs.get(number).fade.setText(String.valueOf(ps.fade));
 						// tuneInputs.get(number).remove.setSelected(ps.remove);
 					}
 					number++;
