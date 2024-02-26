@@ -45,8 +45,12 @@ Thanks to all who gave feedback of features, bugs plus suggestions.
 
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
+Version 3.1.7
+- Fixed exporting to ABC would change histogram
+- Fixed delays were accounted for twice when making histogram
+
 Version 3.1.6
-- Added fade-in and fade-out to tune-editor to allow fading all parts at together.
+- Added fade-in and fade-out to tune-editor to allow fading all parts together.
 
 Version 3.1.5
 - Fix for histogram getting glitchy.
