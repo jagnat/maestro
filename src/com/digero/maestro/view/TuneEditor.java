@@ -45,7 +45,7 @@ public class TuneEditor {
 		@SuppressWarnings("serial")
 		class TuneDialog extends JDialog {
 
-			private final double[] LAYOUT_COLS = new double[] { 0.15, 0.17, 0.17, 0.17, 0.17, 0.17 };
+			private final double[] LAYOUT_COLS = new double[] { 0.10, 0.18, 0.18, 0.18, 0.18, 0.18 };
 			private double[] LAYOUT_ROWS;
 			private AbcSong abcSong;
 
