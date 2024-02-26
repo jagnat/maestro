@@ -1194,7 +1194,7 @@ public class AbcExporter {
 			}
 		}
 
-		if (events.isEmpty()) {
+		if (events.isEmpty() && !addTies) {
 			try {
 				PolyphonyHistogram.count(part, events);
 			} catch (IOException e) {
@@ -1330,10 +1330,12 @@ public class AbcExporter {
 		List<Chord> chords = new ArrayList<>(events.size() / 2);
 		List<NoteEvent> tmpEvents = new ArrayList<>();
 		
-		try {
-			PolyphonyHistogram.count(part, events);
-		} catch (IOException e) {
-			throw new AbcConversionException("Failed to read instrument sample durations.", e);
+		if (!addTies) {
+			try {
+				PolyphonyHistogram.count(part, events);
+			} catch (IOException e) {
+				throw new AbcConversionException("Failed to read instrument sample durations.", e);
+			}
 		}
 		
 		// Combine notes that play at the same time into chords
