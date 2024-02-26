@@ -37,8 +37,8 @@ public class PolyphonyHistogram {
 			}
 			ITempoCache tc = event.getTempoCache();
 			QuantizedTimingInfo qtm = (QuantizedTimingInfo) tc; 
-			long start = qtm.tickToMicrosABC(event.getStartTick(), part) + part.delay*1000;
-			long end   = qtm.tickToMicrosABC(event.getEndTick(), part)   + part.delay*1000;
+			long start = qtm.tickToMicrosABC(event.getStartTick(), part);// delay is already in the start/end tick at this point 
+			long end   = qtm.tickToMicrosABC(event.getEndTick(), part);
 			if (part.getInstrument().isSustainable(event.note.id)) {
 				end += 200000L;// 200ms
 			} else {
