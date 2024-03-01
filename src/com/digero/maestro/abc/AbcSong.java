@@ -322,6 +322,11 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 
 	private void tryToLoadFromFile(FileResolver fileResolver, boolean isAbc, MiscSettings miscSettings) {
 		try {
+			File sourceInCurrentDir = new File(saveFile.getParentFile(), sourceFile.getName());
+			if (!sourceFile.exists() && sourceInCurrentDir.exists()) {
+				sourceFile = sourceInCurrentDir;
+			}
+			
 			if (isAbc) {
 				AbcInfo abcInfo = new AbcInfo();
 
