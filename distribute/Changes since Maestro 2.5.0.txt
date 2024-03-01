@@ -45,6 +45,14 @@ Thanks to all who gave feedback of features, bugs plus suggestions.
 
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
+
+Version 3.1.9
+- Tweaked histogram colors. Green is for polyphony count under 45 notes, yellow is 45 to 64, and red is 64+.
+- Added horizontal lines to histogram to show where the two color thresholds are.
+
+Version 3.1.8
+- Shrink abctools icon to mitigate antivirus false positive
+
 Version 3.1.7
 - Fixed exporting to ABC would change histogram
 - Fixed delays were accounted for twice when making histogram

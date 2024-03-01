@@ -3,6 +3,7 @@ package com.digero.maestro.view;
 import info.clearthought.layout.TableLayout;
 import info.clearthought.layout.TableLayoutConstants;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.util.ArrayList;
@@ -42,8 +43,9 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 	static final int COUNT_COLUMN = 2;
 	static final int GRAPH_COLUMN = 3;
 	
-	static final int CLIP_MAX_NOTES = 70;// Show from 0 to 70 notes
-	static final int ORANGE_NOTES   = 45;// Over or equal to 45 and they go orange color. The limit is 64, but emotes and dances also fill.
+	public static final int CLIP_MAX_NOTES = 80;// Show from 0 to 80 notes
+	public static final int ORANGE_NOTES   = 45;// Over or equal to 45 and they go orange color. The limit is 64, but emotes and dances also fill.
+	public static final int RED_NOTES      = 64;//Over or equal to 64, notes become red.
 	static final int EXTRA_COUNT_COLUMN_WIDTH = 50;
 	static final int HISTOGRAM_HEIGHT = 64;
 
@@ -170,7 +172,10 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 			super(sequencer, sequenceInfo, null, 0, CLIP_MAX_NOTES, 1, 2);
 			
 			setOctaveLinesVisible(false);
+			setHistogramThresholdLinesVisible(true);
 			setNoteColor(ColorTable.NOTE_POLYPHONY);
+			setBadNoteColor(ColorTable.NOTE_POLYPHONY_WARNING);
+			setExtraBadNoteColor(ColorTable.NOTE_POLYPHONY_OVER);
 			setNoteOnColor(ColorTable.NOTE_POLYPHONY_ON);
 			setNoteOnExtraHeightPix(0);
 			setNoteOnOutlineWidthPix(0);
@@ -208,6 +213,11 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 		@Override
 		protected boolean isNotePlayable(NoteEvent ne, int addition) {
 			return ne.note.id < ORANGE_NOTES;
+		}
+		
+		@Override
+		protected boolean isNoteExtraBad(NoteEvent ne, int addition) {
+			return ne.note.id >= RED_NOTES;
 		}
 		
 		@Override
