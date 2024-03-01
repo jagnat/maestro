@@ -101,7 +101,7 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 
 		currentCountLabel = new JLabel();
 		currentCountLabel.setForeground(ColorTable.PANEL_TEXT_DISABLED.get());
-		currentCountLabel.setToolTipText("Number of concurrent playing notes.\nThis is useful due to lotro limitation of 64 sounds.\nIncluded in those 64 is dance footsteps and emotes.");
+		currentCountLabel.setToolTipText("Number of concurrent playing notes.\nThis is useful due to lotro's limitation of 64 sounds, including dance footsteps and emotes.\nGreen sections have under 45 notes at once, and shouldn't have note loss.\nYellow sections have 45+ notes, and red sections have 64+ notes.");
 		updateCountLabel();
 
 		add(gutter, GUTTER_COLUMN + ", 0");
