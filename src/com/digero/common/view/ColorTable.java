@@ -68,8 +68,10 @@ public enum ColorTable
 	BAR_EDITED(new Color(0,32,0)),
 	BAR_LINE_EDITED(new Color(30,75,30)),
 	
-	NOTE_POLYPHONY       (new Color(150,190,20)),
-	NOTE_POLYPHONY_ON    (new Color(0xF2F2F2));
+	NOTE_POLYPHONY         (new Color(150,190,20)),
+	NOTE_POLYPHONY_ON      (new Color(0xF2F2F2)),
+	NOTE_POLYPHONY_WARNING (new Color(0xFECE19)),
+	NOTE_POLYPHONY_OVER    (Color.getHSBColor(0f, 1.00f, 1.00f));
 	//NOTE_PRUNED (new Color(1f,1f,0f));
 
 	private Color value;

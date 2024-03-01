@@ -68,8 +68,10 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 	private ColorTable badNoteColor = ColorTable.NOTE_BAD_ENABLED;
 	private ColorTable noteOnColor = ColorTable.NOTE_ON;
 	private ColorTable noteOnBorder = ColorTable.NOTE_ON_BORDER;
+	private ColorTable extraBadNoteColor = ColorTable.NOTE_BAD_ENABLED;
 
 	private boolean octaveLinesVisible = false;
+	private boolean histogramThresholdLinesVisible = false;
 
 	private Color[] noteColorByDynamics = new Color[Dynamics.values().length];
 	private Color[] badNoteColorByDynamics = new Color[Dynamics.values().length];
@@ -153,6 +155,10 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 	protected boolean isNotePlayable(NoteEvent ne, int addition) {
 		return true;
 	}
+	
+	protected boolean isNoteExtraBad(NoteEvent ne, int addition) {
+		return false;
+	}
 
 	protected boolean isNoteVisible(NoteEvent ne) {
 		return true;
@@ -168,6 +174,17 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 	public boolean isOctaveLinesVisible() {
 		return octaveLinesVisible;
 	}
+	
+	public void setHistogramThresholdLinesVisible(boolean histogramThresholdLinesVisible) {
+		if (this.histogramThresholdLinesVisible != histogramThresholdLinesVisible) {
+			this.histogramThresholdLinesVisible = histogramThresholdLinesVisible;
+			repaint();
+		}
+	}
+	
+	public boolean isHistogramThresholdLinesVisible() {
+		return histogramThresholdLinesVisible;
+	}
 
 	public final void setNoteColor(ColorTable noteColor) {
 		if (this.noteColor != noteColor) {
@@ -181,6 +198,13 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 		if (this.badNoteColor != badNoteColor) {
 			this.badNoteColor = badNoteColor;
 			Arrays.fill(badNoteColorByDynamics, null);
+			repaint();
+		}
+	}
+	
+	public final void setExtraBadNoteColor(ColorTable extraBadNoteColor) {
+		if (this.extraBadNoteColor != extraBadNoteColor) {
+			this.extraBadNoteColor = extraBadNoteColor;
 			repaint();
 		}
 	}
@@ -463,6 +487,9 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 	private BitSet notesBad1 = null;
 	private BitSet notesBad2 = null;
 	private BitSet notesBad3 = null;
+	
+	// For histogram panel - "extra bad" "notes" (> 64 polyphony)
+	private BitSet notesExtraBad = null;
 
 	private static float[] hsb;
 
@@ -502,6 +529,11 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 
 	Color getBadNoteColor(NoteEvent ne) {
 		return getNoteColorEx(ne, badNoteColor.get(), badNoteColorByDynamics);
+	}
+	
+	// Used only for histogram
+	Color getExtraBadNoteColor(NoteEvent ne) {
+		return extraBadNoteColor.get();
 	}
 
 	@Override
@@ -590,6 +622,20 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 				rectTmp.setRect(0, barOctave * 12, sequencer.getLength(), lineHeight);
 				g2.fill(rectTmp);
 			}
+		} else if (histogramThresholdLinesVisible) {
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
+
+			int minBarOctave = MIN_RENDERED / 12 + 1;
+			int maxBarOctave = MAX_RENDERED / 12 - 1;
+			double lineHeight = Math.abs(1 / xform.getScaleY());
+			g2.setColor(ColorTable.OCTAVE_LINE.get());
+
+			double y1 = Util.clamp(HistogramPanel.ORANGE_NOTES, MIN_RENDERED, MAX_RENDERED);
+			double y2 = Util.clamp(HistogramPanel.RED_NOTES, MIN_RENDERED, MAX_RENDERED);
+			rectTmp.setRect(0, y1, sequencer.getLength(), lineHeight);
+			g2.fill(rectTmp);
+			rectTmp.setRect(0, y2, sequencer.getLength(), lineHeight);
+			g2.fill(rectTmp);
 		}
 
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
@@ -622,6 +668,8 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 			notesBad2.clear();
 		if (notesBad3 != null)
 			notesBad3.clear();
+		if (notesExtraBad != null)
+			notesExtraBad.clear();
 
 		if (!isShowingNoteVelocity()) {
 			// Normal rendering
@@ -645,6 +693,10 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 						if (notesOn == null)
 							notesOn = new BitSet(noteEvents.size());
 						notesOn.set(i);
+					} else if (isNoteExtraBad(ne, 0)) {
+						if (notesExtraBad == null)
+							notesExtraBad = new BitSet(noteEvents.size());
+						notesExtraBad.set(i);
 					} else if (!isNotePlayable(ne, 0)) {
 						if (notesBad == null)
 							notesBad = new BitSet(noteEvents.size());
@@ -708,6 +760,14 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 				for (int i = notesBad.nextSetBit(0); i >= 0; i = notesBad.nextSetBit(i + 1)) {
 					NoteEvent ne = noteEvents.get(i);
 					g2.setColor(getBadNoteColor(ne));
+					int noteId = transposeNote(ne.note.id, ne.getStartTick());
+					fillNote(g2, ne, noteId, minLength, height);
+				}
+			}
+			if (notesExtraBad != null) {
+				for (int i = notesExtraBad.nextSetBit(0); i >= 0; i = notesExtraBad.nextSetBit(i + 1)) {
+					NoteEvent ne = noteEvents.get(i);
+					g2.setColor(getExtraBadNoteColor(ne));
 					int noteId = transposeNote(ne.note.id, ne.getStartTick());
 					fillNote(g2, ne, noteId, minLength, height);
 				}
