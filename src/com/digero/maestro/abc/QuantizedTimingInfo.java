@@ -521,7 +521,15 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 
 	public long quantize(long tick, AbcPart part) {
 		TimingInfoEvent e = getTimingEventForTick(tick, part);
-		return e.tick + Util.roundGrid(tick - e.tick, e.info.getMinNoteLengthTicks());
+		long quan = e.tick + Util.roundGrid(tick - e.tick, e.info.getMinNoteLengthTicks());
+		TimingInfoEvent e2 = getTimingEventForTick(quan, part);
+		if (e2 != e) {
+			// Was quantized into next tempo/mix-timing region, so we use that instead.
+			long quan2 = e2.tick + Util.roundGrid(quan - e2.tick, e2.info.getMinNoteLengthTicks());
+			if (quan2 != quan) System.out.println("Special quantization applied.");
+			return quan2;
+		}
+		return quan;
 	}
 
 	/**
