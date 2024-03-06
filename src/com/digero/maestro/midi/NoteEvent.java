@@ -158,14 +158,18 @@ public class NoteEvent implements Comparable<NoteEvent> {
 		if (obj instanceof NoteEvent) {
 			NoteEvent that = (NoteEvent) obj;
 			return (this.startTick == that.startTick) && (this.endTick == that.endTick)
-					&& (this.note.id == that.note.id);
+					&& (this.note.id == that.note.id) && this.velocity == that.velocity
+					&& ((this.tiesFrom == null && that.tiesFrom == null) || (this.tiesFrom != null && that.tiesFrom != null))
+					&& ((this.tiesTo == null && that.tiesTo == null) || (this.tiesTo != null && that.tiesTo != null))
+					&& this.tempoCache == that.getTempoCache()
+					&& this.midiPan == that.midiPan;
 		}
 		return false;
 	}
 
 	@Override
 	public int hashCode() {
-		return ((int) startTick) ^ ((int) endTick) ^ note.id;
+		return ((int) startTick) ^ ((int) endTick) ^ note.id ^ (velocity+1) ^ (midiPan+1);
 	}
 
 	@Override
