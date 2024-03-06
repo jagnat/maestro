@@ -3,7 +3,6 @@ package com.digero.maestro.view;
 import info.clearthought.layout.TableLayout;
 import info.clearthought.layout.TableLayoutConstants;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.util.ArrayList;
@@ -16,14 +15,12 @@ import javax.swing.JPanel;
 
 import com.digero.common.midi.Note;
 import com.digero.common.midi.SequencerEvent;
-import com.digero.common.midi.SequencerEvent.SequencerProperty;
 import com.digero.common.midi.SequencerWrapper;
 import com.digero.common.util.IDiscardable;
 import com.digero.common.util.Listener;
 import com.digero.common.view.ColorTable;
 import com.digero.maestro.abc.AbcSong;
 import com.digero.maestro.abc.PolyphonyHistogram;
-import com.digero.maestro.abc.QuantizedTimingInfo;
 import com.digero.maestro.midi.NoteEvent;
 import com.digero.maestro.midi.SequenceDataCache;
 import com.digero.maestro.midi.SequenceInfo;
