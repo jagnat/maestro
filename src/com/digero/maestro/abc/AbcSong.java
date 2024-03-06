@@ -79,6 +79,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	private int mixVersion = 2;// TODO: make UI?
 	private boolean priorityActive = false;
 	private boolean skipSilenceAtStart = true;
+	private boolean deleteMinimalNotes = false;
 	// private boolean showPruned = false;
 	public NavigableMap<Integer, TuneLine> tuneBars = null;
 	public boolean[] tuneBarsModified = null;
@@ -739,6 +740,17 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 			fireChangeEvent(AbcSongProperty.SKIP_SILENCE_AT_START);
 		}
 	}
+	
+	public boolean isDeleteMinimalNotes() {
+		return deleteMinimalNotes;
+	}
+
+	public void setDeleteMinimalNotes(boolean deleteMinimalNotes) {
+		if (this.deleteMinimalNotes != deleteMinimalNotes) {
+			this.deleteMinimalNotes = deleteMinimalNotes;
+			fireChangeEvent(AbcSongProperty.DELETE_MINIMAL_NOTES);
+		}
+	}
 
 	/*
 	 * public void setShowPruned(boolean showPruned) { if (this.showPruned != showPruned) { this.showPruned =
@@ -888,6 +900,9 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		if (abcExporter.isSkipSilenceAtStart() != skipSilenceAtStart)
 			abcExporter.setSkipSilenceAtStart(skipSilenceAtStart);
 
+		if (abcExporter.isDeleteMinimalNotes() != deleteMinimalNotes)
+			abcExporter.setDeleteMinimalNotes(deleteMinimalNotes);
+		
 		// if (abcExporter.isShowPruned() != showPruned)
 		// abcExporter.setShowPruned(showPruned);
 

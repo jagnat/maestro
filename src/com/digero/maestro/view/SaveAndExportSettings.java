@@ -7,6 +7,7 @@ public class SaveAndExportSettings {
 	public boolean promptSaveNewSong = true;
 	public boolean showExportFileChooser = false;
 	public boolean skipSilenceAtStart = true;
+	public boolean deleteMinimalNotes = false;
 	// public boolean showPruned = false;
 	public boolean convertABCStringsToBasicAscii = true;
 
@@ -17,6 +18,7 @@ public class SaveAndExportSettings {
 		promptSaveNewSong = prefs.getBoolean("promptSaveNewSong", promptSaveNewSong);
 		showExportFileChooser = prefs.getBoolean("showExportFileChooser", showExportFileChooser);
 		skipSilenceAtStart = prefs.getBoolean("skipSilenceAtStart", skipSilenceAtStart);
+		deleteMinimalNotes = prefs.getBoolean("deleteMinimalNotes", deleteMinimalNotes);		
 		// showPruned = prefs.getBoolean("showPruned", showPruned);
 		convertABCStringsToBasicAscii = prefs.getBoolean("convertABCStringsToBasicAscii",
 				convertABCStringsToBasicAscii);
@@ -31,6 +33,7 @@ public class SaveAndExportSettings {
 		promptSaveNewSong = that.promptSaveNewSong;
 		showExportFileChooser = that.showExportFileChooser;
 		skipSilenceAtStart = that.skipSilenceAtStart;
+		deleteMinimalNotes = that.deleteMinimalNotes;
 		// showPruned = that.showPruned;
 		convertABCStringsToBasicAscii = that.convertABCStringsToBasicAscii;
 	}
@@ -39,6 +42,7 @@ public class SaveAndExportSettings {
 		prefs.putBoolean("promptSaveNewSong", promptSaveNewSong);
 		prefs.putBoolean("showExportFileChooser", showExportFileChooser);
 		prefs.putBoolean("skipSilenceAtStart", skipSilenceAtStart);
+		prefs.putBoolean("deleteMinimalNotes", deleteMinimalNotes);
 		// prefs.putBoolean("showPruned", showPruned);
 		prefs.putBoolean("convertABCStringsToBasicAscii", convertABCStringsToBasicAscii);
 	}

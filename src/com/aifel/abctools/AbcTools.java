@@ -662,6 +662,7 @@ public class AbcTools {
 			}
 
 			abcSong.setSkipSilenceAtStart(saveSettings.skipSilenceAtStart);
+			abcSong.setDeleteMinimalNotes(saveSettings.deleteMinimalNotes);
 			abcSong.setAllOut(miscSettings.showBadger && miscSettings.allBadger);
 			abcSong.setBadger(miscSettings.showBadger);
 			StringCleaner.cleanABC = saveSettings.convertABCStringsToBasicAscii;

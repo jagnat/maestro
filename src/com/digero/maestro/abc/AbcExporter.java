@@ -53,6 +53,7 @@ public class AbcExporter {
 	private KeySignature keySignature;
 
 	private boolean skipSilenceAtStart;
+	private boolean deleteMinimalNotes;
 	// private boolean showPruned;
 	private long exportStartTick;
 	private long exportEndTick;
@@ -98,6 +99,14 @@ public class AbcExporter {
 
 	public void setSkipSilenceAtStart(boolean skipSilenceAtStart) {
 		this.skipSilenceAtStart = skipSilenceAtStart;
+	}
+	
+	public boolean isDeleteMinimalNotes() {
+		return deleteMinimalNotes;
+	}
+
+	public void setDeleteMinimalNotes(boolean deleteMinimalNotes) {
+		this.deleteMinimalNotes = deleteMinimalNotes;
 	}
 
 	/*
@@ -795,6 +804,8 @@ public class AbcExporter {
 			out.println(AbcField.EXPORT_TIMESTAMP + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
 			out.println(AbcField.SWING_RHYTHM + Boolean.toString(qtm.isTripletTiming()));
 			out.println(AbcField.MIX_TIMINGS + Boolean.toString(qtm.isMixTiming()));
+			out.println(AbcField.SKIP_SILENCE_AT_START + Boolean.toString(skipSilenceAtStart));
+			out.println(AbcField.DELETE_MINIMAL_NOTES + Boolean.toString(deleteMinimalNotes));
 			out.println(AbcField.ABC_VERSION + "2.1");
 			String gnr = StringCleaner.cleanForABC(metadata.getGenre()).toLowerCase().trim();
 			String mood = StringCleaner.cleanForABC(metadata.getMood()).toLowerCase().trim();
@@ -1210,20 +1221,30 @@ public class AbcExporter {
 		NoteEvent lastEvent = null;
 		Iterator<NoteEvent> neIter = events.iterator();
 		List<NoteEvent> extraEvents = new ArrayList<>();
+		int removedToAvoidDissonance = 0;
 		while (neIter.hasNext()) {
 			NoteEvent ne = neIter.next();
 			if (addTies)
 				assert ne.note != Note.REST : "Rest detected!";
-			ne.setStartTick(qtm.quantize(ne.getStartTick(), part));
-			long ending = qtm.quantize(ne.getEndTick(), part);
-			ne.setEndTick(ending);
+			long oldDura = ne.getLengthTicks();
+			long newStart = qtm.quantize(ne.getStartTick(), part);
+			long newEnding = qtm.quantize(ne.getEndTick(), part);
+			
+			ne.setStartTick(newStart);
+			ne.setEndTick(newEnding);
 
 			// Make sure the note didn't get quantized to zero length
 			if (ne.getLengthTicks() == 0) {
-				if (ne.note == Note.REST)
+				if (ne.note == Note.REST) {
 					neIter.remove();
-				else
+					continue;
+				} else if (deleteMinimalNotes && !part.getInstrument().isPercussion) {
+					neIter.remove();
+					removedToAvoidDissonance++;
+					continue;
+				} else {
 					ne.setLengthTicks(qtm.getTimingInfo(ne.getStartTick(), part).getMinNoteLengthTicks());
+				}
 			}
 
 			List<NoteEvent> bentNotes = quantizePitchBends(part, ne);
@@ -1256,6 +1277,10 @@ public class AbcExporter {
 					lastEvent = ne;
 				}
 			}
+		}
+		
+		if (removedToAvoidDissonance > 0) {
+			System.out.println("Removed "+removedToAvoidDissonance+"/"+events.size()+" notes to avoid overlap and dissonance. Part: "+part.getTitle());
 		}
 
 		events.addAll(extraEvents);// add all the pitchbend fractions to the main event list

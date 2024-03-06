@@ -787,6 +787,18 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 		skipSilenceAtStartCheckBox
 				.addActionListener(e -> saveSettings.skipSilenceAtStart = skipSilenceAtStartCheckBox.isSelected());
 
+		final JCheckBox deleteMinimalNotesCheckBox = new JCheckBox("Delete Minimal Notes");
+		deleteMinimalNotesCheckBox.setToolTipText("<html>" //
+				+ "Notes that are quantized to zero duration<br>" //
+				+ "will not be exported if this setting is enabled.<br>" //
+				+ "<br>" //
+				+ "Enabling this can prevent fast notes overlapping in the abc export<br>" //
+				+ "which they would not do in the MIDI. Enabling this can fix severe dissonance in some songs." //
+				+ "</html>");
+		deleteMinimalNotesCheckBox.setSelected(saveSettings.deleteMinimalNotes);
+		deleteMinimalNotesCheckBox
+				.addActionListener(e -> saveSettings.deleteMinimalNotes = deleteMinimalNotesCheckBox.isSelected());
+		
 		final JCheckBox convertABCStringsToBasicAsciiCheckBox = new JCheckBox(
 				"Convert unicode, most ext. ascii and diacritical marks in ABC");
 		convertABCStringsToBasicAsciiCheckBox.setToolTipText("<html>" //
@@ -821,7 +833,10 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 
 		layout.insertRow(++row, PREFERRED);
 		panel.add(skipSilenceAtStartCheckBox, "0, " + row);
-
+		
+		layout.insertRow(++row, PREFERRED);
+		panel.add(deleteMinimalNotesCheckBox, "0, " + row);
+		
 		layout.insertRow(++row, PREFERRED);
 		panel.add(convertABCStringsToBasicAsciiCheckBox, "0, " + row);
 

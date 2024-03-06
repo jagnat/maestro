@@ -1286,8 +1286,10 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		
 		updateExportOrExportAsButton();
 
-		if (abcSong != null)
+		if (abcSong != null) {
 			abcSong.setSkipSilenceAtStart(saveSettings.skipSilenceAtStart);
+			abcSong.setDeleteMinimalNotes(saveSettings.deleteMinimalNotes);
+		}
 
 		// if (abcSong != null)
 		// abcSong.setShowPruned(saveSettings.showPruned);
@@ -1792,6 +1794,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 			if (abcSequencer.isRunning())
 				refreshPreviewSequence(false);
+			else if (abcPreviewMode)
+				refreshPreviewSequence(false);
 
 			partsList.repaint();
 			updateButtons(false);
@@ -1810,6 +1814,16 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				saveSettings.skipSilenceAtStart = abcSong.isSkipSilenceAtStart();
 				saveSettings.saveToPrefs();
 			}
+			break;
+		case DELETE_MINIMAL_NOTES:
+			if (saveSettings.deleteMinimalNotes != abcSong.isDeleteMinimalNotes()) {
+				saveSettings.deleteMinimalNotes = abcSong.isDeleteMinimalNotes();
+				saveSettings.saveToPrefs();
+			}
+			if (abcSequencer.isRunning())
+				refreshPreviewSequence(false);
+			else if (abcPreviewMode)
+				refreshPreviewSequence(false);
 			break;
 		case GENRE:
 			if (!genreField.getText().equals(abcSong.getGenre())) {
@@ -2049,6 +2063,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			}
 
 			abcSong.setSkipSilenceAtStart(saveSettings.skipSilenceAtStart);
+			abcSong.setDeleteMinimalNotes(saveSettings.deleteMinimalNotes);
+			
 			// abcSong.setShowPruned(saveSettings.showPruned);
 
 			setAbcSongModified(midiResolved);
@@ -2233,6 +2249,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		try {
 			abcSong.setSkipSilenceAtStart(saveSettings.skipSilenceAtStart);
+			abcSong.setDeleteMinimalNotes(saveSettings.deleteMinimalNotes);
 			// abcSong.setShowPruned(saveSettings.showPruned);
 			AbcExporter exporter = abcSong.getAbcExporter();
 			exporter.stereoPan = prefs.getInt("stereoPan", 100);
