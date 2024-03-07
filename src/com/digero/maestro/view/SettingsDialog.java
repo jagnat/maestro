@@ -793,8 +793,8 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 				+ "will not be exported if this setting is enabled.<br>" //
 				+ "<br>" //
 				+ "Enabling this can prevent fast notes overlapping in the abc export<br>" //
-				+ "which they would not do in the MIDI. Enabling this can fix severe dissonance in some songs." //
-				+ "</html>");
+				+ "which they would not do in the MIDI. Enabling this can fix severe dissonance in some songs.<br>" //
+				+ "Beware, this is an advanced option, if in doubt, keep it off.</html>");
 		deleteMinimalNotesCheckBox.setSelected(saveSettings.deleteMinimalNotes);
 		deleteMinimalNotesCheckBox
 				.addActionListener(e -> saveSettings.deleteMinimalNotes = deleteMinimalNotesCheckBox.isSelected());

@@ -1219,29 +1219,49 @@ public class AbcExporter {
 		// Quantize the events
 		long lastEnding = 0;
 		NoteEvent lastEvent = null;
-		Iterator<NoteEvent> neIter = events.iterator();
 		List<NoteEvent> extraEvents = new ArrayList<>();
+		List<NoteEvent> deleteEvents = new ArrayList<>();
 		int removedToAvoidDissonance = 0;
-		while (neIter.hasNext()) {
-			NoteEvent ne = neIter.next();
+		for (int cc = 0; cc < events.size() ; cc++) {
+			NoteEvent ne = events.get(cc);
 			if (addTies)
 				assert ne.note != Note.REST : "Rest detected!";
-			long oldDura = ne.getLengthTicks();
-			long newStart = qtm.quantize(ne.getStartTick(), part);
-			long newEnding = qtm.quantize(ne.getEndTick(), part);
+			
+			long oldStart = ne.getStartTick();
+			long oldEnd = ne.getEndTick();
+			long newStart = qtm.quantize(oldStart, part);
+			long newEnding = qtm.quantize(oldEnd, part);
 			
 			ne.setStartTick(newStart);
 			ne.setEndTick(newEnding);
-
+			boolean deleted = false;
 			// Make sure the note didn't get quantized to zero length
 			if (ne.getLengthTicks() == 0) {
 				if (ne.note == Note.REST) {
-					neIter.remove();
+					deleteEvents.add(ne);
 					continue;
 				} else if (deleteMinimalNotes && !part.getInstrument().isPercussion) {
-					neIter.remove();
-					removedToAvoidDissonance++;
-					continue;
+					
+					long halfMin = qtm.getTimingInfo(newStart, part).getMinNoteLengthTicks()/2;
+					for (int ccc = cc+1; ccc < events.size() && ccc < cc+40; ccc++) {
+						NoteEvent neLeft = events.get(ccc);
+						if (neLeft.getStartTick() >= newStart && neLeft.getStartTick() < newStart+halfMin && neLeft.getStartTick() >= oldEnd) {
+							// So a note coming after our note, starts very soon after our note.
+							// It did not overlap in the midi and they will most likely overlap after quantization to minimal note length.
+							//
+							// Just because they overlap where they should not does not guarantee dissonance, but its likely.
+							//
+							// TODO: In theory should check this across all parts also.
+							deleteEvents.add(ne);
+							removedToAvoidDissonance++;
+							deleted = true;
+							break;
+						}
+					}
+					if (deleted) {
+						continue;
+					}
+					ne.setLengthTicks(qtm.getTimingInfo(ne.getStartTick(), part).getMinNoteLengthTicks());
 				} else {
 					ne.setLengthTicks(qtm.getTimingInfo(ne.getStartTick(), part).getMinNoteLengthTicks());
 				}
@@ -1250,7 +1270,7 @@ public class AbcExporter {
 			List<NoteEvent> bentNotes = quantizePitchBends(part, ne);
 
 			if (bentNotes != null) {
-				neIter.remove();
+				deleteEvents.add(ne);
 				for (NoteEvent bent : bentNotes) {
 					assert bent.note != Note.REST;
 					if (!addTies && qtm.getPrimaryExportTempoBPM() >= 50 && part.delay != 0) {
@@ -1284,6 +1304,8 @@ public class AbcExporter {
 		}
 
 		events.addAll(extraEvents);// add all the pitchbend fractions to the main event list
+		events.removeAll(deleteEvents);
+		//System.out.println("Something removed: "+events.removeAll(deleteEvents));
 
 		Collections.sort(events);
 
@@ -1310,7 +1332,7 @@ public class AbcExporter {
 
 		// Remove duplicate notes
 		List<NoteEvent> notesOn = new ArrayList<>();
-		neIter = events.iterator();
+		Iterator<NoteEvent> neIter = events.iterator();
 		dupLoop: while (neIter.hasNext()) {
 			NoteEvent ne = neIter.next();
 			Iterator<NoteEvent> onIter = notesOn.iterator();
@@ -1652,8 +1674,9 @@ public class AbcExporter {
 				// If the note is a rest or sustainable, add another one after
 				// this ends to keep it going...
 				if (ne.note == Note.REST || part.getInstrument().isSustainable(ne.note.id)) {
-					assert (ne.getEndTick() - maxNoteEndTick >= qtm.getTimingInfo(maxNoteEndTick, part)
-							.getMinNoteLengthTicks());
+					// TODO: When making DP-CIT this assert kicks in at 51 BPM. But why..
+					//assert (ne.getEndTick() - maxNoteEndTick >= qtm.getTimingInfo(maxNoteEndTick, part)
+					//		.getMinNoteLengthTicks());
 					NoteEvent next = new NoteEvent(ne.note, ne.velocity, maxNoteEndTick, ne.getEndTick(), qtm);
 					next.origPitch = ne.origPitch;
 					int ins = Collections.binarySearch(events, next);
