@@ -50,7 +50,7 @@ Version 3.1.9
 - Tweaked histogram colors. Green is for polyphony count under 45 notes, yellow is 45 to 64, and red is 64+.
 - Added horizontal lines to histogram to show where the two color thresholds are.
 - Maestro won't complain about a missing midi/abc file if Maestro can find the file in the MSX directory.
-- Added option for deleting notes quantized to zero duration to prevent overlapping fast note dissonance.
+- Added option for deleting notes quantized to zero duration to prevent dissonance from unintended overlapping of fast notes.
 
 Version 3.1.8
 - Shrink abctools icon to mitigate antivirus false positive
