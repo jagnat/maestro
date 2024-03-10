@@ -161,7 +161,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 
 	private void initFromMidi(File file, MiscSettings miscSettings)
 			throws IOException, InvalidMidiDataException, ParseException {
-		usingOldVelocities = false;
+		usingOldVelocities = miscSettings.ignoreExpressionMessages;
 		sequenceInfo = SequenceInfo.fromMidi(file, miscSettings, usingOldVelocities);
 		title = sequenceInfo.getTitle();
 		composer = sequenceInfo.getComposer();

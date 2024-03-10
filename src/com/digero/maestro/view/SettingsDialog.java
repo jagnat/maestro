@@ -878,6 +878,11 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 			miscSettings.showBadger = showBadgerCheckBox.isSelected();
 			allBadgerCheckBox.setEnabled(miscSettings.showBadger);
 		});
+		
+		final JCheckBox ignoreExpressionMessagesCheckBox = new JCheckBox("Ignore expression messages");
+		ignoreExpressionMessagesCheckBox.setToolTipText("<html>When loading a new MIDI, ignore expression messages when assigning note velocities.<br>Changing this option wont have nay effect on already made projects or MIDIs that has already been loaded into Maestro.<br>Default: False.</html>");
+		ignoreExpressionMessagesCheckBox.setSelected(miscSettings.ignoreExpressionMessages);
+		ignoreExpressionMessagesCheckBox.addActionListener(e -> miscSettings.ignoreExpressionMessages = ignoreExpressionMessagesCheckBox.isSelected());
 
 		final String defaultStr = "Default";
 		String preferredDevice = NoteFilterSequencerWrapper.prefs.get(NoteFilterSequencerWrapper.prefMIDISelect, null);
@@ -992,7 +997,10 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 
 		layout.insertRow(++row, PREFERRED);
 		panel.add(allBadgerCheckBox, "0, " + row);
-
+		
+		layout.insertRow(++row, PREFERRED);
+		panel.add(ignoreExpressionMessagesCheckBox, "0, " + row);
+		
 		layout.insertRow(++row, PREFERRED);
 		panel.add(deviceText, "0, " + row);
 		layout.insertRow(++row, PREFERRED);
