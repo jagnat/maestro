@@ -170,8 +170,21 @@ public class AbcExporter {
 																			// switching.
 			Set<AbcPart> assignedSharingPartsSameVoice = new HashSet<>();// Set of all parts that will share without
 																			// using switching.
-
+			List<ExportTrackInfo> infoList = new ArrayList<>();
+			
 			int partsCount = calculatePartsCount(parts);
+			if (partsCount == 0) {
+				// The point of this is to return a 'null' sequence. That prevents midi sequencer from restarting when changing
+				// tempo spinner while no parts are enabled, due to setting a abc sequence.
+				for (AbcPart part : parts) {
+					try {
+						PolyphonyHistogram.count(part, new ArrayList<>());
+					} catch (IOException e) {
+						throw new AbcConversionException("Failed to read instrument sample durations.", e);
+					}
+				}
+				return new Pair<>(infoList, new Sequence(Sequence.PPQ, 96));
+			}
 			if (parts.size() > MAX_RAID) {
 				throw new AbcConversionException("Songs with more than " + MAX_RAID + " parts can never be previewed.\n"
 						+ "This song currently has " + parts.size() + " parts and failed to preview.");
@@ -238,7 +251,7 @@ public class AbcExporter {
 
 			PanGenerator panner = new PanGenerator();
 			lastChannelUsedInPreview = -1;
-			List<ExportTrackInfo> infoList = new ArrayList<>();
+			
 			for (AbcPart part : assignedSharingPartsSameVoice) {
 				// Do the parts that is sharing channel first, as they will use the lower
 				// (already designated) numbered channels
