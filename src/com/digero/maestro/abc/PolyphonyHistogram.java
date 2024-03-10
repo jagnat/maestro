@@ -1,6 +1,7 @@
 package com.digero.maestro.abc;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -31,16 +32,31 @@ public class PolyphonyHistogram {
 	public static void count(AbcPart part, List<NoteEvent> events) throws IOException {
 		if (!enabled) return;
 		TreeMap<Long, Integer> partMap = new TreeMap<>();
+		List<NoteEvent> done = new ArrayList<>();
 		for (NoteEvent event : events) {
-			if (event.note.id == Note.REST.id) {
+			if (event.note.id == Note.REST.id || done.contains(event)) {
 				continue;
 			}
+			assert event.tiesFrom == null;
 			ITempoCache tc = event.getTempoCache();
-			QuantizedTimingInfo qtm = (QuantizedTimingInfo) tc; 
+			QuantizedTimingInfo qtm = (QuantizedTimingInfo) tc;
+			
+			NoteEvent check = event;
+			while (check.tiesTo != null) {
+				check = check.tiesTo;
+				done.add(check);
+			}
+			long endTick = check.getEndTick();
 			long start = qtm.tickToMicrosABC(event.getStartTick(), part);// delay is already in the start/end tick at this point 
-			long end   = qtm.tickToMicrosABC(event.getEndTick(), part);
+			long end   = qtm.tickToMicrosABC(endTick, part);
 			if (part.getInstrument().isSustainable(event.note.id)) {
 				end += 200000L;// 200ms
+				Double seconds = LotroInstrumentSampleDuration.getDura(part.getInstrument().friendlyName, event.note.id);
+				if (seconds != null) {
+					long dura = (long) (1000000L * seconds);
+					long endMax = start + dura;
+					end = Math.min(endMax, end);
+				}				
 			} else {
 				Double seconds = LotroInstrumentSampleDuration.getDura(part.getInstrument().friendlyName, event.note.id);
 				if (seconds == null) {
