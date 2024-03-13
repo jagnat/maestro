@@ -142,6 +142,10 @@ public class AbcToMidi {
 			for (String line : fileAndData.lines) {
 				lineNumberForRegions++;
 				lineNumber++;
+				
+				if (lineNumber == 90) {
+					System.out.println("at line 90");
+				}
 
 				// Handle extended info
 				Matcher xInfoMatcher = XINFO_PATTERN.matcher(line);
@@ -418,7 +422,7 @@ public class AbcToMidi {
 										for (int j = i + 1; j < line.length(); j++) {
 											if (line.charAt(j) != ':' && !Character.isDigit(line.charAt(j))) {
 												tuplet = new Tuplet(line.substring(i + 1, j), info.isCompoundMeter());
-												i = j;
+												i = j - 1;
 												break;
 											}
 										}
