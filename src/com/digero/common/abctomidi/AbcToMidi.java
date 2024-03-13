@@ -950,7 +950,7 @@ public class AbcToMidi {
 				if (p < 2 || p > 9)
 					throw new IllegalArgumentException();
 
-				if (parts.length >= 2)
+				if (parts.length >= 2 && parts[1].length() > 0)
 					q = Integer.parseInt(parts[1]);
 				else if (p == 3 || p == 6)
 					q = 2;
@@ -968,6 +968,25 @@ public class AbcToMidi {
 			} catch (NumberFormatException e) {
 				throw new IllegalArgumentException(e);
 			}
+		}
+		
+		@Override
+		public String toString() {
+			return "("+p+":"+q+":"+r;
+		}
+	}
+	
+	static {
+		//
+		// Unit test for tuplets
+		// TODO: Include compound time boolean in tests
+		//
+		String tests[][] = {{"3","(3:2:3"},{"3:2:","(3:2:3"},{"3:2","(3:2:3"},{"3::2","(3:2:2"},{"3::","(3:2:3"}};
+		for(String pair[] : tests) {
+			Tuplet tuplet = new Tuplet(pair[0], false);
+			boolean pass = tuplet.toString().equals(pair[1]);
+			if (!pass) System.out.println("\nTuplet unit test:  ("+pair[0]+" => "+tuplet+"   PASS = "+pass+"\n\n");
+			assert pass;
 		}
 	}
 }
