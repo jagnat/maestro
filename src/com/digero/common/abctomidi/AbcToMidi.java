@@ -394,7 +394,7 @@ public class AbcToMidi {
 								boolean foundPipe = false;
 								for (int j = i + 1; j < parseEnd; j++) {
 									if (line.charAt(j) == '|') {
-										i = j; // Skip past :::::| (legal in lotro, so we should support it.. even though lotro doesn't support |:)
+										i = j; // Skip past :::::| (legal in lotro, so we should support it.. even though lotro doesn't support |::)
 										foundPipe = true;
 										if (trackNumber == 1)
 											abcInfo.addBar(Math.round(chordStartTick));
