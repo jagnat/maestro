@@ -54,6 +54,8 @@ Version 3.1.9
 - Adjustment for how histogram count very long notes that are being broken up.
 - Added option for Ignore expression messages. This is mostly useful for people that commonly use self made MIDIs output from Musescore,
     and want a 1:1 relationship between note velocities. If in doubt, leave it unchecked.
+- Fix ABC triplet parsing bug, which caused some ABC files to have parsing errors.
+- Add support for parsing ABC files with bar repeat symbols. Maestro/AbcPlayer will play repeating sections only once, just as Lotro does.
 
 Version 3.1.8
 - Shrink abctools icon to mitigate antivirus false positive

@@ -378,11 +378,35 @@ public class AbcToMidi {
 									abcInfo.addBar(Math.round(chordStartTick));
 
 								accidentals.clear();
-								if (i + 1 < line.length() && line.charAt(i + 1) == ']') {
-									i++; // Skip |]
+								if (i + 1 < line.length() && (line.charAt(i + 1) == ']' || line.charAt(i+1) == ':')) {
+									i++; // Skip |], |:
 								} else if (trackNumber == 1) {
 									abcInfo.addBar(Math.round(chordStartTick));
 								}
+								break;
+							
+							case ':': // Beginning of repeat end bar line :| ::| :::::::|
+								if (inChord) {
+									throw new ParseException("Unexpected '" + ch + "' inside a chord", fileName,
+											lineNumber, i);
+								}
+
+								boolean foundPipe = false;
+								for (int j = i + 1; j < parseEnd; j++) {
+									if (line.charAt(j) == '|') {
+										i = j; // Skip past :::::| (legal in lotro, so we should support it.. even though lotro doesn't support |::)
+										foundPipe = true;
+										if (trackNumber == 1)
+											abcInfo.addBar(Math.round(chordStartTick));
+										break;
+									}
+								}
+								
+								if (!foundPipe) {
+									throw new ParseException("Expected to see '|' after parsing '" + ch + "'", fileName,
+											lineNumber, i);
+								}
+								
 								break;
 
 							case '+': {
@@ -418,7 +442,7 @@ public class AbcToMidi {
 										for (int j = i + 1; j < line.length(); j++) {
 											if (line.charAt(j) != ':' && !Character.isDigit(line.charAt(j))) {
 												tuplet = new Tuplet(line.substring(i + 1, j), info.isCompoundMeter());
-												i = j;
+												i = j - 1;
 												break;
 											}
 										}
