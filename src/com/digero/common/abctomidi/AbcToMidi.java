@@ -142,10 +142,6 @@ public class AbcToMidi {
 			for (String line : fileAndData.lines) {
 				lineNumberForRegions++;
 				lineNumber++;
-				
-				if (lineNumber == 90) {
-					System.out.println("at line 90");
-				}
 
 				// Handle extended info
 				Matcher xInfoMatcher = XINFO_PATTERN.matcher(line);
