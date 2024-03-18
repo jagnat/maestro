@@ -1,6 +1,7 @@
 package com.digero.abcplayer;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -201,6 +202,12 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 	private JLabel titleLabel;
 
 	private TrackListPanel trackListPanel;
+	
+	private boolean showPlaylistView = false;
+	private JPanel songPlaylistWrapper;
+	private CardLayout songPlaylistLayout;
+	private JPanel songViewPanel;
+	private JPanel playlistViewPanel;
 
 	private SongPositionBar songPositionBar;
 	private SongPositionLabel songPositionLabel;
@@ -216,8 +223,10 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 	private ImageIcon playIconDisabled;
 	private ImageIcon pauseIconDisabled;
 	private ImageIcon stopIconDisabled;
+	private ImageIcon playlistIcon;
 	private JButton playButton;
 	private JButton stopButton;
+	private JButton playlistToggleButton;
 
 	private JCheckBoxMenuItem lotroErrorsMenuItem;
 	private JCheckBoxMenuItem stereoMenuItem;
@@ -356,7 +365,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 		content = new JPanel(new TableLayout(//
 				new double[] { 4, FILL, 4 }, //
-				new double[] { PREFERRED, 0, FILL, 8, PREFERRED }));
+				new double[] { FILL, 8, PREFERRED }));
 		setContentPane(content);
 
 		titleLabel = new JLabel(" ");
@@ -375,7 +384,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 //						SongPositionBar.SIDE_PAD, 4, PREFERRED, 4 }, //
 //				new double[] { 4, PREFERRED, 4, PREFERRED, 4 }));
 		
-		JPanel controlPanel = new JPanel(new MigLayout("fillx, wrap 5", "[][grow -1][grow -1][][grow -1]"));
+		JPanel controlPanel = new JPanel(new MigLayout("fillx, wrap 6", "[][grow -1][grow -1][grow -1][][grow -1]"));
 		
 		songPositionBar = new SongPositionBar(sequencer);
 		songPositionLabel = new SongPositionLabel(sequencer);
@@ -391,6 +400,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		stopIconDisabled = IconLoader.getDisabledIcon("stop.png");
 		
 		final Insets playControlButtonMargin = new Insets(5, 20, 5, 20);
+		playlistIcon = IconLoader.getImageIcon("playlist.png");
 
 		playButton = new JButton(playIcon);
 		playButton.setDisabledIcon(playIconDisabled);
@@ -403,6 +413,15 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		stopButton.setEnabled(false);
 		stopButton.setMargin(playControlButtonMargin);
 		stopButton.addActionListener(e -> stop());
+		
+		playlistToggleButton = new JButton(playlistIcon);
+		playlistToggleButton.setToolTipText("Toggle between the current song view and the playlist view");
+		playlistToggleButton.setFocusable(false);
+		playlistToggleButton.setMargin(playControlButtonMargin);
+		playlistToggleButton.addActionListener(e -> {
+			showPlaylistView = !showPlaylistView;
+			songPlaylistLayout.show(songPlaylistWrapper, showPlaylistView? "playlist" : "song");
+		});
 
 		tempoBar = new TempoBar(sequencer);
 
@@ -427,13 +446,22 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 //		controlPanel.add(volumePanel, "8, 3, c, c");
 //		controlPanel.add(barNumberLabel, "9, 3, 11, 3, r, t");
 		
-		controlPanel.add(songPositionBar, "spanx 4, growx");
+		controlPanel.add(songPositionBar, "spanx 5, growx");
 		controlPanel.add(songPositionLabel, "right");
 		controlPanel.add(tempoPanel, "center");
 		controlPanel.add(playButton, "right");
 		controlPanel.add(stopButton);
+		controlPanel.add(playlistToggleButton);
 		controlPanel.add(volumePanel, "center");
 		controlPanel.add(barNumberLabel, "right");
+		// controlPanel.add(songPositionBar, "1, 1, 9, 1");
+		// controlPanel.add(songPositionLabel, "11, 1");
+		// controlPanel.add(playButton, "4, 3");
+		// controlPanel.add(stopButton, "6, 3");
+		// controlPanel.add(playlistToggleButton, "8, 3");
+		// controlPanel.add(tempoPanel, "2, 3, c, c");
+		// controlPanel.add(volumePanel, "9, 3, c, c");
+		// controlPanel.add(barNumberLabel, "10, 3, 12, 3, r, t");
 
 		sequencer.addChangeListener(evt -> {
 			SequencerProperty p = evt.getProperty();
@@ -446,9 +474,24 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 			}
 		});
 
-		add(titleLabel, "0, 0, 2, 0");
-		add(trackListScroller, "0, 2, 2, 2");
-		add(controlPanel, "1, 4");
+		songViewPanel = new JPanel(new TableLayout(//
+				new double[] { 4, FILL, 4 }, //
+				new double[] { PREFERRED, 0, FILL }));
+		songViewPanel.setBorder(BorderFactory.createEmptyBorder());
+		songViewPanel.add(titleLabel, "1, 0");
+		songViewPanel.add(trackListScroller, "1, 2");
+		
+		playlistViewPanel = new JPanel();
+		
+		songPlaylistLayout = new CardLayout();
+		songPlaylistWrapper = new JPanel(songPlaylistLayout);
+		songPlaylistWrapper.add(songViewPanel, "song");
+		songPlaylistWrapper.add(playlistViewPanel, "playlist");
+		
+		add(songPlaylistWrapper, "0, 0, 2, 0");
+//		add(titleLabel, "0, 0, 2, 0");
+//		add(trackListScroller, "0, 2, 2, 2");
+		add(controlPanel, "1, 2");
 		
 		audioExporter = new AudioExportManager(this, AbcPlayer.APP_NAME + AbcPlayer.APP_VERSION, prefs);
 
