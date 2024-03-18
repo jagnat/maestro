@@ -1,27 +1,39 @@
 package com.aifel.abctools;
 
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
 import java.awt.BorderLayout;
-import javax.swing.JScrollPane;
-import javax.swing.JLabel;
-import javax.swing.JSplitPane;
-import javax.swing.JTabbedPane;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Image;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.imageio.ImageIO;
+import javax.swing.BorderFactory;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JEditorPane;
-import javax.swing.JTextArea;
-import java.awt.Dimension;
-import javax.swing.BoxLayout;
-import java.awt.Component;
-import javax.swing.JSeparator;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JProgressBar;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JSplitPane;
+import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
+import javax.swing.border.EmptyBorder;
+
+import com.digero.common.icons.IconLoader;
+
+import net.miginfocom.swing.MigLayout;
 
 @SuppressWarnings("serial")
 public class MultiMergerView extends JFrame {
 
 	private JPanel contentPane;
+	
+	// Merge ABCs
 	private JScrollPane txtAreaScroll;
 	private JScrollPane scrollPane;
 	private JButton btnDest;
@@ -36,20 +48,31 @@ public class MultiMergerView extends JFrame {
 	private JTabbedPane tabs;
 	private JPanel contentPaneMerge;
 
-	private JPanel contentPaneAutoExport;
-	private JPanel folderPanelAuto;
+	// MSX Scanner
+	private JPanel contentPaneMsxScanner;
+	
+	private JSplitPane msxScannerSplitPane;
+	
+	private JPanel scanSettingsPanel;
 	private JLabel lblSourceAuto;
+	private JCheckBox recursiveScanCheckBox;
+	
+	private JPanel multiExportAbcPanel;
+	private JCheckBox exportAbcsCheckBox;
+	private JCheckBox forceMixTimingCheckBox;
 	private JLabel lblDestAuto;
 	private JButton btnDestAuto;
+	
+	private JPanel resolveSourceFilesPanel;
+	
+//	private JPanel folderPanelAuto;
+	private JLabel lblMidiAuto;
 	private JButton btnSourceAuto;
 	private JButton btnStart;
-	private JCheckBox forceMixTiming;
 	private JScrollPane scrollPaneAutoTxt;
 	private JEditorPane txtAutoExport;
-	private JLabel lblMidiAuto;
 	private JButton btnMIDI;
-	private JPanel panel_2;
-	private JLabel lblNewLabel_2;
+	private JLabel msxScannerTitleLabel;
 	private JCheckBox saveMSX;
 	private JProgressBar progressBar;
 
@@ -61,6 +84,17 @@ public class MultiMergerView extends JFrame {
 		setMinimumSize(new Dimension(800, 400));
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 500, 400);
+		
+		try {
+			List<Image> icons = new ArrayList<>();
+			icons.add(ImageIO.read(IconLoader.class.getResourceAsStream("abctools_32.png")));
+			icons.add(ImageIO.read(IconLoader.class.getResourceAsStream("abctools_64.png")));
+			setIconImages(icons);
+		} catch (Exception ex) {
+			// Ignore
+			ex.printStackTrace();
+		}
+		
 		contentPane = new JPanel();
 
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -148,85 +182,126 @@ public class MultiMergerView extends JFrame {
 		txtArea.setLineWrap(true);
 		txtArea.setColumns(10);
 		txtAreaScroll.setViewportView(txtArea);
-
-		// Auto Export tool:
-		contentPaneAutoExport = new JPanel();
-		contentPaneAutoExport.setBorder(new EmptyBorder(5, 5, 5, 5));
-		contentPaneAutoExport.setLayout(new BorderLayout(0, 0));
-		tabs.addTab("Auto ABC export", contentPaneAutoExport);
-
-		folderPanelAuto = new JPanel();
-
-		JPanel southAuto = new JPanel();
-		southAuto.setLayout(new BorderLayout(0, 0));
-		contentPaneAutoExport.add(southAuto, BorderLayout.SOUTH);
-		southAuto.add(folderPanelAuto, BorderLayout.NORTH);
-		folderPanelAuto.setLayout(new BorderLayout(0, 0));
-
-		lblSourceAuto = new JLabel("Source:");
-		folderPanelAuto.add(lblSourceAuto, BorderLayout.NORTH);
-
-		lblDestAuto = new JLabel("Dest:");
-		folderPanelAuto.add(lblDestAuto, BorderLayout.SOUTH);
-
-		lblMidiAuto = new JLabel("MIDIs:");
-		folderPanelAuto.add(lblMidiAuto, BorderLayout.CENTER);
-
-		JPanel splitPaneAuto = new JPanel();
-		southAuto.add(splitPaneAuto, BorderLayout.SOUTH);
-
+		
+		buildMsxScannerPanel();
+	}
+	
+	public void buildMsxScannerPanel() {
+		contentPaneMsxScanner = new JPanel();
+		contentPaneMsxScanner.setBorder(new EmptyBorder(5, 5, 5, 5));
+		contentPaneMsxScanner.setLayout(new BorderLayout(0, 0));
+		tabs.addTab("MSX Scanner Tool", contentPaneMsxScanner);
+		
+		JPanel titleWrapper = new JPanel();
+		msxScannerTitleLabel = new JLabel("Scan and operate on MSX files");
+		titleWrapper.add(msxScannerTitleLabel);
+		contentPaneMsxScanner.add(titleWrapper, BorderLayout.NORTH);
+		
+		msxScannerSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		contentPaneMsxScanner.add(msxScannerSplitPane, BorderLayout.CENTER);
+//		msxScannerSplitPane.setLeftComponent();
+		
+		JPanel msxScannerWestPane = new JPanel();
+		msxScannerWestPane.setLayout(new MigLayout("wrap 1, fillx, debug, gap 1"));
+		
+		msxScannerSplitPane.setLeftComponent(msxScannerWestPane);
+		
+		scanSettingsPanel = new JPanel();
+		scanSettingsPanel.setLayout(new BoxLayout( scanSettingsPanel, BoxLayout.Y_AXIS));
+		scanSettingsPanel.setBorder(BorderFactory.createTitledBorder("Scan Settings"));
+		
+		recursiveScanCheckBox = new JCheckBox("Perform recursive scan");
+		recursiveScanCheckBox.setSelected(false);
+		scanSettingsPanel.add(recursiveScanCheckBox);
+		
 		btnSourceAuto = new JButton("Select folder with MSX Project files");
 		btnSourceAuto.setToolTipText("This is the folder where the project files are.");
-		splitPaneAuto.add(btnSourceAuto);
-
+//		splitPaneAuto.add(btnSourceAuto);
+		scanSettingsPanel.add(btnSourceAuto);
+		
+		msxScannerWestPane.add(scanSettingsPanel, "grow");
+		
+		multiExportAbcPanel = new JPanel();
+		multiExportAbcPanel.setLayout(new BoxLayout( multiExportAbcPanel, BoxLayout.Y_AXIS));
+		multiExportAbcPanel.setBorder(BorderFactory.createTitledBorder("Batch Export ABC"));
+		
+		exportAbcsCheckBox = new JCheckBox("Enabled");
+		exportAbcsCheckBox.setSelected(true);
+//		exportAbcsCheckBox.setAlignmentX(Component.LEFT_ALIGNMENT);
+		multiExportAbcPanel.add(exportAbcsCheckBox);
+		
 		btnDestAuto = new JButton("Select ABC destination folder");
 		btnDestAuto.setToolTipText(
 				"This is the folder where you want the exported ABC files to be. Its recommended that it is empty.");
 		btnDestAuto.addActionListener(arg0 -> {
 		});
-
-		btnMIDI = new JButton("Select folder with MIDIs");
-		splitPaneAuto.add(btnMIDI);
-		splitPaneAuto.add(btnDestAuto);
-
-		progressBar = new JProgressBar();
-		progressBar.setMaximum(1000);
-		progressBar.setStringPainted(true);
-		southAuto.add(progressBar, BorderLayout.CENTER);
-
-		JPanel panelAuto = new JPanel();
-		contentPaneAutoExport.add(panelAuto, BorderLayout.WEST);
-		panelAuto.setLayout(new BoxLayout(panelAuto, BoxLayout.Y_AXIS));
-
-		btnStart = new JButton("Start Exporting");
-		btnStart.setToolTipText("Export all project files in source folder to abc files in destination folder.");
-		btnStart.setAlignmentX(Component.CENTER_ALIGNMENT);
-		panelAuto.add(btnStart);
-
-		forceMixTiming = new JCheckBox("Force Mix Timings");
-		forceMixTiming.setSelected(true);
-		forceMixTiming.setToolTipText("Force mix timings even if a project do not have it enabled.");
-		forceMixTiming.setAlignmentX(Component.CENTER_ALIGNMENT);
-		panelAuto.add(forceMixTiming);
+		multiExportAbcPanel.add(btnDestAuto);
+		
+		forceMixTimingCheckBox = new JCheckBox("Force Mix Timings");
+		forceMixTimingCheckBox.setSelected(true);
+		forceMixTimingCheckBox.setToolTipText("Force mix timings even if a project do not have it enabled.");
+//		forceMixTimingCheckBox.setAlignmentX(Component.CENTER_ALIGNMENT);
+		multiExportAbcPanel.add(forceMixTimingCheckBox);
+//		msxScannerWestPane.add(forceMixTimingCheckBox);
+		
+		msxScannerWestPane.add(multiExportAbcPanel, "grow");
+		
+		resolveSourceFilesPanel = new JPanel();
+		resolveSourceFilesPanel.setLayout(new BoxLayout( resolveSourceFilesPanel, BoxLayout.Y_AXIS));
+		resolveSourceFilesPanel.setBorder(BorderFactory.createTitledBorder("Resolve source MIDI/ABC"));
+		
+		msxScannerWestPane.add(resolveSourceFilesPanel, "grow");
 
 		saveMSX = new JCheckBox("Save msx if needed");
 		saveMSX.setToolTipText("Save MSX files when midi location has changes.");
 		saveMSX.setAlignmentX(Component.CENTER_ALIGNMENT);
-		panelAuto.add(saveMSX);
+//		msxScannerWestPane.add(saveMSX);
 
 		scrollPaneAutoTxt = new JScrollPane();
-		contentPaneAutoExport.add(scrollPaneAutoTxt, BorderLayout.CENTER);
+//		contentPaneMsxScanner.add(scrollPaneAutoTxt, BorderLayout.CENTER);
 
 		txtAutoExport = new JEditorPane();
 		txtAutoExport.setContentType("text/html");
 		txtAutoExport.setText("Text");
 		scrollPaneAutoTxt.setViewportView(txtAutoExport);
+		msxScannerSplitPane.setRightComponent(scrollPaneAutoTxt);
 
-		panel_2 = new JPanel();
-		contentPaneAutoExport.add(panel_2, BorderLayout.NORTH);
+//		folderPanelAuto = new JPanel();
 
-		lblNewLabel_2 = new JLabel("Auto multi export msx project files");
-		panel_2.add(lblNewLabel_2);
+		JPanel southAuto = new JPanel();
+		southAuto.setLayout(new BorderLayout(0, 0));
+		contentPaneMsxScanner.add(southAuto, BorderLayout.SOUTH);
+//		southAuto.add(folderPanelAuto, BorderLayout.NORTH);
+//		folderPanelAuto.setLayout(new BorderLayout(0, 0));
+
+		lblSourceAuto = new JLabel("Source:");
+//		folderPanelAuto.add(lblSourceAuto, BorderLayout.NORTH);
+
+		lblDestAuto = new JLabel("Dest:");
+//		folderPanelAuto.add(lblDestAuto, BorderLayout.SOUTH);
+
+		lblMidiAuto = new JLabel("MIDIs:");
+//		folderPanelAuto.add(lblMidiAuto, BorderLayout.CENTER);
+
+//		JPanel splitPaneAuto = new JPanel();
+//		southAuto.add(splitPaneAuto, BorderLayout.SOUTH);
+
+		btnMIDI = new JButton("Select folder with MIDIs");
+//		splitPaneAuto.add(btnMIDI);
+//		splitPaneAuto.add(btnDestAuto);
+
+		progressBar = new JProgressBar();
+		progressBar.setMaximum(1000);
+		progressBar.setStringPainted(true);
+		southAuto.add(progressBar, BorderLayout.CENTER);
+		
+		
+		btnStart = new JButton("Start Scan");
+		btnStart.setToolTipText("Export all project files in source folder to abc files in destination folder.");
+//		btnStart.setAlignmentX(Component.CENTER_ALIGNMENT);
+//		msxScannerWestPane.add(btnStart);
+//		scanSettingsPanel.add(btnStart);
+		southAuto.add(btnStart, BorderLayout.SOUTH);
 	}
 
 	public JScrollPane getScrollPane() {
@@ -290,11 +365,11 @@ public class MultiMergerView extends JFrame {
 	}
 
 	public boolean getForceMixTimingSelected() {
-		return forceMixTiming.isSelected();
+		return forceMixTimingCheckBox.isSelected();
 	}
 
 	public void setForceMixTimingSelected(boolean selected) {
-		forceMixTiming.setSelected(selected);
+		forceMixTimingCheckBox.setSelected(selected);
 	}
 
 	public JButton getBtnStartExport() {
@@ -342,11 +417,11 @@ public class MultiMergerView extends JFrame {
 	}
 
 	public boolean getForceMixTimingEnabled() {
-		return forceMixTiming.isEnabled();
+		return forceMixTimingCheckBox.isEnabled();
 	}
 
 	public void setForceMixTimingEnabled(boolean enabled_2) {
-		forceMixTiming.setEnabled(enabled_2);
+		forceMixTimingCheckBox.setEnabled(enabled_2);
 	}
 
 	public boolean getBtnSourceAutoEnabled() {
