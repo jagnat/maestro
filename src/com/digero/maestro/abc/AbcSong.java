@@ -6,16 +6,18 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.MissingResourceException;
+import java.util.Map.Entry;
+import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.Map.Entry;
-import java.util.NavigableMap;
 
 import javax.sound.midi.InvalidMidiDataException;
 import javax.swing.DefaultListModel;
@@ -95,7 +97,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	private AbcExporter abcExporter;
 	private File sourceFile; // The MIDI or ABC file that this song was loaded from
 	private File exportFile; // The ABC export file
-	private File saveFile; // The XML Maestro song file
+	private File saveFile; // The XML Maestro song file  
 	private boolean usingOldVelocities = false;
 
 	private final ListModelWrapper<AbcPart> parts = new ListModelWrapper<>(new DefaultListModel<>());
@@ -253,6 +255,11 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 				throw SaveUtil.missingValueException(songEle, "<sourceFile>");
 			}
 			File origSourceFile = sourceFile;
+			
+			// Might not exist in old msx files
+			// Used to resolve paths when an msx file location is moved
+			// tryToLoadFromFile() checks for null
+			File relativeSourcePath = SaveUtil.parseValue(songEle, "relativeSourcePath", (File) null);
 
 			exportFile = SaveUtil.parseValue(songEle, "exportFile", exportFile);
 
@@ -261,7 +268,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 				String name = sourceFile.getName().toLowerCase();
 				boolean isAbc = name.endsWith(".abc") || name.endsWith(".txt");
 
-				tryToLoadFromFile(fileResolver, isAbc, miscSettings);
+				tryToLoadFromFile(fileResolver, isAbc, miscSettings, relativeSourcePath);
 
 				if (sourceFile == null)
 					throw new ParseException("Failed to load file", name);
@@ -321,11 +328,27 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		return false;
 	}
 
-	private void tryToLoadFromFile(FileResolver fileResolver, boolean isAbc, MiscSettings miscSettings) {
+	private void tryToLoadFromFile(FileResolver fileResolver, boolean isAbc, MiscSettings miscSettings, File sourceRelativeToMsx) {
+		File resolvedSource = null;
 		try {
-			File sourceInCurrentDir = new File(saveFile.getParentFile(), sourceFile.getName());
-			if (!sourceFile.exists() && sourceInCurrentDir.exists()) {
-				sourceFile = sourceInCurrentDir;
+			// Need to attempt to resolve file location
+			if (!sourceFile.exists()) {
+				// Check with relative path saved in msx, if it exists
+				if (sourceRelativeToMsx != null) {
+					resolvedSource = saveFile.getParentFile().toPath().resolve(sourceRelativeToMsx.toPath()).normalize().toFile();
+				}
+				
+				// Else check in the current directory
+				if (sourceRelativeToMsx == null || (resolvedSource != null && !resolvedSource.exists())) {
+					File sourceInCurrentDir = new File(saveFile.getParentFile(), sourceFile.getName());
+					if (sourceInCurrentDir.exists()) {
+						resolvedSource = sourceInCurrentDir;
+					}
+				}
+				
+				if (resolvedSource != null) {
+					throw new MissingResourceException(null, null, resolvedSource.toString());
+				}
 			}
 			
 			if (isAbc) {
@@ -356,6 +379,9 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		} catch (InvalidMidiDataException | IOException | ParseException e) {
 			String msg = "Could not load the file used to create this song:\n" + sourceFile + "\n\n" + e.getMessage();
 			sourceFile = fileResolver.resolveFile(sourceFile, msg);
+		} catch(MissingResourceException e) {
+			String msg = "Could not load the file used to create this song:\n" + sourceFile;
+			sourceFile = fileResolver.autoLocatedFile(sourceFile, msg, new File(e.getKey()));
 		}
 	}
 
@@ -425,6 +451,9 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		SaveUtil.appendChildTextElement(songEle, "sourceFile", String.valueOf(sourceFile));
 		if (exportFile != null)
 			SaveUtil.appendChildTextElement(songEle, "exportFile", String.valueOf(exportFile));
+		
+//		oldSavePath.getParentFile().toPath().relativize(sourceFile.toPath());
+		SaveUtil.appendChildTextElement(songEle, "relativeSourcePath", String.valueOf(saveFile.getParentFile().toPath().relativize(sourceFile.toPath())));
 
 		SaveUtil.appendChildTextElement(songEle, "title", title);
 		SaveUtil.appendChildTextElement(songEle, "composer", composer);

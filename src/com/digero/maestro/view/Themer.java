@@ -15,7 +15,7 @@ import com.formdev.flatlaf.themes.FlatMacLightLaf;
 public class Themer {
 	protected static final String[] themes = { "Flat Dark", "Flat Light", };
 
-	protected static final int[] fontSizes = { 10, 11, 12, 13, 14, 15, 16, 17, 18 };
+	protected static final int[] fontSizes = { 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 24, 28};
 
 	public static void setLookAndFeel() throws ClassNotFoundException, InstantiationException, IllegalAccessException,
 			UnsupportedLookAndFeelException {

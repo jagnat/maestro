@@ -810,6 +810,18 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 		convertABCStringsToBasicAsciiCheckBox.setSelected(saveSettings.convertABCStringsToBasicAscii);
 		convertABCStringsToBasicAsciiCheckBox.addActionListener(
 				e -> saveSettings.convertABCStringsToBasicAscii = convertABCStringsToBasicAsciiCheckBox.isSelected());
+		
+		final JCheckBox autoResolveSourceFilesCheckBox = new JCheckBox(
+				"Auto-resolve midi/abc source files using relative path");
+		autoResolveSourceFilesCheckBox.setToolTipText("<html>"
+				+ "If checked, Maestro will automatically resolve missing MIDI or ABC files<br>"
+				+ "for MSX projects which have been moved, if a source file with the<br>"
+				+ "same name is found in a relative directory, or the same directory as<br>"
+				+ "the MSX file. If unchecked, Maestro will prompt you to confirm the new<br>"
+				+ "source file location.");
+		autoResolveSourceFilesCheckBox.setSelected(saveSettings.autoResolveSourceFiles);
+		autoResolveSourceFilesCheckBox.addActionListener(
+				e -> saveSettings.autoResolveSourceFiles = autoResolveSourceFilesCheckBox.isSelected());
 
 		TableLayout layout = new TableLayout();
 		layout.insertColumn(0, PREFERRED);
@@ -839,6 +851,9 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 		
 		layout.insertRow(++row, PREFERRED);
 		panel.add(convertABCStringsToBasicAsciiCheckBox, "0, " + row);
+		
+		layout.insertRow(++row, PREFERRED);
+		panel.add(autoResolveSourceFilesCheckBox, "0, " + row);
 
 		return panel;
 	}

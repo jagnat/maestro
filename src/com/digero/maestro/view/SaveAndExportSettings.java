@@ -10,6 +10,7 @@ public class SaveAndExportSettings {
 	public boolean deleteMinimalNotes = false;
 	// public boolean showPruned = false;
 	public boolean convertABCStringsToBasicAscii = true;
+	public boolean autoResolveSourceFiles = false;
 
 	private final Preferences prefs;
 
@@ -22,6 +23,7 @@ public class SaveAndExportSettings {
 		// showPruned = prefs.getBoolean("showPruned", showPruned);
 		convertABCStringsToBasicAscii = prefs.getBoolean("convertABCStringsToBasicAscii",
 				convertABCStringsToBasicAscii);
+		autoResolveSourceFiles = prefs.getBoolean("autoResolveSourceFiles", autoResolveSourceFiles);
 	}
 
 	public SaveAndExportSettings(SaveAndExportSettings that) {
@@ -36,6 +38,7 @@ public class SaveAndExportSettings {
 		deleteMinimalNotes = that.deleteMinimalNotes;
 		// showPruned = that.showPruned;
 		convertABCStringsToBasicAscii = that.convertABCStringsToBasicAscii;
+		autoResolveSourceFiles = that.autoResolveSourceFiles;
 	}
 
 	public void saveToPrefs() {
@@ -45,6 +48,7 @@ public class SaveAndExportSettings {
 		prefs.putBoolean("deleteMinimalNotes", deleteMinimalNotes);
 		// prefs.putBoolean("showPruned", showPruned);
 		prefs.putBoolean("convertABCStringsToBasicAscii", convertABCStringsToBasicAscii);
+		prefs.putBoolean("autoResolveSourceFiles", autoResolveSourceFiles);
 	}
 
 	public void restoreDefaults() {

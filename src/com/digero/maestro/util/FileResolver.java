@@ -20,4 +20,14 @@ public interface FileResolver {
 	 * @return The new file, or <b>null</b> if no new file is available.
 	 */
 	File resolveFile(File original, String message);
+	
+	/**
+	 * When there is a failure loading a file, but we found an existing candidate file to auto-replace with.
+	 * 
+	 * @param original The file that caused the failure
+	 * @param message  A description of the failure
+	 * @param resolved The file that was auto-located
+	 * @return The new file, or <b>null</b> if no new file is available.
+	 */
+	File autoLocatedFile(File original, String message, File resolved);
 }

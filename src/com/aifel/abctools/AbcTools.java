@@ -810,7 +810,7 @@ public class AbcTools {
 			newMidi = new File(midiFolderAuto, original.getName());
 			if (original.equals(newMidi)) {
 				message += "\n\nWould you like to try to locate the file?";
-				return resolveHelper(original, message);
+				return resolveHelper(original, message, null);
 			}
 			projectModified = true;
 			return newMidi;
@@ -819,15 +819,25 @@ public class AbcTools {
 		@Override
 		public File resolveFile(File original, String message) {
 			message += "\n\nWould you like to pick a different file?";
-			return resolveHelper(original, message);
+			return resolveHelper(original, message, null);
+		}
+		
+		@Override
+		public File autoLocatedFile(File original, String message, File resolved) {
+			message += "\n\nFound a file with the same name here:\n"
+					+ resolved.getAbsolutePath()
+					+ "\nWould you like to use this file instead?";
+			return resolveHelper(original, message, resolved);
 		}
 
-		private File resolveHelper(File original, String message) {
+		private File resolveHelper(File original, String message, File autoLocatedFile) {
+			boolean autoResolve = (autoLocatedFile != null);
 			int result = JOptionPane.showConfirmDialog(frame, message, "Failed to open file",
-					JOptionPane.OK_CANCEL_OPTION);
+					autoResolve? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.OK_CANCEL_OPTION);
 
 			File alternateFile = null;
-			if (result == JOptionPane.OK_OPTION) {
+			if ((result == JOptionPane.OK_OPTION && !autoResolve) ||
+				(result == JOptionPane.NO_OPTION && autoResolve)) {
 				JFileChooser jfc = new JFileChooser();
 				jfc.setDialogTitle("Open missing MIDI");
 				if (original != null)
@@ -837,6 +847,8 @@ public class AbcTools {
 					alternateFile = jfc.getSelectedFile();
 					projectModified = true;
 				}
+			} else if (result == JOptionPane.YES_OPTION && autoResolve) {
+				alternateFile = autoLocatedFile;
 			}
 
 			return alternateFile;
