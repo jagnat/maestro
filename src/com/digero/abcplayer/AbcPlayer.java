@@ -60,12 +60,16 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.TreeCellRenderer;
 
 import com.digero.abcplayer.view.AbcPlayerSettingsDialog;
 import com.digero.abcplayer.view.HighlightAbcNotesFrame;
@@ -82,6 +86,7 @@ import com.digero.common.midi.SequencerEvent.SequencerProperty;
 import com.digero.common.midi.SequencerWrapper;
 import com.digero.common.midi.VolumeTransceiver;
 import com.digero.common.util.ExtensionFileFilter;
+import com.digero.common.util.FavoritedFileTreeModel;
 import com.digero.common.util.FileFilterDropListener;
 import com.digero.common.util.LotroParseException;
 import com.digero.common.util.ParseException;
@@ -204,8 +209,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 	private TrackListPanel trackListPanel;
 	
 	private boolean showPlaylistView = false;
-	private JPanel songPlaylistWrapper;
-	private CardLayout songPlaylistLayout;
+	private JPanel mainCardPanel;
+	private CardLayout mainCardPanelLayout;
 	private JPanel songViewPanel;
 	private JPanel playlistViewPanel;
 
@@ -420,7 +425,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		playlistToggleButton.setMargin(playControlButtonMargin);
 		playlistToggleButton.addActionListener(e -> {
 			showPlaylistView = !showPlaylistView;
-			songPlaylistLayout.show(songPlaylistWrapper, showPlaylistView? "playlist" : "song");
+			mainCardPanelLayout.show(mainCardPanel, showPlaylistView? "playlist" : "song");
 		});
 
 		tempoBar = new TempoBar(sequencer);
@@ -468,6 +473,10 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 			if (!p.isInMask(SequencerProperty.THUMB_POSITION_MASK)) {
 				updateButtonStates();
 			}
+			
+			if (p.isInMask(SequencerProperty.IS_RUNNING.mask)) {
+				
+			}
 
 			if (p.isInMask(SequencerProperty.TEMPO.mask | SequencerProperty.SEQUENCE.mask)) {
 				updateTempoLabel();
@@ -481,14 +490,42 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		songViewPanel.add(titleLabel, "1, 0");
 		songViewPanel.add(trackListScroller, "1, 2");
 		
-		playlistViewPanel = new JPanel();
+		playlistViewPanel = new JPanel(new BorderLayout());
 		
-		songPlaylistLayout = new CardLayout();
-		songPlaylistWrapper = new JPanel(songPlaylistLayout);
-		songPlaylistWrapper.add(songViewPanel, "song");
-		songPlaylistWrapper.add(playlistViewPanel, "playlist");
+		JSplitPane leftRightBrowserSplitPane = new JSplitPane();
+		playlistViewPanel.add(leftRightBrowserSplitPane, BorderLayout.CENTER);
 		
-		add(songPlaylistWrapper, "0, 0, 2, 0");
+		JPanel leftPlaylistPanel = new JPanel(new BorderLayout());
+		JPanel rightPlaylistPanel = new JPanel();
+		
+		leftRightBrowserSplitPane.setLeftComponent(leftPlaylistPanel);
+		leftRightBrowserSplitPane.setRightComponent(rightPlaylistPanel);
+		
+		List<File> favoriteFiles = new ArrayList<File>();
+		favoriteFiles.add(new File ("C:"));
+		
+		JTree testTree = new JTree();
+		testTree.setShowsRootHandles(true);
+		testTree.setRootVisible(false);
+		testTree.setModel(new FavoritedFileTreeModel(favoriteFiles));
+		testTree.collapseRow(0);
+		
+		TreeCellRenderer ren = testTree.getCellRenderer();
+		if (ren instanceof DefaultTreeCellRenderer) {
+			DefaultTreeCellRenderer render = (DefaultTreeCellRenderer)ren;
+//			render.set
+		}
+		
+		JScrollPane scrollWrapper = new JScrollPane(testTree, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+		leftPlaylistPanel.add(scrollWrapper, BorderLayout.CENTER);
+		
+		
+		mainCardPanelLayout = new CardLayout();
+		mainCardPanel = new JPanel(mainCardPanelLayout);
+		mainCardPanel.add(songViewPanel, "song");
+		mainCardPanel.add(playlistViewPanel, "playlist");
+		
+		add(mainCardPanel, "0, 0, 2, 0");
 //		add(titleLabel, "0, 0, 2, 0");
 //		add(trackListScroller, "0, 2, 2, 2");
 		add(controlPanel, "1, 2");
