@@ -34,9 +34,8 @@ public class LotroSequencerWrapper extends NoteFilterSequencerWrapper {
 	 */
 	public void injectPatchChanges(boolean doControllers) {
 		List<ExportTrackInfo> infos = SequenceInfo.lastTrackInfos;
-		if (infos != null) {
+		if (infos != null && infos.size() > MidiConstants.CHANNEL_COUNT-1) {
 			for (ExportTrackInfo info : infos) {
-				if (info.channel + 1 > MidiConstants.CHANNEL_COUNT) {
 					receiver.send(MidiFactory.createAllNotesOff(info.channel), -1L);
 					receiver.send(MidiFactory.createSustainOff(info.channel), -1L);// -1 means real-time
 					if (doControllers) {
@@ -45,7 +44,6 @@ public class LotroSequencerWrapper extends NoteFilterSequencerWrapper {
 					}
 					receiver.send(MidiFactory.createLotroChangeEvent(info.patch, info.channel, sequencer.getTickPosition())
 							.getMessage(), -1L);
-				}
 			}
 		}
 	}
