@@ -48,8 +48,11 @@ Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 
 Version 3.1.10
 - Fixed a bug in songs with more than 15 parts where the preview would sometimes play the wrong lotro instrument for a abc part.
-     The bug has been there since v3.1.0, but now its fixed so that one might sometimes for a fraction of a second hear the wrong instruments,
-     but then it fixes itself. 
+    The bug has been there since v3.1.0, but now its fixed so that one might sometimes for a fraction of a second hear the wrong instruments,
+    but then it fixes itself. 
+- Added more samples for Bardic, LM Fiddle, Basic Fiddle and LM Bassoon, so that less samples have to be interpolated.
+    They will sound slightly more accurate for specific notes now.
+    Maestro might also use less CPU in preview now, downside is it will consume more memory and the install files are larger.
 
 Version 3.1.9
 - Tweaked histogram colors. Green is for polyphony count under 45 notes, yellow is 45 to 64, and red is 64+.
