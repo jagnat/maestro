@@ -37,8 +37,6 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 	private final int tickResolution;
 	private final float divisionType;
 	private final int primaryTempoMPQ;
-	private final int minTempoMPQ;
-	private final int maxTempoMPQ;
 	private final TimeSignature timeSignature;
 	private NavigableMap<Long, TempoEvent> tempo = new TreeMap<>();
 
@@ -73,8 +71,6 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		brandDrumBanks = new int[song.getTracks().length];
 
 		tempo.put(0L, TempoEvent.DEFAULT_TEMPO);
-		int minTempoMPQ = Integer.MAX_VALUE;
-		int maxTempoMPQ = Integer.MIN_VALUE;
 		TimeSignature timeSignature = null;
 
 		divisionType = song.getDivisionType();
@@ -262,15 +258,20 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 							}
 						}
 					} else if (iTrack == 0 && (divisionType == Sequence.PPQ) && MidiUtils.isMetaTempo(msg)) {
-						TempoEvent te = getTempoEventForTick(tick);
-						long elapsedMicros = MidiUtils.ticks2microsec(tick - te.tick, te.tempoMPQ, tickResolution);
-						tempoLengths.put(te.tempoMPQ, elapsedMicros + Util.valueOf(tempoLengths.get(te.tempoMPQ), 0));
-						tempo.put(tick, new TempoEvent(MidiUtils.getTempoMPQ(msg), tick, te.micros + elapsedMicros));
-
-						if (te.tempoMPQ < minTempoMPQ)
-							minTempoMPQ = te.tempoMPQ;
-						if (te.tempoMPQ > maxTempoMPQ)
-							maxTempoMPQ = te.tempoMPQ;
+						int tempoRaw = MidiUtils.getTempoMPQ(msg);
+						if (tempoRaw != 0) {
+							TempoEvent te = getTempoEventForTick(tick);
+							long elapsedMicros = MidiUtils.ticks2microsec(tick - te.tick, te.tempoMPQ, tickResolution);
+							tempoLengths.put(te.tempoMPQ, elapsedMicros + Util.valueOf(tempoLengths.get(te.tempoMPQ), 0));
+						
+							tempo.put(tick, new TempoEvent(tempoRaw, tick, te.micros + elapsedMicros));
+	
+						} else {
+							System.out.println("Warning: MIDI has tempo message of zero MPQ! Ignoring it..");
+							track.remove(evt);
+							sz--;
+							j--;
+						}
 					} else if (msg instanceof MetaMessage) {
 						MetaMessage m = (MetaMessage) msg;
 						if (m.getType() == META_TIME_SIGNATURE && timeSignature == null) {
@@ -367,8 +368,6 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		}
 		primaryTempoMPQ = (max == null) ? DEFAULT_TEMPO_MPQ : max.getKey();
 
-		this.minTempoMPQ = (minTempoMPQ == Integer.MAX_VALUE) ? DEFAULT_TEMPO_MPQ : minTempoMPQ;
-		this.maxTempoMPQ = (maxTempoMPQ == Integer.MIN_VALUE) ? DEFAULT_TEMPO_MPQ : maxTempoMPQ;
 		this.timeSignature = (timeSignature == null) ? TimeSignature.FOUR_FOUR : timeSignature;
 
 		songLengthTicks = lastTick;
@@ -513,22 +512,6 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 
 	public int getPrimaryTempoBPM() {
 		return (int) Math.round(MidiUtils.convertTempo(getPrimaryTempoMPQ()));
-	}
-
-	public int getMinTempoMPQ() {
-		return minTempoMPQ;
-	}
-
-	public int getMinTempoBPM() {
-		return (int) Math.round(MidiUtils.convertTempo(getMinTempoMPQ()));
-	}
-
-	public int getMaxTempoMPQ() {
-		return maxTempoMPQ;
-	}
-
-	public int getMaxTempoBPM() {
-		return (int) Math.round(MidiUtils.convertTempo(getMaxTempoMPQ()));
 	}
 
 	public int getTickResolution() {

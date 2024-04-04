@@ -320,8 +320,8 @@ public class SequencerWrapper implements MidiConstants, ITempoCache, IDiscardabl
 				for (int i = 0; i < c; i++) {
 					MidiEvent ev = track.get(i);
 					MidiMessage msg = ev.getMessage();
-					if (MidiUtils.isMetaTempo(msg)) {
-						// found a tempo event. Add it to the list
+					if (MidiUtils.isMetaTempo(msg) && MidiUtils.getTempoMPQ(msg) != 0) {
+						// found a valid tempo event. Add it to the list
 						list.add(ev);
 					}
 				}

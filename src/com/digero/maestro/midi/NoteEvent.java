@@ -51,6 +51,7 @@ public class NoteEvent implements Comparable<NoteEvent> {
 	public int combinePrioritiesScoreMultiplier = 1;// This is a temp variable used by QuantizedTimingInfo
 
 	public NoteEvent(Note note, int velocity, long startTick, long endTick, ITempoCache tempoCache) {
+		assert note != null;
 		this.note = note;
 		this.velocity = velocity;
 		this.tempoCache = tempoCache;

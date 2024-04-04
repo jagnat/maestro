@@ -2236,7 +2236,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		refreshPreviewPending = false;
 
-		if (abcSong == null) {
+		if (abcSong == null || abcSong.getActivePartCount() == 0) {
 			abcPreviewStartTick = 0;
 			abcPreviewTempoFactor = 1.0f;
 			abcSequencer.clearSequence();
