@@ -50,30 +50,31 @@ public class LotroSequencerWrapper extends NoteFilterSequencerWrapper {
 
 	@Override
 	public void setRunning(boolean isRunning) {
+		boolean running = sequencer.isRunning();
 		super.setRunning(isRunning);
-		injectPatchChanges(!isRunning);
+		if (running || isRunning) injectPatchChanges(!isRunning);
 	}
 
 	@Override
 	public void setPosition(long position) {
 		super.setPosition(position);
-		injectPatchChanges(false);
+		if (sequencer.isRunning()) injectPatchChanges(false);
 	}
 
 	@Override
 	public void setTickPosition(long tick) {
 		super.setTickPosition(tick);
-		injectPatchChanges(false);
+		if (sequencer.isRunning()) injectPatchChanges(false);
 	}
 
 	public void setTrackMute(int track, boolean mute) {
 		super.setTrackMute(track, mute);
-		injectPatchChanges(false);
+		if (sequencer.isRunning()) injectPatchChanges(false);
 	}
 
 	public void setTrackSolo(int track, boolean solo) {
 		super.setTrackSolo(track, solo);
-		injectPatchChanges(false);
+		if (sequencer.isRunning()) injectPatchChanges(false);
 	}
 
 	public static String getLoadLotroSynthError() {

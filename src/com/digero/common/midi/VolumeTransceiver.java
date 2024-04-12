@@ -52,6 +52,7 @@ public class VolumeTransceiver implements Transceiver, MidiConstants
 
 	private void sendDeviceVolume()
 	{
+		//System.out.println("sendDeviceVolume "+volume);
 		passOn(MidiFactory.createDeviceVolumeMessage(volume), -1);
 	}
 	
@@ -81,11 +82,24 @@ public class VolumeTransceiver implements Transceiver, MidiConstants
 			if (sysex.length > 4 && (sysex[1] & 0xFF) == SYSEX_UNIVERSAL_REALTIME && (sysex[3] & 0xFF) == 0x04 && (sysex[4] & 0xFF) == 0x01) {
 				//System.out.println("Ignored SysEx device volume command.");
 				return;
+			} else if (sysex.length ==11 && (sysex[0] & 0xFF) == 0xF0 && (sysex[1] & 0xFF) == 0x41 && (sysex[2] & 0xFF) == 0x10 && (sysex[3] & 0xFF) == 0x42 && (sysex[4] & 0xFF) == 0x12 && (sysex[5] & 0xFF) == 0x40 && (sysex[6] & 0xFF) == 0x00 && (sysex[7] & 0xFF) == 0x7F && (sysex[8] & 0xFF) == 0x00 && (sysex[9] & 0xFF) == 0x41 && (sysex[10] & 0xFF) == 0xF7) {
+				//System.out.println("GS reset ignored");
+				return;
+			} else {
+				/*StringBuilder sb = new StringBuilder();
+				for (byte b : sysex) {
+					sb.append(String.format("%02X ", b));
+				}
+				
+				System.out.println("SysEx command: "+sb.toString());
+				*/				
 			}
 		}
 
 		passOn(message, timeStamp);
-		if (systemReset)
+		if (systemReset) {
+			//System.out.println("systemReset");
 			sendDeviceVolume();
+		}
 	}
 }
