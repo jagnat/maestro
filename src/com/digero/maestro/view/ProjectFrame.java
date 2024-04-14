@@ -2246,6 +2246,11 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			abcPositionLabel.setInitialOffsetTick(abcPreviewStartTick);
 			return false;
 		}
+		
+		if (!abcPreviewMode) {
+			// Refreshing while playing Original (GS) will cause a GS Reset, which will mess with volume.
+			return false;
+		}
 
 		try {
 			abcSong.setSkipSilenceAtStart(saveSettings.skipSilenceAtStart);
