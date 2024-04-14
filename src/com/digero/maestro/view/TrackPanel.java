@@ -426,7 +426,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 
 		float height = 1.0f;// Will be higher than 1.0 if screen larger than FullHD
 		try {
-			height = Math.max(1.0f, Toolkit.getDefaultToolkit().getScreenSize().height/1080.0f);
+			//height = Math.max(1.0f, Toolkit.getDefaultToolkit().getScreenSize().height/1080.0f);
 		} catch (java.awt.HeadlessException e) {
 		}
 		
