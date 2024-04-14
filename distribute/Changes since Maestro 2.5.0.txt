@@ -49,6 +49,7 @@ Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 Version 3.1.11
 - Fix that if the MIDI has any invalid tempo messages of zero MPQ, those messages will now be ignored.
 - Fix source playback volume for GS MIDIs would change when assigning 2+ tracks to a part.
+- Increase track row height on 4K monitors.
 
 Version 3.1.10
 - Fixed a bug in songs with more than 15 parts where the preview would sometimes play the wrong lotro instrument for a abc part.

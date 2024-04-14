@@ -7,6 +7,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.LayoutManager;
+import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -422,6 +423,13 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 	// Also sets some static constants in this class to be scaled properly
 	static TrackDimensions calculateTrackDims() {
 		Font font = UIManager.getFont("defaultFont");
+
+		float height = 1.0f;// Will be higher than 1.0 if screen larger than FullHD
+		try {
+			height = Math.max(1.0f, Toolkit.getDefaultToolkit().getScreenSize().height/1080.0f);
+		} catch (java.awt.HeadlessException e) {
+		}
+		
 		if (font != null) // Using a flat theme - resize panel based on text size
 		{
 			int sizeDiff = font.getSize() - 10;
@@ -437,7 +445,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			dims.controlWidth = (int) (widthAtThisFont * .32);
 
 			// Lerp track height between 10pt (48) and 18pt (72)
-			dims.rowHeight = (int) (48 + (72 - 48) * (sizeDiff / divider));
+			dims.rowHeight = (int) ((48 + (72 - 48) * (sizeDiff / divider)) * height);
 
 			// Lerp section button width between 10pt (22) and 18pt (36)
 			SECTIONBUTTON_WIDTH = (int) (22 + (36 - 22) * (sizeDiff / divider));
@@ -445,7 +453,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			return dims;
 		} else {
 			return new TrackDimensions(TITLE_WIDTH_DEFAULT, PRIORITY_WIDTH_DEFAULT, CONTROL_WIDTH_DEFAULT,
-					ROW_HEIGHT_DEFAULT);
+					(int)(ROW_HEIGHT_DEFAULT * height));
 		}
 	}
 	
