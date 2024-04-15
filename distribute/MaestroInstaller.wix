@@ -58,7 +58,7 @@
 		<!-- Uninstall old versions of Maestro -->
 		<Upgrade Id="{CCA9F6BF-F1FB-4D8E-8892-3AFE3CE6F4B7}">
 			<UpgradeVersion Property="NEWERFOUND"
-				OnlyDetect="yes"
+				OnlyDetect="no"
 				Minimum="$(var.MaestroVersion)" IncludeMinimum="no"
 			/>
 			<UpgradeVersion Property="SELFFOUND"
@@ -86,10 +86,10 @@
 		</Upgrade>
 
 		<!-- Warn user if a newer version is installed. -->
-		<CustomAction Id="NoDowngrade" Error="A newer version of [ProductName] is already installed." />
+		<!--CustomAction Id="NoDowngrade" Error="A newer version of [ProductName] is already installed." /-->
 		<!-- <CustomAction Id="AlreadyInstalled" Error="[ProductName] v$(var.MaestroVersion) is already installed." /> -->
 		<InstallExecuteSequence>
-			<Custom Action="NoDowngrade" After="FindRelatedProducts">NEWERFOUND</Custom>
+			<!--Custom Action="NoDowngrade" After="FindRelatedProducts">NEWERFOUND</Custom-->
 			<!-- <Custom Action="AlreadyInstalled" After="FindRelatedProducts">SELFFOUND</Custom> -->
 			<RemoveExistingProducts Before="InstallInitialize" />
 		</InstallExecuteSequence>
@@ -300,10 +300,9 @@
 				AllowAdvertise="no"
 				Title="$(var.MaestroAppName)"
 				Description="$(var.MaestroAppName) is a MIDI to ABC converter. Arrange multipart ABC files from MIDI source files.">
-			<!--ComponentRef Id="Maestro64.exe" /-->
+			<ComponentRef Id="MaestroStartMenuFolder" />
 			<ComponentRef Id="Maestro.jar" />
 			<ComponentRef Id="MaestroExecutable" />
-			<ComponentRef Id="MaestroStartMenuFolder" />
 		</Feature>
 
 		<Feature Id="AbcPlayer"
@@ -312,10 +311,9 @@
 				AllowAdvertise="no"
 				Title="$(var.AbcPlayerAppName)"
 				Description="$(var.AbcPlayerAppName) lets you preview ABC files as they would sound in The Lord of the Rings Online.">
-			<!--ComponentRef Id="AbcPlayer64.exe" /-->
+			<ComponentRef Id="MaestroStartMenuFolder" />
 			<ComponentRef Id="AbcPlayer.jar" />
 			<ComponentRef Id="AbcPlayerExecutable" />
-			<ComponentRef Id="MaestroStartMenuFolder" />
 		</Feature>
 		
 		<Feature Id="AbcTools"
@@ -324,9 +322,9 @@
 				AllowAdvertise="no"
 				Title="$(var.AbcToolsAppName)"
 				Description="$(var.AbcToolsAppName) lets you merge old single-part abc files into multi-part abc songs. Or auto export abc.">
+			<ComponentRef Id="MaestroStartMenuFolder" />
 			<ComponentRef Id="AbcTools.jar" />
 			<ComponentRef Id="AbcToolsExecutable" />
-			<ComponentRef Id="MaestroStartMenuFolder" />
 		</Feature>
 	</Product>
 </Wix>
