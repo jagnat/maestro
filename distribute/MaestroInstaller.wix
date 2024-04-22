@@ -135,9 +135,9 @@
 								<ShortcutProperty Key="{9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3}, 5" Value="$(var.MaestroAppUserModelId)" />
 							</Shortcut>
 						</File>
-						<File Id="maestro.ico" Source="maestro.ico" />
-						<File Id="midifile.ico" Source="midifile.ico" />
-						<File Id="msxfile.ico" Source="msxfile.ico" />
+						<File Id="file.maestro.ico" Source="maestro.ico" />
+						<File Id="file.midifile.ico" Source="midifile.ico" />
+						<File Id="file.msxfile.ico" Source="msxfile.ico" />
 						
 						<!-- Define ProgIds for file types -->
 						<ProgId Id="Maestro.AssocFile.ABC" Description="ABC Song">
@@ -145,14 +145,14 @@
 								<Verb Id="edit" Command="&amp;Edit" TargetFile="Maestro.exe" Argument='"%1"' />
 							</Extension>
 						</ProgId>
-						<ProgId Id="Maestro.AssocFile.MIDI" Description="MIDI Sequence" Icon="midifile.ico" IconIndex="0">
+						<ProgId Id="Maestro.AssocFile.MIDI" Description="MIDI Sequence" Icon="file.midifile.ico" IconIndex="0">
 							<Extension Id="mid" ContentType="audio/mid">
 								<Verb Id="edit" Command="&amp;Edit" TargetFile="Maestro.exe" Argument='"%1"' />
 							</Extension>
 							<Extension Id="midi" ContentType="audio/mid" />
 							<Extension Id="kar" ContentType="audio/mid" />
 						</ProgId>
-						<ProgId Id="Maestro.AssocFile.MSX" Description="Maestro Song" Icon="msxfile.ico" IconIndex="0">
+						<ProgId Id="Maestro.AssocFile.MSX" Description="Maestro Song" Icon="file.msxfile.ico" IconIndex="0">
 							<Extension Id="msx" ContentType="application/vnd.digero-maestro+xml">
 								<Verb Id="edit" Command="&amp;Edit with $(var.MaestroAppName)" TargetFile="Maestro.exe" Argument='"%1"' />
 							</Extension>
@@ -222,11 +222,11 @@
 								<ShortcutProperty Key="{9F4C2855-9F79-4B39-A8D0-E1D42DE1D5F3}, 5" Value="$(var.AbcPlayerAppUserModelId)" />
 							</Shortcut>
 						</File>
-						<File Id="abcplayer.ico" Source="abcplayer.ico" />
-						<File Id="abcfile.ico" Source="abcfile.ico" />
+						<File Id="file.abcplayer.ico" Source="abcplayer.ico" />
+						<File Id="file.abcfile.ico" Source="abcfile.ico" />
 
 						<!-- Define ProgID for ABC file type -->
-						<ProgId Id="AbcPlayer.AssocFile.ABC" Description="ABC Song" Icon="abcfile.ico" IconIndex="0">
+						<ProgId Id="AbcPlayer.AssocFile.ABC" Description="ABC Song" Icon="file.abcfile.ico" IconIndex="0">
 							<Extension Id="abc" ContentType="text/plain">
 								<Verb Id="play" TargetFile="AbcPlayer.exe" Argument='"%1"' />
 							</Extension>
@@ -236,7 +236,7 @@
 						<RegistryValue Root="HKLM" Key="SOFTWARE\[Manufacturer]\AbcPlayer\Capabilities" Type="string" Name="ApplicationName" Value="$(var.AbcPlayerAppName)" />
 						<RegistryValue Root="HKLM" Key="SOFTWARE\[Manufacturer]\AbcPlayer\Capabilities" Type="string" Name="ApplicationDescription" Value="$(var.AbcPlayerDescriptionLong)" />
 						<RegistryValue Root="HKLM" Key="SOFTWARE\[Manufacturer]\AbcPlayer\Capabilities" Type="string" Name="ApplicationIcon" Value="[APPLICATIONFOLDER]abcplayer.ico,0" />
-						<RegistryValue Root="HKLM" Key="SOFTWARE\[Manufacturer]\AbcPlayer\Capabilities\DefaultIcon" Type="string" Value="[#abcfile.ico],0" />
+						<RegistryValue Root="HKLM" Key="SOFTWARE\[Manufacturer]\AbcPlayer\Capabilities\DefaultIcon" Type="string" Value="[#file.abcfile.ico],0" />
 						<RegistryValue Root="HKLM" Key="SOFTWARE\[Manufacturer]\AbcPlayer\Capabilities\FileAssociations" Type="string" Name=".abc" Value="AbcPlayer.AssocFile.ABC" />
 						<RegistryValue Root="HKLM" Key="SOFTWARE\[Manufacturer]\AbcPlayer\Capabilities\MIMEAssociations" Type="string" Name="text/plain" Value="AbcPlayer.AssocFile.ABC" />
 						<RegistryValue Root="HKLM" Key="SOFTWARE\[Manufacturer]\AbcPlayer\Capabilities\shell" Type="string" Value="open" />
