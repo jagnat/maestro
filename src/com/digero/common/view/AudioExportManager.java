@@ -81,6 +81,20 @@ public class AudioExportManager {
 		}
 	}
 	
+	public void exportMp3Builtin(SequencerWrapper sequencer, File abcFile, String title, String composer) {
+		Preferences mp3Prefs = prefs.node("mp3");
+		ExportMp3Dialog mp3Dialog = new ExportMp3Dialog(parentWindow, null, mp3Prefs, abcFile, title, composer);
+		mp3Dialog.setIconImages(parentWindow.getIconImages());
+		mp3Dialog.addActionListener(e -> {
+			ExportMp3Dialog dialog = (ExportMp3Dialog) e.getSource();
+			JDialog waitFrame = new WaitDialog(parentWindow, dialog.getSaveFile());
+			waitFrame.setVisible(true);
+			new Thread(new ExportMp3BuiltinTask(sequencer.getSequence(), dialog, waitFrame)).start();
+		});
+		mp3Dialog.setVisible(true);
+	}
+	
+	@Deprecated 
 	public void exportMp3Lame(SequencerWrapper sequencer, File abcFile, String title, String composer) {
 		Preferences mp3Prefs = prefs.node("mp3");
 		File lameExe = new File(mp3Prefs.get("lameExe", "./lame.exe"));
@@ -179,6 +193,7 @@ public class AudioExportManager {
 		mp3Dialog.setVisible(true);
 	}
 
+	@Deprecated
 	public void exportMp3Ffmpeg(SequencerWrapper sequencer, File abcFile, String title, String composer) {
 		Preferences mp3Prefs = prefs.node("mp3");
 		File ffExe = new File(mp3Prefs.get("ffExe", "./ffmpeg.exe"));
@@ -373,6 +388,44 @@ public class AudioExportManager {
 			} finally {
 				if (ffExeSav != null && System.getProperty("os.name").contains("Windows"))
 					mp3Prefs.put("ffExe", ffExeSav);
+			}
+			isExporting = false;
+			SwingUtilities.invokeLater(new ExportMp3FinishedTask(error, waitFrame));
+		}
+	}
+	
+	private class ExportMp3BuiltinTask implements Runnable {
+		private Sequence sequence;
+		private ExportMp3Dialog mp3Dialog;
+		private JDialog waitFrame;
+
+		public ExportMp3BuiltinTask(Sequence sequence, ExportMp3Dialog mp3Dialog, JDialog waitFrame) {
+			this.sequence = sequence;
+			this.mp3Dialog = mp3Dialog;
+			this.waitFrame = waitFrame;
+		}
+
+		@Override
+		public void run() {
+			isExporting = true;
+			Exception error = null;
+			try {
+				File wavFile = File.createTempFile("AbcPlayer-", ".wav");
+				try (FileOutputStream fos = new FileOutputStream(wavFile)) {
+					MidiToWav.render(sequence, fos);
+					fos.close();
+					
+					String[] args = mp3Dialog.getCommandLineBuiltinLame(wavFile).toArray(new String[0]);
+					
+					// Invoke LAME library from https://mvnrepository.com/artifact/de.sciss/jump3r/1.0.5
+					de.sciss.jump3r.Main.main(args);
+				    
+				    System.out.println("Encoding done");
+				} finally {
+					wavFile.delete();
+				}
+			} catch (Exception e) {
+				error = e;
 			}
 			isExporting = false;
 			SwingUtilities.invokeLater(new ExportMp3FinishedTask(error, waitFrame));

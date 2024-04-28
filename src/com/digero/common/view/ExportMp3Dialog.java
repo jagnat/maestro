@@ -238,6 +238,29 @@ public class ExportMp3Dialog extends JDialog implements TableLayoutConstants {
 		args += " " + Util.quote(getSaveFile().getAbsolutePath());
 		return Util.quote(theExe.getAbsolutePath()) + args;
 	}
+	
+	public List<String> getCommandLineBuiltinLame(File wav) {
+		List<String> args = new ArrayList<String>();
+		args.add("--silent");
+		args.add("--preset");
+		args.add(getQuality());
+		if (getSongTitle().length() > 0) {
+			args.add("--tt");
+			args.add(getSongTitle());
+		}
+		if (getArtist().length() > 0) {
+			args.add ("--ta");
+			args.add(getArtist());
+		}
+		if (getAlbum().length() > 0) {
+			args.add("--tl");
+			args.add(getAlbum());
+		}
+			
+		args.add(wav.getAbsolutePath());
+		args.add(getSaveFile().getAbsolutePath());
+		return args;
+	}
 
 	public List<String> getCommandLineNew(File wav, String encodedBy) {
 		ArrayList<String> args = new ArrayList<>();

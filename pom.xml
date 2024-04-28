@@ -177,5 +177,11 @@
 		    <artifactId>miglayout</artifactId>
 		    <version>3.7.4</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/de.sciss/jump3r -->
+		<dependency>
+		    <groupId>de.sciss</groupId>
+		    <artifactId>jump3r</artifactId>
+		    <version>1.0.5</version>
+		</dependency>
 	</dependencies>
 </project>

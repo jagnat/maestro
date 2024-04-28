@@ -183,8 +183,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private JMenuItem exportAsMenuItem;
 	private JMenuItem saveExpandedMidiMenuItem;
 	private JMenu exportAudioMenu;
-	private JMenuItem exportMp3LameMenuItem;
-	private JMenuItem exportMp3FfmpegMenuItem;
+//	private JMenuItem exportMp3LameMenuItem;
+//	private JMenuItem exportMp3FfmpegMenuItem;
+	private JMenuItem exportMp3MenuItem;
 	private JMenuItem exportWavMenuItem;
 	private JMenuItem chooseMidiFileMenuItem;
 	private JMenuItem reloadMidiFileMenuItem;
@@ -1072,22 +1073,31 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		
 		fileMenu.add(exportAudioMenu);
 		
-		exportMp3LameMenuItem = exportAudioMenu.add(new JMenuItem("Export MP3 file (LAME)..."));
-		exportMp3LameMenuItem.addActionListener(e -> {
-			if (!abcSequencer.isLoaded() || abcSong == null || audioExporter.isExporting()) {
-				Toolkit.getDefaultToolkit().beep();
-				return;
-			}
-			audioExporter.exportMp3Lame(abcSequencer, getAbcExportFile(), abcSong.getTitle(), abcSong.getComposer());
-		});
+//		exportMp3LameMenuItem = exportAudioMenu.add(new JMenuItem("Export MP3 file (LAME)..."));
+//		exportMp3LameMenuItem.addActionListener(e -> {
+//			if (!abcSequencer.isLoaded() || abcSong == null || audioExporter.isExporting()) {
+//				Toolkit.getDefaultToolkit().beep();
+//				return;
+//			}
+//			audioExporter.exportMp3Lame(abcSequencer, getAbcExportFile(), abcSong.getTitle(), abcSong.getComposer());
+//		});
 
-		exportMp3FfmpegMenuItem = exportAudioMenu.add(new JMenuItem("Export MP3 file (FFmpeg)..."));
-		exportMp3FfmpegMenuItem.addActionListener(e -> {
+//		exportMp3FfmpegMenuItem = exportAudioMenu.add(new JMenuItem("Export MP3 file (FFmpeg)..."));
+//		exportMp3FfmpegMenuItem.addActionListener(e -> {
+//			if (!abcSequencer.isLoaded() || abcSong == null || audioExporter.isExporting()) {
+//				Toolkit.getDefaultToolkit().beep();
+//				return;
+//			}
+//			audioExporter.exportMp3Ffmpeg(abcSequencer, getAbcExportFile(), abcSong.getTitle(), abcSong.getComposer());
+//		});
+		
+		exportMp3MenuItem = exportAudioMenu.add(new JMenuItem("Export MP3 File..."));
+		exportMp3MenuItem.addActionListener(e -> {
 			if (!abcSequencer.isLoaded() || abcSong == null || audioExporter.isExporting()) {
 				Toolkit.getDefaultToolkit().beep();
 				return;
 			}
-			audioExporter.exportMp3Ffmpeg(abcSequencer, getAbcExportFile(), abcSong.getTitle(), abcSong.getComposer());
+			audioExporter.exportMp3Builtin(abcSequencer, getAbcExportFile(), abcSong.getTitle(), abcSong.getComposer());
 		});
 
 		exportWavMenuItem = exportAudioMenu.add(new JMenuItem("Export WAV file..."));
@@ -1547,8 +1557,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		saveAsMenuItem.setEnabled(abcSong != null);
 		saveExpandedMidiMenuItem.setEnabled(abcSong != null);
 		exportAudioMenu.setEnabled(abcSong != null);
-		exportMp3LameMenuItem.setEnabled(abcSong != null);
-		exportMp3FfmpegMenuItem.setEnabled(abcSong != null);
+		exportMp3MenuItem.setEnabled(abcSong != null);
+//		exportMp3LameMenuItem.setEnabled(abcSong != null);
+//		exportMp3FfmpegMenuItem.setEnabled(abcSong != null);
 		exportWavMenuItem.setEnabled(abcSong != null);
 		String errStr = "<html><p style='color:red;'>Must save as an MSX project first</p></html>";
 		chooseMidiFileMenuItem.setEnabled(abcSong != null && abcSong.getSaveFile() != null);
