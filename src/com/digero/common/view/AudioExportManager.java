@@ -295,6 +295,7 @@ public class AudioExportManager {
 		mp3Dialog.setVisible(true);
 	}
 	
+	@Deprecated
 	private class ExportMp3LameTask implements Runnable {
 		private Sequence sequence;
 		private ExportMp3Dialog mp3Dialog;
@@ -337,6 +338,7 @@ public class AudioExportManager {
 		}
 	}
 	
+	@Deprecated
 	private class ExportMp3FfmpegTask implements Runnable {
 		private Sequence sequence;
 		private ExportMp3Dialog mp3Dialog;
