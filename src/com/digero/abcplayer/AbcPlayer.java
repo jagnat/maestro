@@ -615,10 +615,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 			}
 			saveSongDialog();
 		});
-
-		final JMenuItem exportMp3MenuItem = fileMenu.add(new JMenuItem("Save as MP3 file (LAME)..."));
-		exportMp3MenuItem.setMnemonic(KeyEvent.VK_M);
-		exportMp3MenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK));
+		
+		final JMenuItem exportMp3MenuItem = fileMenu.add(new JMenuItem("Save as MP3..."));
 		exportMp3MenuItem.addActionListener(e -> {
 			if (!sequencer.isLoaded() || audioExporter.isExporting()) {
 				Toolkit.getDefaultToolkit().beep();
@@ -627,22 +625,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 			File abcFile = null;
 			if (!abcData.isEmpty())
 				abcFile = abcData.get(0).file;
-			audioExporter.exportMp3Lame(sequencer, abcFile, abcInfo.getTitle(), abcInfo.getComposer());
-		});
-
-		final JMenuItem exportMp3MenuItemNew = fileMenu.add(new JMenuItem("Save as MP3 file (FFmpeg)..."));
-		// exportMp3MenuItemNew.setMnemonic(KeyEvent.VK_M);
-		// exportMp3MenuItemNew.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E,
-		// InputEvent.CTRL_DOWN_MASK));
-		exportMp3MenuItemNew.addActionListener(e -> {
-			if (!sequencer.isLoaded() || audioExporter.isExporting()) {
-				Toolkit.getDefaultToolkit().beep();
-				return;
-			}
-			File abcFile = null;
-			if (!abcData.isEmpty())
-				abcFile = abcData.get(0).file;
-			audioExporter.exportMp3Ffmpeg(sequencer, abcFile, abcInfo.getTitle(), abcInfo.getComposer());
+			audioExporter.exportMp3Builtin(sequencer, abcFile, APP_NAME_LONG, APP_NAME);
 		});
 
 		final JMenuItem exportWavMenuItem = fileMenu.add(new JMenuItem("Save as Wave file..."));
@@ -678,7 +661,6 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 				saveMenuItem.setEnabled(saveEnabled);
 				exportWavMenuItem.setEnabled(saveEnabled && !audioExporter.isExporting());
 				exportMp3MenuItem.setEnabled(saveEnabled && !audioExporter.isExporting());
-				exportMp3MenuItemNew.setEnabled(saveEnabled && !audioExporter.isExporting());
 			}
 
 			@Override
@@ -694,7 +676,6 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 				saveMenuItem.setEnabled(true);
 				exportWavMenuItem.setEnabled(true);
 				exportMp3MenuItem.setEnabled(true);
-				exportMp3MenuItemNew.setEnabled(true);
 			}
 		});
 

@@ -47,6 +47,7 @@ Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
 
 Version 3.1.11
+- Separate LAME or FFmpeg downloads are no longer needed to export MP3s from Maestro or AbcPlayer.
 - Fix that if the MIDI has any invalid tempo messages of zero MPQ, those messages will now be ignored.
 - Fix source playback volume for GS MIDIs would change when assigning 2+ tracks to a part.
 - Enable font sizes up to 36 pt which will help scale the app on 4K monitors. 
