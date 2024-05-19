@@ -2236,11 +2236,6 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			return false;
 		}
 		
-		if (!abcPreviewMode) {
-			// Refreshing while playing Original (GS) will cause a GS Reset, which will mess with volume.
-			return false;
-		}
-
 		try {
 			abcSong.setSkipSilenceAtStart(saveSettings.skipSilenceAtStart);
 			abcSong.setDeleteMinimalNotes(saveSettings.deleteMinimalNotes);
@@ -2258,7 +2253,11 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			abcPositionLabel.setInitialOffsetTick(abcPreviewStartTick);
 
 			boolean running = abcSequencer.isRunning();
-			abcSequencer.reset(false);
+			if (abcPreviewMode) {
+				// Refreshing while playing Original (GS) will cause a GS Reset,
+				// which will mess with volume, hence the if statement.
+				abcSequencer.reset(false);
+			}
 			abcSequencer.setSequence(previewSequenceInfo.getSequence());
 
 			if (tick < abcPreviewStartTick)
