@@ -163,7 +163,7 @@ public class NoteEvent implements Comparable<NoteEvent> {
 					&& ((this.tiesFrom == null && that.tiesFrom == null) || (this.tiesFrom != null && that.tiesFrom != null))
 					&& ((this.tiesTo == null && that.tiesTo == null) || (this.tiesTo != null && that.tiesTo != null))
 					&& this.tempoCache == that.getTempoCache()
-					&& this.midiPan == that.midiPan;
+					&& this.midiPan == that.midiPan && ((this instanceof BentNoteEvent) == (that instanceof BentNoteEvent));
 		}
 		return false;
 	}

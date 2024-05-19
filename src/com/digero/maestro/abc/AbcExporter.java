@@ -1281,8 +1281,9 @@ public class AbcExporter {
 			}
 
 			List<NoteEvent> bentNotes = quantizePitchBends(part, ne);
-
+			
 			if (bentNotes != null) {
+				assert !bentNotes.contains(ne);
 				deleteEvents.add(ne);
 				for (NoteEvent bent : bentNotes) {
 					assert bent.note != Note.REST;
@@ -1581,7 +1582,7 @@ public class AbcExporter {
 			NoteEvent current = null;
 			boolean changeAtLastGrid = true;
 			long lastGridTick = 0L;
-			for (long t = ne.getStartTick(); t < ne.getEndTick(); t++) {
+			for (long t = be.getStartTick(); t < be.getEndTick(); t++) {
 				Integer entry = be.getBend(t);
 				if (entry != null) {
 					noteID = startPitch + entry;
@@ -1630,8 +1631,15 @@ public class AbcExporter {
 					}
 				}
 			}
-			// double dura = be.getLengthMicros() / 1000.0d;
-			// System.out.println(dura+" Note split into "+benders.size()+" bends");
+			//double dura = be.getLengthMicros() / 1000.0d;
+			//System.out.println(dura+" Note split into "+benders.size()+" bends");
+			//if (be.getStartTick() != benders.get(0).getStartTick() || be.getEndTick() != benders.get(benders.size()-1).getEndTick()) {
+			//	System.out.println("\nNote split wrongly "+be.getStartTick()+" to "+be.getEndTick());
+			//	System.out.println("        == "+benders.get(0).getStartTick()+" to "+benders.get(benders.size()-1).getEndTick());
+			//}
+			//if (benders.size() == 0) {
+			//	System.out.println(" empty benders");
+			//}
 			return benders;
 		} else {
 			return null;
@@ -1639,17 +1647,18 @@ public class AbcExporter {
 	}
 
 	private NoteEvent createBentSubNote(BentNoteEvent be, int noteID, NoteEvent current, long tick) {
-		if (current != null)
+		if (current != null) {
 			current.setEndTick(tick);
+		}
 		Note newNote = Note.fromId(noteID);
 		if (newNote == null) {
 			System.out.println("Note removed, pitch bend out of range");
 			return null;
 		}
 		assert newNote != Note.REST;
-		current = new NoteEvent(newNote, be.velocity, tick, be.getEndTick(), be.getTempoCache());
-		current.setMidiPan(be.midiPan);
-		return current;
+		NoteEvent sub = new NoteEvent(newNote, be.velocity, tick, be.getEndTick(), be.getTempoCache());
+		sub.setMidiPan(be.midiPan);
+		return sub;
 	}
 
 	private void breakLongNotes(AbcPart part, List<NoteEvent> events, boolean addTies) {
