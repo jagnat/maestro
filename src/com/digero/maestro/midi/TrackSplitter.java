@@ -242,6 +242,7 @@ public class TrackSplitter {
 		}
 	}
 
+	@Deprecated
 	private boolean isXgGsGm2DrumsTrack(int track) {
 		return sequenceCache.isXGDrumsTrack(track) || sequenceCache.isGSDrumsTrack(track)
 				|| sequenceCache.isGM2DrumsTrack(track);

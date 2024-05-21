@@ -240,29 +240,31 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 
 	void setExtendedMetadata(AbcField field, String value) {
 		switch (field) {
-		case SONG_TITLE:
-			songTitle = value.trim();
-			break;
-		case SONG_COMPOSER:
-			songComposer = value.trim();
-			break;
-		case SONG_TRANSCRIBER:
-			songTranscriber = value.trim();
-			break;
-		case SWING_RHYTHM:
-			hasTriplets = Boolean.parseBoolean(value.trim());
-			hasTripletsSet = true;
-			break;
-		case MIX_TIMINGS:
-			hasMixTimings = Boolean.parseBoolean(value.trim());
-			break;
-		case ABC_CREATOR:
-		case ABC_VERSION:
-		case PART_NAME:
-		case MADE_FOR:
-		case EXPORT_TIMESTAMP:
-		case SONG_DURATION:
-		case TEMPO:
+			case SONG_TITLE:
+				songTitle = value.trim();
+				break;
+			case SONG_COMPOSER:
+				songComposer = value.trim();
+				break;
+			case SONG_TRANSCRIBER:
+				songTranscriber = value.trim();
+				break;
+			case SWING_RHYTHM:
+				hasTriplets = Boolean.parseBoolean(value.trim());
+				hasTripletsSet = true;
+				break;
+			case MIX_TIMINGS:
+				hasMixTimings = Boolean.parseBoolean(value.trim());
+				break;
+			case ABC_CREATOR:
+			case ABC_VERSION:
+			case PART_NAME:
+			case MADE_FOR:
+			case EXPORT_TIMESTAMP:
+			case SONG_DURATION:
+			case TEMPO:
+			case DELETE_MINIMAL_NOTES:
+			case SKIP_SILENCE_AT_START:
 			// Ignore
 			break;
 		}

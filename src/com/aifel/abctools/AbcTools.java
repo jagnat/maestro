@@ -12,8 +12,13 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.FileVisitResult;
+import static java.nio.file.FileVisitResult.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.BackingStoreException;
@@ -91,6 +96,9 @@ public class AbcTools {
 	private InstrNameSettings instrNameSettings;
 	private SaveAndExportSettings saveSettings;
 	private MiscSettings miscSettings;
+	private volatile double progressFactor = 1;
+	private volatile int exportCount = 0;
+	private volatile int totalExportCount = 0;
 
 	public static void main(String[] args) {
 		try {
@@ -555,7 +563,12 @@ public class AbcTools {
 	private ActionListener getStartExportActionListener() {
 		return e -> {
 			(new Thread(() -> {
-				autoExport();
+				try {
+					autoExport();
+				} catch (Exception ioe) {
+					ioe.printStackTrace();
+					frame.setTextFieldText("An error occured:\n\n" + ioe);
+				}
 			})).start();
 		};
 	}
@@ -569,7 +582,7 @@ public class AbcTools {
 
 	private volatile String textAuto = "";
 
-	private void autoExport() {
+	private void autoExport() throws IOException {
 		refreshAuto();
 		frame.getBtnStartExport().setEnabled(false);
 		frame.setForceMixTimingEnabled(false);
@@ -578,6 +591,7 @@ public class AbcTools {
 		frame.setBtnSourceAutoEnabled(false);
 		frame.setSaveMSXEnabled(false);
 		frame.setTabsEnabled(false);
+		frame.setRecursiveCheckBoxEnabled(false);
 
 		// Test if dest is empty
 		if (destFolderAuto.listFiles().length != 0) {
@@ -595,15 +609,12 @@ public class AbcTools {
 			frame.setBtnSourceAutoEnabled(true);
 			frame.setSaveMSXEnabled(true);
 			frame.setTabsEnabled(true);
+			frame.setRecursiveCheckBoxEnabled(true);
 			setProgress(0);
 			return;
 		}
 		textAuto = "";
 		appendToField("<html>Keep Maestro closed while this app runs.<br><br>Exporting in progress");
-
-		File[] projects = sourceFolderAuto.listFiles(new MsxFileFilter());
-
-		appendToField("<br>Found " + projects.length + " project files.<br>");
 
 		partAutoNumberer = new PartAutoNumberer(prefs.node("partAutoNumberer"));
 		partNameTemplate = new PartNameTemplate(prefs.node("partNameTemplate"));
@@ -613,15 +624,30 @@ public class AbcTools {
 		miscSettings = new MiscSettings(prefs.node("miscSettings"), true);
 
 		setProgress(0);
-
-		double factor = 1000.0d / projects.length;
-		int no = 0;
-		for (File project : projects) {
-			exportProject(project);
-			no++;
-			setProgress((int) (no * factor));
+		if (!frame.getRecursiveCheckBoxSelected()) {
+			File[] projects = sourceFolderAuto.listFiles(new MsxFileFilter());
+			
+			appendToField("<br>Found " + projects.length + " project files.<br>");
+			
+			progressFactor = 1000.0d / projects.length;
+			exportCount = 0;
+			
+			for (File project : projects) {
+				exportProject(project);
+				exportCount++;
+				setProgress((int) (exportCount * progressFactor));
+			}
+		} else {		
+			totalExportCount = 0;
+			
+			Files.walkFileTree(sourceFolderAuto.toPath(), new CountFiles());
+			appendToField("<br>Found " + totalExportCount + " project files.<br>");
+			
+			progressFactor = 1000.0d / totalExportCount;
+			exportCount = 0;
+			
+			Files.walkFileTree(sourceFolderAuto.toPath(), new ProcessFiles());
 		}
-
 		setProgress(1000);
 
 		appendToField("<br><br>Exports finished.");
@@ -632,6 +658,81 @@ public class AbcTools {
 		frame.setBtnSourceAutoEnabled(true);
 		frame.setSaveMSXEnabled(true);
 		frame.setTabsEnabled(true);
+		frame.setRecursiveCheckBoxEnabled(true);
+	}
+	
+	public class CountFiles extends SimpleFileVisitor<Path> {
+		
+		MsxFileFilter f = new MsxFileFilter();
+		
+	    @Override
+	    public FileVisitResult visitFile(Path file, BasicFileAttributes attr) {
+	        if (attr.isRegularFile() && f.accept(file.toFile())) {
+	        	totalExportCount++;
+	        }
+	        return CONTINUE;
+	    }
+	
+	    // Print each directory visited.
+	    @Override
+	    public FileVisitResult postVisitDirectory(Path dir,
+	                                          IOException exc) {
+	        //System.out.format("Finished directory: %s%n", dir);
+	        return CONTINUE;
+	    }
+	
+	    // If there is some error accessing
+	    // the file, let the user know.
+	    // If you don't override this method
+	    // and an error occurs, an IOException 
+	    // is thrown.
+	    @Override
+	    public FileVisitResult visitFileFailed(Path file,
+	                                       IOException exc) {
+	        System.err.println(exc);
+	        return CONTINUE;
+	    }
+	}
+	
+	public class ProcessFiles extends SimpleFileVisitor<Path> {
+
+		MsxFileFilter f = new MsxFileFilter();
+		
+	    @Override
+	    public FileVisitResult visitFile(Path file, BasicFileAttributes attr) {
+	    	if (f.accept(file.toFile())) {
+		        if (attr.isSymbolicLink()) {
+		            System.out.format("Ignoring symbolic link: %s ", file);
+		        } else if (attr.isRegularFile()) {
+		        	exportProject(file.toFile());
+					exportCount++;
+					setProgress((int) (exportCount * progressFactor));
+		        } else {
+		            System.out.format("Ignoring: %s ", file);
+		        }
+	    	}
+	        return CONTINUE;
+	    }
+	
+	    // Print each directory visited.
+	    @Override
+	    public FileVisitResult postVisitDirectory(Path dir,
+	                                          IOException exc) {
+	        System.out.format("Finished directory: %s%n", dir);
+	        return CONTINUE;
+	    }
+	
+	    // If there is some error accessing
+	    // the file, let the user know.
+	    // If you don't override this method
+	    // and an error occurs, an IOException 
+	    // is thrown.
+	    @Override
+	    public FileVisitResult visitFileFailed(Path file,
+	                                       IOException exc) {
+	        System.err.println(exc);
+	        return CONTINUE;
+	    }
 	}
 
 	private void setProgress(int progress) {
@@ -694,8 +795,10 @@ public class AbcTools {
 				fileName = "";
 			fileName = StringCleaner.cleanForFileName(fileName);
 			fileName += ".abc";
+			
+			File finalFolder = getTreeFolder(sourceFolderAuto, destFolderAuto, project);
 
-			exportFile = new File(destFolderAuto, fileName);
+			exportFile = new File(finalFolder, fileName);
 			String finalName = exportFile.getName();
 			dot = finalName.lastIndexOf('.');
 			if (dot > 0)
@@ -705,6 +808,7 @@ public class AbcTools {
 				n++;
 				exportFile = new File(exportFile.getParentFile(), finalName + " (" + n + ").abc");
 			}
+			finalFolder.mkdirs();// for recursive exporting we need the folders to exist.
 			abcSong.exportAbc(exportFile);
 
 			appendToField("<br>&nbsp;&nbsp;as " + exportFile.getName());
@@ -731,6 +835,36 @@ public class AbcTools {
 
 			}
 		}
+	}
+
+	/**
+	 * 
+	 * @param sourceFolderAuto2
+	 * @param destFolderAuto
+	 * @param project
+	 * @return Project file but in a folder nested inside destFolderAuto in same manner as project is nested inside sourceFolderAuto2
+	 * @throws IOException
+	 */
+	private File getTreeFolder(File sourceFolderAuto2, File destFolderAuto2, File project) throws IOException {
+		if (project.getParentFile().equals(sourceFolderAuto2)) {
+			//appendToField("<br><font color='red'> no tree! </font>");
+			return destFolderAuto2;
+		}
+		List<String> theList = new ArrayList<>();
+		File now = new File(project.getParent());
+		int iterCheck = 0;
+		while(!now.equals(sourceFolderAuto2) && iterCheck < 100) {
+			iterCheck++;
+			theList.add(now.getName());			
+			now = now.getParentFile();
+		}
+		if (iterCheck == 100) throw new IOException("Something went wrong with path tree");
+		File future = new File(destFolderAuto2.getPath());
+		for (int i = theList.size()-1 ; i >= 0 ; i--) {
+			String branch = theList.get(i);
+			future = new File (future, branch);
+		}
+		return future;
 	}
 
 	private ActionListener getSourceAutoActionListener() {

@@ -52,6 +52,7 @@ public class MultiMergerView extends JFrame {
 	private JLabel lblNewLabel_2;
 	private JCheckBox saveMSX;
 	private JProgressBar progressBar;
+	private JCheckBox recursiveCheckBox;
 
 	/**
 	 * Create the frame.
@@ -213,6 +214,11 @@ public class MultiMergerView extends JFrame {
 		saveMSX.setToolTipText("Save MSX files when midi location has changes.");
 		saveMSX.setAlignmentX(Component.CENTER_ALIGNMENT);
 		panelAuto.add(saveMSX);
+		
+		recursiveCheckBox = new JCheckBox("Recursive");
+		recursiveCheckBox.setToolTipText("Go through sub folders and create a similar output folder tree");
+		recursiveCheckBox.setAlignmentX(0.5f);
+		panelAuto.add(recursiveCheckBox);
 
 		scrollPaneAutoTxt = new JScrollPane();
 		contentPaneAutoExport.add(scrollPaneAutoTxt, BorderLayout.CENTER);
@@ -407,5 +413,17 @@ public class MultiMergerView extends JFrame {
 
 	public void setProgressBarValue(int value) {
 		progressBar.setValue(value);
+	}
+	public boolean getRecursiveCheckBoxSelected() {
+		return recursiveCheckBox.isSelected();
+	}
+	public void setRecursiveCheckBoxSelected(boolean selected_2) {
+		recursiveCheckBox.setSelected(selected_2);
+	}
+	public boolean getRecursiveCheckBoxEnabled() {
+		return recursiveCheckBox.isEnabled();
+	}
+	public void setRecursiveCheckBoxEnabled(boolean enabled_8) {
+		recursiveCheckBox.setEnabled(enabled_8);
 	}
 }

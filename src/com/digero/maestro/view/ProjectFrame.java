@@ -229,7 +229,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private Icon stopIconDisabled;
 
 	private long abcPreviewStartTick = 0;
-	private float abcPreviewTempoFactor = 1.0f;
+	private float abcPreviewTempoFactor = 1.0f;// deprecated
 	private boolean echoingPosition = false;
 
 	private MainSequencerListener mainSequencerListener;
@@ -1417,6 +1417,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			}
 		}
 
+		@Deprecated
 		private void updateNoteCount() {
 			noteCountLabel.setVisible(miscSettings.showMaxPolyphony && false);
 			peakLabel.setVisible(miscSettings.showMaxPolyphony && false);
