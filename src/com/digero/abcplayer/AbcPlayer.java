@@ -625,7 +625,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 			File abcFile = null;
 			if (!abcData.isEmpty())
 				abcFile = abcData.get(0).file;
-			audioExporter.exportMp3Builtin(sequencer, abcFile, APP_NAME_LONG, APP_NAME);
+			audioExporter.exportMp3Builtin((LotroSequencerWrapper)sequencer, abcFile, APP_NAME_LONG, APP_NAME);
 		});
 
 		final JMenuItem exportWavMenuItem = fileMenu.add(new JMenuItem("Save as Wave file..."));
@@ -640,7 +640,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 			File abcFile = null;
 			if (!abcData.isEmpty())
 				abcFile = abcData.get(0).file;
-			audioExporter.exportWav(sequencer, abcFile);
+			audioExporter.exportWav((LotroSequencerWrapper)sequencer, abcFile);
 		});
 
 		fileMenu.addSeparator();

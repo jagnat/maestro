@@ -145,7 +145,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private boolean allowOverwriteExportFile = false;
 	private NoteFilterSequencerWrapper sequencer;
 	private VolumeTransceiver volumeTransceiver;
-	private NoteFilterSequencerWrapper abcSequencer;
+	private LotroSequencerWrapper abcSequencer;
 	private VolumeTransceiver abcVolumeTransceiver;
 	private PartAutoNumberer partAutoNumberer;
 	private PartNameTemplate partNameTemplate;
@@ -2244,7 +2244,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			exporter.stereoPan = prefs.getInt("stereoPan", 100);
 			SequenceInfo previewSequenceInfo = SequenceInfo.fromAbcParts(exporter, !failedToLoadLotroInstruments,
 					false);
-
+			
+			
 			long tick = sequencer.getTickPosition();
 			abcPreviewStartTick = exporter.getExportStartTick();
 			abcPreviewTempoFactor = abcSequencer.getTempoFactor();
@@ -2259,6 +2260,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				abcSequencer.reset(false);
 			}
 			abcSequencer.setSequence(previewSequenceInfo.getSequence());
+			abcSequencer.setStartTick(abcPreviewStartTick);// Needed for MP3 and WAV exports.
 
 			if (tick < abcPreviewStartTick)
 				tick = abcPreviewStartTick;

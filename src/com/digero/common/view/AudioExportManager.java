@@ -24,6 +24,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileFilter;
 
 import com.digero.abcplayer.MidiToWav;
+import com.digero.common.midi.LotroSequencerWrapper;
 import com.digero.common.midi.SequencerWrapper;
 import com.digero.common.util.ExtensionFileFilter;
 import com.digero.common.util.Util;
@@ -46,7 +47,7 @@ public class AudioExportManager {
 		this.prefs = prefs;
 	}
 	
-	public void exportWav(SequencerWrapper sequencer, File abcFile) {
+	public void exportWav(LotroSequencerWrapper sequencer, File abcFile) {
 		Preferences mp3Prefs = prefs.node("mp3");
 		if (exportFileDialog == null) {
 			exportFileDialog = new JFileChooser(
@@ -77,11 +78,11 @@ public class AudioExportManager {
 
 			JDialog waitFrame = new WaitDialog(parentWindow, saveFile);
 			waitFrame.setVisible(true);
-			new Thread(new ExportWavTask(sequencer.getSequence(), saveFile, waitFrame)).start();
+			new Thread(new ExportWavTask(sequencer.getSequence(), saveFile, waitFrame, sequencer.getStartTick())).start();
 		}
 	}
 	
-	public void exportMp3Builtin(SequencerWrapper sequencer, File abcFile, String title, String composer) {
+	public void exportMp3Builtin(LotroSequencerWrapper sequencer, File abcFile, String title, String composer) {
 		Preferences mp3Prefs = prefs.node("mp3");
 		ExportMp3Dialog mp3Dialog = new ExportMp3Dialog(parentWindow, null, mp3Prefs, abcFile, title, composer);
 		mp3Dialog.setIconImages(parentWindow.getIconImages());
@@ -89,7 +90,7 @@ public class AudioExportManager {
 			ExportMp3Dialog dialog = (ExportMp3Dialog) e.getSource();
 			JDialog waitFrame = new WaitDialog(parentWindow, dialog.getSaveFile());
 			waitFrame.setVisible(true);
-			new Thread(new ExportMp3BuiltinTask(sequencer.getSequence(), dialog, waitFrame)).start();
+			new Thread(new ExportMp3BuiltinTask(sequencer.getSequence(), dialog, waitFrame, sequencer.getStartTick())).start();
 		});
 		mp3Dialog.setVisible(true);
 	}
@@ -318,7 +319,7 @@ public class AudioExportManager {
 				mp3Prefs.put("lameExe", "");
 				File wavFile = File.createTempFile("AbcPlayer-", ".wav");
 				try (FileOutputStream fos = new FileOutputStream(wavFile)) {
-					MidiToWav.render(sequence, fos);
+					MidiToWav.render(sequence, fos, 0L);
 					fos.close();
 					Process p = Runtime.getRuntime().exec(mp3Dialog.getCommandLine(wavFile));
 					if (p.waitFor() != 0)
@@ -363,7 +364,7 @@ public class AudioExportManager {
 				}
 				File wavFile = File.createTempFile("AbcPlayer-", ".wav");
 				try (FileOutputStream fos = new FileOutputStream(wavFile)) {
-					MidiToWav.render(sequence, fos);
+					MidiToWav.render(sequence, fos, 0L);
 					fos.close();;
 					String[] args = mp3Dialog.getCommandLineNew(wavFile, encodedBy).toArray(new String[0]);
 
@@ -400,11 +401,13 @@ public class AudioExportManager {
 		private Sequence sequence;
 		private ExportMp3Dialog mp3Dialog;
 		private JDialog waitFrame;
+		private long startTick;
 
-		public ExportMp3BuiltinTask(Sequence sequence, ExportMp3Dialog mp3Dialog, JDialog waitFrame) {
+		public ExportMp3BuiltinTask(Sequence sequence, ExportMp3Dialog mp3Dialog, JDialog waitFrame, long startTick) {
 			this.sequence = sequence;
 			this.mp3Dialog = mp3Dialog;
 			this.waitFrame = waitFrame;
+			this.startTick = startTick;
 		}
 
 		@Override
@@ -414,7 +417,7 @@ public class AudioExportManager {
 			try {
 				File wavFile = File.createTempFile("AbcPlayer-", ".wav");
 				try (FileOutputStream fos = new FileOutputStream(wavFile)) {
-					MidiToWav.render(sequence, fos);
+					MidiToWav.render(sequence, fos, startTick);
 					fos.close();
 					
 					String[] args = mp3Dialog.getCommandLineBuiltinLame(wavFile).toArray(new String[0]);
@@ -458,11 +461,13 @@ public class AudioExportManager {
 		private Sequence sequence;
 		private File file;
 		private JDialog waitFrame;
+		private long startTick;
 
-		public ExportWavTask(Sequence sequence, File file, JDialog waitFrame) {
+		public ExportWavTask(Sequence sequence, File file, JDialog waitFrame, long startTick) {
 			this.sequence = sequence;
 			this.file = file;
 			this.waitFrame = waitFrame;
+			this.startTick = startTick;
 		}
 
 		@Override
@@ -471,7 +476,7 @@ public class AudioExportManager {
 			Exception error = null;
 			try {
 				try (FileOutputStream fos = new FileOutputStream(file)) {
-					MidiToWav.render(sequence, fos);
+					MidiToWav.render(sequence, fos, startTick);
 				}
 			} catch (Exception e) {
 				error = e;

@@ -16,6 +16,7 @@ import com.digero.maestro.midi.SequenceInfo;
 public class LotroSequencerWrapper extends NoteFilterSequencerWrapper {
 	private static Synthesizer lotroSynth;
 	private static String loadLotroSynthError;
+	private long startTick = 0L;
 
 	static {
 		try {
@@ -23,6 +24,10 @@ public class LotroSequencerWrapper extends NoteFilterSequencerWrapper {
 		} catch (InvalidMidiDataException | MidiUnavailableException | IOException e) {
 			loadLotroSynthError = e.getMessage();
 		}
+	}
+	
+	public LotroSequencerWrapper() throws MidiUnavailableException {
+		super();
 	}
 
 	/**
@@ -81,9 +86,6 @@ public class LotroSequencerWrapper extends NoteFilterSequencerWrapper {
 		return loadLotroSynthError;
 	}
 
-	public LotroSequencerWrapper() throws MidiUnavailableException {
-	}
-
 	public boolean isUsingLotroInstruments() {
 		return lotroSynth != null;
 	}
@@ -108,5 +110,13 @@ public class LotroSequencerWrapper extends NoteFilterSequencerWrapper {
 			return notes;
 		}
 		return 0;
+	}
+
+	public long getStartTick() {
+		return startTick;
+	}
+
+	public void setStartTick(long startTick) {
+		this.startTick = startTick;
 	}
 }

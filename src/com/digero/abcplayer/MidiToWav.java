@@ -23,7 +23,7 @@ public class MidiToWav {
 	/**
 	 * Render sequence using selected or default soundbank into wave audio file.
 	 */
-	public static void render(Sequence sequence, OutputStream out) throws MidiUnavailableException {
+	public static void render(Sequence sequence, OutputStream out, long startTick) throws MidiUnavailableException {
 		try {
 			// Find available AudioSynthesizer.
 			AudioSynthesizer synth = SynthesizerFactory.findAudioSynthesizer();
@@ -47,7 +47,7 @@ public class MidiToWav {
 			SynthesizerFactory.initAudioSynthesizer(synth);
 
 			// Play Sequence into AudioSynthesizer Receiver.
-			double total = send(sequence, synth.getReceiver());
+			double total = send(sequence, synth.getReceiver(), startTick);
 
 			// Calculate how long the WAVE file needs to be.
 			long len = (long) (stream.getFormat().getFrameRate() * (total + 1));
@@ -69,7 +69,7 @@ public class MidiToWav {
 	/**
 	 * Send entire MIDI Sequence into Receiver using timestamps.
 	 */
-	public static double send(Sequence seq, Receiver recv) {
+	public static double send(Sequence seq, Receiver recv, long startTick) {
 		float divtype = seq.getDivisionType();
 		assert (seq.getDivisionType() == Sequence.PPQ);
 		Track[] tracks = seq.getTracks();
@@ -95,7 +95,7 @@ public class MidiToWav {
 			if (seltrack == -1)
 				break;
 			trackspos[seltrack]++;
-			long tick = selevent.getTick();
+			long tick = Math.max(0L, selevent.getTick()-startTick);
 			curtime = calculateCurTime(divtype, mpq, seqres, lasttick, curtime, tick);
 			lasttick = tick;
 			MidiMessage msg = selevent.getMessage();

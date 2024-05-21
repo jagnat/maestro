@@ -23,6 +23,7 @@ public class NoteFilterSequencerWrapper extends SequencerWrapper {
 	private MidiDevice device = null;
 
 	public NoteFilterSequencerWrapper() throws MidiUnavailableException {
+		super();
 		filter = new NoteFilterTransceiver();
 		addTransceiver(filter);
 	}
