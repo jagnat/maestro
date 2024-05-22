@@ -32,13 +32,13 @@ public class TimingInfo {
 	@Override
 	public String toString() {
 		String str = "  TimingInfo:\n";
-		str += meter.toString() + "\n";
-		str += resolutionPPQ + "\n";
-		str += tempoMPQ + "\n";
-		str += exportTempoFactor + "\n";
-		str += defaultDivisor + "\n";
-		str += minNoteDivisor + "\n";
-		str += minNoteLengthTicks + "\n";
+		str += "meter "+meter.toString() + "\n";
+		str += "resolutionPPQ "+resolutionPPQ + "\n";
+		str += "tempoMPQ "+tempoMPQ + "\n";
+		str += "exportTempoFactor "+exportTempoFactor + "\n";
+		str += "defaultDivisor "+defaultDivisor + "\n";
+		str += "minNoteDivisor "+minNoteDivisor + "\n";
+		str += "minNoteLengthTicks "+minNoteLengthTicks + "\n";
 		return str;
 	}
 

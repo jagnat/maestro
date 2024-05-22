@@ -193,6 +193,11 @@ public class NoteEvent implements Comparable<NoteEvent> {
 	public String printout() {
 		return "Note " + note.id + " dura " + getFullLengthTicks() + " |";
 	}
+	
+	@Override
+	public String toString() {
+		return "Note " + note.id + " dura " + getFullLengthTicks() + " tick "+startTick+"-"+endTick+" pan "+midiPan;
+	}
 
 	public void setMidiPan(int pan) {
 		midiPan = pan;
