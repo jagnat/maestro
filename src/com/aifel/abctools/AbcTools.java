@@ -11,6 +11,7 @@ import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import static java.nio.file.FileVisitResult.*;
@@ -26,7 +27,6 @@ import java.util.prefs.Preferences;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.sound.midi.InvalidMidiDataException;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
@@ -38,16 +38,12 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.filechooser.FileSystemView;
 import javax.xml.transform.TransformerException;
 
-import org.xml.sax.SAXException;
-
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.Border;
 
 import com.digero.common.abc.LotroInstrument;
 import com.digero.common.abc.StringCleaner;
-import com.digero.common.util.ParseException;
 import com.digero.maestro.MaestroMain;
-import com.digero.maestro.abc.AbcConversionException;
 import com.digero.maestro.abc.AbcSong;
 import com.digero.maestro.abc.ExportFilenameTemplate;
 import com.digero.maestro.abc.PartAutoNumberer;
@@ -99,6 +95,7 @@ public class AbcTools {
 	private volatile double progressFactor = 1;
 	private volatile int exportCount = 0;
 	private volatile int totalExportCount = 0;
+	private volatile int result = 0;
 
 	public static void main(String[] args) {
 		try {
@@ -567,7 +564,16 @@ public class AbcTools {
 					autoExport();
 				} catch (Exception ioe) {
 					ioe.printStackTrace();
-					frame.setTextFieldText("An error occured:\n\n" + ioe);
+					appendToField("<br><font color='red'>"+ioe.toString()+"</font>");
+					setProgress(0);
+					frame.getBtnStartExport().setEnabled(true);
+					frame.setForceMixTimingEnabled(true);
+					frame.setBtnDestAutoEnabled(true);
+					frame.setBtnMIDIEnabled(true);
+					frame.setBtnSourceAutoEnabled(true);
+					frame.setSaveMSXEnabled(true);
+					frame.setTabsEnabled(true);
+					frame.setRecursiveCheckBoxEnabled(true);
 				}
 			})).start();
 		};
@@ -582,34 +588,37 @@ public class AbcTools {
 
 	private volatile String textAuto = "";
 
-	private void autoExport() throws IOException {
-		refreshAuto();
-		frame.getBtnStartExport().setEnabled(false);
-		frame.setForceMixTimingEnabled(false);
-		frame.setBtnDestAutoEnabled(false);
-		frame.setBtnMIDIEnabled(false);
-		frame.setBtnSourceAutoEnabled(false);
-		frame.setSaveMSXEnabled(false);
-		frame.setTabsEnabled(false);
-		frame.setRecursiveCheckBoxEnabled(false);
-
+	private void autoExport() throws Exception {
+		SwingUtilities.invokeAndWait(() -> {
+			refreshAuto();
+			frame.getBtnStartExport().setEnabled(false);
+			frame.setForceMixTimingEnabled(false);
+			frame.setBtnDestAutoEnabled(false);
+			frame.setBtnMIDIEnabled(false);
+			frame.setBtnSourceAutoEnabled(false);
+			frame.setSaveMSXEnabled(false);
+			frame.setTabsEnabled(false);
+			frame.setRecursiveCheckBoxEnabled(false);
+		});
 		// Test if dest is empty
 		if (destFolderAuto.listFiles().length != 0) {
-			frame.getTxtAutoExport()
-					.setText("<html>Start with selecting source, midi and dest folders.<br>"
-							+ "<font color='red'>Destination folder must be empty!</font>"
-							+ "<br>MIDI folder is optional. It is used when midi cannot be found,"
-							+ " then it looks in that folder before asking for location."
-							+ "<br>When exporting it will use your Maestro settings for filename, partname etc etc."
-							+ "<br>Close Maestro while this app runs.");
-			frame.getBtnStartExport().setEnabled(true);
-			frame.setForceMixTimingEnabled(true);
-			frame.setBtnDestAutoEnabled(true);
-			frame.setBtnMIDIEnabled(true);
-			frame.setBtnSourceAutoEnabled(true);
-			frame.setSaveMSXEnabled(true);
-			frame.setTabsEnabled(true);
-			frame.setRecursiveCheckBoxEnabled(true);
+			SwingUtilities.invokeLater(() -> {
+				frame.getTxtAutoExport()
+						.setText("<html>Start with selecting source, midi and dest folders.<br>"
+								+ "<font color='red'>Destination folder must be empty!</font>"
+								+ "<br>MIDI folder is optional. It is used when midi cannot be found,"
+								+ " then it looks in that folder before asking for location."
+								+ "<br>When exporting it will use your Maestro settings for filename, partname etc etc."
+								+ "<br>Close Maestro while this app runs.");
+				frame.getBtnStartExport().setEnabled(true);
+				frame.setForceMixTimingEnabled(true);
+				frame.setBtnDestAutoEnabled(true);
+				frame.setBtnMIDIEnabled(true);
+				frame.setBtnSourceAutoEnabled(true);
+				frame.setSaveMSXEnabled(true);
+				frame.setTabsEnabled(true);
+				frame.setRecursiveCheckBoxEnabled(true);
+			});
 			setProgress(0);
 			return;
 		}
@@ -651,14 +660,16 @@ public class AbcTools {
 		setProgress(1000);
 
 		appendToField("<br><br>Exports finished.");
-		frame.getBtnStartExport().setEnabled(true);
-		frame.setForceMixTimingEnabled(true);
-		frame.setBtnDestAutoEnabled(true);
-		frame.setBtnMIDIEnabled(true);
-		frame.setBtnSourceAutoEnabled(true);
-		frame.setSaveMSXEnabled(true);
-		frame.setTabsEnabled(true);
-		frame.setRecursiveCheckBoxEnabled(true);
+		SwingUtilities.invokeLater(() -> {
+			frame.getBtnStartExport().setEnabled(true);
+			frame.setForceMixTimingEnabled(true);
+			frame.setBtnDestAutoEnabled(true);
+			frame.setBtnMIDIEnabled(true);
+			frame.setBtnSourceAutoEnabled(true);
+			frame.setSaveMSXEnabled(true);
+			frame.setTabsEnabled(true);
+			frame.setRecursiveCheckBoxEnabled(true);
+		});
 	}
 	
 	public class CountFiles extends SimpleFileVisitor<Path> {
@@ -704,7 +715,12 @@ public class AbcTools {
 		        if (attr.isSymbolicLink()) {
 		            System.out.format("Ignoring symbolic link: %s ", file);
 		        } else if (attr.isRegularFile()) {
-		        	exportProject(file.toFile());
+		        	try {
+						exportProject(file.toFile());
+					} catch (Exception e) {
+						appendToField("<br><font color='red'>"+e.toString()+"</font>");
+						//e.printStackTrace();
+					}
 					exportCount++;
 					setProgress((int) (exportCount * progressFactor));
 		        } else {
@@ -750,10 +766,9 @@ public class AbcTools {
 
 	private volatile boolean projectModified = false;
 
-	private void exportProject(File project) {
+	private void exportProject(File project) throws Exception {
 		appendToField("<br>Exporting " + project.getName());
 
-		try {
 			projectModified = false;
 			AbcSong abcSong = new AbcSong(project, partAutoNumberer, partNameTemplate, exportFilenameTemplate,
 					instrNameSettings, openFileResolver, miscSettings);
@@ -828,13 +843,6 @@ public class AbcTools {
 				appendToField("<br>&nbsp;&nbsp;msx saved.");
 
 			}
-		} catch (IOException | InvalidMidiDataException | ParseException | SAXException | AbcConversionException e) {
-			String msg = e.getMessage();
-			if (msg != null) {
-				appendToField("<br><font color='red'>" + msg + "</font>");
-
-			}
-		}
 	}
 
 	/**
@@ -957,23 +965,52 @@ public class AbcTools {
 		}
 
 		private File resolveHelper(File original, String message) {
-			int result = JOptionPane.showConfirmDialog(frame, message, "Failed to open file",
-					JOptionPane.OK_CANCEL_OPTION);
-
-			File alternateFile = null;
-			if (result == JOptionPane.OK_OPTION) {
-				JFileChooser jfc = new JFileChooser();
-				jfc.setDialogTitle("Open missing MIDI");
-				if (original != null)
-					jfc.setSelectedFile(original);
-
-				if (jfc.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
-					alternateFile = jfc.getSelectedFile();
-					projectModified = true;
+			Runnable worker = new Runnable() {
+				  @Override
+				  public void run() {
+					  result = JOptionPane.showConfirmDialog(frame, message, "Failed to open file",
+								JOptionPane.OK_CANCEL_OPTION);
+				  }
+			};
+			
+			try {
+				SwingUtilities.invokeAndWait(worker);
+	
+				File alternateFile = null;
+				if (result == JOptionPane.OK_OPTION) {
+					JFileChooser jfc = new JFileChooser();
+					jfc.setDialogTitle("Open missing MIDI");
+					if (original != null)
+						jfc.setSelectedFile(original);
+		
+					Runnable worker2 = new Runnable() {
+						  @Override
+						  public void run() {
+							  result = jfc.showOpenDialog(frame);
+						  }
+					};
+					
+					try {
+						SwingUtilities.invokeAndWait(worker2);
+					}catch (Exception e) {
+						appendToField(e.toString());
+						e.printStackTrace();
+					}
+					if (result == JFileChooser.APPROVE_OPTION) {
+						alternateFile = jfc.getSelectedFile();
+						projectModified = true;
+					}
 				}
+		
+				return alternateFile;
+			} catch (InvocationTargetException e) {
+				appendToField(e.toString());
+				e.printStackTrace();
+			} catch (InterruptedException e) {
+				appendToField(e.toString());
+				e.printStackTrace();
 			}
-
-			return alternateFile;
+			return null;
 		}
 	};
 }
