@@ -86,7 +86,7 @@ import com.digero.common.midi.SequencerEvent.SequencerProperty;
 import com.digero.common.midi.SequencerWrapper;
 import com.digero.common.midi.VolumeTransceiver;
 import com.digero.common.util.ExtensionFileFilter;
-import com.digero.common.util.FavoritedFileTreeModel;
+import com.digero.common.util.DirectoryListTreeModel;
 import com.digero.common.util.FileFilterDropListener;
 import com.digero.common.util.LotroParseException;
 import com.digero.common.util.ParseException;
@@ -502,12 +502,12 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		leftRightBrowserSplitPane.setRightComponent(rightPlaylistPanel);
 		
 		List<File> favoriteFiles = new ArrayList<File>();
-		favoriteFiles.add(new File ("C:"));
+		favoriteFiles.add(Util.getLotroMusicPath(false));
 		
 		JTree testTree = new JTree();
 		testTree.setShowsRootHandles(true);
 		testTree.setRootVisible(false);
-		testTree.setModel(new FavoritedFileTreeModel(favoriteFiles));
+		testTree.setModel(new DirectoryListTreeModel(favoriteFiles));
 		testTree.collapseRow(0);
 		
 		TreeCellRenderer ren = testTree.getCellRenderer();
