@@ -83,7 +83,7 @@ public class DirectoryListTreeModel implements TreeModel {
 		
 	}
 	
-	class DummyFile {
+	public class DummyFile {
 		private final File theFile;
 		
 		public DummyFile(final File theFile) {

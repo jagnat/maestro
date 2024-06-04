@@ -66,6 +66,8 @@ import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
+import javax.swing.UIManager;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -93,6 +95,7 @@ import com.digero.common.util.ParseException;
 import com.digero.common.util.Themer;
 import com.digero.common.util.Util;
 import com.digero.common.util.Version;
+import com.digero.common.view.AbcPlaylistTreeCellRenderer;
 import com.digero.common.view.AboutDialog;
 import com.digero.common.view.AudioExportManager;
 import com.digero.common.view.BarNumberLabel;
@@ -508,13 +511,9 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		testTree.setShowsRootHandles(true);
 		testTree.setRootVisible(false);
 		testTree.setModel(new DirectoryListTreeModel(favoriteFiles));
+		testTree.setCellRenderer(new AbcPlaylistTreeCellRenderer());
 		testTree.collapseRow(0);
-		
-		TreeCellRenderer ren = testTree.getCellRenderer();
-		if (ren instanceof DefaultTreeCellRenderer) {
-			DefaultTreeCellRenderer render = (DefaultTreeCellRenderer)ren;
-//			render.set
-		}
+		ToolTipManager.sharedInstance().registerComponent(testTree);
 		
 		JScrollPane scrollWrapper = new JScrollPane(testTree, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 		leftPlaylistPanel.add(scrollWrapper, BorderLayout.CENTER);
