@@ -60,20 +60,17 @@ import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
-import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.TreeCellRenderer;
 
 import com.digero.abcplayer.view.AbcPlayerSettingsDialog;
+import com.digero.abcplayer.view.AbcPlaylistPanel;
 import com.digero.abcplayer.view.HighlightAbcNotesFrame;
 import com.digero.abcplayer.view.TrackListPanel;
 import com.digero.abcplayer.view.TrackListPanelCallback;
@@ -88,14 +85,12 @@ import com.digero.common.midi.SequencerEvent.SequencerProperty;
 import com.digero.common.midi.SequencerWrapper;
 import com.digero.common.midi.VolumeTransceiver;
 import com.digero.common.util.ExtensionFileFilter;
-import com.digero.common.util.DirectoryListTreeModel;
 import com.digero.common.util.FileFilterDropListener;
 import com.digero.common.util.LotroParseException;
 import com.digero.common.util.ParseException;
 import com.digero.common.util.Themer;
 import com.digero.common.util.Util;
 import com.digero.common.util.Version;
-import com.digero.common.view.AbcPlaylistTreeCellRenderer;
 import com.digero.common.view.AboutDialog;
 import com.digero.common.view.AudioExportManager;
 import com.digero.common.view.BarNumberLabel;
@@ -103,6 +98,7 @@ import com.digero.common.view.NativeVolumeBar;
 import com.digero.common.view.SongPositionBar;
 import com.digero.common.view.SongPositionLabel;
 import com.digero.common.view.TempoBar;
+import com.formdev.flatlaf.themes.FlatMacLightLaf;
 
 import info.clearthought.layout.TableLayout;
 import info.clearthought.layout.TableLayoutConstants;
@@ -215,7 +211,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 	private JPanel mainCardPanel;
 	private CardLayout mainCardPanelLayout;
 	private JPanel songViewPanel;
-	private JPanel playlistViewPanel;
+//	private JPanel playlistViewPanel;
+	private AbcPlaylistPanel playlistViewPanel;
 
 	private SongPositionBar songPositionBar;
 	private SongPositionLabel songPositionLabel;
@@ -268,6 +265,12 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 					sequencer.close();
 			}
 		});
+		
+//		try {
+//			UIManager.setLookAndFeel(new FlatMacLightLaf());
+//		} catch (UnsupportedLookAndFeelException e) {
+//			e.printStackTrace();
+//		}
 
 		try {
 			List<Image> icons = new ArrayList<>();
@@ -493,40 +496,14 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		songViewPanel.add(titleLabel, "1, 0");
 		songViewPanel.add(trackListScroller, "1, 2");
 		
-		playlistViewPanel = new JPanel(new BorderLayout());
-		
-		JSplitPane leftRightBrowserSplitPane = new JSplitPane();
-		playlistViewPanel.add(leftRightBrowserSplitPane, BorderLayout.CENTER);
-		
-		JPanel leftPlaylistPanel = new JPanel(new BorderLayout());
-		JPanel rightPlaylistPanel = new JPanel();
-		
-		leftRightBrowserSplitPane.setLeftComponent(leftPlaylistPanel);
-		leftRightBrowserSplitPane.setRightComponent(rightPlaylistPanel);
-		
-		List<File> favoriteFiles = new ArrayList<File>();
-		favoriteFiles.add(Util.getLotroMusicPath(false));
-		
-		JTree testTree = new JTree();
-		testTree.setShowsRootHandles(true);
-		testTree.setRootVisible(false);
-		testTree.setModel(new DirectoryListTreeModel(favoriteFiles));
-		testTree.setCellRenderer(new AbcPlaylistTreeCellRenderer());
-		testTree.collapseRow(0);
-		ToolTipManager.sharedInstance().registerComponent(testTree);
-		
-		JScrollPane scrollWrapper = new JScrollPane(testTree, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-		leftPlaylistPanel.add(scrollWrapper, BorderLayout.CENTER);
-		
-		
+		playlistViewPanel = new AbcPlaylistPanel();
+
 		mainCardPanelLayout = new CardLayout();
 		mainCardPanel = new JPanel(mainCardPanelLayout);
 		mainCardPanel.add(songViewPanel, "song");
 		mainCardPanel.add(playlistViewPanel, "playlist");
 		
 		add(mainCardPanel, "0, 0, 2, 0");
-//		add(titleLabel, "0, 0, 2, 0");
-//		add(trackListScroller, "0, 2, 2, 2");
 		add(controlPanel, "1, 2");
 		
 		audioExporter = new AudioExportManager(this, AbcPlayer.APP_NAME + AbcPlayer.APP_VERSION, prefs);

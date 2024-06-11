@@ -16,6 +16,7 @@ public class DirectoryListTreeModel implements TreeModel {
 
 	private File rootFile;
 	private List<File> topLevelDirectories;
+	private final ExtensionFileFilter abcFilter = new ExtensionFileFilter("ABC Files", "abc", "txt"); 
 	
 	public DirectoryListTreeModel(List<File> directories) {
 		this.rootFile = new File("an_empty_file");
@@ -33,7 +34,7 @@ public class DirectoryListTreeModel implements TreeModel {
 		if (parent == rootFile) {
 			return new DummyFile(topLevelDirectories.get(index));
 		}
-		return new DummyFile(((File)parent).listFiles()[index]);
+		return new DummyFile(((File)parent).listFiles(abcFilter)[index]);
 	}
 
 	@Override
@@ -42,8 +43,8 @@ public class DirectoryListTreeModel implements TreeModel {
 		if (parent == rootFile) {
 			return topLevelDirectories.size();
 		}
-		if (parent != null && ((File)parent).listFiles() != null) {
-			return ((File)parent).listFiles().length;
+		if (parent != null && ((File)parent).listFiles(abcFilter) != null) {
+			return ((File)parent).listFiles(abcFilter).length;
 		}
 		return 0;
 	}
@@ -55,7 +56,7 @@ public class DirectoryListTreeModel implements TreeModel {
 		if (file1 == rootFile) {
 			return topLevelDirectories.indexOf(file2);
 		}
-		List<File> fileList = Arrays.asList(((File)file1).listFiles());
+		List<File> fileList = Arrays.asList(((File)file1).listFiles(abcFilter));
 		return fileList.indexOf(file2);
 	}
 
