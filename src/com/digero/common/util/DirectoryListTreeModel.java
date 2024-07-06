@@ -1,6 +1,7 @@
 package com.digero.common.util;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,7 +20,7 @@ public class DirectoryListTreeModel implements TreeModel {
 	private final ExtensionFileFilter abcFilter = new ExtensionFileFilter("ABC Files", "abc", "txt"); 
 	
 	public DirectoryListTreeModel(List<File> directories) {
-		this.rootFile = new File("an_empty_file");
+		this.rootFile = new File("a_dummy_filename_that_never_will_be_used");
 		this.topLevelDirectories = directories;
 	}
 	
@@ -30,16 +31,16 @@ public class DirectoryListTreeModel implements TreeModel {
 
 	@Override
 	public Object getChild(Object parentDummy, int index) {
-		File parent = ((DummyFile)parentDummy).getFile();
+		File parent = ((AbcSongFileNode)parentDummy).getFile();
 		if (parent == rootFile) {
-			return new DummyFile(topLevelDirectories.get(index));
+			return new AbcSongFileNode(topLevelDirectories.get(index));
 		}
-		return new DummyFile(((File)parent).listFiles(abcFilter)[index]);
+		return new AbcSongFileNode(((File)parent).listFiles(abcFilter)[index]);
 	}
 
 	@Override
 	public int getChildCount(Object parentDummy) {
-		File parent = ((DummyFile)parentDummy).getFile();
+		File parent = ((AbcSongFileNode)parentDummy).getFile();
 		if (parent == rootFile) {
 			return topLevelDirectories.size();
 		}
@@ -51,8 +52,8 @@ public class DirectoryListTreeModel implements TreeModel {
 
 	@Override
 	public int getIndexOfChild(Object dFile1, Object dFile2) {
-		File file1 = ((DummyFile)dFile1).getFile();
-		File file2 = ((DummyFile)dFile2).getFile();
+		File file1 = ((AbcSongFileNode)dFile1).getFile();
+		File file2 = ((AbcSongFileNode)dFile2).getFile();
 		if (file1 == rootFile) {
 			return topLevelDirectories.indexOf(file2);
 		}
@@ -62,12 +63,12 @@ public class DirectoryListTreeModel implements TreeModel {
 
 	@Override
 	public Object getRoot() {
-		return new DummyFile(rootFile);
+		return new AbcSongFileNode(rootFile);
 	}
 
 	@Override
 	public boolean isLeaf(Object file) {
-		DummyFile f = (DummyFile)file;
+		AbcSongFileNode f = (AbcSongFileNode)file;
 		if (f.getFile() == rootFile) {
 			return false;
 		}
@@ -84,16 +85,24 @@ public class DirectoryListTreeModel implements TreeModel {
 		
 	}
 	
-	public class DummyFile {
+	public class AbcSongFileNode {
 		private final File theFile;
+		private ArrayList<AbcSongFileNode> children;
 		
-		public DummyFile(final File theFile) {
+		public AbcSongFileNode(final File theFile) {
 			this.theFile = theFile;
+			this.children = new ArrayList<AbcSongFileNode>();
+		}
+		
+		public boolean isLeaf() {
+			return theFile.isFile() || children.isEmpty();
 		}
 
 	    public File getFile() {
 	        return theFile;
 	    }
+	    
+	    
 
 	    @Override public String toString() {
 	        return theFile.getName();

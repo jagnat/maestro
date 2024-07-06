@@ -24,7 +24,7 @@ public class AbcPlaylistTreeCellRenderer extends DefaultTreeCellRenderer {
 			boolean hasFocus) {
 		super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
 		
-		DirectoryListTreeModel.DummyFile df = (DirectoryListTreeModel.DummyFile)value;
+		DirectoryListTreeModel.AbcSongFileNode df = (DirectoryListTreeModel.AbcSongFileNode)value;
 		File file = df.getFile();
 		
 		if (file.getName().endsWith(".abc")) {
