@@ -42,6 +42,7 @@ import com.digero.common.abc.LotroInstrument;
 import com.digero.common.abc.LotroInstrumentNick;
 import com.digero.common.midi.NoteFilterSequencerWrapper;
 import com.digero.common.util.ExtensionFileFilter;
+import com.digero.common.util.Themer;
 import com.digero.common.util.Util;
 import com.digero.common.view.LinkButton;
 import com.digero.maestro.MaestroMain;
@@ -942,7 +943,7 @@ public class SettingsDialog extends JDialog implements TableLayoutConstants {
 		themeBox.setSelectedItem(miscSettings.theme);
 
 		fontBox.setToolTipText(
-				"<html>Select a font size. Only supported with a non-default theme. Must restart Maestro for it to take effect.</html>");
+				"<html>Select a font size. Must restart Maestro for it to take effect.</html>");
 		for (int i : Themer.fontSizes) {
 			fontBox.addItem(Integer.toString(i));
 		}

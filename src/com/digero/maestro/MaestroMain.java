@@ -15,9 +15,11 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 
 import javax.swing.SwingUtilities;
+
+import com.digero.common.util.Themer;
 import com.digero.common.util.Version;
+import com.digero.maestro.view.MiscSettings;
 import com.digero.maestro.view.ProjectFrame;
-import com.digero.maestro.view.Themer;
 
 //import org.boris.winrun4j.DDE;
 
@@ -61,7 +63,8 @@ public class MaestroMain {
 		System.setProperty("sun.sound.useNewAudioEngine", "true");
 
 		try {
-			Themer.setLookAndFeel();
+			MiscSettings misc = new MiscSettings(Preferences.userNodeForPackage(MaestroMain.class).node("miscSettings"), true);
+			Themer.setLookAndFeel(misc.theme, misc.fontSize);
 		} catch (Exception e) {
 			// Reset theme to default if an error occurred setting look and feel
 			Preferences preferences = Preferences.userNodeForPackage(MaestroMain.class);
