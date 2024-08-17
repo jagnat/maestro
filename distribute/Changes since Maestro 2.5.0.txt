@@ -46,8 +46,8 @@ Thanks to all who gave feedback of features, bugs plus suggestions.
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
 
-Version 3.2.10
-- Merge Student and Student FX fiddles into one.
+Version 3.2.11
+- Merge Student and Student FX fiddles into one. There will be a FX checkbox in the tracks to control which type of sounds is wanted.
 - Fix drum/cowbell/studentFX notes sometimes were grayed out when active.
 - Added two more Xtra drums.
 - Song duration display is now rounded up to nearest second.
