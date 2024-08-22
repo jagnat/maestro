@@ -689,6 +689,24 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			} else {
 				badString = "</b><br><p style='color:red;'>" + "Bad A notes: " + acount + "</p>";
 			}
+		} else if (abcPart.getInstrument().ordinal() == LotroInstrument.BASIC_HARP.ordinal()) {
+			int b4count = 0;
+			if (abcPart.isTrackEnabled(trackInfo.getTrackNumber())) {
+				List<MidiNoteEvent> nel = trackInfo.getEvents();
+				for (MidiNoteEvent ne : nel) {
+					if (!(ne instanceof BentMidiNoteEvent)) {
+						Note mn = abcPart.mapNote(trackInfo.getTrackNumber(), ne.note.id, ne.getStartTick());
+						if (mn != null && abcPart.shouldPlay(ne, trackInfo.getTrackNumber()) && mn.id == Note.B4.id) {
+							b4count += 1;
+						}
+					}
+				}
+			}
+			if (b4count == 0) {
+				badString = "</b><br>" + "Bad B4 notes: " + b4count;
+			} else {
+				badString = "</b><br><p style='color:red;'>" + "Bad B4 notes: " + b4count + "</p>";
+			}
 		} else {
 			badString = "";
 		}
