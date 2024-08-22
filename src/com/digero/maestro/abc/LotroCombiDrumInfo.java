@@ -49,11 +49,11 @@ public class LotroCombiDrumInfo {
 		firstNotes.put(Note.Gs5, Note.C3);
 		secondNotes.put(Note.Gs5, Note.Gs3);
 		
-		// Added Xtra Bass Dry (Aifel)
+		// Added Xtra Bass Boomy (Aifel)
 		firstNotes.put(Note.A5, Note.As3);
 		secondNotes.put(Note.A5, Note.Cs3);
 		
-		// Added Xtra Snare Wet (Aifel)
+		// Added Xtra Snare Tribal (Aifel)
 		firstNotes.put(Note.As5, Note.C5);
 		secondNotes.put(Note.As5, Note.Cs3);
 

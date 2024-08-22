@@ -52,6 +52,7 @@ Version 3.2.11
 - Added two more Xtra drums.
 - Song duration display is now rounded up to nearest second.
 - Look also recursively in midi folder in ABC Auto export tool if recursive is checked.
+- Add cancel option to auto-exporter.
 
 Version 3.2.8
 - You can hold shift while clicking a solo/mute button to deselect all the other buttons of that type. Works in Maestro and AbcPlayer.
