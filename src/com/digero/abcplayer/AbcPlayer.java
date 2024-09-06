@@ -223,6 +223,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 	private JCheckBoxMenuItem stereoMenuItem;
 	private JCheckBoxMenuItem showFullPartNameMenuItem;
 	private JCheckBoxMenuItem showAbcViewMenuItem;
+	private JCheckBoxMenuItem countdownMenuItem;
 
 	private JFileChooser openFileDialog;
 	private JFileChooser saveFileDialog;
@@ -378,6 +379,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		
 		songPositionBar = new SongPositionBar(sequencer);
 		songPositionLabel = new SongPositionLabel(sequencer);
+		songPositionLabel.countdown = prefs.getBoolean("countdownMenuItem", false);
 		barNumberLabel = new BarNumberLabel(sequencer, null);
 		barNumberLabel.setToolTipText("Bar number");
 
@@ -721,6 +723,14 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		stereoMenuItem.addActionListener(e -> {
 			prefs.putBoolean("stereoMenuItem", stereoMenuItem.isSelected());
 			refreshSequence();
+		});
+		
+		toolsMenu.add(countdownMenuItem = new JCheckBoxMenuItem("Countdown instead of up"));
+		countdownMenuItem.setToolTipText("<html>The time position indicator will countdown instead of up.</html>");
+		countdownMenuItem.setSelected(prefs.getBoolean("countdownMenuItem", true));
+		countdownMenuItem.addActionListener(e -> {
+			prefs.putBoolean("countdownMenuItem", countdownMenuItem.isSelected());
+			songPositionLabel.countdown = countdownMenuItem.isSelected();
 		});
 
 		toolsMenu.addSeparator();
