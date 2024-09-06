@@ -400,7 +400,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			dummy1.setPreferredSize(new Dimension(100, scrollbarHeight * 2));
 			dummy1.setOpaque(true);
 			dummy1.setBackground(ColorTable.PANEL_BACKGROUND_DISABLED.get());
-			controlPanel.add(dummy1);
+			controlPanel.add(dummy1, "x");
 			
 			JPanel dummy2 = new JPanel();
 			dummy2.setPreferredSize(new Dimension(100, scrollbarHeight * 2));

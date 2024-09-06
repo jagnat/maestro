@@ -89,7 +89,7 @@ public class ControlLayout implements LayoutManager {
 		int east = target.getSize().width - insets.right;
 
 		int widestWidth = 0;
-
+		
 		for (Component c : components) {
 			if (c.isVisible()) {
 				Dimension cDim = c.getPreferredSize();
@@ -114,11 +114,13 @@ public class ControlLayout implements LayoutManager {
 				c.setBounds(west, y - position.y, widestWidth, height);
 				//c.setBounds(west, y - scrollPane.getBounds().y, widestWidth, height);				
 				y += height;
+			} else {
+				// Histogram will come in here when midi preview is selected.
+				componentPos.add(y);
 			}
 		}
 		prefH  = y + insets.bottom; 
 		graphsPanel.invalidate();
-		graphsPanel.repaint();
 	}
 	
 	/**

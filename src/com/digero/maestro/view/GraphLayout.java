@@ -87,11 +87,13 @@ public class GraphLayout implements LayoutManager {
 				//System.out.println(controlLayout.getCount()+" <= "+i);
 				break;
 			}
-			int y = controlLayout.getPos(i);
-			int height = controlLayout.getSize(i);
-			//System.out.println("  y="+y+" height="+height+" x="+west+" width="+width);
-			//c.setSize(width, height);//redundant
-			c.setBounds(west, y, width, height);
+			if (c.isVisible()) {
+				int y = controlLayout.getPos(i);
+				int height = controlLayout.getSize(i);
+				//System.out.println("  y="+y+" height="+height+" x="+west+" width="+width);
+				//c.setSize(width, height);//redundant
+				c.setBounds(west, y, width, height);
+			}
 		}
 	}
 	
