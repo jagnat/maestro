@@ -488,13 +488,14 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			controlLayout.setZoomVertical(2.0f);
 		} else {
 			graphLayout.setZoomHorizontal(1.0f);
-			controlLayout.setZoomVertical(1.0f);			
+			controlLayout.setZoomVertical(1.0f);
 		}
 		
 		zoomed = !zoomed;
 		
-		invalidate();
-		validate();
+		noteGraphPanel.invalidate();
+		controlPanel.invalidate();
+		revalidate();
 		repaint();
 	}
 	
@@ -506,6 +507,8 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		graphLayout.setZoomHorizontal(1.0f);
 		controlLayout.setZoomVertical(1.0f);
 		
+		noteGraphPanel.invalidate();
+		controlPanel.invalidate();		
 		invalidate();
 		validate();
 		repaint();
