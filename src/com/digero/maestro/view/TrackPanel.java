@@ -99,7 +99,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 	static final int HGAP = 4;
 	static int SECTIONBUTTON_WIDTH = 22;
 	static final int GUTTER_WIDTH = 8;
-	static final int PRIORITY_WIDTH_DEFAULT = 30;
+	static final int PRIORITY_WIDTH_DEFAULT = 20;
 	static final int TITLE_WIDTH_DEFAULT = 150 - PRIORITY_WIDTH_DEFAULT;
 	static final int CONTROL_WIDTH_DEFAULT = 64;
 	static final int ROW_HEIGHT_DEFAULT = 48;
@@ -354,8 +354,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			boolean fx = fxBox.isSelected();
 			abcPart.setStudentFX(track, fx);
 		});
-		fxBox.setVerticalTextPosition(SwingConstants.BOTTOM);
-		fxBox.setHorizontalTextPosition(SwingConstants.CENTER);
+		//fxBox.setVerticalTextPosition(SwingConstants.BOTTOM);
+		//fxBox.setHorizontalTextPosition(SwingConstants.CENTER);
 		fxBox.setVisible(false);
 		
 		//priorityBox.setOpaque(false);
@@ -392,16 +392,18 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		checkBoxLayout_ControlsAndPriorityVisible = new TableLayoutConstraints(TITLE_COLUMN, 0);
 		checkBoxLayout_ControlsVisible = new TableLayoutConstraints(TITLE_COLUMN, 0, PRIORITY_COLUMN, 0);
 
+		/*
 		JPanel checkBoxPanel = new JPanel(new FlowLayout(FlowLayout.LEFT,1,0));
 		checkBoxPanel.setOpaque(false);
 		//checkBoxPanel.setBorder( new EmptyBorder(1, 1, 1, 1) );// Making it tiny
 		
 		checkBoxPanel.add(priorityBox);
 		checkBoxPanel.add(fxBox);
+		*/
 		
 		add(gutter, GUTTER_COLUMN + ", 0, " + GUTTER_COLUMN + ", 1, f, f");
 		add(checkBox, checkBoxLayout_ControlsHidden);
-		add(checkBoxPanel, PRIORITY_COLUMN + ", 0, f, c");
+		add(priorityBox, PRIORITY_COLUMN + ", 0, f, c");
 		add(controlPanel, CONTROL_COLUMN + ", 0, f, c");
 
 		updateBadTooltipText();
@@ -469,9 +471,13 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		noteGraphPanel.revalidate();		
 	}
 	
+	static TrackDimensions calculateTrackDims() {
+		return calculateTrackDims(false);
+	}
+	
 	// returns <titleWidth, priorityWidth, controlWidth
 	// Also sets some static constants in this class to be scaled properly
-	static TrackDimensions calculateTrackDims() {
+	static TrackDimensions calculateTrackDims(boolean student) {
 		Font font = UIManager.getFont("defaultFont");
 
 		float height = 1.0f;// Will be higher than 1.0 if screen larger than FullHD
@@ -491,19 +497,24 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			int widthAtThisFont = (int) (widthAt10Pt + (widthAt18Pt - widthAt10Pt) * (sizeDiff / divider));
 			TrackDimensions dims = new TrackDimensions();
 			dims.titleWidth = (int) (widthAtThisFont * .58);
-			dims.priorityWidth = (int) (widthAtThisFont * .15);
+			dims.priorityWidth = (int) (widthAtThisFont * .10);
 			dims.controlWidth = (int) (widthAtThisFont * .32);
 
 			// Lerp track height between 10pt (48) and 18pt (72)
-			dims.rowHeight = (int) ((48 + (72 - 48) * (sizeDiff / divider)) * height);
+			int extraCheckbox = 0;
+			if (student) extraCheckbox = 0;//font.getSize() * 2;
+			dims.rowHeight = (int) ((48 + (72 - 48) * (sizeDiff / divider) + extraCheckbox) * height);
+			//dims.rowHeight = (int) ((48 + (72 - 48) * (sizeDiff / divider)) * height);
 
 			// Lerp section button width between 10pt (22) and 18pt (36)
 			SECTIONBUTTON_WIDTH = (int) (22 + (36 - 22) * (sizeDiff / divider));
 
 			return dims;
 		} else {
+			int extraCheckbox = 0;
+			if (student) extraCheckbox = 0;
 			return new TrackDimensions(TITLE_WIDTH_DEFAULT, PRIORITY_WIDTH_DEFAULT, CONTROL_WIDTH_DEFAULT,
-					(int)(ROW_HEIGHT_DEFAULT * height));
+					(int)((extraCheckbox + ROW_HEIGHT_DEFAULT) * height));
 		}
 	}
 	
@@ -859,9 +870,12 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 
 		fxBox.setVisible(trackEnabled && abcPart.getInstrument().equals(LotroInstrument.STUDENT_FIDDLE));
 		if (fxBox.isVisible()) {
+			add(fxBox, CONTROL_COLUMN + ", 1");
 			fxBox.setSelected(abcPart.isStudentFX(trackInfo.getTrackNumber()));
 			fxBox.setEnabled(!abcPart.isStudentOverride());
 			// TODO: disabling checkbox cannot really be seen in flatlaf :(
+		} else {
+			remove(fxBox);
 		}
 		
 		TableLayout layout = (TableLayout) getLayout();
@@ -887,7 +901,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 
 		boolean showDrumPanelsNew = !abcPart.isChromatic(trackInfo.getTrackNumber()) && trackEnabled;
 
-		if (initDrumPanels || showDrumPanels != showDrumPanelsNew || wasDrumPart != abcPart.isPercussionPart()) {
+		if (initDrumPanels || showDrumPanels != showDrumPanelsNew || wasDrumPart != abcPart.isPercussionPart() || abcPart.getInstrument() == LotroInstrument.STUDENT_FIDDLE) {
 			if (showDrumPanels != showDrumPanelsNew) {
 				showDrumPanels = showDrumPanelsNew;
 			}
@@ -914,7 +928,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 				if (drumControlBar == null)
 					initDrumMenuBar();
 
-				add(drumControlBar, TITLE_COLUMN + ", 1," + CONTROL_COLUMN + ", 1");
+				add(drumControlBar, TITLE_COLUMN + ", 1," + (CONTROL_COLUMN -1) + ", 1");
 				
 				int row = LAYOUT_ROWS.length;
 				for (int noteId : trackInfo.getNotesInUse()) {
@@ -942,6 +956,9 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 				last.getNoteGraph().setBorder(BorderFactory.createCompoundBorder(
 						BorderFactory.createMatteBorder(0, 0, 1, 0, ColorTable.PANEL_BORDER.get()),
 						BorderFactory.createMatteBorder(1, 0, 0, 0, ColorTable.OCTAVE_LINE.get())));
+			} else if (abcPart.isTrackEnabled(trackInfo.getTrackNumber()) && abcPart.getInstrument() == LotroInstrument.STUDENT_FIDDLE) {
+				//int controlHeight = getPreferredSize().height;
+				//noteGraph.setPreferredSize(new Dimension(noteGraph.getPreferredSize().width, controlHeight));
 			}
 
 			updateTitleText();

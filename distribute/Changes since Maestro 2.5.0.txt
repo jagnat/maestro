@@ -48,6 +48,12 @@ Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 
 Version 3.2.12
 - Support 128 ports in GM+ midi files instead of 16.
+- Track view now uses custom layout managers to layout the tracks and controls.
+- Fixed the zoom issues in v3.2.11
+- Added same kind of border to tempo/histogram control panels as track control panels.
+- Fixed zoom would reset when doing certain operations.
+- Zoom is now fixed at x2,x6 for now. Drum/studentFx tracks wont be zoomed vertically, same with tempo and histogram.
+- Moved student FX checkbox to under the volume slider.
 
 Version 3.2.11
 - Merge Student and Student FX fiddles into one. There will be a FX checkbox in the tracks to control which type of sounds is wanted.
