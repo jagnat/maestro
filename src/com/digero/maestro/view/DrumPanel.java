@@ -212,7 +212,7 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 		add(drumComboBoxFX, "2, 0, f, c");
 
 		updateState();
-		noteGraph.setPreferredSize(new Dimension(noteGraph.getPreferredSize().width, getPreferredSize().height));
+		//noteGraph.setPreferredSize(new Dimension(noteGraph.getPreferredSize().width, getPreferredSize().height)); the getter is overridden
 	}
 	
 	public DrumNoteGraph getNoteGraph() {
@@ -364,6 +364,16 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 
 		public DrumNoteGraph(SequencerWrapper sequencer, TrackInfo trackInfo) {
 			super(sequencer, trackInfo, -1, 1, 2, 5);
+		}
+		
+		@Override
+		public Dimension getPreferredSize() {
+			return DrumPanel.this.getPreferredSize();
+		}
+		
+		@Override
+		public Dimension getMinimumSize() {
+			return new Dimension(48, DrumPanel.this.getPreferredSize().height);
 		}
 
 		public void setShowingAbcNotesOn(boolean showingAbcNotesOn) {

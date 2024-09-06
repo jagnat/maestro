@@ -876,12 +876,12 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		abcBarLabel.setVisible(!midiBarLabel.isVisible());
 
 		noteButton = new JButton("Note");
-		noteButton.addActionListener(e -> partPanel.noteToggle());
+		noteButton.addActionListener(e -> partPanel.textnoteToggle());
 		noteButton.setToolTipText("<html>Show notepad where custom notes can be entered.<br>"
 				+ "Will be saved in msx project file.</html>");
 
 		zoomButton = new JButton("Zoom");
-		zoomButton.addActionListener(e -> partPanel.zoom());
+		zoomButton.addActionListener(e -> partPanel.toggleZoom());
 		
 		noteCountLabel = new JLabel();
 //		noteCountLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
@@ -1018,8 +1018,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		discardObject(midiBarLabel);
 		discardObject(abcBarLabel);
 
-		partPanel.setNote("");
-		partPanel.noteVisible(false);
+		partPanel.setTextnote("");
+		partPanel.textnoteVisible(false);
 
 		super.dispose();
 	}
@@ -1922,7 +1922,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	}
 
 	private boolean isAbcSongModified() {
-		return abcSong != null && (abcSongModified || !partPanel.getNote().equals(abcSong.getNote()));
+		return abcSong != null && (abcSongModified || !partPanel.getTextnote().equals(abcSong.getNote()));
 	}
 
 	public int getTranspose() {
@@ -1967,8 +1967,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		}
 
 		partPanel.setAbcPart(null, false);
-		partPanel.setNote("");
-		partPanel.noteVisible(false);
+		partPanel.setTextnote("");
+		partPanel.textnoteVisible(false);
+		partPanel.unZoom();
 
 		partsList.updateParts();
 
@@ -2055,9 +2056,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			if (abcSong.isFromXmlFile()) {
 				String note = abcSong.getNote();
 				if (note != null) {
-					partPanel.setNote(note);
+					partPanel.setTextnote(note);
 					if (note.length() > 0) {
-						partPanel.noteVisible(true);
+						partPanel.textnoteVisible(true);
 					}
 				}
 			}
@@ -2340,7 +2341,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 	private void commitAllFields() {
 		try {
-			abcSong.setNote(partPanel.getNote());
+			abcSong.setNote(partPanel.getTextnote());
 			partPanel.commitAllFields();
 			transposeSpinner.commitEdit();
 			tempoSpinner.commitEdit();

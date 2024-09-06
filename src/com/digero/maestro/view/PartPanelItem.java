@@ -5,4 +5,6 @@ import javax.swing.JPanel;
 public interface PartPanelItem {
 	
 	public JPanel getNoteGraph();
+	
+	public boolean isVerticalZoomForbidden();
 }

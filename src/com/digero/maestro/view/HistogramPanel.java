@@ -3,6 +3,7 @@ package com.digero.maestro.view;
 import info.clearthought.layout.TableLayout;
 import info.clearthought.layout.TableLayoutConstants;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.Map.Entry;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.border.CompoundBorder;
 
 import com.digero.common.midi.Note;
 import com.digero.common.midi.SequencerEvent;
@@ -77,7 +79,9 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 		LAYOUT_COLS[2] = dims.controlWidth + EXTRA_COUNT_COLUMN_WIDTH;
 		tableLayout.setColumn(LAYOUT_COLS);
 
-		setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, ColorTable.PANEL_BORDER.get()));
+		setBorder(new CompoundBorder(
+				BorderFactory.createMatteBorder(0, 0, 1, 0, ColorTable.PANEL_BORDER.get()),
+				BorderFactory.createMatteBorder(0, 0, 0, 1, new Color(0x555555))));
 
 		this.sequencer = sequencer;
 		this.abcSequencer = abcSequencer;
@@ -238,5 +242,10 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 			//}
 			//return abcSong.tuneBarsModified;
 		}
+	}
+
+	@Override
+	public boolean isVerticalZoomForbidden() {
+		return true;
 	}
 }
