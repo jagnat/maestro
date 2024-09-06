@@ -220,8 +220,8 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		});
 		noteGraphScrollPane.getViewport().addChangeListener(ch -> {
 			controlPanel.invalidate();
-			controlPanel.validate();
-			controlPanel.repaint();
+			validate();
+			repaint();
 		});
 		
 		// Link control scroll bar model to note graph scroll bar
@@ -493,6 +493,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		
 		zoomed = !zoomed;
 		
+		//Note invalidate does not invalidate sub components, hence why its called on the panels directly
 		noteGraphPanel.invalidate();
 		controlPanel.invalidate();
 		revalidate();
@@ -507,10 +508,10 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		graphLayout.setZoomHorizontal(1.0f);
 		controlLayout.setZoomVertical(1.0f);
 		
+		//Note invalidate does not invalidate sub components, hence why its called on the panels directly
 		noteGraphPanel.invalidate();
-		controlPanel.invalidate();		
-		invalidate();
-		validate();
+		controlPanel.invalidate();
+		revalidate();
 		repaint();
 	}
 

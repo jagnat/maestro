@@ -458,19 +458,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 	public JPanel getNoteGraph() {
 		return noteGraphPanel;
 	}
-	
-	public void setRowHeight(int rowHeight) {
-		if (drumlinePanels.size() > 0) {
-			return;
-		}
-		TableLayout tableLayout = (TableLayout) getLayout();
-		double[] rowDims = tableLayout.getRow();
-		rowDims[0] = rowHeight;
-		tableLayout.setRow(rowDims);
-		revalidate();
-		noteGraphPanel.revalidate();		
-	}
-	
+		
 	static TrackDimensions calculateTrackDims() {
 		return calculateTrackDims(false);
 	}
