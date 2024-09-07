@@ -105,7 +105,7 @@ public class ControlLayout implements LayoutManager {
 		for (Component c : components) {
 			if (c.isVisible()) {
 				Dimension cDim = c.getPreferredSize();
-				int height = (int) (Math.max(48,cDim.height) * zoomV);
+				int height = (int) (Math.max(minimumSize,cDim.height) * zoomV);
 				if (((PartPanelItem)c).isVerticalZoomForbidden()) {
 					height = cDim.height;
 				}

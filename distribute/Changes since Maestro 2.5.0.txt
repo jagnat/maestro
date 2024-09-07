@@ -46,13 +46,13 @@ Thanks to all who gave feedback of features, bugs plus suggestions.
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
 
-Version 3.3.1
+Version 3.3.3
 - Support 128 ports in GM+ midi files instead of 16.
 - Track view now uses custom layout managers to layout the tracks and controls.
 - Fixed the zoom issues in v3.2.11
 - Added same kind of border to tempo/histogram control panels as track control panels.
 - Fixed zoom would reset when doing certain operations.
-- Zoom is now fixed at x2,x6 for now. Drum/studentFx tracks wont be zoomed vertically, same with tempo and histogram.
+- Zoom is now fixed at x6,x2 for now. Drum/studentFx tracks wont be zoomed vertically, same with tempo and histogram.
 - Moved student FX checkbox to under the volume slider.
 - Added option in Abc Player to countdown time instead of up.
 

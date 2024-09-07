@@ -183,7 +183,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			}
 		};
 		noteGraphScrollPane = new PatchedJScrollPane(noteGraphPanel, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED);
-		controlLayout = new ControlLayout(48, noteGraphPanel, noteGraphScrollPane);
+		controlLayout = new ControlLayout(TrackPanel.calculateTrackDims().rowHeight + 1, noteGraphPanel, noteGraphScrollPane);
 		controlPanel = new JPanel(controlLayout) {
 			@Override
 			public Dimension getPreferredSize() {
@@ -202,7 +202,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		controlPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0)); // top, left, bottom, right
 		controlPanel.setBackground(ColorTable.PANEL_BACKGROUND_DISABLED.get());
 		
-		graphLayout = new GraphLayout(48, controlLayout);
+		graphLayout = new GraphLayout(TrackPanel.calculateTrackDims().rowHeight + 1, controlLayout);
 		graphLayout.setViewport(noteGraphScrollPane.getViewport());
 		noteGraphPanel.setLayout(graphLayout);
 		noteGraphPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0)); // top, left, bottom, right
@@ -485,7 +485,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		
 		if (!zoomed) {
 			graphLayout.setZoomHorizontal(6.0f);
-			controlLayout.setZoomVertical(2.0f);
+			controlLayout.setZoomVertical(1.75f);
 		} else {
 			graphLayout.setZoomHorizontal(1.0f);
 			controlLayout.setZoomVertical(1.0f);

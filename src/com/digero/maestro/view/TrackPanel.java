@@ -35,6 +35,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
@@ -193,7 +194,15 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		gutter = new JPanel((LayoutManager) null);
 		gutter.setOpaque(false);
 
-		checkBox = new JCheckBox();
+		checkBox = new JCheckBox() {
+			@Override
+			public Dimension getPreferredSize() {
+				// This makes the title appear centered in the TrackPanel
+				Dimension dim = super.getPreferredSize();
+				dim.height = Math.min(calculateTrackDims().rowHeight, dim.height);
+				return dim;
+			}
+		};
 		checkBox.setOpaque(false);
 //		checkBox.setFocusable(false);
 		checkBox.setSelected(abcPart.isTrackEnabled(trackInfo.getTrackNumber()));
@@ -380,6 +389,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		});
 
 		JPanel controlPanel = new JPanel(new BorderLayout(0, 4));
+		controlPanel.setBorder(new EmptyBorder(4, 0, 4, 0));// top, left, bottom, right
 		controlPanel.setOpaque(false);
 		if (sectionButton != null)
 			controlPanel.add(sectionButton, BorderLayout.WEST);
@@ -388,9 +398,9 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		
 		controlPanel.add(trackVolumeBar, BorderLayout.SOUTH);
 
-		checkBoxLayout_ControlsHidden = new TableLayoutConstraints(TITLE_COLUMN, 0, CONTROL_COLUMN, 0);
+		checkBoxLayout_ControlsHidden             = new TableLayoutConstraints(TITLE_COLUMN, 0, CONTROL_COLUMN, 0);
 		checkBoxLayout_ControlsAndPriorityVisible = new TableLayoutConstraints(TITLE_COLUMN, 0);
-		checkBoxLayout_ControlsVisible = new TableLayoutConstraints(TITLE_COLUMN, 0, PRIORITY_COLUMN, 0);
+		checkBoxLayout_ControlsVisible            = new TableLayoutConstraints(TITLE_COLUMN, 0, PRIORITY_COLUMN, 0);
 
 		/*
 		JPanel checkBoxPanel = new JPanel(new FlowLayout(FlowLayout.LEFT,1,0));
@@ -405,7 +415,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		add(checkBox, checkBoxLayout_ControlsHidden);
 		add(priorityBox, PRIORITY_COLUMN + ", 0, f, c");
 		add(controlPanel, CONTROL_COLUMN + ", 0, f, c");
-
+		
 		updateBadTooltipText();
 		updateTitleText();
 
