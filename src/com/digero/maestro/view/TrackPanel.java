@@ -199,8 +199,12 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			public Dimension getPreferredSize() {
 				// This makes the title appear centered in the TrackPanel
 				Dimension dim = super.getPreferredSize();
-				dim.height = Math.min(calculateTrackDims().rowHeight, dim.height);
+				dim.height = Math.max(calculateTrackDims().rowHeight, dim.height);
 				return dim;
+			}
+			@Override
+			public Dimension getMinimumSize() {
+				return getPreferredSize();
 			}
 		};
 		checkBox.setOpaque(false);
@@ -398,7 +402,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 		
 		controlPanel.add(trackVolumeBar, BorderLayout.SOUTH);
 
-		checkBoxLayout_ControlsHidden             = new TableLayoutConstraints(TITLE_COLUMN, 0, CONTROL_COLUMN, 0);
+		checkBoxLayout_ControlsHidden             = new TableLayoutConstraints(TITLE_COLUMN, 0, CONTROL_COLUMN, 0,
+				TableLayoutConstants.FULL, TableLayoutConstants.CENTER);
 		checkBoxLayout_ControlsAndPriorityVisible = new TableLayoutConstraints(TITLE_COLUMN, 0);
 		checkBoxLayout_ControlsVisible            = new TableLayoutConstraints(TITLE_COLUMN, 0, PRIORITY_COLUMN, 0);
 
