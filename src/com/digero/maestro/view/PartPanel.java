@@ -199,6 +199,13 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 				return new Dimension(widestWidth, controlLayout.getPreferredHeight());
 			}
 		};
+		MouseAdapter listenForControlFocus = new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				getRootPane().requestFocus();
+			}
+		};
+		controlPanel.addMouseListener(listenForControlFocus);
 		controlPanel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0)); // top, left, bottom, right
 		controlPanel.setBackground(ColorTable.PANEL_BACKGROUND_DISABLED.get());
 		
