@@ -46,7 +46,7 @@
 					<descriptorRefs>
 						<descriptorRef>
                         jar-with-dependencies
-                    </descriptorRef>
+                    	</descriptorRef>
 					</descriptorRefs>
 					<!-- MainClass in mainfest make a executable jar -->
 				</configuration>
@@ -58,7 +58,6 @@
 						</goals>
 						<phase>package</phase>
 						<configuration>
-							<classifier>maestro</classifier>
 							<archive>
 								<index>true</index>
 								<manifest>
@@ -77,7 +76,6 @@
 						</goals>
 						<phase>package</phase>
 						<configuration>
-							<classifier>abcplayer</classifier>
 							<archive>
 								<manifest>
 									<addClasspath>true</addClasspath>
@@ -95,7 +93,6 @@
 						</goals>
 						<phase>package</phase>
 						<configuration>
-							<classifier>merge</classifier>
 							<archive>
 								<index>true</index>
 								<manifest>
