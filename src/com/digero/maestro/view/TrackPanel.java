@@ -664,7 +664,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 	private void updateBadTooltipText() {
 		if (abcPart.getInstrument().ordinal() == LotroInstrument.BASIC_CLARINET.ordinal()) {
 			int g3count = 0;
-			if (abcPart.isTrackEnabled(trackInfo.getTrackNumber())) {
+			//if (abcPart.isTrackEnabled(trackInfo.getTrackNumber())) {
 				List<MidiNoteEvent> nel = trackInfo.getEvents();
 				for (MidiNoteEvent ne : nel) {
 					if (!(ne instanceof BentMidiNoteEvent)) {
@@ -674,7 +674,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 						}
 					}
 				}
-			}
+			//}
 			if (g3count == 0) {
 				badString = "</b><br>" + "Bad G3 notes: " + g3count;
 			} else {
@@ -683,7 +683,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 
 		} else if (abcPart.getInstrument().ordinal() == LotroInstrument.BASIC_PIBGORN.ordinal()) {
 			int acount = 0;
-			if (abcPart.isTrackEnabled(trackInfo.getTrackNumber())) {
+			//if (abcPart.isTrackEnabled(trackInfo.getTrackNumber())) {
 				List<MidiNoteEvent> nel = trackInfo.getEvents();
 				for (MidiNoteEvent ne : nel) {
 					if (!(ne instanceof BentMidiNoteEvent)) {
@@ -694,7 +694,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 						}
 					}
 				}
-			}
+			//}
 			if (acount == 0) {
 				badString = "</b><br>" + "Bad A notes: " + acount;
 			} else {
@@ -702,7 +702,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 			}
 		} else if (abcPart.getInstrument().ordinal() == LotroInstrument.BASIC_HARP.ordinal()) {
 			int b4count = 0;
-			if (abcPart.isTrackEnabled(trackInfo.getTrackNumber())) {
+			//if (abcPart.isTrackEnabled(trackInfo.getTrackNumber())) {
 				List<MidiNoteEvent> nel = trackInfo.getEvents();
 				for (MidiNoteEvent ne : nel) {
 					if (!(ne instanceof BentMidiNoteEvent)) {
@@ -712,7 +712,7 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 						}
 					}
 				}
-			}
+			//}
 			if (b4count == 0) {
 				badString = "</b><br>" + "Bad B4 notes: " + b4count;
 			} else {
