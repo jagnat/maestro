@@ -662,64 +662,58 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 	 * Bent notes are ignored and not counted
 	 */
 	private void updateBadTooltipText() {
-		if (abcPart.getInstrument().ordinal() == LotroInstrument.BASIC_CLARINET.ordinal()) {
-			int g3count = 0;
-			//if (abcPart.isTrackEnabled(trackInfo.getTrackNumber())) {
-				List<MidiNoteEvent> nel = trackInfo.getEvents();
-				for (MidiNoteEvent ne : nel) {
+		switch (abcPart.getInstrument()) {
+			case BASIC_CLARINET:
+				int g3count = 0;
+				for (MidiNoteEvent ne : trackInfo.getEvents()) {
 					if (!(ne instanceof BentMidiNoteEvent)) {
 						Note mn = abcPart.mapNote(trackInfo.getTrackNumber(), ne.note.id, ne.getStartTick());
-						if (mn != null && abcPart.shouldPlay(ne, trackInfo.getTrackNumber()) && mn.id == Note.G3.id) {
+						if (mn != null && abcPart.shouldPlay(ne, trackInfo.getTrackNumber()) && mn == Note.G3) {
 							g3count += 1;
 						}
 					}
 				}
-			//}
-			if (g3count == 0) {
-				badString = "</b><br>" + "Bad G3 notes: " + g3count;
-			} else {
-				badString = "</b><br><p style='color:red;'>" + "Bad G3 notes: " + g3count + "</p>";
-			}
-
-		} else if (abcPart.getInstrument().ordinal() == LotroInstrument.BASIC_PIBGORN.ordinal()) {
-			int acount = 0;
-			//if (abcPart.isTrackEnabled(trackInfo.getTrackNumber())) {
-				List<MidiNoteEvent> nel = trackInfo.getEvents();
-				for (MidiNoteEvent ne : nel) {
+				if (g3count == 0) {
+					badString = "</b><br>" + "Bad G3 notes: " + g3count;
+				} else {
+					badString = "</b><br><p style='color:red;'>" + "Bad G3 notes: " + g3count + "</p>";
+				}
+				break;
+			case BASIC_PIBGORN:
+				int acount = 0;
+				for (MidiNoteEvent ne : trackInfo.getEvents()) {
 					if (!(ne instanceof BentMidiNoteEvent)) {
 						Note mn = abcPart.mapNote(trackInfo.getTrackNumber(), ne.note.id, ne.getStartTick());
 						if (mn != null && abcPart.shouldPlay(ne, trackInfo.getTrackNumber())
-								&& (mn.id == Note.A2.id || mn.id == Note.A3.id || mn.id == Note.A4.id)) {
+								&& (mn == Note.A2 || mn == Note.A3 || mn == Note.A4)) {
 							acount += 1;
 						}
 					}
 				}
-			//}
-			if (acount == 0) {
-				badString = "</b><br>" + "Bad A notes: " + acount;
-			} else {
-				badString = "</b><br><p style='color:red;'>" + "Bad A notes: " + acount + "</p>";
-			}
-		} else if (abcPart.getInstrument().ordinal() == LotroInstrument.BASIC_HARP.ordinal()) {
-			int b4count = 0;
-			//if (abcPart.isTrackEnabled(trackInfo.getTrackNumber())) {
-				List<MidiNoteEvent> nel = trackInfo.getEvents();
-				for (MidiNoteEvent ne : nel) {
+				if (acount == 0) {
+					badString = "</b><br>" + "Bad A notes: " + acount;
+				} else {
+					badString = "</b><br><p style='color:red;'>" + "Bad A notes: " + acount + "</p>";
+				}
+				break;
+			case BASIC_HARP:
+				int b4count = 0;
+				for (MidiNoteEvent ne : trackInfo.getEvents()) {
 					if (!(ne instanceof BentMidiNoteEvent)) {
 						Note mn = abcPart.mapNote(trackInfo.getTrackNumber(), ne.note.id, ne.getStartTick());
-						if (mn != null && abcPart.shouldPlay(ne, trackInfo.getTrackNumber()) && mn.id == Note.B4.id) {
+						if (mn != null && abcPart.shouldPlay(ne, trackInfo.getTrackNumber()) && mn == Note.B4) {
 							b4count += 1;
 						}
 					}
 				}
-			//}
-			if (b4count == 0) {
-				badString = "</b><br>" + "Bad B4 notes: " + b4count;
-			} else {
-				badString = "</b><br><p style='color:red;'>" + "Bad B4 notes: " + b4count + "</p>";
-			}
-		} else {
-			badString = "";
+				if (b4count == 0) {
+					badString = "</b><br>" + "Bad B4 notes: " + b4count;
+				} else {
+					badString = "</b><br><p style='color:red;'>" + "Bad B4 notes: " + b4count + "</p>";
+				}
+				break;
+			default:
+				badString = "";
 		}
 	}
 
