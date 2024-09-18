@@ -933,6 +933,12 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		return abcExporter;
 	}
 
+	/**
+	 * 
+	 * 1st sort according to instrument base number
+	 * 2nd sort according to part number
+	 * 
+	 */
 	private Comparator<AbcPart> partNumberComparator = new Comparator<AbcPart>() {
 		@Override
 		public int compare(AbcPart p1, AbcPart p2) {
