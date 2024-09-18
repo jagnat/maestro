@@ -6,13 +6,17 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.TimeZone;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -58,7 +62,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	public static final String MSX_FILE_DESCRIPTION_PLURAL = MaestroMain.APP_NAME + " Songs";
 	public static final String MSX_FILE_EXTENSION_NO_DOT = "msx";
 	public static final String MSX_FILE_EXTENSION = "." + MSX_FILE_EXTENSION_NO_DOT;
-	public static final Version SONG_FILE_VERSION = new Version(3, 2, 9, 300);// Keep build above 117 to make earlier
+	public static final Version SONG_FILE_VERSION = new Version(3, 3, 4, 300);// Keep build above 117 to make earlier
 																				// Maestro releases know msx is
 																				// made by newer version.
 
@@ -105,6 +109,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 
 	private final ListenerList<AbcSongEvent> listeners = new ListenerList<>();
 	boolean mixDirty = true;
+	private Date firstExportTime = null;// UTC date and time for first time this project was exported to abc.
 
 	public AbcSong(File file, PartAutoNumberer partAutoNumberer, PartNameTemplate partNameTemplate,
 			ExportFilenameTemplate exportFilenameTemplate, InstrNameSettings instrNameSettings,
@@ -287,6 +292,19 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 			mood = SaveUtil.parseValue(songEle, "mood", mood);
 			note = SaveUtil.parseValue(songEle, "note", "");
 			
+			String exportTimeStr = SaveUtil.parseValue(songEle, "firstExportTime", "");
+			if (exportTimeStr != "") {
+				DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+				df.setTimeZone(TimeZone.getTimeZone("GMT"));
+				try {
+					firstExportTime = df.parse(exportTimeStr);
+				} catch (java.text.ParseException e) {					
+				}
+			} else if (exportFile != null) {
+				// Project has been saved before, but we don't know when.
+				firstExportTime = new Date(0);// 1970-01-01-00:00:00
+			}
+			
 			lastBar = SaveUtil.parseValue(songEle, "lastBar", -1);
 			if (lastBar < 1) lastBar = null;
 			firstBar = SaveUtil.parseValue(songEle, "firstBar", -1);
@@ -449,6 +467,11 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 			SaveUtil.appendChildTextElement(songEle, "mood", mood);
 		if (note.length() > 0)
 			SaveUtil.appendChildTextElement(songEle, "note", note);
+		if (firstExportTime != null && firstExportTime.getTime() != 0L) {
+			DateFormat df = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+			df.setTimeZone(TimeZone.getTimeZone("GMT"));
+			SaveUtil.appendChildTextElement(songEle, "firstExportTime", df.format(firstExportTime));
+		}
 
 		appendImportSettings(doc, songEle);
 		appendExportSettings(doc, songEle);
@@ -522,6 +545,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		}
 		try (FileOutputStream out = new FileOutputStream(exportFile)) {
 			getAbcExporter().exportToAbc(out, delayEnabled);
+			if (firstExportTime == null) firstExportTime = new Date();
 		}
 	}
 
