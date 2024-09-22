@@ -727,6 +727,12 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 		return (int) Math.floor(e.barNumber + (tick - e.tick) / ((double) e.info.getBarLengthTicks()));
 	}
 
+	@Override
+	public long getBarToTick(int bar) {
+		assert false : "Use another method for this, this one should never be called";
+		return 0L;
+	}
+
 	public long tickToBarStartTick(long tick) {
 		if (barStartTicks == null)
 			calcBarStarts();

@@ -55,7 +55,6 @@ import com.digero.maestro.util.SaveUtil;
 import com.digero.maestro.util.XmlUtil;
 import com.digero.maestro.view.InstrNameSettings;
 import com.digero.maestro.view.MiscSettings;
-import com.digero.maestro.view.SectionEditor;
 
 public class AbcSong implements IDiscardable, AbcMetadataSource {
 	public static final String MSX_FILE_DESCRIPTION = MaestroMain.APP_NAME + " Song";
@@ -85,7 +84,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	private boolean skipSilenceAtStart = true;
 	private boolean deleteMinimalNotes = false;
 	// private boolean showPruned = false;
-	public NavigableMap<Integer, TuneLine> tuneBars = null;
+	public NavigableMap<Float, TuneLine> tuneBars = null;
 	public boolean[] tuneBarsModified = null;
 	private Integer firstBar = null;
 	private Integer lastBar = null;
@@ -333,7 +332,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 
 			priorityActive = SaveUtil.parseValue(songEle, "exportSettings/@combinePriorities", false);
 
-			handleTuneSections(songEle);
+			handleTuneSections(songEle, fileVersion);
 
 			addListenerToParts(songEle, fileVersion);
 		} catch (XPathExpressionException e) {
@@ -390,13 +389,38 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 			sourceFile = fileResolver.resolveFile(sourceFile, msg);
 		}
 	}
+	
+	public void convertTunelinesToLongs () {
+		if (tuneBars == null) return;
+		SequenceInfo se = getSequenceInfo();
+		if (se == null) {
+			throw new RuntimeException("Error in floating point tuneline");
+		}
+		
+		SequenceDataCache data = se.getDataCache();
+		long barLengthTicks = data.getBarLengthTicks();
+		
+		for (TuneLine tuneLine : tuneBars.values()) {
+			assert tuneLine.startTick == -1L;
+			assert tuneLine.endTick == -1L;
+			
+			tuneLine.startTick = (long)(barLengthTicks * tuneLine.startBar);
+			tuneLine.endTick   = (long)(barLengthTicks * tuneLine.endBar);// don't use ceil() here
+		}
+	}
 
-	private void handleTuneSections(Element songElement) throws XPathExpressionException, ParseException {
-		int lastEnd = 0;
+	private void handleTuneSections(Element songElement, Version fileVersion) throws XPathExpressionException, ParseException {
+		float lastEnd = 0;
 		for (Element tuneEle : XmlUtil.selectElements(songElement, "tuneSection")) {
 			TuneLine tl = new TuneLine();
-			tl.startBar = SaveUtil.parseValue(tuneEle, "startBar", 0);
-			tl.endBar = SaveUtil.parseValue(tuneEle, "endBar", 0);
+			if (fileVersion.compareTo(new Version(3, 3, 4, 300)) < 0) {
+				tl.startBar = SaveUtil.parseValue(tuneEle, "startBar", 0);
+				tl.endBar = SaveUtil.parseValue(tuneEle, "endBar", 0);
+				tl.startBar -= 1.0f;
+			} else {
+				tl.startBar = SaveUtil.parseValue(tuneEle, "startBar", 0.0f);
+				tl.endBar = SaveUtil.parseValue(tuneEle, "endBar", 0.0f);
+			}
 			tl.seminoteStep = SaveUtil.parseValue(tuneEle, "seminoteStep", 0);
 			tl.tempo = SaveUtil.parseValue(tuneEle, "tempoChange", 0);
 			int fade = SaveUtil.parseValue(tuneEle, "fade", 0);
@@ -404,7 +428,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 				tl.fade = fade;
 			}
 			tl.dialogLine = SaveUtil.parseValue(tuneEle, "dialogLine", -1);
-			if (tl.startBar > 0 && tl.endBar >= tl.startBar) {
+			if (tl.startBar >= 0.0f && tl.endBar > tl.startBar) {
 				if (tuneBars == null) {
 					tuneBars = new TreeMap<>();
 				}
@@ -414,15 +438,16 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 				tuneBars.put(tl.startBar, tl);
 			}
 		}
-		boolean[] booleanArray = new boolean[lastEnd + 1];
+		boolean[] booleanArray = new boolean[(int)(lastEnd) + 1];
 		if (tuneBars != null) {
-			for (int i = 0; i < lastEnd + 1; i++) {
-				Entry<Integer, TuneLine> entry = tuneBars.floorEntry(i + 1);
-				booleanArray[i] = entry != null && entry.getValue().startBar <= i + 1
-						&& entry.getValue().endBar >= i + 1;
+			for (int i = 0; i < (int)(lastEnd) + 1; i++) {
+				Entry<Float, TuneLine> entry = tuneBars.lowerEntry(i + 1.0f);
+				booleanArray[i] = entry != null && entry.getValue().startBar < i+1
+						&& entry.getValue().endBar > i;
 			}
 			tuneBarsModified = booleanArray;
 		}
+		convertTunelinesToLongs();
 	}
 
 	private void addListenerToParts(Element songEle, Version fileVersion)
@@ -433,6 +458,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 			if (ins < 0)
 				ins = -ins - 1;
 			parts.add(ins, part);
+			part.convertSectionsToLongTrees();
 			part.addAbcListener(abcPartListener);
 		}
 	}
@@ -1026,36 +1052,18 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	}
 
 	public void tuneEdited() {
+		convertTunelinesToLongs();
 		setMixDirty(true); // Tempo might have changed, in which case the mixTimings need to be recomputed
 		fireChangeEvent(AbcSongProperty.TUNE_EDIT);
 	}
 
 	public int getTuneTranspose(long tickStart) {
 		int tuneTrans = 0;
-		SequenceInfo se = getSequenceInfo();
-		NavigableMap<Integer, TuneLine> tree = tuneBars;
-		if (se != null && tree != null) {
-			SequenceDataCache data = se.getDataCache();
-			long barLengthTicks = data.getBarLengthTicks();
-
-			long startTick = barLengthTicks;
-			long endTick = data.getSongLengthTicks();
-
-			int bar = -1;
-			int curBar = 1;
-			for (long barTick = startTick; barTick <= endTick + barLengthTicks; barTick += barLengthTicks) {
-				if (tickStart < barTick) {
-					bar = curBar;
-					break;
-				}
-				curBar += 1;
-			}
-			if (bar != -1) {
-				Entry<Integer, TuneLine> entry = tree.floorEntry(bar);
-				if (entry != null) {
-					if (bar <= entry.getValue().endBar) {
-						tuneTrans = entry.getValue().seminoteStep;
-					}
+		NavigableMap<Float, TuneLine> tree = tuneBars;
+		if (tree != null) {
+			for (TuneLine value : tuneBars.values()) {
+				if (tickStart < value.endTick && tickStart >= value.startTick) {
+					tuneTrans = value.seminoteStep;
 				}
 			}
 		}
@@ -1063,19 +1071,15 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	}
 
 	public NavigableMap<Long, Integer> getTuneTempoChanges() {
-		SequenceInfo se = getSequenceInfo();
-		SortedMap<Integer, TuneLine> tree = tuneBars;
+		SortedMap<Float, TuneLine> tree = tuneBars;
 		TreeMap<Long, Integer> treeChanges = new TreeMap<>();
-		if (se != null && tree != null) {
-			SequenceDataCache data = se.getDataCache();
+		if (tree != null) {
 			Collection<TuneLine> lines = tree.values();
-			long barLength = data.getBarLengthTicks();
+			
 			for (TuneLine line : lines) {
 				if (line.tempo != 0) {
-					long tickStart = data.getBarToTick(line.startBar);
-					long tickEnd = data.getBarToTick(line.endBar) + barLength;
-					treeChanges.put(tickStart, line.tempo);
-					treeChanges.put(tickEnd, 0);
+					treeChanges.put(line.startTick, line.tempo);
+					treeChanges.put(line.endTick, 0);
 				}
 			}
 		}

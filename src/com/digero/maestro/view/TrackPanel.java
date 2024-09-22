@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Insets;
 import java.awt.LayoutManager;
@@ -15,6 +14,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.NavigableMap;
+import java.util.TreeMap;
 import java.util.prefs.Preferences;
 
 import javax.swing.BorderFactory;
@@ -60,9 +62,11 @@ import com.digero.maestro.abc.AbcPartEvent.AbcPartProperty;
 import com.digero.maestro.abc.AbcSongEvent;
 import com.digero.maestro.abc.AbcSongEvent.AbcSongProperty;
 import com.digero.maestro.abc.DrumNoteMap;
+import com.digero.maestro.abc.PartSection;
 import com.digero.maestro.midi.BentMidiNoteEvent;
 import com.digero.maestro.midi.MidiNoteEvent;
 import com.digero.maestro.midi.NoteEvent;
+import com.digero.maestro.midi.SequenceDataCache;
 import com.digero.maestro.midi.TrackInfo;
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 
@@ -1134,6 +1138,25 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 				return null;
 			}
 			return abcPart.sectionsModified.get(trackInfo.getTrackNumber());
+		}
+		
+		@Override
+		protected List<Pair<Long, Long>> getMicrosModified(long from, long to) {
+			if (!isActiveTrack() || abcPart.getAbcSong().isHideEdits()) {
+				return null;
+			}
+			SequenceDataCache data = sequenceInfo.getDataCache();
+			long a = data.microsToTick(from);
+			long b = data.microsToTick(to);
+			List<Pair<Long, Long>> list = new ArrayList<>();
+			TreeMap<Long, PartSection> tree = abcPart.sectionsTicked.get(trackInfo.getTrackNumber());
+			NavigableMap<Long, PartSection> subtree = tree.headMap(b, false);
+			for (Entry<Long, PartSection> entry : subtree.entrySet()) {
+				if (entry.getValue().startTick < b && entry.getValue().endTick >= a) {
+					list.add(new Pair<Long,Long>(data.tickToMicros(entry.getValue().startTick), data.tickToMicros(entry.getValue().endTick)));
+				}
+			}
+			return list;
 		}
 		
 		@Override

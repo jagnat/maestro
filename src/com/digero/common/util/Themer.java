@@ -8,7 +8,6 @@ import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.text.StyleContext;
 
 import com.digero.maestro.MaestroMain;
-import com.digero.maestro.view.MiscSettings;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.themes.FlatMacDarkLaf;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;

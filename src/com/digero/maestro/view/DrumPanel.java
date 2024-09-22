@@ -9,6 +9,12 @@ import java.awt.LayoutManager;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NavigableMap;
+import java.util.TreeMap;
+import java.util.Map.Entry;
+
 import javax.swing.BorderFactory;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -24,6 +30,7 @@ import com.digero.common.midi.SequencerWrapper;
 import com.digero.common.util.ICompileConstants;
 import com.digero.common.util.IDiscardable;
 import com.digero.common.util.Listener;
+import com.digero.common.util.Pair;
 import com.digero.common.util.Util;
 import com.digero.common.view.ColorTable;
 import com.digero.maestro.abc.AbcPart;
@@ -31,8 +38,10 @@ import com.digero.maestro.abc.AbcPartEvent;
 import com.digero.maestro.abc.AbcSongEvent;
 import com.digero.maestro.abc.LotroDrumInfo;
 import com.digero.maestro.abc.LotroStudentFXInfo;
+import com.digero.maestro.abc.PartSection;
 import com.digero.maestro.abc.AbcSongEvent.AbcSongProperty;
 import com.digero.maestro.midi.NoteEvent;
+import com.digero.maestro.midi.SequenceDataCache;
 import com.digero.maestro.midi.TrackInfo;
 import com.digero.maestro.view.TrackPanel.TrackDimensions;
 
@@ -433,6 +442,25 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 				return null;
 			}
 			return abcPart.sectionsModified.get(trackInfo.getTrackNumber());
+		}
+		
+		@Override
+		protected List<Pair<Long, Long>> getMicrosModified(long from, long to) {
+			if (!isActiveTrack() || abcPart.getAbcSong().isHideEdits()) {
+				return null;
+			}
+			SequenceDataCache data = sequenceInfo.getDataCache();
+			long a = data.microsToTick(from);
+			long b = data.microsToTick(to);
+			List<Pair<Long, Long>> list = new ArrayList<>();
+			TreeMap<Long, PartSection> tree = abcPart.sectionsTicked.get(trackInfo.getTrackNumber());
+			NavigableMap<Long, PartSection> subtree = tree.headMap(b, false);
+			for (Entry<Long, PartSection> entry : subtree.entrySet()) {
+				if (entry.getValue().startTick < b && entry.getValue().endTick >= a) {
+					list.add(new Pair<Long,Long>(data.tickToMicros(entry.getValue().startTick), data.tickToMicros(entry.getValue().endTick)));
+				}
+			}
+			return list;
 		}
 
 		@Override

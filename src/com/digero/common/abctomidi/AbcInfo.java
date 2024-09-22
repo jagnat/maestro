@@ -118,6 +118,12 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 		return e.getValue();
 	}
 
+	@Override
+	public long getBarToTick(int bar) {
+		assert false : "this one should never be called";
+		return 0L;
+	}
+
 	public int getBarCount() {
 		return bars.size();
 	}

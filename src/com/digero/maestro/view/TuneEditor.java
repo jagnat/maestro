@@ -145,7 +145,7 @@ public class TuneEditor {
 					tuneInputs.add(l);
 				}
 
-				SortedMap<Integer, TuneLine> tree = abcSong.tuneBars;
+				SortedMap<Float, TuneLine> tree = abcSong.tuneBars;
 				if (tree != null) {
 					processTree(tree);
 				}
@@ -178,8 +178,8 @@ public class TuneEditor {
 						tuneInputs.get(i).enable.setSelected(SectionEditor.clipboardEnabled[i]);
 					}
 					for (int i = copySize; i < numberOfSections; i++) {
-						tuneInputs.get(i).barA.setText("0");
-						tuneInputs.get(i).barB.setText("0");
+						tuneInputs.get(i).barA.setText("0.0");
+						tuneInputs.get(i).barB.setText("0.0");
 						tuneInputs.get(i).enable.setSelected(false);
 					}
 				});
@@ -192,8 +192,9 @@ public class TuneEditor {
 				help.setEditable(false);
 				help.setHorizontalAlignment(CENTER);
 				help.setToolTipText(
-						"<html><b>Enabled sections must have no overlap.<br>Bar numbers are inclusive and use original MIDI bars.<br>"
-								+ "No decimal numbers allowed, only whole numbers.<br>Bar numbers must be positive and greater than zero.<br>"
+						"<html><b>Enabled sections must have no overlap.<br>Bar numbers use original MIDI bars.<br>"
+								+ "Decimal bar numbers allowed.<br>Bar numbers must not be negative.<br>"
+								+ "Bar numbers from are inclusive, to are exclusive.<br>"
 								+ "Clicking APPLY will also disable faulty sections.<br><br>Warning: If 'Remove initial silence' is enabled or the<br>"
 								+ "meter is modified, then the bar counter in lower-right might<br>not match up, unless your preview mode is in 'Original'.</b></html>");
 				panel.add(help, "3," + (3 + numberOfSections) + ", 3, "
@@ -242,9 +243,9 @@ public class TuneEditor {
 				JButton okButton = new JButton("APPLY");
 				numberOfSectionsFinal = numberOfSections;
 				okButton.addActionListener(e -> {
-					TreeMap<Integer, TuneLine> tm = new TreeMap<>();
+					TreeMap<Float, TuneLine> tm = new TreeMap<>();
 
-					int lastEnd = 0;
+					float lastEnd = 0;
 					lastEnd = processSections(tm, lastEnd);
 
 					if (lastEnd == 0) {
@@ -253,11 +254,11 @@ public class TuneEditor {
 					} else {
 						TuneDialog.this.abcSong.tuneBars = tm;
 
-						boolean[] booleanArray = new boolean[lastEnd + 1];
-						for (int m = 0; m < lastEnd + 1; m++) {
-							Entry<Integer, TuneLine> entry = tm.floorEntry(m + 1);
-							booleanArray[m] = entry != null && entry.getValue().startBar <= m + 1
-									&& entry.getValue().endBar >= m + 1;
+						boolean[] booleanArray = new boolean[(int)(lastEnd) + 1];
+						for (int m = 0; m < (int)(lastEnd) + 1; m++) {
+							Entry<Float, TuneLine> entry = tm.lowerEntry(m + 1.0f);
+							booleanArray[m] = entry != null && entry.getValue().startBar < m + 1
+									&& entry.getValue().endBar > m;
 						}
 
 						TuneDialog.this.abcSong.tuneBarsModified = booleanArray;
@@ -382,7 +383,7 @@ public class TuneEditor {
 			
 			private final int numberOfSectionsFinal;
 			
-			private int processSections(TreeMap<Integer, TuneLine> tm, int lastEnd) {
+			private float processSections(TreeMap<Float, TuneLine> tm, float lastEnd) {
 				for (int k = 0; k < numberOfSectionsFinal; k++) {
 					if (TuneDialog.this.tuneInputs.get(k).enable.isSelected()) {
 						TuneLine ps = new TuneLine();
@@ -396,8 +397,8 @@ public class TuneEditor {
 								ps.seminoteStep = -36;
 								tuneInputs.get(k).transpose.setText("-36");
 							}
-							ps.startBar = Integer.parseInt(tuneInputs.get(k).barA.getText());
-							ps.endBar = Integer.parseInt(tuneInputs.get(k).barB.getText());
+							ps.startBar = Float.parseFloat(tuneInputs.get(k).barA.getText());
+							ps.endBar = Float.parseFloat(tuneInputs.get(k).barB.getText());
 							ps.tempo = Integer.parseInt(tuneInputs.get(k).tempo.getText());
 							ps.fade = Integer.parseInt(tuneInputs.get(k).fade.getText());
 							// ps.remove = tuneInputs.get(k).remove.isSelected();
@@ -410,9 +411,9 @@ public class TuneEditor {
 				return lastEnd;
 			}
 
-			private int checkForNewLastEnd(TreeMap<Integer, TuneLine> tm, int lastEnd, int k, TuneLine ps,
+			private float checkForNewLastEnd(TreeMap<Float, TuneLine> tm, float lastEnd, int k, TuneLine ps,
 					boolean soFarSoGood) {
-				if (ps.startBar > 0 && ps.startBar <= ps.endBar && soFarSoGood) {
+				if (ps.startBar >= 0.0f && ps.startBar < ps.endBar && soFarSoGood) {
 					tm.put(ps.startBar, ps);
 					if (ps.endBar > lastEnd)
 						lastEnd = ps.endBar;
@@ -423,10 +424,10 @@ public class TuneEditor {
 				return lastEnd;
 			}
 
-			private void processTree(SortedMap<Integer, TuneLine> tree) throws ParseException {
+			private void processTree(SortedMap<Float, TuneLine> tree) throws ParseException {
 				int number = 0;
 				boolean useDialogLineNumbers = true;
-				for (Entry<Integer, TuneLine> entry : tree.entrySet()) {
+				for (Entry<Float, TuneLine> entry : tree.entrySet()) {
 					TuneLine ps = entry.getValue();
 					if (ps.dialogLine == -1) {
 						useDialogLineNumbers = false;
@@ -473,9 +474,9 @@ public class TuneEditor {
 		}
 	}
 
-	private static boolean soFarSoGood(TreeMap<Integer, TuneLine> tm, TuneLine ps) {
+	private static boolean soFarSoGood(TreeMap<Float, TuneLine> tm, TuneLine ps) {
 		for (TuneLine psC : tm.values()) {
-			if (!(ps.startBar > psC.endBar || ps.endBar < psC.startBar)) {
+			if (!(ps.startBar >= psC.endBar || ps.endBar <= psC.startBar)) {
 				return false;
 			}
 		}

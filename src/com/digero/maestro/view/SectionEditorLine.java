@@ -18,8 +18,8 @@ class SectionEditorLine implements Comparable<SectionEditorLine> {
 	private final double[] LAYOUT_ROWS = new double[] { TableLayout.PREFERRED };	
 	
 	JCheckBox[] enable = {new JCheckBox(),new JCheckBox(),new JCheckBox()};
-	JTextField[] barA = {new JTextField("0"),new JTextField("0"),new JTextField("0")};
-	JTextField[] barB = {new JTextField("0"),new JTextField("0"),new JTextField("0")};
+	JTextField[] barA = {new JTextField("0.0"),new JTextField("0.0"),new JTextField("0.0")};
+	JTextField[] barB = {new JTextField("0.0"),new JTextField("0.0"),new JTextField("0.0")};
 	JTextField transpose = new JTextField("0");
 	JTextField velo = new JTextField("0");
 	JCheckBox silent = new JCheckBox();

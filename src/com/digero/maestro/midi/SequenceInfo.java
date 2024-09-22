@@ -658,6 +658,8 @@ public class SequenceInfo implements MidiConstants {
 						case BANK_SELECT_LSB:
 							// System.err.println("Bank select LSB "+m.getData2());
 							break;
+						default:
+							break;
 						}
 					}
 				}

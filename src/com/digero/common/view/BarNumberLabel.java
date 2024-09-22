@@ -13,7 +13,7 @@ import com.digero.common.util.Listener;
 public class BarNumberLabel extends JLabel implements Listener<SequencerEvent>, IDiscardable {
 	private IBarNumberCache barNumberCache;
 	private SequencerWrapper sequencer;
-	private long initialOffsetTick = 0;
+	private long initialOffsetTick = 0L;
 
 	public BarNumberLabel(SequencerWrapper sequencer, IBarNumberCache barNumberCache) {
 		this.sequencer = sequencer;
@@ -77,6 +77,34 @@ public class BarNumberLabel extends JLabel implements Listener<SequencerEvent>, 
 		int barCount = barNumberCache.tickToBarNumber(tickLength) + 1;
 		
 		return barNumber + "/" +  barCount;
+	}
+	
+	public static String getBarStringFloat(SequencerWrapper sequencer, IBarNumberCache barNumberCache) {
+		if (barNumberCache == null || sequencer == null) {
+			return "-/-";
+		}
+		
+		long tickLength = Math.max(0, sequencer.getTickLength());
+		long tick = Math.min(tickLength, sequencer.getThumbTick());
+
+		int barNumber = (tick < 0) ? 0 : (barNumberCache.tickToBarNumber(tick));
+		int barCount = barNumberCache.tickToBarNumber(tickLength) + 1;
+		
+		float barFloat = map(tick, barNumberCache.getBarToTick(barNumber+1), barNumberCache.getBarToTick(barNumber+2), barNumber, barNumber+1); 
+		
+		return String.format("%.2f/%d", barFloat, barCount);
+	}
+	
+	static float map(long value, long leftMin, long leftMax, int rightMin, int rightMax) {
+		// Figure out how 'wide' each range is
+		long leftSpan = leftMax - leftMin;
+		int rightSpan = rightMax - rightMin;
+
+		// Convert the left range into a 0-1 range (float)
+		double valueScaled = (value - leftMin) / (double) leftSpan;
+
+		// Convert the 0-1 range into a value in the right range.
+		return (float)(rightMin + (valueScaled * rightSpan));
 	}
 
 	private void update() {

@@ -8,6 +8,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -21,8 +22,10 @@ import com.digero.common.midi.SequencerEvent.SequencerProperty;
 import com.digero.common.midi.SequencerWrapper;
 import com.digero.common.util.IDiscardable;
 import com.digero.common.util.Listener;
+import com.digero.common.util.Pair;
 import com.digero.common.view.ColorTable;
 import com.digero.maestro.abc.AbcSong;
+import com.digero.maestro.abc.TuneLine;
 import com.digero.maestro.midi.FakeNoteEvent;
 import com.digero.maestro.midi.NoteEvent;
 import com.digero.maestro.midi.SequenceDataCache;
@@ -241,6 +244,26 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 				return super.getSectionsModified();
 			}
 			return abcSong.tuneBarsModified;
+		}
+		
+		@Override
+		protected List<Pair<Long, Long>> getMicrosModified(long from, long to) {
+			if (abcSong == null) {
+				return null;
+			}
+			if (abcSong.isHideEdits()) {
+				return super.getMicrosModified(from,to);
+			}
+			SequenceDataCache data = sequenceInfo.getDataCache();
+			long a = data.microsToTick(from);
+			long b = data.microsToTick(to);
+			List<Pair<Long, Long>> list = new ArrayList<>();
+			for (Entry<Float, TuneLine> entry : abcSong.tuneBars.entrySet()) {
+				if (entry.getValue().startTick < b && entry.getValue().endTick >= a) {
+					list.add(new Pair<Long,Long>(data.tickToMicros(entry.getValue().startTick), data.tickToMicros(entry.getValue().endTick)));
+				}
+			}
+			return list;
 		}
 	}
 

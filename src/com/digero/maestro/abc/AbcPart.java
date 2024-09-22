@@ -50,7 +50,6 @@ import com.digero.maestro.midi.TrackInfo;
 import com.digero.maestro.util.SaveUtil;
 import com.digero.maestro.util.XmlUtil;
 import com.digero.maestro.view.InstrNameSettings;
-import com.digero.maestro.view.SectionEditor;
 
 public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscardable {
 	private int partNumber = 1;
@@ -78,7 +77,8 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	private Preferences drumPrefs = Preferences.userNodeForPackage(AbcPart.class).node("drums");
 
 	private int noteMax = AbcConstants.MAX_CHORD_NOTES;
-	public List<TreeMap<Integer, PartSection>> sections;
+	public List<TreeMap<Float, PartSection>> sections;
+	public List<TreeMap<Long, PartSection>> sectionsTicked = null;
 	public List<PartSection> nonSection;
 	public List<boolean[]> sectionsModified;
 	public int delay = 0;// ms
@@ -149,9 +149,41 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			}
 		}
 		sections = null;
+		sectionsTicked = null;
 		sectionsModified = null;
 		delay = 0;
 		discarded = true;
+	}
+	
+	public void convertSectionsToLongTrees () {
+		SequenceInfo se = getSequenceInfo();
+		if (se == null) {
+			throw new RuntimeException("Error in floating point section");
+		}
+		SequenceDataCache data = se.getDataCache();
+		long barLengthTicks = data.getBarLengthTicks();
+		List<TreeMap<Long, PartSection>> longsections = new ArrayList<>();
+		for (TreeMap<Float, PartSection> section : sections) {
+			if (section == null) {
+				longsections.add(null);
+				continue;
+			}
+			TreeMap<Long, PartSection> longtree = new TreeMap<>();
+			for (Entry<Float, PartSection> entry : section.entrySet()) {
+				PartSection ps = entry.getValue();
+				
+				assert ps.startTick == -1L;
+				assert ps.endTick == -1L;
+				
+				ps.startTick = (long)(barLengthTicks * ps.startBar);
+				ps.endTick   = (long)(barLengthTicks * ps.endBar);
+				
+				PartSection prev = longtree.put(ps.startTick, ps);
+				assert prev == null;
+			}
+			longsections.add(longtree);
+		}
+		sectionsTicked = longsections;
 	}
 
 	public void saveToXml(Element ele) {
@@ -204,9 +236,9 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			if (!playRight[t])
 				trackEle.setAttribute("playRight", String.valueOf(playRight[t]));
 			
-			TreeMap<Integer, PartSection> tree = sections.get(t);
+			TreeMap<Float, PartSection> tree = sections.get(t);
 			if (tree != null) {
-				for (Entry<Integer, PartSection> entry : tree.entrySet()) {
+				for (Entry<Float, PartSection> entry : tree.entrySet()) {
 					PartSection ps = entry.getValue();
 					Element sectionEle = (Element) trackEle.appendChild(doc.createElement("section"));
 					SaveUtil.appendChildTextElement(sectionEle, "startBar", String.valueOf(ps.startBar));
@@ -332,12 +364,11 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 							"Could not find track number " + t + optionalName + " in original MIDI file");
 				}
 
-				TreeMap<Integer, PartSection> tree = sections.get(t);
-				int lastEnd = 0;
+				TreeMap<Float, PartSection> tree = sections.get(t);
+				float lastEnd = 0.0f;
 				for (Element sectionEle : XmlUtil.selectElements(trackEle, "section")) {
-					PartSection ps = AbcHelper.generatePartSection(sectionEle);
-					if (ps.startBar > 0 && ps.endBar >= ps.startBar) {// && (ps.volumeStep != 0 || ps.octaveStep != 0 ||
-																		// ps.silence || ps.fadeout)
+					PartSection ps = AbcHelper.generatePartSection(sectionEle, fileVersion);
+					if (ps.startBar >= 0.0f && ps.endBar > ps.startBar) {
 						if (tree == null) {
 							tree = new TreeMap<>();
 							sections.set(t, tree);
@@ -349,14 +380,14 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 						
 					}
 				}
-				boolean[] booleanArray = new boolean[lastEnd + 1];
+				boolean[] booleanArray = new boolean[(int)(lastEnd) + 1];
 				if (tree != null) {
-					for (int i = 0; i < lastEnd + 1; i++) {
-						Entry<Integer, PartSection> entry = tree.floorEntry(i + 1);
-						booleanArray[i] = entry != null && entry.getValue().startBar <= i + 1
-								&& entry.getValue().endBar >= i + 1;
+					for (int i = 0; i < (int)(lastEnd) + 1; i++) {
+						Entry<Float, PartSection> entry = tree.lowerEntry(i+1.0f);
+						booleanArray[i] = entry != null && entry.getValue().startBar < i + 1.0f
+								&& entry.getValue().endBar > i;
 					}
-
+					
 					sectionsModified.set(t, booleanArray);
 				}
 
@@ -1014,38 +1045,23 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			return secLimits;
 		if (!isTrackEnabled(track))
 			return secLimits;
-		SequenceInfo se = getSequenceInfo();
-		TreeMap<Integer, PartSection> tree = sections.get(track);
-		boolean isSection = false;
-		if (se != null && tree != null) {
-			SequenceDataCache data = se.getDataCache();
-			long barLengthTicks = data.getBarLengthTicks();
-
-			long startTick = barLengthTicks;
-			long endTick = data.getSongLengthTicks();
-
-			int bar = -1;
-			int curBar = 1;
-			for (long barTick = startTick; barTick <= endTick + barLengthTicks; barTick += barLengthTicks) {
-				if (tickStart < barTick) {
-					bar = curBar;
-					break;
-				}
-				curBar += 1;
-			}
-			if (bar != -1) {
-				Entry<Integer, PartSection> entry = tree.floorEntry(bar);
+		
+		if (sectionsTicked != null) {
+			TreeMap<Long, PartSection> tree = sectionsTicked.get(track);
+			
+			if (tree != null) {	
+				Entry<Long, PartSection> entry = tree.floorEntry(tickStart);
 				if (entry != null) {
-					if (bar <= entry.getValue().endBar) {
+					if (tickStart < entry.getValue().endTick) {
 						secLimits.first = entry.getValue().fromPitch.id;
 						secLimits.second = entry.getValue().toPitch.id;
-						isSection = true;
+						return secLimits;
 					}
 				}
 			}
 		}
 		
-		if (se != null && !isSection && nonSection.get(track) != null) {
+		if (nonSection.get(track) != null) {
 			return new Pair<Integer, Integer>(nonSection.get(track).fromPitch.id, nonSection.get(track).toPitch.id);
 		}
 
@@ -1058,28 +1074,13 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			return secTrans;
 		if (isPercussionPart())
 			return secTrans;
-		SequenceInfo se = getSequenceInfo();
-		TreeMap<Integer, PartSection> tree = sections.get(track);
-		if (se != null && tree != null) {
-			SequenceDataCache data = se.getDataCache();
-			long barLengthTicks = data.getBarLengthTicks();
-
-			long startTick = barLengthTicks;
-			long endTick = data.getSongLengthTicks();
-
-			int bar = -1;
-			int curBar = 1;
-			for (long barTick = startTick; barTick <= endTick + barLengthTicks; barTick += barLengthTicks) {
-				if (tickStart < barTick) {
-					bar = curBar;
-					break;
-				}
-				curBar += 1;
-			}
-			if (bar != -1) {
-				Entry<Integer, PartSection> entry = tree.floorEntry(bar);
+		
+		if (sectionsTicked != null) {
+			TreeMap<Long, PartSection> tree = sectionsTicked.get(track);
+			if (tree != null) {
+				Entry<Long, PartSection> entry = tree.floorEntry(tickStart);
 				if (entry != null) {
-					if (bar <= entry.getValue().endBar) {
+					if (tickStart < entry.getValue().endTick) {
 						secTrans = entry.getValue().octaveStep * 12;
 					}
 				}
@@ -1095,36 +1096,21 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			return secDoubling;
 		if (isPercussionPart())
 			return secDoubling;
-		SequenceInfo se = getSequenceInfo();
-		TreeMap<Integer, PartSection> tree = sections.get(track);
-		boolean isSection = false;
-		if (se != null && tree != null) {
-			SequenceDataCache data = se.getDataCache();
-			long barLengthTicks = data.getBarLengthTicks();
-
-			long startTick = barLengthTicks;
-			long endTick = data.getSongLengthTicks();
-
-			int bar = -1;
-			int curBar = 1;
-			for (long barTick = startTick; barTick <= endTick + barLengthTicks; barTick += barLengthTicks) {
-				if (tickStart < barTick) {
-					bar = curBar;
-					break;
-				}
-				curBar += 1;
-			}
-			if (bar != -1) {
-				Entry<Integer, PartSection> entry = tree.floorEntry(bar);
+		
+		if (sectionsTicked != null) {
+			TreeMap<Long, PartSection> tree = sectionsTicked.get(track);
+			
+			if (tree != null) {				
+				Entry<Long, PartSection> entry = tree.floorEntry(tickStart);
 				if (entry != null) {
-					if (bar <= entry.getValue().endBar) {
-						isSection = true;
+					if (tickStart < entry.getValue().endTick) {
 						secDoubling = entry.getValue().doubling;
+						return secDoubling;
 					}
-				}
+				}			
 			}
 		}
-		if (se != null && !isSection && nonSection.get(track) != null) {
+		if (nonSection.get(track) != null) {
 			secDoubling = nonSection.get(track).doubling;
 		}
 
@@ -1137,36 +1123,21 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	 * @return velocity of the noteEvent, or is reset velocities active, then mezzoforte
 	 */
 	public int getSectionNoteVelocity(int track, NoteEvent ne) {
-		SequenceInfo se = getSequenceInfo();
-		TreeMap<Integer, PartSection> tree = sections.get(track);
-		boolean isSection = false;
-		if (se != null && tree != null) {
-			SequenceDataCache data = se.getDataCache();
-			long barLengthTicks = data.getBarLengthTicks();
-
-			long startTick = barLengthTicks;
-			long endTick = data.getSongLengthTicks();
-
-			int bar = -1;
-			int curBar = 1;
-			for (long barTick = startTick; barTick <= endTick + barLengthTicks; barTick += barLengthTicks) {
-				if (ne.getStartTick() < barTick) {
-					bar = curBar;
-					break;
-				}
-				curBar += 1;
-			}
-			if (bar != -1) {
-				Entry<Integer, PartSection> entry = tree.floorEntry(bar);
-				if (entry != null) {
-					if (bar <= entry.getValue().endBar) {
-						isSection = true;
-						return entry.getValue().resetVelocities ? Dynamics.DEFAULT.midiVol : ne.velocity;
+		
+		if (sectionsTicked != null) {
+			TreeMap<Long, PartSection> tree = sectionsTicked.get(track);
+			
+			if (tree != null) {
+					Entry<Long, PartSection> entry = tree.floorEntry(ne.getStartTick());
+					if (entry != null) {
+						if (ne.getStartTick() < entry.getValue().endTick) {
+			
+							return entry.getValue().resetVelocities ? Dynamics.DEFAULT.midiVol : ne.velocity;
+						}
 					}
-				}
 			}
 		}
-		if (se != null && !isSection && nonSection.get(track) != null) {
+		if (nonSection.get(track) != null) {
 			return nonSection.get(track).resetVelocities ? Dynamics.DEFAULT.midiVol : ne.velocity;
 		}
 
@@ -1178,54 +1149,37 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		int delta = 0;// volume offset
 		int factor = 100;// current fade-out volume factor
 		int factorTune = 100;// current fade-out volume factor (for tuneeditor)
-		NavigableMap<Integer, TuneLine> tuneMap = abcSong.tuneBars;
-		TreeMap<Integer, PartSection> tree = sections.get(track);
-		if (se != null && (tree != null || tuneMap != null)) {
-			SequenceDataCache data = se.getDataCache();
-			long barLengthTicks = data.getBarLengthTicks();
-
-			long startTick = barLengthTicks;
-			long endTick = data.getSongLengthTicks();
-
-			int bar = -1;
-			int curBar = 1;
-			for (long barTick = startTick; barTick <= endTick + barLengthTicks; barTick += barLengthTicks) {
-				// long barMicros = data.tickToMicros(barTick);
-				if (ne.getStartTick() < barTick) {
-					bar = curBar;
-					break;
+		NavigableMap<Float, TuneLine> tuneMap = abcSong.tuneBars;
+		TreeMap<Long, PartSection> tree = null;
+		if (sectionsTicked != null) {
+			tree = sectionsTicked.get(track);
+		}
+		if (tree != null) {
+			Entry<Long, PartSection> entry = tree.floorEntry(ne.getStartTick());
+			if (entry != null) {
+				if (ne.getStartTick() < entry.getValue().endTick) {
+					delta = entry.getValue().volumeStep;
+					if (entry.getValue().fade > 0) {
+						factor = map(ne.getStartTick(), entry.getValue().startTick,
+								entry.getValue().endTick, 100, 100 - entry.getValue().fade);
+					} else if (entry.getValue().fade < 0) {
+						factor = map(ne.getStartTick(), entry.getValue().startTick,
+								entry.getValue().endTick, 100 + entry.getValue().fade, 100);
+					}
 				}
-				curBar += 1;
 			}
-			if (bar != -1) {
-				if (tree != null) {
-					Entry<Integer, PartSection> entry = tree.floorEntry(bar);
-					if (entry != null) {
-						if (bar <= entry.getValue().endBar) {
-							delta = entry.getValue().volumeStep;
-							if (entry.getValue().fade > 0) {
-								factor = map(ne.getStartTick(), entry.getValue().startBar * barLengthTicks - barLengthTicks,
-										entry.getValue().endBar * barLengthTicks, 100, 100 - entry.getValue().fade);
-							} else if (entry.getValue().fade < 0) {
-								factor = map(ne.getStartTick(), entry.getValue().startBar * barLengthTicks - barLengthTicks,
-										entry.getValue().endBar * barLengthTicks, 100 + entry.getValue().fade, 100);
-							}
-						}
+		}
+		if (tuneMap != null) {
+			for (TuneLine value : tuneMap.values()) {
+				if (ne.getStartTick() < value.endTick && ne.getStartTick() >= value.startTick) {
+					if (value.fade > 0) {
+						factorTune = map(ne.getStartTick(), value.startTick,
+								value.endTick, 100, 100 - value.fade);
+					} else if (value.fade < 0) {
+						factorTune = map(ne.getStartTick(), value.startTick,
+								value.endTick, 100 + value.fade, 100);
 					}
-				}
-				if (tuneMap != null) {
-					Entry<Integer, TuneLine> entry = tuneMap.floorEntry(bar);
-					if (entry != null) {
-						if (bar <= entry.getValue().endBar) {
-							if (entry.getValue().fade > 0) {
-								factorTune = map(ne.getStartTick(), entry.getValue().startBar * barLengthTicks - barLengthTicks,
-										entry.getValue().endBar * barLengthTicks, 100, 100 - entry.getValue().fade);
-							} else if (entry.getValue().fade < 0) {
-								factorTune = map(ne.getStartTick(), entry.getValue().startBar * barLengthTicks - barLengthTicks,
-										entry.getValue().endBar * barLengthTicks, 100 + entry.getValue().fade, 100);
-							}
-						}
-					}
+					break;
 				}
 			}
 		}
@@ -1249,45 +1203,19 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	 * @return false if silenced
 	 */
 	public boolean getAudible(int track, long tickStart, boolean active) {
-		Integer firstBar = abcSong.getFirstBar();
-		Integer lastBar  = abcSong.getLastBar();
-		SequenceInfo se = getSequenceInfo();
-		TreeMap<Integer, PartSection> tree = sections.get(track);
-		if (se != null) {
-			SequenceDataCache data = se.getDataCache();
-			long barLengthTicks = data.getBarLengthTicks();
+		TreeMap<Long, PartSection> tree = sectionsTicked.get(track);
 
-			long startTick = barLengthTicks;
-			long endTick = data.getSongLengthTicks();
+		if (tree != null && active) {
+			Entry<Long, PartSection> entry = tree.floorEntry(tickStart);
+			if (entry != null) {
+				if (tickStart < entry.getValue().endTick) {
+					return !entry.getValue().silence;
+				}
+			}
+		}
 
-			int bar = -1;
-			int curBar = 1;
-			for (long barTick = startTick; barTick <= endTick + barLengthTicks; barTick += barLengthTicks) {
-				if (tickStart < barTick) {
-					bar = curBar;
-					break;
-				}
-				curBar += 1;
-			}
-			if (bar != -1) {
-				if (firstBar != null && bar < firstBar) {
-					return false;
-				}
-				if (lastBar != null && bar > lastBar) {
-					return false;
-				}
-				if (tree != null && active) {
-					Entry<Integer, PartSection> entry = tree.floorEntry(bar);
-					if (entry != null) {
-						if (bar <= entry.getValue().endBar) {
-							return !entry.getValue().silence;
-						}
-					}
-				}
-			}
-			if (nonSection.get(track) != null && active) {
-				return !nonSection.get(track).silence;
-			}
+		if (nonSection.get(track) != null && active) {
+			return !nonSection.get(track).silence;
 		}
 
 		return true;
@@ -1567,6 +1495,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	}
 
 	public void sectionEdited(int track) {
+		convertSectionsToLongTrees();
 		abcSong.setMixDirty(true); // Some notes might have gotten silenced in which case the mixTimings need to be
 									// recomputed
 		fireChangeEvent(AbcPartProperty.TRACK_SECTION_EDIT, track);

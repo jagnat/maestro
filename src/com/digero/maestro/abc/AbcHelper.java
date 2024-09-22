@@ -8,6 +8,7 @@ import org.w3c.dom.Element;
 
 import com.digero.common.midi.Note;
 import com.digero.common.util.ParseException;
+import com.digero.common.util.Version;
 import com.digero.maestro.util.SaveUtil;
 
 public class AbcHelper {
@@ -34,10 +35,16 @@ public class AbcHelper {
 		return (int) (rightMin + (valueScaled * rightSpan));
 	}
 
-	static PartSection generatePartSection(Element sectionEle) throws ParseException, XPathExpressionException {
+	static PartSection generatePartSection(Element sectionEle, Version fileVersion) throws ParseException, XPathExpressionException {
 		PartSection ps = new PartSection();
-		ps.startBar = SaveUtil.parseValue(sectionEle, "startBar", 0);
-		ps.endBar = SaveUtil.parseValue(sectionEle, "endBar", 0);
+		if (fileVersion.compareTo(new Version(3, 3, 4, 300)) < 0) {
+			ps.startBar = SaveUtil.parseValue(sectionEle, "startBar", 0);
+			ps.endBar = SaveUtil.parseValue(sectionEle, "endBar", 0);
+			ps.startBar -= 1.0f;
+		} else {
+			ps.startBar = SaveUtil.parseValue(sectionEle, "startBar", 0.0f);
+			ps.endBar = SaveUtil.parseValue(sectionEle, "endBar", 0.0f);
+		}
 		ps.volumeStep = SaveUtil.parseValue(sectionEle, "volumeStep", 0);
 		ps.octaveStep = SaveUtil.parseValue(sectionEle, "octaveStep", 0);
 		ps.silence = SaveUtil.parseValue(sectionEle, "silence", false);

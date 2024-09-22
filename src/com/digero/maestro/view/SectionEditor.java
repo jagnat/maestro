@@ -177,7 +177,7 @@ public class SectionEditor {
 
 				
 				
-				TreeMap<Integer, PartSection> tree = abcPart.sections.get(track);
+				TreeMap<Float, PartSection> tree = abcPart.sections.get(track);
 				if (tree != null) {
 					/*
 					 *    Initialize values in the swing components that has sections edited when dialog opens 
@@ -185,7 +185,7 @@ public class SectionEditor {
 					int number = 0;
 					int highestNumber = 0;
 					boolean useDialogLineNumbers = true;
-					for (Entry<Integer, PartSection> entry : tree.entrySet()) {
+					for (Entry<Float, PartSection> entry : tree.entrySet()) {
 						PartSection ps = entry.getValue();
 						if (ps.dialogLine == -1) {
 							useDialogLineNumbers = false;
@@ -279,8 +279,8 @@ public class SectionEditor {
 						sectionInputs.get(i).enable[2].setSelected(clipboardEnabled[i]);
 					}
 					for (int i = copySize; i < numberOfSections; i++) {
-						sectionInputs.get(i).barA[0].setText("0");
-						sectionInputs.get(i).barB[0].setText("0");
+						sectionInputs.get(i).barA[0].setText("0.0");
+						sectionInputs.get(i).barB[0].setText("0.0");
 						// The other tabs; barA and B will be autoset by listeners
 						sectionInputs.get(i).enable[0].setSelected(false);
 						sectionInputs.get(i).enable[1].setSelected(false);
@@ -317,8 +317,9 @@ public class SectionEditor {
 				help.setEditable(false);
 				help.setHorizontalAlignment(CENTER);
 				help.setToolTipText(
-						"<html><b>Enabled sections must have no overlap.<br>Bar numbers are inclusive and use original MIDI bars.<br>"
-								+ "No decimal numbers allowed, only whole numbers.<br>Bar numbers must be positive and greater than zero.<br>"
+						"<html><b>Enabled sections must have no overlap.<br>Bar numbers use original MIDI bars numbering.<br>"
+								+ "Decimal bar numbers allowed.<br>Bar numbers must not be negative.<br>"
+								+ "Bar numbers from are inclusive, to are exclusive.<br>"
 								+ "Clicking APPLY will also disable faulty sections.<br><br>Warning: If 'Remove initial silence' is enabled or the<br>"
 								+ "meter is modified, then the bar counter in lower-right might<br>not match up, unless your preview mode is in 'Original'.<br><br>"
 								+ "Doubling works by copying all<br>notes and pasting them 1 or 2<br>octaves from their original pitch.<br><br>"
@@ -356,17 +357,17 @@ public class SectionEditor {
 				
 				JButton okButton = new JButton("APPLY");
 				okButton.addActionListener(e -> {
-					TreeMap<Integer, PartSection> tm = new TreeMap<>();
+					TreeMap<Float, PartSection> tm = new TreeMap<>();
 
-					int lastEnd = 0;
+					float lastEnd = 0.0f;
 					for (int k = 0; k < numberOfSections; k++) {
 						if (SectionDialog.this.sectionInputs.get(k).enable[0].isSelected()) {
 							PartSection ps1 = new PartSection();
 							try {
 								ps1.octaveStep = Integer.parseInt(sectionInputs.get(k).transpose.getText());
 								ps1.volumeStep = Integer.parseInt(sectionInputs.get(k).velo.getText());
-								ps1.startBar = Integer.parseInt(sectionInputs.get(k).barA[0].getText());
-								ps1.endBar = Integer.parseInt(sectionInputs.get(k).barB[0].getText());
+								ps1.startBar = Float.parseFloat(sectionInputs.get(k).barA[0].getText());
+								ps1.endBar = Float.parseFloat(sectionInputs.get(k).barB[0].getText());
 								ps1.silence = sectionInputs.get(k).silent.isSelected();
 								ps1.fade = Integer.parseInt(sectionInputs.get(k).fade.getText());
 								ps1.resetVelocities = sectionInputs.get(k).resetVelocities.isSelected();
@@ -399,12 +400,12 @@ public class SectionEditor {
 								SectionDialog.this.sectionInputs.get(k).textPitch.setText("("+ps1.fromPitch.id+" to "+ps1.toPitch.id+")");
 								boolean soFarSoGood = true;
 								for (PartSection psC : tm.values()) {
-									if (!(ps1.startBar > psC.endBar || ps1.endBar < psC.startBar)) {
+									if (!(ps1.startBar >= psC.endBar || ps1.endBar <= psC.startBar)) {
 										soFarSoGood = false;
 										break;
 									}
 								}
-								if (ps1.startBar > 0 && ps1.startBar <= ps1.endBar && soFarSoGood) {
+								if (ps1.startBar >= 0.0f && ps1.startBar < ps1.endBar && soFarSoGood) {
 									tm.put(ps1.startBar, ps1);
 									if (ps1.endBar > lastEnd)
 										lastEnd = ps1.endBar;
@@ -461,16 +462,16 @@ public class SectionEditor {
 					} catch (NumberFormatException nfe) {
 					}
 
-					if (lastEnd == 0) {
+					if (lastEnd == 0.0f) {
 						SectionDialog.this.abcPart.sections.set(SectionDialog.this.track, null);
 						SectionDialog.this.abcPart.sectionsModified.set(SectionDialog.this.track, null);
 					} else {
 						SectionDialog.this.abcPart.sections.set(SectionDialog.this.track, tm);
-						boolean[] booleanArray = new boolean[lastEnd + 1];
-						for (int m = 0; m < lastEnd + 1; m++) {
-							Entry<Integer, PartSection> entry = tm.floorEntry(m + 1);
-							booleanArray[m] = entry != null && entry.getValue().startBar <= m + 1
-									&& entry.getValue().endBar >= m + 1;
+						boolean[] booleanArray = new boolean[(int)(lastEnd) + 1];
+						System.out.println((int)(lastEnd) + 1);
+						for (int m = 0; m < (int)(lastEnd) + 1; m++) {
+							Entry<Float, PartSection> entry = tm.lowerEntry((float) (m+1.0f));
+							booleanArray[m] = entry != null && entry.getValue().startBar < m + 1.0f && entry.getValue().endBar > m;
 						}
 
 						SectionDialog.this.abcPart.sectionsModified.set(SectionDialog.this.track, booleanArray);

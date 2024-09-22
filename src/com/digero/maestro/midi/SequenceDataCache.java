@@ -532,6 +532,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		return 4L * tickResolution * timeSignature.numerator / timeSignature.denominator;
 	}
 
+	@Override
 	public long getBarToTick(int bar) {
 		return getBarLengthTicks() * (bar - 1);
 	}

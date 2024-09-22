@@ -41,6 +41,7 @@ import com.digero.common.midi.SequencerEvent.SequencerProperty;
 import com.digero.common.midi.SequencerWrapper;
 import com.digero.common.util.IDiscardable;
 import com.digero.common.util.Listener;
+import com.digero.common.util.Pair;
 import com.digero.common.util.Util;
 import com.digero.common.view.BarNumberLabel;
 import com.digero.common.view.ColorTable;
@@ -604,11 +605,22 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 					g2.fill(rectTmp);
 				} else if ( barArray != null && barCount < barArray.length && barCount > -1) {
 					if (barArray[(int) barCount]) {
-						rectTmp.setRect(barMicros + lineWidth, MIN_RENDERED - 1, barTempMicros - barMicros - lineWidth,
-								MAX_RENDERED - MIN_RENDERED + 2);
-						g2.setColor(ColorTable.BAR_EDITED.get());
-						g2.fill(rectTmp);
-						barEdited = true;
+						List<Pair<Long,Long>> modi = getMicrosModified(barMicros, barTempMicros);
+						if (modi != null) {
+							double start = (barMicros + lineWidth);
+							double finish = (barTempMicros);
+							for (Pair<Long,Long> pair : modi) {
+								double x = Math.max(start, pair.first);
+								double w = Math.min(finish, pair.second) - x;
+								if (w > 0.0d) {
+									rectTmp.setRect(x, MIN_RENDERED - 1, w,	MAX_RENDERED - MIN_RENDERED + 2);
+									g2.setColor(ColorTable.BAR_EDITED.get());
+									g2.fill(rectTmp);
+									barEdited = true;
+									start = x + w;
+								}
+							}
+						}
 					}
 				}
 				barCount++;
@@ -944,6 +956,10 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, hintAntialiasSav);
 	}
 
+	protected List<Pair<Long, Long>> getMicrosModified(long from, long to) {
+		return null;
+	}
+
 	boolean isOutOfLimit(int noteIdDouble, long startTick) {
 		return false;
 	}
@@ -1001,7 +1017,7 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 			if (e.getButton() == MouseEvent.BUTTON1 && sequenceInfo != null) {
 				sequencer.setDragging(true);
 				sequencer.setDragPosition(positionFromEvent(e));
-				barLabel = new JLabel("Bar " + BarNumberLabel.getBarString(sequencer, sequenceInfo.getDataCache()));
+				barLabel = new JLabel("Bar " + BarNumberLabel.getBarStringFloat(sequencer, sequenceInfo.getDataCache()));
 				barLabel.setFocusable(false);
 				barLabel.setBorder(BorderFactory.createEmptyBorder(5, 25, 5, 5));
 		        barIndicator = new JPopupMenu();
@@ -1017,7 +1033,7 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 				if (!isDragCanceled(e)) {
 					sequencer.setDragging(true);
 					sequencer.setDragPosition(positionFromEvent(e));
-					barLabel.setText("Bar " + BarNumberLabel.getBarString(sequencer, sequenceInfo.getDataCache()));
+					barLabel.setText("Bar " + BarNumberLabel.getBarStringFloat(sequencer, sequenceInfo.getDataCache()));
 					barIndicator.show(NoteGraph.this, e.getX(), e.getY());
 				} else {
 					sequencer.setDragging(false);

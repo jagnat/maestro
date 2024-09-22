@@ -8,12 +8,16 @@ public class TuneLine {
 	public int fade = 0;
 
 	// inclusive:
-	public int startBar = 0;
-	public int endBar = 0;
+	public float startBar = 0;
+	public long startTick = -1L;
+	
+	// exclusive:
+	public float endBar = 0;
+	public long endTick = -1L;
 
 	@Override
 	public String toString() {
 		return "Tune Line " + startBar + " to " + endBar + ": tempo=" + tempo + " seminoteStep=" + seminoteStep
-				+ " dialogLine=" + dialogLine;
+				 + " fade=" + fade + " dialogLine=" + dialogLine;
 	}
 }

@@ -12,14 +12,19 @@ public class PartSection implements Comparable<PartSection> {
 	public Boolean[] doubling = { false, false, false, false };
 
 	// inclusive:
-	public int startBar = 0;
-	public int endBar = 0;
+	public float startBar = 0;
+	public float endBar = 0;// exclusive
+	public long startTick = -1L;
+	public long endTick = -1L;
 	public Note fromPitch = Note.C0;
 	public Note toPitch = Note.MAX;
 	
 	@Override
 	public int compareTo(PartSection that) {
 		if (that == null) throw new NullPointerException();
-		return this.startBar - that.startBar;
+		float result = this.startBar - that.startBar;
+		if (result > 0) return 1;
+		if (result < 0) return -1;
+		return 0;
 	}
 }
