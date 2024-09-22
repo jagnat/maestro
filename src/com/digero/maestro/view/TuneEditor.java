@@ -397,8 +397,8 @@ public class TuneEditor {
 								ps.seminoteStep = -36;
 								tuneInputs.get(k).transpose.setText("-36");
 							}
-							ps.startBar = Float.parseFloat(tuneInputs.get(k).barA.getText());
-							ps.endBar = Float.parseFloat(tuneInputs.get(k).barB.getText());
+							ps.startBar = Float.parseFloat(tuneInputs.get(k).barA.getText().replace(",", "."));
+							ps.endBar = Float.parseFloat(tuneInputs.get(k).barB.getText().replace(",", "."));
 							ps.tempo = Integer.parseInt(tuneInputs.get(k).tempo.getText());
 							ps.fade = Integer.parseInt(tuneInputs.get(k).fade.getText());
 							// ps.remove = tuneInputs.get(k).remove.isSelected();

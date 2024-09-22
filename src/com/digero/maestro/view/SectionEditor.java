@@ -366,8 +366,8 @@ public class SectionEditor {
 							try {
 								ps1.octaveStep = Integer.parseInt(sectionInputs.get(k).transpose.getText());
 								ps1.volumeStep = Integer.parseInt(sectionInputs.get(k).velo.getText());
-								ps1.startBar = Float.parseFloat(sectionInputs.get(k).barA[0].getText());
-								ps1.endBar = Float.parseFloat(sectionInputs.get(k).barB[0].getText());
+								ps1.startBar = Float.parseFloat(sectionInputs.get(k).barA[0].getText().replace(",", "."));
+								ps1.endBar = Float.parseFloat(sectionInputs.get(k).barB[0].getText().replace(",", "."));
 								ps1.silence = sectionInputs.get(k).silent.isSelected();
 								ps1.fade = Integer.parseInt(sectionInputs.get(k).fade.getText());
 								ps1.resetVelocities = sectionInputs.get(k).resetVelocities.isSelected();
