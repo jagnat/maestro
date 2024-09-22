@@ -1203,13 +1203,15 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	 * @return false if silenced
 	 */
 	public boolean getAudible(int track, long tickStart, boolean active) {
-		TreeMap<Long, PartSection> tree = sectionsTicked.get(track);
-
-		if (tree != null && active) {
-			Entry<Long, PartSection> entry = tree.floorEntry(tickStart);
-			if (entry != null) {
-				if (tickStart < entry.getValue().endTick) {
-					return !entry.getValue().silence;
+		if (sectionsTicked != null) {
+			TreeMap<Long, PartSection> tree = sectionsTicked.get(track);
+	
+			if (tree != null && active) {
+				Entry<Long, PartSection> entry = tree.floorEntry(tickStart);
+				if (entry != null) {
+					if (tickStart < entry.getValue().endTick) {
+						return !entry.getValue().silence;
+					}
 				}
 			}
 		}

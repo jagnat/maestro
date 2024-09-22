@@ -446,7 +446,7 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 		
 		@Override
 		protected List<Pair<Long, Long>> getMicrosModified(long from, long to) {
-			if (!isActiveTrack() || abcPart.getAbcSong().isHideEdits()) {
+			if (!isActiveTrack() || abcPart.getAbcSong().isHideEdits() || abcPart.sectionsTicked == null) {
 				return null;
 			}
 			SequenceDataCache data = sequenceInfo.getDataCache();
