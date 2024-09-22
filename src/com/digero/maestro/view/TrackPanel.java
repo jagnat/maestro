@@ -1119,8 +1119,8 @@ public class TrackPanel extends JPanel implements IDiscardable, TableLayoutConst
 
 		@Override
 		protected int transposeNote(int noteId, long tickStart) {
-			if (!trackInfo.isDrumTrack() && !abcPart.getAbcSong().isHideEdits()) {
-				noteId += abcPart.getTranspose(trackInfo.getTrackNumber(), tickStart);
+			if (!trackInfo.isDrumTrack()) {
+				noteId += abcPart.getTranspose(trackInfo.getTrackNumber(), tickStart, !abcPart.getAbcSong().isHideEdits());
 			}
 			return noteId;
 		}
