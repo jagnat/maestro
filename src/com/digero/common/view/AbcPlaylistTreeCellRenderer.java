@@ -7,7 +7,7 @@ import javax.swing.JTree;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
 import com.digero.common.icons.IconLoader;
-import com.digero.common.util.DirectoryListTreeModel;
+import com.digero.common.util.AbcFileTreeModel;
 
 public class AbcPlaylistTreeCellRenderer extends DefaultTreeCellRenderer {
 	
@@ -24,7 +24,7 @@ public class AbcPlaylistTreeCellRenderer extends DefaultTreeCellRenderer {
 			boolean hasFocus) {
 		super.getTreeCellRendererComponent(tree, value, selected, expanded, leaf, row, hasFocus);
 		
-		DirectoryListTreeModel.AbcSongFileNode df = (DirectoryListTreeModel.AbcSongFileNode)value;
+		AbcFileTreeModel.AbcSongFileNode df = (AbcFileTreeModel.AbcSongFileNode)value;
 		File file = df.getFile();
 		
 		if (file.getName().endsWith(".abc")) {
