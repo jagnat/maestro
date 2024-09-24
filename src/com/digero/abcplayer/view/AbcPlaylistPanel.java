@@ -7,7 +7,6 @@ import java.io.File;
 import java.util.ArrayList;
 
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -17,21 +16,22 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ToolTipManager;
 import javax.swing.tree.TreePath;
 
-import com.digero.common.util.DirectoryListTreeModel;
-import com.digero.common.util.DirectoryListTreeModel.AbcSongFileNode;
+import com.digero.common.util.AbcFileTreeModel;
+import com.digero.common.util.AbcFileTreeModel.AbcSongFileNode;
 import com.digero.common.util.Util;
 import com.digero.common.view.AbcPlaylistTreeCellRenderer;
 import com.digero.maestro.abc.AbcSongStub;
 
 public class AbcPlaylistPanel extends JPanel {
 	
+	private static final long serialVersionUID = -2515263857830606770L;
 	private JSplitPane browserSplitPane;
 	private JPanel leftPanel;
 	private JPanel rightPanel;
 	
 	// Left
 	private JTree abcFileTree;
-	private DirectoryListTreeModel abcFileTreeModel;
+	private AbcFileTreeModel abcFileTreeModel;
 	private JScrollPane fileTreeScrollPane;
 	private JPanel fileTreeBottomControls;
 	private JButton addToPlaylistButton;
@@ -39,7 +39,7 @@ public class AbcPlaylistPanel extends JPanel {
 	// Right
 	private JList<AbcSongStub> playlistList;
 	private JScrollPane playlistScrollPane;
-	private JPanel playlistTopControls;
+	private JPanel playlistBottomControls;
 	
 	public AbcPlaylistPanel() {
 		super (new BorderLayout());
@@ -57,7 +57,8 @@ public class AbcPlaylistPanel extends JPanel {
 		ArrayList<File> tlds = new ArrayList<File>();
 		tlds.add(Util.getLotroMusicPath(false));
 		
-		abcFileTreeModel = new DirectoryListTreeModel(tlds);
+		abcFileTreeModel = new AbcFileTreeModel(tlds);
+		abcFileTreeModel.refresh();
 		
 		abcFileTree = new JTree();
 		abcFileTree.setShowsRootHandles(true);
@@ -69,11 +70,13 @@ public class AbcPlaylistPanel extends JPanel {
 			// Only allow adding files if all the selected ones are abc files (no folders)
 			boolean noFoldersSelected = true;
 			TreePath[] paths = abcFileTree.getSelectionPaths();
-			for (TreePath path : paths) {
-				AbcSongFileNode f = (AbcSongFileNode)path.getLastPathComponent();
-				if (f.getFile().isDirectory()) {
-					noFoldersSelected = false;
-					break;
+			if (paths != null) {
+				for (TreePath path : paths) {
+					AbcSongFileNode f = (AbcSongFileNode)path.getLastPathComponent();
+					if (f.getFile().isDirectory()) {
+						noFoldersSelected = false;
+						break;
+					}
 				}
 			}
 			addToPlaylistButton.setEnabled(noFoldersSelected);
@@ -92,6 +95,13 @@ public class AbcPlaylistPanel extends JPanel {
 		playlistList = new JList<AbcSongStub>();
 //		playlistList.setCellRenderer();
 		playlistScrollPane = new JScrollPane();
+		playlistScrollPane.add(playlistList);
+		
+		playlistBottomControls = new JPanel(new FlowLayout());
+		playlistBottomControls.add(new JButton("test"));
+		
+		rightPanel.add(playlistScrollPane, BorderLayout.CENTER);
+		rightPanel.add(playlistBottomControls, BorderLayout.SOUTH);
 	}
 }
 
