@@ -765,120 +765,99 @@ public class SequenceInfo implements MidiConstants {
 			Track track = tracks[i];
 
 			
-			int GS = 0; // GS drum notes
-			int XG = 0; // XG drum notes
-			int GM2 = 0; // GM2 drum notes
-			int drums = 0; // GM Drum notes
+			int drumsGS  = 0;
+			int drumsXG  = 0;
+			int drumsGM2 = 0;
+			int drumsGM  = 0; 
 			
-			int drumsExt9 = 0;// Extension drum notes on default-drum-channel
+			int drumsExt10 = 0;// Extension drum notes on default-drum-channel
 			int drumsExtX = 0;// Extension drum notes on non-default-drum-channel
 						
-			int notes = 0; // Chromatic notes
-			int notes9 = 0;// Chromatic notes on default-drum-channel
-			int notesx = 0;// Chromatic notes on non-default-drum-channel
+			int notes  = 0;// Chromatic notes
+			int notes10 = 0;// Chromatic notes on default-drum-channel
+			int notesX = 0;// Chromatic notes on non-default-drum-channel
 
 			for (int j = 0; j < track.size(); j++) {
 				MidiEvent evt = track.get(j);
 				MidiMessage msg = evt.getMessage();
-				if (msg instanceof ShortMessage) {
-					ShortMessage m = (ShortMessage) msg;
-					int chan = m.getChannel();
-					if (m.getCommand() == ShortMessage.NOTE_ON) {
-						if (chan == DRUM_CHANNEL && MidiStandard.GM == standard) {
-							drums = 1;
-						} else if (MidiStandard.GS == standard && rolandDrumChannels[chan]) {
-							GS = 1;
-							if (chan == DRUM_CHANNEL)
-								drumsExt9 = 1;
-							else
-								drumsExtX = 1;
-						} else if (MidiStandard.XG == standard
-								&& yamahaDrumSwitches.get(chan).floorEntry(evt.getTick()) != null
-								&& yamahaDrumSwitches.get(chan).floorEntry(evt.getTick()).getValue()) {
-							XG = 1;
-							if (chan == DRUM_CHANNEL)
-								drumsExt9 = 1;
-							else
-								drumsExtX = 1;
-						} else if (MidiStandard.GM2 == standard
-								&& mmaDrumSwitches.get(chan).floorEntry(evt.getTick()) != null
-								&& mmaDrumSwitches.get(chan).floorEntry(evt.getTick()).getValue()) {
-							GM2 = 1;
-							if (chan == DRUM_CHANNEL)
-								drumsExt9 = 1;
-							else
-								drumsExtX = 1;
-						} else {
-							notes = 1;
-							if (chan == DRUM_CHANNEL)
-								notes9 = 1;
-							else
-								notesx = 1;
-						}
-					}
+				
+				if (!(msg instanceof ShortMessage)) {
+					continue;
+				}
+
+				ShortMessage m = (ShortMessage) msg;
+				int chan = m.getChannel();
+
+				if (m.getCommand() != ShortMessage.NOTE_ON) {
+					continue;
+				}
+				  
+				if (isDrumGM(chan)) {
+					drumsGM = 1;
+				} else if (isDrumGS(chan)) {
+					drumsGS = 1;
+				} else if (isDrumXG(evt, chan)) {
+					drumsXG = 1;
+				} else if (isDrumGM2(evt, chan)) {
+					drumsGM2 = 1;
+				} else {
+					notes = 1;
+					if (chan == DRUM_CHANNEL)
+						notes10 = 1;
+					else
+						notesX = 1;
+				}
+				
+				if (drumsGS + drumsXG + drumsGM2 > 0) {
+					if (chan == DRUM_CHANNEL) drumsExt10 = 1;
+					else drumsExtX = 1;
 				}
 			}
+			
+			
 			/*
-			 * I had to design this carefully in high degree to not mess up old Projects too much.
+			 * I had to design this carefully in high degree to not mess up v2.5.0 Projects too much.
 			 * 
-			 * If channel 9 drums plus brand drums. Then old would have taken channel 9 and made new track. So in that
-			 * case if no real melodic notes make brand drums stay and funnel channel 9 into new channel even if
+			 * If channel 10 drums plus brand drums. Then v2.5.0 would have made new track for channel 10. So in that
+			 * case if no real melodic notes make brand drums stay and funnel channel 10 into new channel even if
 			 * standard is not GM.
 			 * 
-			 * If notes+channel 9 drums+brand drums, make notes stay, funnel the others into own 2 tracks. channel 9
+			 * If notes+channel 10 drums+brand drums, make notes stay, funnel the others into own 2 tracks. channel 10
 			 * drums before brand.
 			 * 
-			 * If notes on channel 9 and notes that are not channel 9, then separate them also, to keep backwards compat
-			 * with old projects.
+			 * If notes on channel 10 and notes that are not channel 10, then separate them also, to keep backwards compat
+			 * with v2.5.0 projects.
 			 * 
 			 */
-			if (GS + XG + GM2 + notes + drums > 1 || (drumsExt9 + drumsExtX > 1) || (notes9 + notesx > 1)) {
+			if (drumsGS + drumsXG + drumsGM2 + notes + drumsGM > 1 || (drumsExt10 + drumsExtX > 1) || (notes10 + notesX > 1)) {
 				Track drumTrack = null;
 				Track noteTrack = null;
 				Track brandDrumTrack = null;
 				if (notes == 1) {
-					if (drums == 1) {
+					if (drumsGM == 1) {
 						drumTrack = song.createTrack();
 						drumTrack.add(MidiFactory.createTrackNameEvent(ExtensionMidiInstrument.TRACK_NAME_DRUM_GM));
-						// System.err.println("Notes! Create GM Drum track. From "+i);
+						// System.err.println("Drum and Chromatic notes in same track. Create ch10 GM Drum track. From "+i);
 					}
-					if (notes9 + notesx > 1) {
+					if (notes10 + notesX > 1) {
 						noteTrack = song.createTrack();
 						noteTrack.add(MidiFactory.createTrackNameEvent("Track " + i + "+"));
-						System.err.println("Notes! Create Note ch9 track. From " + i);
+						// System.err.println("Chromatic notes in channel 10. Create chromatic ch10 track. From " + i);
 					}
-					if (XG == 1 || GS == 1 || GM2 == 1) {
-						brandDrumTrack = song.createTrack();
-						if (XG == 1) {
-							brandDrumTrack
-									.add(MidiFactory.createTrackNameEvent(ExtensionMidiInstrument.TRACK_NAME_DRUM_XG));
-						} else if (GS == 1) {
-							brandDrumTrack
-									.add(MidiFactory.createTrackNameEvent(ExtensionMidiInstrument.TRACK_NAME_DRUM_GS));
-						} else if (GM2 == 1) {
-							brandDrumTrack
-									.add(MidiFactory.createTrackNameEvent(ExtensionMidiInstrument.TRACK_NAME_DRUM_GM2));
-						}
-						// System.err.println("Notes! Create EXT Drum track. From "+i);
+					if (drumsXG + drumsGS + drumsGM2 > 0) {
+						brandDrumTrack = createBrandDrumTrack(drumsGS, drumsXG, drumsGM2, song);
+						// System.err.println("Drum and Chromatic notes in same track. Create EXT Drum track. From "+i);
 					}
 				} else {
-					if (drums == 1) {
+					// Only drum notes in this track
+					if (drumsGM == 1) {
+						// this is never reached
 						drumTrack = song.createTrack();
 						drumTrack.add(MidiFactory.createTrackNameEvent(ExtensionMidiInstrument.TRACK_NAME_DRUM_GM));
-						// System.err.println("Create GM Drum track. From "+i);
-					} else if (drumsExt9 == 1) {
-						brandDrumTrack = song.createTrack();
-						if (XG == 1) {
-							brandDrumTrack
-									.add(MidiFactory.createTrackNameEvent(ExtensionMidiInstrument.TRACK_NAME_DRUM_XG));
-						} else if (GS == 1) {
-							brandDrumTrack
-									.add(MidiFactory.createTrackNameEvent(ExtensionMidiInstrument.TRACK_NAME_DRUM_GS));
-						} else if (GM2 == 1) {
-							brandDrumTrack
-									.add(MidiFactory.createTrackNameEvent(ExtensionMidiInstrument.TRACK_NAME_DRUM_GM2));
-						}
-						// System.err.println("Create EXT Drum track. Channel 9. From "+i);
+					} else if (drumsExt10 == 1) {
+						// Maestro v2.5.0 would have separated these, so we do the same.
+						brandDrumTrack = createBrandDrumTrack(drumsGS, drumsXG, drumsGM2, song);
+						// System.err.println("EXT Drum notes in ch10 and in other channels. Create EXT Drum track. From "+i);
 					}
 				}
 				// Mixed track:
@@ -888,46 +867,93 @@ public class SequenceInfo implements MidiConstants {
 					if (msg instanceof ShortMessage) {
 						ShortMessage smsg = (ShortMessage) msg;
 						int chan = smsg.getChannel();
-						if (drumTrack != null && drums == 1 && chan == DRUM_CHANNEL) {
+						if (drumTrack != null && drumsGM == 1 && chan == DRUM_CHANNEL) {
+							// GM drum note split into new track
 							drumTrack.add(evt);
 							if (track.remove(evt))
 								j--;
-						} else if (brandDrumTrack != null && GS == 1 && (notes == 1 || chan == DRUM_CHANNEL)
+						} else if (brandDrumTrack != null && drumsGS == 1 && (notes == 1 || chan == DRUM_CHANNEL)
 								&& rolandDrumChannels[chan]) {
+							// GS drum note split into new track because either:
+							// - to avoid mixing with chromatics.
+							// - its on ch10, which v2.5.0 would also have split into new track.
 							brandDrumTrack.add(evt);
 							if (track.remove(evt))
 								j--;
-						} else if (brandDrumTrack != null && XG == 1 && (notes == 1 || chan == DRUM_CHANNEL)
+						} else if (brandDrumTrack != null && drumsXG == 1 && (notes == 1 || chan == DRUM_CHANNEL)
 								&& yamahaDrumSwitches.get(chan).floorEntry(evt.getTick()) != null
 								&& yamahaDrumSwitches.get(chan).floorEntry(evt.getTick()).getValue()) {
+							// XG drum note split into new track because either:
+							// - to avoid mixing with chromatics.
+							// - its on ch10, which v2.5.0 would also have split into new track.
 							brandDrumTrack.add(evt);
 							if (track.remove(evt))
 								j--;
-						} else if (brandDrumTrack != null && GM2 == 1 && (notes == 1 || chan == DRUM_CHANNEL)
+						} else if (brandDrumTrack != null && drumsGM2 == 1 && (notes == 1 || chan == DRUM_CHANNEL)
 								&& mmaDrumSwitches.get(chan).floorEntry(evt.getTick()) != null
 								&& mmaDrumSwitches.get(chan).floorEntry(evt.getTick()).getValue()) {
+							// GM2 drum note split into new track because either:
+							// - to avoid mixing with chromatics.
+							// - its on ch10, which v2.5.0 would also have split into new track.
 							brandDrumTrack.add(evt);
 							if (track.remove(evt))
 								j--;
-						} else if ((GS == 1 && rolandDrumChannels[chan])
-								|| (XG == 1 && yamahaDrumSwitches.get(chan).floorEntry(evt.getTick()) != null
+						} else if ((drumsGS == 1 && rolandDrumChannels[chan])
+								|| (drumsXG == 1 && yamahaDrumSwitches.get(chan).floorEntry(evt.getTick()) != null
 										&& yamahaDrumSwitches.get(chan).floorEntry(evt.getTick()).getValue())
-								|| (GM2 == 1 && mmaDrumSwitches.get(chan).floorEntry(evt.getTick()) != null
+								|| (drumsGM2 == 1 && mmaDrumSwitches.get(chan).floorEntry(evt.getTick()) != null
 										&& mmaDrumSwitches.get(chan).floorEntry(evt.getTick()).getValue())) {
-							// These non-channel9 drum notes stay in the track.
-							// This IF clause is mostly for peace of mind. The chromatic notes will never enter here as
-							// 'notes' will be 1 when they
-							// are there
+							// These non-channel-10 GS/XG/GM2 drum notes stay in the track.
+							// The chromatic notes will never enter here as
+							// 'notes' will be 1 when they are there
 							// and therefore no drum notes will reach last IF statement.
+							assert chan != DRUM_CHANNEL : "Ch10 extension drum note refuse to leave track!";
 						} else if (noteTrack != null && chan == DRUM_CHANNEL) {
+							// Chromatic note on ch10. Split it into new track.
 							noteTrack.add(evt);
 							if (track.remove(evt))
 								j--;
+							assert drumsGM == 1 : "GM drum note snuck into ch10 chromatic track!";
 						}
 					}
 				}
 			}
 		}
+	}
+
+	private Track createBrandDrumTrack(int drumsGS, int drumsXG, int drumsGM2, Sequence song) {
+		Track brandDrumTrack = song.createTrack();
+		if (drumsXG == 1) {
+			brandDrumTrack
+					.add(MidiFactory.createTrackNameEvent(ExtensionMidiInstrument.TRACK_NAME_DRUM_XG));
+		} else if (drumsGS == 1) {
+			brandDrumTrack
+					.add(MidiFactory.createTrackNameEvent(ExtensionMidiInstrument.TRACK_NAME_DRUM_GS));
+		} else if (drumsGM2 == 1) {
+			brandDrumTrack
+					.add(MidiFactory.createTrackNameEvent(ExtensionMidiInstrument.TRACK_NAME_DRUM_GM2));
+		}
+		return brandDrumTrack;
+	}
+
+	private boolean isDrumGM(int chan) {
+		return MidiStandard.GM == standard && chan == DRUM_CHANNEL;
+	}
+
+	private boolean isDrumGM2(MidiEvent evt, int chan) {
+		return MidiStandard.GM2 == standard
+				&& mmaDrumSwitches.get(chan).floorEntry(evt.getTick()) != null
+				&& mmaDrumSwitches.get(chan).floorEntry(evt.getTick()).getValue();
+	}
+
+	private boolean isDrumXG(MidiEvent evt, int chan) {
+		return MidiStandard.XG == standard
+				&& yamahaDrumSwitches.get(chan).floorEntry(evt.getTick()) != null
+				&& yamahaDrumSwitches.get(chan).floorEntry(evt.getTick()).getValue();
+	}
+
+	private boolean isDrumGS(int chan) {
+		return MidiStandard.GS == standard && rolandDrumChannels[chan];
 	}
 
 	/**
