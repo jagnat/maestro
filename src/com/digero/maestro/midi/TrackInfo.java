@@ -23,6 +23,7 @@ import com.digero.common.midi.ExtensionMidiInstrument;
 import com.digero.common.midi.KeySignature;
 import com.digero.common.midi.MidiConstants;
 import com.digero.common.midi.MidiInstrument;
+import com.digero.common.midi.MidiStandard;
 import com.digero.common.midi.Note;
 import com.digero.common.midi.TimeSignature;
 import com.digero.maestro.view.MiscSettings;
@@ -59,7 +60,7 @@ public class TrackInfo implements MidiConstants {
 			isDrumTrack = true;
 
 			// No need? Separated drum tracks already have their name. Type 0 channel tracks can keep their 'Track x',
-			// or?
+			// or? Keeping this for backward compat, since track names are stored in MSX projects.
 			if (wasType0) {
 				if (isXGDrumTrack) {
 					name = ExtensionMidiInstrument.TRACK_NAME_DRUM_XG;
@@ -427,7 +428,7 @@ public class TrackInfo implements MidiConstants {
 	}
 
 	private boolean isGM() {
-		return sequenceInfo.getDataCache().isGM();
+		return sequenceInfo.standard == MidiStandard.GM;
 	}
 
 	public int getInstrumentCount() {

@@ -65,9 +65,12 @@ public class ExtensionMidiInstrument {
 			boolean rhythmChannel) {
 		/*
 		 * 
-		 * Abbreviations that are not expanded: KSP: Keyboard Stereo Panning (in GS/GM2 language this is called 'Wide')
+		 * Abbreviations that are not expanded: KSP: Keyboard Stereo Panning (in GS/GM2 terms this is called 'Wide')
 		 * 
 		 */
+		
+		assert extension != MidiStandard.PREVIEW && extension != MidiStandard.ABC
+				&& extension != MidiStandard.GM_PLUS : extension+" should not be used here";
 
 		// GS does not have Dulcimer on patch 15 MSB 0 like GM but a Santur, so we are
 		// careful to fetch its actual name.

@@ -54,7 +54,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 	private MapByChannel mapLSB = new MapByChannel(0);
 	private MapByChannel mapPatch = new MapByChannel(0);
 	private int[] brandDrumBanks;// 0 = not drum track, 1 = XG drums, 2 = GS Drums, 3 = normal drums, 4 = GM2 drums
-	private MidiStandard standard = MidiStandard.GM;
+	private final MidiStandard standard;
 	private boolean[] rolandDrumChannels = null;
 	private boolean[] yamahaDrumChannels = null;
 	public boolean hasPorts = false;
@@ -62,6 +62,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 	public SequenceDataCache(Sequence song, MidiStandard standard, boolean[] rolandDrumChannels,
 			List<TreeMap<Long, Boolean>> yamahaDrumSwitches, boolean[] yamahaDrumChannels,
 			List<TreeMap<Long, Boolean>> mmaDrumSwitches, SortedMap<Integer, Integer> portMap) {
+		
 		Map<Integer, Long> tempoLengths = new HashMap<>();
 
 		this.standard = standard;
@@ -92,7 +93,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		panMap = new MapByChannel(PAN_CENTER);
 		Track[] tracks = song.getTracks();
 		hasPorts = false;
-		long lastTick = 0;
+		long lastTick = 0L;
 		if (standard != MidiStandard.PREVIEW) {
 			for (int iiTrack = 0; iiTrack < tracks.length; iiTrack++) {
 				// Build a map of ports, this is done before main iteration
@@ -103,15 +104,15 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 
 				for (int jj = 0, sz1 = track.size(); jj < sz1; jj++) {
 					MidiEvent evt = track.get(jj);
-					MidiMessage msg = evt.getMessage();
 					long tick = evt.getTick();
-					if (tick > 0L)
+					if (tick != 0L)
 						break;
+					MidiMessage msg = evt.getMessage();
 					if (msg instanceof MetaMessage) {
-						MetaMessage m = (MetaMessage) msg;
-						if (m.getType() == META_PORT_CHANGE) {
-							byte[] portChange = m.getData();
-							if (portChange.length == 1 && tick == 0) {
+						MetaMessage meta = (MetaMessage) msg;
+						if (meta.getType() == META_PORT_CHANGE) {
+							byte[] portChange = meta.getData();
+							if (portChange.length == 1) {
 								// Support for (non-midi-standard) port assignments used by Cakewalk and
 								// Musescore.
 								// We only support this for GM, and only super well-formed (tick == 0).
@@ -138,9 +139,9 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 						lastTick = tick;
 
 					if (msg instanceof ShortMessage) {
-						ShortMessage m = (ShortMessage) msg;
-						int cmd = m.getCommand();
-						int ch = m.getChannel();
+						ShortMessage shortMsg = (ShortMessage) msg;
+						int cmd = shortMsg.getCommand();
+						int ch = shortMsg.getChannel();
 
 						if (cmd == ShortMessage.NOTE_ON) {
 							if (rolandDrumChannels != null && rolandDrumChannels[ch] && MidiStandard.GS == standard) {
@@ -169,31 +170,31 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 									&& (MidiStandard.GM2 != standard || mmaDrumSwitches == null
 											|| mmaDrumSwitches.get(ch).floorEntry(tick) == null
 											|| !mmaDrumSwitches.get(ch).floorEntry(tick).getValue())) {
-								instruments.put(portMap.get(iTrack), ch, tick, m.getData1());
+								instruments.put(portMap.get(iTrack), ch, tick, shortMsg.getData1());
 							}
-							mapPatch.put(ch, tick, m.getData1());
+							mapPatch.put(ch, tick, shortMsg.getData1());
 						} else if (cmd == ShortMessage.CONTROL_CHANGE) {
-							switch (m.getData1()) {
+							switch (shortMsg.getData1()) {
 							case CHANNEL_VOLUME_CONTROLLER_COARSE:
 								// if (m.getData2() != 0) TODO: uncomment this to see hidden notes in MIDIs. :)
-								channelVolume.put(ch, tick, m.getData2());
+								channelVolume.put(ch, tick, shortMsg.getData2());
 								break;
 							case CHANNEL_EXPRESSION_CONTROLLER:
-								expression.put(ch, tick, m.getData2());
+								expression.put(ch, tick, shortMsg.getData2());
 								break;
 							case REGISTERED_PARAMETER_NUMBER_MSB:
-								rpn[ch] = (rpn[ch] & 0x7F) | ((m.getData2() & 0x7F) << 7);
+								rpn[ch] = (rpn[ch] & 0x7F) | ((shortMsg.getData2() & 0x7F) << 7);
 								break;
 							case REGISTERED_PARAMETER_NUMBER_LSB:
-								rpn[ch] = (rpn[ch] & (0x7F << 7)) | (m.getData2() & 0x7F);
+								rpn[ch] = (rpn[ch] & (0x7F << 7)) | (shortMsg.getData2() & 0x7F);
 								break;
 							case DATA_ENTRY_COARSE:
 								if (rpn[ch] == REGISTERED_PARAM_PITCH_BEND_RANGE)
-									pitchBendRangeCoarse.put(ch, tick, m.getData2());
+									pitchBendRangeCoarse.put(ch, tick, shortMsg.getData2());
 								break;
 							case DATA_ENTRY_FINE:
 								if (rpn[ch] == REGISTERED_PARAM_PITCH_BEND_RANGE)
-									pitchBendRangeFine.put(ch, tick, m.getData2());
+									pitchBendRangeFine.put(ch, tick, shortMsg.getData2());
 								break;
 							case DATA_BUTTON_INCREMENT:
 								if (rpn[ch] == REGISTERED_PARAM_PITCH_BEND_RANGE) {
@@ -208,27 +209,27 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 								}
 								break;
 							case PAN_CONTROL:
-								panMap.put(ch, tick, m.getData2());
+								panMap.put(ch, tick, shortMsg.getData2());
 								break;
 							case BANK_SELECT_MSB:
-								if (ch != DRUM_CHANNEL || MidiStandard.XG != standard || m.getData2() == 126
-										|| m.getData2() == 127) {
+								if (ch != DRUM_CHANNEL || MidiStandard.XG != standard || shortMsg.getData2() == 126
+										|| shortMsg.getData2() == 127) {
 									// Due to XG drum part protect mode being ON, drum channel 9 only can switch
 									// between MSB 126 & 127.
-									mapMSB.put(ch, tick, m.getData2());
-								} else if (ch == DRUM_CHANNEL && MidiStandard.XG == standard && m.getData2() != 126
-										&& m.getData2() != 127) {
+									mapMSB.put(ch, tick, shortMsg.getData2());
+								} else if (ch == DRUM_CHANNEL && MidiStandard.XG == standard && shortMsg.getData2() != 126
+										&& shortMsg.getData2() != 127) {
 									//System.err.println("XG Drum Part Protect Mode prevented bank select MSB.");
 								}
 								// if(ch==DRUM_CHANNEL) System.err.println("Bank select MSB "+m.getData2()+" "+tick);
 								break;
 							case BANK_SELECT_LSB:
-								mapLSB.put(ch, tick, m.getData2());
+								mapLSB.put(ch, tick, shortMsg.getData2());
 								// if(ch==DRUM_CHANNEL) System.err.println("Bank select LSB "+m.getData2()+" "+tick);
 								break;
 							}
 						} else if (cmd == ShortMessage.PITCH_BEND) {
-							double pct = 2.0d * (((m.getData1() | (m.getData2() << 7)) / (double) (1 << 14)) - 0.5d);
+							double pct = 2.0d * (((shortMsg.getData1() | (shortMsg.getData2() << 7)) / (double) (1 << 14)) - 0.5d);
 							rawBendMap.add(new Triple<Integer, Long, Double>(ch, tick, pct));
 							// Notice we put in the bend even if its a repeat of same bend.
 							// Reason is that later on another track there might get put some
@@ -315,28 +316,33 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 			} else if (MidiStandard.GM2 == standard) {
 				// Bank 120 is implicit the default on drum channel in GM2.
 				// Bank 121 is implicit the default on all other channels in GM2.
-				mapMSB.put(0, -1, 121);
-				mapMSB.put(1, -1, 121);
-				mapMSB.put(2, -1, 121);
-				mapMSB.put(3, -1, 121);
-				mapMSB.put(4, -1, 121);
-				mapMSB.put(5, -1, 121);
-				mapMSB.put(6, -1, 121);
-				mapMSB.put(7, -1, 121);
-				mapMSB.put(8, -1, 121);
-				mapMSB.put(DRUM_CHANNEL, -1, 120);
-				mapMSB.put(10, -1, 121);
-				mapMSB.put(11, -1, 121);
-				mapMSB.put(12, -1, 121);
-				mapMSB.put(13, -1, 121);
-				mapMSB.put(14, -1, 121);
-				mapMSB.put(15, -1, 121);
+				
+				final int GM2_MSB_DEFAULT_CHROMATIC = 121;
+				final int GM2_MSB_DEFAULT_RHYTHM = 120;
+				
+				mapMSB.put(0, -1, GM2_MSB_DEFAULT_CHROMATIC);
+				mapMSB.put(1, -1, GM2_MSB_DEFAULT_CHROMATIC);
+				mapMSB.put(2, -1, GM2_MSB_DEFAULT_CHROMATIC);
+				mapMSB.put(3, -1, GM2_MSB_DEFAULT_CHROMATIC);
+				mapMSB.put(4, -1, GM2_MSB_DEFAULT_CHROMATIC);
+				mapMSB.put(5, -1, GM2_MSB_DEFAULT_CHROMATIC);
+				mapMSB.put(6, -1, GM2_MSB_DEFAULT_CHROMATIC);
+				mapMSB.put(7, -1, GM2_MSB_DEFAULT_CHROMATIC);
+				mapMSB.put(8, -1, GM2_MSB_DEFAULT_CHROMATIC);
+				mapMSB.put(DRUM_CHANNEL, -1, GM2_MSB_DEFAULT_RHYTHM);
+				mapMSB.put(10, -1, GM2_MSB_DEFAULT_CHROMATIC);
+				mapMSB.put(11, -1, GM2_MSB_DEFAULT_CHROMATIC);
+				mapMSB.put(12, -1, GM2_MSB_DEFAULT_CHROMATIC);
+				mapMSB.put(13, -1, GM2_MSB_DEFAULT_CHROMATIC);
+				mapMSB.put(14, -1, GM2_MSB_DEFAULT_CHROMATIC);
+				mapMSB.put(15, -1, GM2_MSB_DEFAULT_CHROMATIC);
 			} else {
 				for (int i = 0; i < CHANNEL_COUNT_ABC; i++) {
 					mapMSB.put(i, -1, 0);
 				}
 			}
 		} else {
+			// If this sequence is for preview then we only need to find lastTick
 			for (int iTrack = 0; iTrack < tracks.length; iTrack++) {
 				Track track = tracks[iTrack];
 
@@ -435,9 +441,8 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 			rhythmChannel = rolandDrumChannels[channel];
 		} else if (MidiStandard.GM2 == standard) {
 			type = MidiStandard.GM2;
-		} else {
-			type = MidiStandard.GM;
 		}
+
 		long patchTick = mapPatch.getEntryTick(channel, tick);
 		if (patchTick == NO_RESULT) {
 			// No voice changes yet on this channel, return default.
@@ -692,9 +697,5 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 
 			return entry.getKey();
 		}
-	}
-
-	public boolean isGM() {
-		return MidiStandard.GM == standard;
 	}
 }
