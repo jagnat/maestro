@@ -97,6 +97,10 @@ public class GraphLayout implements LayoutManager {
 		}
 	}
 	
+	public int getTrackWidth() {
+		return (int) (port.getExtentSize().width * zoomH);
+	}
+	
 	/**
 	 * 
 	 * @param zoomH Must be equal to or larger than 1.0

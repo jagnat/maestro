@@ -880,7 +880,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				+ "Will be saved in msx project file.</html>");
 
 		zoomButton = new JButton("Zoom");
-		zoomButton.addActionListener(e -> partPanel.toggleZoom());
+//		zoomButton.setVisible(false);
+//		zoomButton.addActionListener(e -> partPanel.toggleZoom());
 		
 		noteCountLabel = new JLabel();
 //		noteCountLabel.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
@@ -912,8 +913,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		playControlPanel.add(abcModeRadioButton);
 		playControlPanel.add(new JLabel("Stereo:"), "right");
 		playControlPanel.add(panSlider);
-		playControlPanel.add(zoomButton, "right");
-		playControlPanel.add(noteButton);
+//		playControlPanel.add(zoomButton, "right");
+		playControlPanel.add(noteButton, "span 2, center");
 		playControlPanel.add(midiBarLabel);
 		playControlPanel.add(abcBarLabel);
 

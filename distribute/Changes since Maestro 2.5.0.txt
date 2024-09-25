@@ -51,6 +51,9 @@ Version 3.3.6
 - Tune-editor and section-editor now accept bar numbers with decimal point.
 - Note graph tooltip now show bar number with 2 decimals.
 - Fix that "Hide edits" checkbox would also hide natural instrument octave transposing.
+- Add zoom slider controls for horizontal and vertical zoom
+- Add a "follow" checkbox, the sequencer head will stay centered while Maestro is zoomed and playing if selected
+- Support for horizontal and vertical zooming with ctrl + scroll and shift + scroll
 
 Version 3.3.3
 - Support 128 ports in GM+ midi files instead of 16.
