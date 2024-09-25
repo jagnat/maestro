@@ -397,4 +397,8 @@ public final class Util {
 			fileName = fileName.substring(0, dot);
 		return fileName;
 	}
+	
+	public static float map(float value, float fromLow, float fromHigh, float toLow, float toHigh) {
+		return toLow + (value - fromLow) * (toHigh - toLow) / (fromHigh - fromLow);
+	}
 }

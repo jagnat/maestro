@@ -4,7 +4,7 @@ import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED;
 import static javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER;
 import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS;
 import static javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED;
-import java.awt.BorderLayout;
+
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -17,11 +17,13 @@ import java.text.ParseException;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
+import javax.swing.JSlider;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -35,18 +37,22 @@ import javax.swing.event.DocumentListener;
 import com.digero.common.abc.LotroInstrument;
 import com.digero.common.icons.IconLoader;
 import com.digero.common.midi.NoteFilterSequencerWrapper;
+import com.digero.common.midi.SequencerEvent.SequencerProperty;
 import com.digero.common.midi.SequencerWrapper;
 import com.digero.common.util.ICompileConstants;
 import com.digero.common.util.IDiscardable;
 import com.digero.common.util.Listener;
+import com.digero.common.util.Util;
 import com.digero.common.view.ColorTable;
 import com.digero.common.view.InstrumentComboBox;
 import com.digero.common.view.PatchedJScrollPane;
+import com.digero.common.view.WrapLayout;
 import com.digero.maestro.abc.AbcPart;
 import com.digero.maestro.abc.AbcPartEvent;
 import com.digero.maestro.abc.AbcPartEvent.AbcPartProperty;
 import com.digero.maestro.abc.PartAutoNumberer;
 import com.digero.maestro.midi.TrackInfo;
+
 import info.clearthought.layout.TableLayout;
 import info.clearthought.layout.TableLayoutConstants;
 
@@ -76,16 +82,23 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 	private JComboBox<LotroInstrument> instrumentComboBox;
 	private JLabel messageLabel;
 	
+	private JSlider hZoomSlider;
+	private JSlider vZoomSlider;
+	
 	private JPanel splitPanel;
 	
 	private JPanel controlPanel;
 	
 	private PatchedJScrollPane noteGraphScrollPane;
 	private JPanel noteGraphPanel;
+	
+	private ControlLayout controlLayout;
+	private GraphLayout graphLayout;
 
 	private boolean initialized = false;
 
-	private boolean zoomed = false;
+	private float hZoom = 1.f;
+	private float vZoom = 1.f;
 	private boolean textnoteVisible = false;
 	private JTextArea noteContent = new JTextArea();
 	private JScrollPane notePanel = null;
@@ -95,7 +108,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			SequencerWrapper abcSequencer, boolean showMaxPolyphony) {
 		super(new TableLayout(//
 				new double[] { FILL, PREFERRED },  // x  tracks, note
-				new double[] { PREFERRED, FILL }));// y  part-header, tracks
+				new double[] { PREFERRED, PREFERRED, FILL }));// y  part-header, zoom, tracks
 
 		TableLayout layout = (TableLayout) getLayout();
 		layout.setHGap(HGAP);
@@ -153,19 +166,64 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 				//updateTracksVisible();
 			}
 		});
+		
+		JPanel partSettingsPanel = new JPanel(new WrapLayout(FlowLayout.LEFT, HGAP, 0));
 
-		JPanel dataPanel = new JPanel(new BorderLayout(0, VGAP));
-		JPanel dataPanel2 = new JPanel(new FlowLayout(FlowLayout.LEFT, HGAP, 0));
-		dataPanel2.add(new JLabel("X:"));
-		dataPanel2.add(numberSpinner);
-		dataPanel2.add(numberSettingsButton);
-		dataPanel2.add(new JLabel(" I:"));
-		dataPanel2.add(instrumentComboBox);
-		dataPanel2.add(new JLabel(" Part name:"));
-		dataPanel.add(dataPanel2, BorderLayout.WEST);
-		dataPanel.add(nameTextField, BorderLayout.CENTER);
+		final float maxHZoom = 15.f;
+		JLabel hZoomLabel = new JLabel("HZoom:");
+		hZoomSlider = new JSlider(0, 1000, 0);
+		hZoomSlider.setFocusable(false);
+		hZoomSlider.addChangeListener(e -> {
+			hZoom = Util.map(hZoomSlider.getValue(), 0, 1000, 1.f, maxHZoom);
+			updateZoom();
+//			System.out.println("hz: " + hZoom);
+		});
+		
+		final float maxVZoom = 6.f;
+		JLabel vZoomLabel = new JLabel("VZoom:");
+		vZoomSlider = new JSlider(0, 1000, 0);
+		vZoomSlider.setFocusable(false);
+		vZoomSlider.addChangeListener(e -> {
+			vZoom = Util.map(vZoomSlider.getValue(), 0, 1000, 1, maxVZoom);
+			updateZoom();
+//			System.out.println("vz: " + vZoom);
+		});
+		
+		JCheckBox followCheckBox = new JCheckBox("Follow");
+		followCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
+		followCheckBox.setFocusable(false);
+		followCheckBox.setToolTipText("<html>Auto follow track position while song is playing.</html>");
+		followCheckBox.addActionListener(e -> {
+			System.out.println("follow: " + followCheckBox.isSelected());
+		});
+		
+		
+		JPanel xPanel = new JPanel(new WrapLayout(FlowLayout.LEFT, HGAP, 0));
+		xPanel.add(new JLabel("X:"));
+		xPanel.add(numberSpinner);
+		partSettingsPanel.add(xPanel);
+		
+		partSettingsPanel.add(numberSettingsButton);
+		
+		JPanel iPanel = new JPanel(new WrapLayout(FlowLayout.LEFT, HGAP, 0));
+		iPanel.add(new JLabel("I:"));
+		iPanel.add(instrumentComboBox);
+		partSettingsPanel.add(iPanel);
+		
+		JPanel partNamePanel = new JPanel(new WrapLayout(FlowLayout.LEFT, HGAP, 0));
+		partNamePanel.add(new JLabel("Part name:"));
+		partNamePanel.add(nameTextField);
+		partSettingsPanel.add(partNamePanel);
+		
+		JPanel zoomPanel = new JPanel(new WrapLayout(FlowLayout.LEFT, HGAP, 0));
+		zoomPanel.add(hZoomLabel);
+		zoomPanel.add(hZoomSlider);
+		zoomPanel.add(vZoomLabel);
+		zoomPanel.add(vZoomSlider);
+		zoomPanel.add(followCheckBox);
+		partSettingsPanel.add(zoomPanel);
 
-		boolean dbg = false;
+//		boolean dbg = false;
 //		dbg = true;
 //		splitPanel = new JPanel(new MigLayout((dbg? "debug, " : "") + "wrap 2, gap 0, ins 0, novisualpadding, filly", "[]0[grow]"));
 		splitPanel = new JPanel(new TableLayout(new double[] { PREFERRED, FILL }, //
@@ -259,9 +317,52 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		noteContent.setWrapStyleWord(true);
 		noteContent.setTabSize(4);
 
-		add(dataPanel, "0, 0");
-		add(messageLabel, "0, 1, C, C");
-		add(splitPanel, "0, 1");
+		add(partSettingsPanel, "0, 0");
+//		add(partSettingsPanel, "0, 0");
+//		add(zoomSettingsPanel, "0, 1");
+//		add(dataPanel, "0, 0");
+		add(messageLabel, "0, 2, C, C");
+		add(splitPanel, "0, 2");
+		
+		// For follow support
+		sequencer.addChangeListener(e -> {
+			if (!followCheckBox.isSelected()) {
+				return;
+			}
+			
+			if (Math.abs(hZoom - 1.f) < 0.001) {
+				return;
+			}
+			
+			if (e.getProperty() != SequencerProperty.POSITION || sequencer.isDragging() ||
+					!(sequencer.isRunning() || abcSequencer.isRunning())) {
+				return;
+			}
+			
+			if (noteGraphScrollPane.getHorizontalScrollBar().getValueIsAdjusting()) {
+				return;
+			}
+			
+			double sequenceProgress = sequencer.getThumbPosition() / (double)(sequencer.getLength());
+			
+			int graphWidth = graphLayout.getTrackWidth();
+			int trackHeadGraphPos = (int) (graphLayout.getTrackWidth() * sequenceProgress);
+			
+			int bound = noteGraphScrollPane.getWidth() / 2;
+			
+			if (trackHeadGraphPos > bound && trackHeadGraphPos < graphWidth - bound) {
+				JScrollBar horizBar = noteGraphScrollPane.getHorizontalScrollBar();
+				int maxScrollValue = horizBar.getMaximum() - horizBar.getVisibleAmount();
+				double scrollProgress = (trackHeadGraphPos - bound) / (double)(graphWidth - 2 * bound);
+				horizBar.setValue((int)(maxScrollValue * scrollProgress));
+			}
+		});
+		
+		noteGraphScrollPane.getViewport().getView().addMouseWheelListener(e -> {
+			if (!handleMouseWheelZoom(e)) {
+				noteGraphScrollPane.dispatchEvent(SwingUtilities.convertMouseEvent(this, e, noteGraphScrollPane));
+			}
+		});
 
 		JPanel t = this; 
 		// Remove focus if any empty space in the window is clicked
@@ -273,7 +374,9 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			
 			@Override
 			public void mouseWheelMoved(MouseWheelEvent arg0) {
-				noteGraphScrollPane.dispatchEvent(SwingUtilities.convertMouseEvent(t, arg0, noteGraphScrollPane));
+				if (!handleMouseWheelZoom(arg0)) {
+					noteGraphScrollPane.dispatchEvent(SwingUtilities.convertMouseEvent(t, arg0, noteGraphScrollPane));
+				}
 			}
 		};
 		addMouseListener(listenForFocus);
@@ -281,6 +384,23 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 
 		setAbcPart(null, false);
 		initialized = true;
+	}
+	
+	// Returns false if we should forward the event to the scroll pane
+	// since it's just a normal scroll (no shift or control held)
+	boolean handleMouseWheelZoom(MouseWheelEvent e) {
+		if (e.isControlDown()) {
+				int val = hZoomSlider.getValue() - 15 * e.getWheelRotation();
+				hZoomSlider.setValue(Util.clamp(val, 0, 1000));
+				return true;
+		}
+		else if (e.isShiftDown()) {
+			int val = vZoomSlider.getValue() - 15 * e.getWheelRotation();
+			vZoomSlider.setValue(Util.clamp(val, 0, 1000));
+			return true;
+		}
+		
+		return false;
 	}
 
 	public void setNewTitle(AbcPart thePart) {
@@ -301,8 +421,6 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			numberSpinner.setValue(abcPart.getPartNumber());
 		}
 	};
-	private ControlLayout controlLayout;
-	private GraphLayout graphLayout;
 
 	public void settingsChanged() {
 		numberSpinnerModel.setStepSize(partAutoNumberer.getIncrement());
@@ -327,6 +445,9 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			numberSpinner.setEnabled(false);
 			nameTextField.setEnabled(false);
 			instrumentComboBox.setEnabled(false);
+			
+			hZoomSlider.setEnabled(false);
+			vZoomSlider.setEnabled(false);
 
 			numberSpinner.setValue(0);
 			nameTextField.setText("");
@@ -337,6 +458,9 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			numberSpinner.setEnabled(true);
 			nameTextField.setEnabled(true);
 			instrumentComboBox.setEnabled(true);
+			
+			hZoomSlider.setEnabled(true);
+			vZoomSlider.setEnabled(true);
 
 			numberSpinner.setValue(abcPart.getPartNumber());
 			nameTextField.setText(abcPart.getTitle());
@@ -473,7 +597,8 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		noteGraphPanel.removeAll();
 	}
 
-	public void setSequencer(NoteFilterSequencerWrapper sequencer) {
+	@Deprecated
+	private void setSequencer(NoteFilterSequencerWrapper sequencer) {
 		AbcPart abcPartTmp = this.abcPart;
 		setAbcPart(null, false);
 		this.sequencer = sequencer;
@@ -488,17 +613,10 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		}
 	}
 
-	public void toggleZoom() {
+	public void updateZoom() {
 		
-		if (!zoomed) {
-			graphLayout.setZoomHorizontal(6.0f);
-			controlLayout.setZoomVertical(1.75f);
-		} else {
-			graphLayout.setZoomHorizontal(1.0f);
-			controlLayout.setZoomVertical(1.0f);
-		}
-		
-		zoomed = !zoomed;
+		graphLayout.setZoomHorizontal(hZoom);
+		controlLayout.setZoomVertical(vZoom);
 		
 		//Note invalidate does not invalidate sub components, hence why its called on the panels directly
 		noteGraphPanel.invalidate();
@@ -509,11 +627,15 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 	
 	public void unZoom() {
 		// Called from ProjectFrame when song closes
-
-		zoomed = false;
 		
-		graphLayout.setZoomHorizontal(1.0f);
-		controlLayout.setZoomVertical(1.0f);
+//		hZoom = 1.0f;
+//		vZoom = 1.0f;
+//		
+//		graphLayout.setZoomHorizontal(hZoom);
+//		controlLayout.setZoomVertical(vZoom);
+		
+		hZoomSlider.setValue(0);
+		vZoomSlider.setValue(0);
 		
 		//Note invalidate does not invalidate sub components, hence why its called on the panels directly
 		noteGraphPanel.invalidate();
