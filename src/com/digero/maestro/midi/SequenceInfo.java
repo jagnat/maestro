@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.NavigableMap;
 import java.util.TreeMap;
 
 import javax.sound.midi.InvalidMidiDataException;
@@ -33,6 +34,7 @@ import com.digero.maestro.abc.AbcConversionException;
 import com.digero.maestro.abc.AbcExporter;
 import com.digero.maestro.abc.AbcExporter.ExportTrackInfo;
 import com.digero.maestro.abc.AbcMetadataSource;
+import com.digero.maestro.midi.SequenceDataCache.TempoEvent;
 import com.digero.maestro.view.MiscSettings;
 
 /**
@@ -218,8 +220,8 @@ public class SequenceInfo implements MidiConstants {
 		return trackInfoList.size();
 	}
 
-	public TrackInfo getTrackInfo(int track) {
-		return trackInfoList.get(track);
+	public TrackInfo getTrackInfo(int tracknumber) {
+		return trackInfoList.get(tracknumber);
 	}
 
 	public List<TrackInfo> getTrackList() {
@@ -317,8 +319,7 @@ public class SequenceInfo implements MidiConstants {
 	 */
 	private void determineStandard(Sequence seq, String fileName) {
 
-		if (fileName.endsWith(".abc") || fileName.endsWith(".ABC") || fileName.endsWith(".txt")
-				|| fileName.endsWith(".TXT") || fileName.endsWith(".Abc") || fileName.endsWith(".Txt")) {
+		if (fileName.toLowerCase().endsWith(".abc") || fileName.toLowerCase().endsWith(".txt")) {
 			standard = MidiStandard.ABC;
 			return;
 		}
@@ -344,9 +345,8 @@ public class SequenceInfo implements MidiConstants {
 		// Ignoring this sysex as I have tested 130,000 midi files and none of them had this, so its super rare.
 
 		// sysex XG MSB bank change:
-		// F0 43 dv md 08 nn 01 bb F7 (dv = device ID, md = model id, bb = MSB, nn = 0=non-chan#10 7F=chan#10) [However
-		// the real nn is just channel
-		// number]
+		// F0 43 dv md 08 nn 01 bb F7 (dv = device ID, md = model id, bb = MSB, nn = 0=non-chan#10 7F=chan#10)
+		// [However the real nn is just channel-number]
 
 		// sysex XG LSB bank change:
 		// F0 43 dv md 08 nn 02 bb F7 (dv = device ID, md = model id, bb = LSB, nn = default 0)
@@ -367,7 +367,7 @@ public class SequenceInfo implements MidiConstants {
 		yamahaDrumChannels[DRUM_CHANNEL] = true;
 
 		Track[] tracks = seq.getTracks();
-		long lastResetTick = -10000;
+		long lastResetTick = Long.MIN_VALUE;
 		TreeMap<Long, PatchEntry> bankAndPatchTrack = new TreeMap<>();// Maps cannot have duplicate entries, so using a
 																		// PatchEntry class to store.
 
@@ -533,19 +533,21 @@ public class SequenceInfo implements MidiConstants {
 				}
 			}
 		}
+		
 		yamahaDrumSwitches = new ArrayList<>();
-		for (int i = 0; i < CHANNEL_COUNT_ABC; i++) {
-			yamahaDrumSwitches.add(new TreeMap<>());
-		}
 		mmaDrumSwitches = new ArrayList<>();
-		for (int i = 0; i < CHANNEL_COUNT_ABC; i++) {
+		for (int channel = 0; channel < CHANNEL_COUNT_ABC; channel++) {
+			yamahaDrumSwitches.add(new TreeMap<>());
 			mmaDrumSwitches.add(new TreeMap<>());
 		}
 
 		/**
-		 * yamahaBankAndPatchChanges & mmaBankAndPatchChanges:
+		 * yamahaBankAndPatchChanges (XG) & mmaBankAndPatchChanges (GM2):
 		 * 
-		 * 0 = chromatic voice 1 = Has switched to drums, but patch not selected yet. 2 = drum
+		 * 0 = chromatic voice
+		 * 1 = Has switched to drums, but patch not selected yet.
+		 * 2 = drum
+		 * 
 		 */
 		final int CHROMATIC = 0;
 		final int DRUMS_UNKNOWN_PATCH = 1;
@@ -553,23 +555,23 @@ public class SequenceInfo implements MidiConstants {
 		Integer[] yamahaBankAndPatchChanges = new Integer[CHANNEL_COUNT_ABC];
 		Integer[] mmaBankAndPatchChanges = new Integer[CHANNEL_COUNT_ABC];
 
-		for (int i = 0; i < CHANNEL_COUNT_ABC; i++) {
-			if (yamahaDrumChannels[i]) {
-				yamahaBankAndPatchChanges[i] = DRUMS;
+		for (int channel = 0; channel < CHANNEL_COUNT_ABC; channel++) {
+			if (yamahaDrumChannels[channel]) {
+				yamahaBankAndPatchChanges[channel] = DRUMS;
 			} else {
-				yamahaBankAndPatchChanges[i] = CHROMATIC;
+				yamahaBankAndPatchChanges[channel] = CHROMATIC;
 			}
-			if (i == DRUM_CHANNEL) {
-				mmaBankAndPatchChanges[i] = DRUMS;
+			if (channel == DRUM_CHANNEL) {
+				mmaBankAndPatchChanges[channel] = DRUMS;
 			} else {
-				mmaBankAndPatchChanges[i] = CHROMATIC;
+				mmaBankAndPatchChanges[channel] = CHROMATIC;
 			}
 		}
 
 		/*
 		 * Iterate again, but this time in order of ticks no matter which track the events come from. This time we find
 		 * where there is changes from rhythm to chromatic voices and the other way around. We need that for determining
-		 * how to seperate drum tracks and which tracks to mark as drum tracks.
+		 * how to separate drum tracks and which tracks to mark as drum tracks.
 		 * 
 		 */
 		for (PatchEntry entry : bankAndPatchTrack.values()) {
@@ -718,25 +720,7 @@ public class SequenceInfo implements MidiConstants {
 						tracks[chan].add(endOfTrack);
 
 						String trackName = "Track " + trackNumber;
-
-						// No reason to call it drum channel now. Drum that are switched to in middle of melodic
-						// channels is separated out anyway. If
-						// not, then so what..
-						// if (standard == "XG" && yamahaDrumSwitches.get(chan).floorEntry(evt.getTick()) != null &&
-						// yamahaDrumSwitches.get(chan).floorEntry(evt.getTick()).getValue() == true) {
-						// trackName = "XG Drums";
-						// } else if (standard == "GM2" && mmaDrumSwitches.get(chan).floorEntry(evt.getTick()) != null
-						// &&
-						// mmaDrumSwitches.get(chan).floorEntry(evt.getTick()).getValue() == true) {
-						// trackName = "GM2 Drums";
-						// } else
-						/*
-						 * if (standard == "XG" && yamahaDrumChannels[chan] == true && chan != DRUM_CHANNEL) { trackName
-						 * = "XG Drums"; } else if (standard == "GS" && chan != DRUM_CHANNEL && rolandDrumChannels[chan]
-						 * == true) { trackName = "GS Drums"; } else if (chan == DRUM_CHANNEL &&
-						 * (rolandDrumChannels[chan] || standard != "GS") && (yamahaDrumChannels[chan] || standard !=
-						 * "XG")) { trackName = "Drums"; }
-						 */
+ 
 						trackNumber++;
 						tracks[chan].add(MidiFactory.createTrackNameEvent(trackName));
 					}
@@ -850,15 +834,12 @@ public class SequenceInfo implements MidiConstants {
 					}
 				} else {
 					// Only drum notes in this track
-					if (drumsGM == 1) {
-						// this is never reached
-						drumTrack = song.createTrack();
-						drumTrack.add(MidiFactory.createTrackNameEvent(ExtensionMidiInstrument.TRACK_NAME_DRUM_GM));
-					} else if (drumsExt10 == 1) {
+					if (drumsExt10 == 1) {
 						// Maestro v2.5.0 would have separated these, so we do the same.
 						brandDrumTrack = createBrandDrumTrack(drumsGS, drumsXG, drumsGM2, song);
 						// System.err.println("EXT Drum notes in ch10 and in other channels. Create EXT Drum track. From "+i);
 					}
+					assert drumsGM == 0;
 				}
 				// Mixed track:
 				for (int j = 0; j < track.size(); j++) {

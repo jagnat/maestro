@@ -258,6 +258,8 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 							}
 						}
 					} else if (iTrack == 0 && (divisionType == Sequence.PPQ) && MidiUtils.isMetaTempo(msg)) {
+						// TODO: Test midifiles to see how common it is to have tempo messages that are not in 1st track.
+						// If its used, then handle them instead of ignoring them, but think about backwards compat.
 						int tempoRaw = MidiUtils.getTempoMPQ(msg);
 						if (tempoRaw != 0) {
 							TempoEvent te = getTempoEventForTick(tick);
