@@ -547,19 +547,22 @@ public class SequenceInfo implements MidiConstants {
 		 * 
 		 * 0 = chromatic voice 1 = Has switched to drums, but patch not selected yet. 2 = drum
 		 */
+		final int CHROMATIC = 0;
+		final int DRUMS_UNKNOWN_PATCH = 1;
+		final int DRUMS = 2;
 		Integer[] yamahaBankAndPatchChanges = new Integer[CHANNEL_COUNT_ABC];
 		Integer[] mmaBankAndPatchChanges = new Integer[CHANNEL_COUNT_ABC];
 
 		for (int i = 0; i < CHANNEL_COUNT_ABC; i++) {
 			if (yamahaDrumChannels[i]) {
-				yamahaBankAndPatchChanges[i] = 2;
+				yamahaBankAndPatchChanges[i] = DRUMS;
 			} else {
-				yamahaBankAndPatchChanges[i] = 0;
+				yamahaBankAndPatchChanges[i] = CHROMATIC;
 			}
 			if (i == DRUM_CHANNEL) {
-				mmaBankAndPatchChanges[i] = 2;
+				mmaBankAndPatchChanges[i] = DRUMS;
 			} else {
-				mmaBankAndPatchChanges[i] = 0;
+				mmaBankAndPatchChanges[i] = CHROMATIC;
 			}
 		}
 
@@ -596,16 +599,16 @@ public class SequenceInfo implements MidiConstants {
 						if ("MSB".equals(bank)) {
 							if (message[7] == 126 || message[7] == 127) {// 64 is chromatic effects, so not testing for
 																			// that.
-								yamahaBankAndPatchChanges[ch] = 1;
+								yamahaBankAndPatchChanges[ch] = DRUMS_UNKNOWN_PATCH;
 							} else {
-								yamahaBankAndPatchChanges[ch] = 0;
+								yamahaBankAndPatchChanges[ch] = CHROMATIC;
 							}
 						} else if ("Patch".equals(bank)) {
-							if (yamahaBankAndPatchChanges[ch] > 0) {
-								yamahaBankAndPatchChanges[ch] = 2;
+							if (yamahaBankAndPatchChanges[ch] > CHROMATIC) {
+								yamahaBankAndPatchChanges[ch] = DRUMS;
 								yamahaDrumSwitches.get(ch).put(evt.getTick(), true);
 								// System.err.println(" XG drums in channel "+(ch+1));
-							} else if (yamahaBankAndPatchChanges[ch] == 0) {
+							} else if (yamahaBankAndPatchChanges[ch] == CHROMATIC) {
 								yamahaDrumSwitches.get(ch).put(evt.getTick(), false);
 								// System.err.println(" channel "+(ch+1)+" changed voice in track "+i);
 							}
@@ -617,21 +620,21 @@ public class SequenceInfo implements MidiConstants {
 					int ch = m.getChannel();
 
 					if (cmd == ShortMessage.PROGRAM_CHANGE) {
-						if (yamahaBankAndPatchChanges[ch] > 0) {
-							yamahaBankAndPatchChanges[ch] = 2;
+						if (yamahaBankAndPatchChanges[ch] > CHROMATIC) {
+							yamahaBankAndPatchChanges[ch] = DRUMS;
 							yamahaDrumSwitches.get(ch).put(evt.getTick(), true);
 							// if (ch == 9) System.err.println("XG channel "+ch+" changed to drum kit "+m.getData1()+"
 							// at tick "+evt.getTick());
-						} else if (yamahaBankAndPatchChanges[ch] == 0) {
+						} else if (yamahaBankAndPatchChanges[ch] == CHROMATIC) {
 							yamahaDrumSwitches.get(ch).put(evt.getTick(), false);
 							// if (ch == 9) System.err.println("XG channel "+ch+" changed to voice "+m.getData1()+" at
 							// tick "+evt.getTick());
 						}
-						if (mmaBankAndPatchChanges[ch] > 0) {
-							mmaBankAndPatchChanges[ch] = 2;
+						if (mmaBankAndPatchChanges[ch] > CHROMATIC) {
+							mmaBankAndPatchChanges[ch] = DRUMS;
 							mmaDrumSwitches.get(ch).put(evt.getTick(), true);
 							// System.err.println(" GM2 channel "+ch+" changed kit at tick "+evt.getTick());
-						} else if (mmaBankAndPatchChanges[ch] == 0) {
+						} else if (mmaBankAndPatchChanges[ch] == CHROMATIC) {
 							mmaDrumSwitches.get(ch).put(evt.getTick(), false);
 							// System.err.println(" GM2 channel "+ch+" changed voice at tick "+evt.getTick());
 						}
@@ -640,17 +643,17 @@ public class SequenceInfo implements MidiConstants {
 						case BANK_SELECT_MSB:
 							if (m.getData2() == 127 || m.getData2() == 126) {// 64 is chromatic effects, so not testing
 																				// for that.
-								yamahaBankAndPatchChanges[ch] = 1;
+								yamahaBankAndPatchChanges[ch] = DRUMS_UNKNOWN_PATCH;
 							} else {
-								yamahaBankAndPatchChanges[ch] = 0;
+								yamahaBankAndPatchChanges[ch] = CHROMATIC;
 								// if (ch == 9) System.err.println(" channel "+ch+" changed to voice in track "+i+" to
 								// MSB "+m.getData2()+" at tick
 								// "+evt.getTick());
 							}
 							if (m.getData2() == 120) {
-								mmaBankAndPatchChanges[ch] = 1;
+								mmaBankAndPatchChanges[ch] = DRUMS_UNKNOWN_PATCH;
 							} else {
-								mmaBankAndPatchChanges[ch] = 0;
+								mmaBankAndPatchChanges[ch] = CHROMATIC;
 							}
 							// System.err.println("Channel "+ch+" bank select MSB "+m.getData2()+" at tick
 							// "+evt.getTick());
@@ -761,14 +764,17 @@ public class SequenceInfo implements MidiConstants {
 		for (int i = 0; i < tracks.length; i++) {
 			Track track = tracks[i];
 
+			
 			int GS = 0; // GS drum notes
 			int XG = 0; // XG drum notes
 			int GM2 = 0; // GM2 drum notes
+			int drums = 0; // GM Drum notes
+			
 			int drumsExt9 = 0;// Extension drum notes on default-drum-channel
-			int drums = 0; // Drum notes (GM)
+			int drumsExtX = 0;// Extension drum notes on non-default-drum-channel
+						
 			int notes = 0; // Chromatic notes
 			int notes9 = 0;// Chromatic notes on default-drum-channel
-			int drumsExtX = 0;// Brand drum notes on non-default-drum-channel
 			int notesx = 0;// Chromatic notes on non-default-drum-channel
 
 			for (int j = 0; j < track.size(); j++) {
