@@ -169,12 +169,19 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		
 		JPanel partSettingsPanel = new JPanel(new WrapLayout(FlowLayout.LEFT, HGAP, 0));
 
-		final float maxHZoom = 15.f;
+		// We never support a zoom max of less than 4x
+		final float maxHZoomBase = 6.f;
+		// For songs longer than 1 minute, we divide song length in seconds
+		// by 10 to get adjusted zoom
+		// so that approx. 10 seconds of music is on screen for max zoom
+		final float zoomSecondDivider = 10f;
 		JLabel hZoomLabel = new JLabel("HZoom:");
 		hZoomSlider = new JSlider(0, 1000, 0);
 		hZoomSlider.setFocusable(false);
 		hZoomSlider.addChangeListener(e -> {
-			hZoom = Util.map(hZoomSlider.getValue(), 0, 1000, 1.f, maxHZoom);
+			float secs = (sequencer.getLength() / (1000 * 1000.f));
+			float adjustedZoom = Math.max(maxHZoomBase, secs / zoomSecondDivider);
+			hZoom = Util.map(hZoomSlider.getValue(), 0, 1000, 1.f, adjustedZoom);
 			updateZoom();
 //			System.out.println("hz: " + hZoom);
 		});
@@ -193,10 +200,6 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		followCheckBox.setHorizontalTextPosition(SwingConstants.LEFT);
 		followCheckBox.setFocusable(false);
 		followCheckBox.setToolTipText("<html>Auto follow track position while song is playing.</html>");
-		followCheckBox.addActionListener(e -> {
-			System.out.println("follow: " + followCheckBox.isSelected());
-		});
-		
 		
 		JPanel xPanel = new JPanel(new WrapLayout(FlowLayout.LEFT, HGAP, 0));
 		xPanel.add(new JLabel("X:"));
@@ -350,11 +353,20 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			
 			int bound = noteGraphScrollPane.getWidth() / 2;
 			
+			JScrollBar horizBar = noteGraphScrollPane.getHorizontalScrollBar();
+			int maxScrollValue = horizBar.getMaximum() - horizBar.getVisibleAmount();
+			
 			if (trackHeadGraphPos > bound && trackHeadGraphPos < graphWidth - bound) {
-				JScrollBar horizBar = noteGraphScrollPane.getHorizontalScrollBar();
-				int maxScrollValue = horizBar.getMaximum() - horizBar.getVisibleAmount();
 				double scrollProgress = (trackHeadGraphPos - bound) / (double)(graphWidth - 2 * bound);
 				horizBar.setValue((int)(maxScrollValue * scrollProgress));
+			}
+			// Snap scrollbar all the way to left
+			else if (trackHeadGraphPos <= bound) {
+				horizBar.setValue(0);
+			}
+			// Snap scrollbar all the way to right
+			else if (trackHeadGraphPos >= graphWidth - bound) {
+				horizBar.setValue(maxScrollValue);
 			}
 		});
 		

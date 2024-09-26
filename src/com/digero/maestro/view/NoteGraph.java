@@ -127,6 +127,7 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 
 		setOpaque(true);
 		setPreferredSize(new Dimension(200, 16));
+		setMaximumSize(new Dimension(1000000, 2000));
 
 		addComponentListener(new ComponentAdapter() {
 			@Override
