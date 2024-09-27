@@ -663,7 +663,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 	public void textnoteVisible(boolean vis) {
 		textnoteVisible = vis;
 		if (textnoteVisible) {
-			add(notePanel, "1, 0, 1, 1, F, F");
+			add(notePanel, "1, 0, 1, 2, F, F");
 		} else {
 			remove(notePanel);
 		}
