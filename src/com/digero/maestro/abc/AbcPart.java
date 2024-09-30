@@ -1203,34 +1203,14 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	 * @return false if silenced
 	 */
 	public boolean getAudible(int track, long tickStart, boolean active) {
-		Integer firstBar = abcSong.getFirstBar();
-		Integer lastBar  = abcSong.getLastBar();
-		SequenceInfo se = getSequenceInfo();
-		
-		if (se != null) {
-			SequenceDataCache data = se.getDataCache();
-			long barLengthTicks = data.getBarLengthTicks();
-
-			long startTick = barLengthTicks;
-			long endTick = data.getSongLengthTicks();
-
-			int bar = -1;
-			int curBar = 1;
-			for (long barTick = startTick; barTick <= endTick + barLengthTicks; barTick += barLengthTicks) {
-				if (tickStart < barTick) {
-					bar = curBar;
-					break;
-				}
-				curBar += 1;
-			}
-			if (bar != -1) {
-				if (firstBar != null && bar < firstBar) {
-					return false;
-				}
-				if (lastBar != null && bar > lastBar) {
-					return false;
-				}
-			}
+		Long firstBarTick = abcSong.getFirstBarTick();
+		Long lastBarTick  = abcSong.getLastBarTick();
+				
+		if (firstBarTick != null && tickStart < firstBarTick) {
+			return false;
+		}
+		if (lastBarTick != null && tickStart >= lastBarTick) {
+			return false;
 		}
 		
 		if (sectionsTicked != null) {

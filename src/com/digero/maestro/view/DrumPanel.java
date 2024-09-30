@@ -473,15 +473,27 @@ public class DrumPanel extends JPanel implements IDiscardable, TableLayoutConsta
 		}
 		
 		@Override
-		protected Integer getLastBar() {
+		protected Float getLastBar() {
 			if (abcPart.getAbcSong().isHideEdits()) return null;
 			return abcPart.getAbcSong().getLastBar();
 		}
 		
 		@Override
-		protected Integer getFirstBar() {
+		protected Float getFirstBar() {
 			if (abcPart.getAbcSong().isHideEdits()) return null;
 			return abcPart.getAbcSong().getFirstBar();
+		}
+		
+		@Override
+		protected Long getLastBarTick() {
+			if (abcPart.getAbcSong().isHideEdits()) return null;
+			return abcPart.getAbcSong().getLastBarTick();
+		}
+		
+		@Override
+		protected Long getFirstBarTick() {
+			if (abcPart.getAbcSong().isHideEdits()) return null;
+			return abcPart.getAbcSong().getFirstBarTick();
 		}
 	}
 }

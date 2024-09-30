@@ -200,9 +200,9 @@ public class TuneEditor {
 				panel.add(help, "3," + (3 + numberOfSections) + ", 3, "
 						+ (3 + numberOfSections) + ",f,f");
 				
-				Integer firstBar = abcSong.getFirstBar();
-				JTextField startSong = new JTextField(firstBar==null?"1":Integer.toString(firstBar)); 
-				JLabel startSongLabel = new JLabel("Start song in bar: ");
+				Float firstBar = abcSong.getFirstBar();
+				JTextField startSong = new JTextField(firstBar==null?"0.0":Float.toString(firstBar)); 
+				JLabel startSongLabel = new JLabel("Start song at: ");
 				JCheckBox startSongEnable = new JCheckBox("Start song late");
 				
 				startSong.setHorizontalAlignment(CENTER);
@@ -220,9 +220,9 @@ public class TuneEditor {
 				panel.add(startSongLabel, "2," + (4 + numberOfSections) + ", 3, "	+ (4 + numberOfSections) + ",f,f");
 				panel.add(startSong, "4," + (4 + numberOfSections) + ", 4, "	+ (4 + numberOfSections) + ",f,f");
 
-				Integer lastBar = abcSong.getLastBar();
-				JTextField endSong = new JTextField(lastBar==null?"100000":Integer.toString(lastBar)); 
-				JLabel endSongLabel = new JLabel("End song with bar: ");
+				Float lastBar = abcSong.getLastBar();
+				JTextField endSong = new JTextField(lastBar==null?"100000.0":Float.toString(lastBar)); 
+				JLabel endSongLabel = new JLabel("End song at: ");
 				JCheckBox endSongEnable = new JCheckBox("End song early");
 				
 				endSong.setHorizontalAlignment(CENTER);
@@ -266,8 +266,8 @@ public class TuneEditor {
 					
 					try {
 						if (startSongEnable.isSelected()) {
-							int startBar = Integer.parseInt(startSong.getText());
-							if (startBar < 1) {
+							float startBar = Float.parseFloat(startSong.getText().replace(",", "."));
+							if (startBar < 0.0f) {
 								throw new NumberFormatException();
 							}
 							abcSong.setFirstBar(startBar);
@@ -275,15 +275,15 @@ public class TuneEditor {
 							abcSong.setFirstBar(null);
 						}
 					} catch (NumberFormatException nfe) {
-						Integer firstBars = abcSong.getFirstBar();
+						Float firstBars = abcSong.getFirstBar();
 						startSongEnable.setSelected(firstBars != null);
-						startSong.setText(firstBars==null?"1":Integer.toString(firstBars));
+						startSong.setText(firstBars==null?"0.0":Float.toString(firstBars));
 					}
 					
 					try {
 						if (endSongEnable.isSelected()) {
-							int endBar = Integer.parseInt(endSong.getText());
-							if (endBar < 1) {
+							float endBar = Float.parseFloat(endSong.getText().replace(",", "."));
+							if (endBar <= 0.0f) {
 								throw new NumberFormatException();
 							}
 							abcSong.setLastBar(endBar);
@@ -291,9 +291,9 @@ public class TuneEditor {
 							abcSong.setLastBar(null);
 						}
 					} catch (NumberFormatException nfe) {
-						Integer lastBars = abcSong.getLastBar();
+						Float lastBars = abcSong.getLastBar();
 						endSongEnable.setSelected(lastBars != null);
-						endSong.setText(lastBars==null?"100000":Integer.toString(lastBars));
+						endSong.setText(lastBars==null?"100000.0":Float.toString(lastBars));
 					}					
 					
 					TuneDialog.this.abcSong.tuneEdited();

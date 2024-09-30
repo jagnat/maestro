@@ -586,7 +586,7 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 			long firstBarTick = (data.microsToTick(clipPosStart) / barLengthTicks) * barLengthTicks;
 			long lastBarTick = (data.microsToTick(clipPosEnd) / barLengthTicks) * barLengthTicks;
 
-			boolean[] barArray = getSectionsModified();
+			boolean[] sectionArray = getSectionsModified();
 			long barCount = data.microsToTick(clipPosStart) / barLengthTicks - 1;
 			long barMicros = clipPosStart;
 			boolean barEdited = false;
@@ -594,42 +594,66 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 			for (long barTick = firstBarTick; barTick <= lastBarTick + barLengthTicks; barTick += barLengthTicks) {
 				barEdited = false;
 				long barTempMicros = data.tickToMicros(barTick);
-				if (getFirstBar() != null && ((int) barCount+1) < getFirstBar()) {
-					rectTmp.setRect(barMicros + lineWidth, MIN_RENDERED - 1, barTempMicros - barMicros - lineWidth,
-							MAX_RENDERED - MIN_RENDERED + 2);
-					g2.setColor(ColorTable.BAR_SILENCED.get());
-					g2.fill(rectTmp);
-				} else if (getLastBar() != null && ((int) barCount+1) > getLastBar()) {
-					rectTmp.setRect(barMicros + lineWidth, MIN_RENDERED - 1, barTempMicros - barMicros - lineWidth,
-							MAX_RENDERED - MIN_RENDERED + 2);
-					g2.setColor(ColorTable.BAR_SILENCED.get());
-					g2.fill(rectTmp);
-				} else if ( barArray != null && barCount < barArray.length && barCount > -1) {
-					if (barArray[(int) barCount]) {
-						List<Pair<Long,Long>> modi = getMicrosModified(barMicros, barTempMicros);
-						if (modi != null) {
-							double start = (barMicros + lineWidth);
-							double finish = (barTempMicros);
-							for (Pair<Long,Long> pair : modi) {
-								double x = Math.max(start, pair.first);
-								double w = Math.min(finish, pair.second) - x;
-								if (w > 0.0d) {
-									rectTmp.setRect(x, MIN_RENDERED - 1, w,	MAX_RENDERED - MIN_RENDERED + 2);
-									g2.setColor(ColorTable.BAR_EDITED.get());
-									g2.fill(rectTmp);
-									barEdited = true;
-									start = x + w;
-								}
-							}
+				boolean barTouched = sectionArray != null && barCount < sectionArray.length && barCount > -1 && sectionArray[(int) barCount];
+				List<Pair<Long,Long>> modi = null;
+				if (barTouched) {
+					modi = getMicrosModified(barMicros, barTempMicros);
+				}				
+				if (modi != null) {
+					double start = (barMicros + lineWidth);
+					double finish = (barTempMicros);
+					for (Pair<Long,Long> pair : modi) {
+						double x = Math.max(start, pair.first);
+						double w = Math.min(finish, pair.second) - x;
+						if (w > 0.0d) {
+							rectTmp.setRect(x, MIN_RENDERED - 1, w,	MAX_RENDERED - MIN_RENDERED + 2);
+							g2.setColor(ColorTable.BAR_EDITED.get());
+							g2.fill(rectTmp);
+							barEdited = true;
+							start = x + w;
 						}
 					}
 				}
+				if (getFirstBar() != null && barCount < Math.floor(getFirstBar())) {
+					// whole bar is red
+					rectTmp.setRect(barMicros + lineWidth, MIN_RENDERED - 1, barTempMicros - barMicros - lineWidth,
+							MAX_RENDERED - MIN_RENDERED + 2);
+					g2.setColor(ColorTable.BAR_SILENCED.get());
+					g2.fill(rectTmp);
+				} else if (getLastBar() != null && barCount >= Math.ceil(getLastBar())) {
+					// whole bar is red
+					rectTmp.setRect(barMicros + lineWidth, MIN_RENDERED - 1, barTempMicros - barMicros - lineWidth,
+							MAX_RENDERED - MIN_RENDERED + 2);
+					g2.setColor(ColorTable.BAR_SILENCED.get());
+					g2.fill(rectTmp);
+				} else {
+					if (getFirstBar() != null && barCount < Math.ceil(getFirstBar())) {
+						// partial bar is red
+						assert getFirstBarTick() != null && getFirstBarTick() >= 0L;
+						long lateStart = data.tickToMicros(getFirstBarTick());					
+						rectTmp.setRect(barMicros + lineWidth, MIN_RENDERED - 1, Math.min(lateStart, barTempMicros) - barMicros - lineWidth,
+								MAX_RENDERED - MIN_RENDERED + 2);
+						g2.setColor(ColorTable.BAR_SILENCED.get());
+						g2.fill(rectTmp);
+					}
+					if (getLastBar() != null && barCount >= Math.floor(getLastBar())) {
+						// partial bar is red
+						assert getLastBarTick() != null && getLastBarTick() >= 0L;
+						long earlyEnd = data.tickToMicros(getLastBarTick());					
+						rectTmp.setRect(Math.max(earlyEnd, barMicros + lineWidth), MIN_RENDERED - 1, barTempMicros - barMicros - lineWidth,
+								MAX_RENDERED - MIN_RENDERED + 2);
+						g2.setColor(ColorTable.BAR_SILENCED.get());
+						g2.fill(rectTmp);
+					}
+				}
+
 				barCount++;
 				barMicros = barTempMicros;
 				rectTmp.setRect(barMicros, MIN_RENDERED - 1, lineWidth, MAX_RENDERED - MIN_RENDERED + 2);
 				barBothEdited = false;
-				if (barEdited && barArray != null && barCount < barArray.length && barCount > -1) {
-					if (barArray[(int) barCount]) {
+				if (barEdited && sectionArray != null && barCount < sectionArray.length && barCount > -1) {
+					// TODO: This could be refined a bit now that floats are used
+					if (sectionArray[(int) barCount]) {
 						barBothEdited = true;
 					}
 				}
@@ -1076,11 +1100,19 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 		return empty;
 	}
 
-	protected Integer getLastBar() {
+	protected Float getLastBar() {
 		return null;
 	}
 	
-	protected Integer getFirstBar() {
+	protected Float getFirstBar() {
+		return null;
+	}
+	
+	protected Long getLastBarTick() {
+		return null;
+	}
+	
+	protected Long getFirstBarTick() {
 		return null;
 	}
 	

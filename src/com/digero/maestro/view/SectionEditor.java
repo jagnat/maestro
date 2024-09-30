@@ -468,7 +468,7 @@ public class SectionEditor {
 					} else {
 						SectionDialog.this.abcPart.sections.set(SectionDialog.this.track, tm);
 						boolean[] booleanArray = new boolean[(int)(lastEnd) + 1];
-						System.out.println((int)(lastEnd) + 1);
+						
 						for (int m = 0; m < (int)(lastEnd) + 1; m++) {
 							Entry<Float, PartSection> entry = tm.lowerEntry((float) (m+1.0f));
 							booleanArray[m] = entry != null && entry.getValue().startBar < m + 1.0f && entry.getValue().endBar > m;

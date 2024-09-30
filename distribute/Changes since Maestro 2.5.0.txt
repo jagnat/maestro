@@ -45,6 +45,9 @@ Thanks to all who gave feedback of features, bugs plus suggestions.
 
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
+Version 3.3.7
+- Fix tune-editor late start and early ending got broken in v3.3.6
+- Make tune-editor late start and early ending allow decimal points.
 
 Version 3.3.6
 - Fix that track tooltips would say zero bad notes before selecting a track.

@@ -61,7 +61,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	public static final String MSX_FILE_DESCRIPTION_PLURAL = MaestroMain.APP_NAME + " Songs";
 	public static final String MSX_FILE_EXTENSION_NO_DOT = "msx";
 	public static final String MSX_FILE_EXTENSION = "." + MSX_FILE_EXTENSION_NO_DOT;
-	public static final Version SONG_FILE_VERSION = new Version(3, 3, 4, 300);// Keep build above 117 to make earlier
+	public static final Version SONG_FILE_VERSION = new Version(3, 3, 7, 300);// Keep build above 117 to make earlier
 																				// Maestro releases know msx is
 																				// made by newer version.
 
@@ -86,8 +86,10 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	// private boolean showPruned = false;
 	public NavigableMap<Float, TuneLine> tuneBars = null;
 	public boolean[] tuneBarsModified = null;
-	private Integer firstBar = null;
-	private Integer lastBar = null;
+	private Float firstBar = null;
+	private Float lastBar = null;
+	private long firstBarTick = -1L;
+	private long lastBarTick = -1L;
 
 	private final boolean fromAbcFile;
 	private final boolean fromXmlFile;
@@ -304,10 +306,19 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 				firstExportTime = new Date(0);// 1970-01-01-00:00:00
 			}
 			
-			lastBar = SaveUtil.parseValue(songEle, "lastBar", -1);
-			if (lastBar < 1) lastBar = null;
-			firstBar = SaveUtil.parseValue(songEle, "firstBar", -1);
-			if (firstBar < 1) firstBar = null;
+			if (fileVersion.compareTo(new Version(3, 3, 7, 300)) < 0) {
+				int lastBarI = SaveUtil.parseValue(songEle, "lastBar", -1);
+				if (lastBarI < 1) lastBar = null;
+				else lastBar = (float)lastBarI;
+				int firstBarI = SaveUtil.parseValue(songEle, "firstBar", -1);
+				if (firstBarI < 1) firstBar = null;
+				else firstBar = (float)(firstBarI - 1);
+			} else {
+				lastBar = SaveUtil.parseValue(songEle, "lastBar", -1.0f);
+				if (lastBar < 0.0f) lastBar = null;
+				firstBar = SaveUtil.parseValue(songEle, "firstBar", -1.0f);
+				if (firstBar < 0.0f) firstBar = null;
+			}
 
 			tempoFactor = SaveUtil.parseValue(songEle, "exportSettings/@tempoFactor", tempoFactor);
 			transpose = SaveUtil.parseValue(songEle, "exportSettings/@transpose", transpose);
@@ -391,8 +402,8 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	}
 	
 	public void convertTunelinesToLongs () {
-		if (tuneBars == null) return;
 		SequenceInfo se = getSequenceInfo();
+		
 		if (se == null) {
 			throw new RuntimeException("Error in floating point tuneline");
 		}
@@ -400,12 +411,20 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		SequenceDataCache data = se.getDataCache();
 		long barLengthTicks = data.getBarLengthTicks();
 		
-		for (TuneLine tuneLine : tuneBars.values()) {
-			assert tuneLine.startTick == -1L;
-			assert tuneLine.endTick == -1L;
-			
-			tuneLine.startTick = (long)(barLengthTicks * tuneLine.startBar);
-			tuneLine.endTick   = (long)(barLengthTicks * tuneLine.endBar);// don't use ceil() here
+		if (tuneBars != null) {
+			for (TuneLine tuneLine : tuneBars.values()) {
+				assert tuneLine.startTick == -1L;
+				assert tuneLine.endTick == -1L;
+				
+				tuneLine.startTick = (long)(barLengthTicks * tuneLine.startBar);
+				tuneLine.endTick   = (long)(barLengthTicks * tuneLine.endBar);// don't use ceil() here
+			}
+		}
+		if (firstBar != null) {
+			firstBarTick = (long)(barLengthTicks * firstBar);
+		}
+		if (lastBar != null) {
+			lastBarTick = (long)(barLengthTicks * lastBar);
 		}
 	}
 
@@ -1086,20 +1105,28 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		return treeChanges;
 	}
 	
-	public void setLastBar(Integer lastBar) {
+	public void setLastBar(Float lastBar) {
 		this.lastBar = lastBar;
 	}
 	
-	public Integer getLastBar() {
+	public Float getLastBar() {
 		return lastBar;
 	}
 	
-	public void setFirstBar(Integer firstBar) {
+	public void setFirstBar(Float firstBar) {
 		this.firstBar = firstBar;
 	}
 	
-	public Integer getFirstBar() {
+	public Float getFirstBar() {
 		return firstBar;
+	}
+	
+	public long getLastBarTick() {
+		return lastBarTick;
+	}
+	
+	public long getFirstBarTick() {
+		return firstBarTick;
 	}
 
 	public InstrNameSettings getInstrNameSettings() {
