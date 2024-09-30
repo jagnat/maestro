@@ -1206,10 +1206,10 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		Long firstBarTick = abcSong.getFirstBarTick();
 		Long lastBarTick  = abcSong.getLastBarTick();
 				
-		if (firstBarTick != null && tickStart < firstBarTick) {
+		if (abcSong.getFirstBar() != null && firstBarTick != null && tickStart < firstBarTick) {
 			return false;
 		}
-		if (lastBarTick != null && tickStart >= lastBarTick) {
+		if (abcSong.getLastBar() != null && lastBarTick != null && tickStart >= lastBarTick) {
 			return false;
 		}
 		

@@ -422,9 +422,13 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		}
 		if (firstBar != null) {
 			firstBarTick = (long)(barLengthTicks * firstBar);
+		} else {
+			firstBarTick = -1L;
 		}
 		if (lastBar != null) {
 			lastBarTick = (long)(barLengthTicks * lastBar);
+		} else {
+			lastBarTick = -1L;
 		}
 	}
 
