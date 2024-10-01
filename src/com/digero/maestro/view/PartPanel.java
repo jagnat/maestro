@@ -193,7 +193,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			updateZoom();
 			if (inView || mouseHzooming) {
 				final boolean mouseZooming = mouseHzooming;
-				mousePointTrack.x *= hZoom / oldHZoom;
+				if (mousePointTrack != null) mousePointTrack.x *= hZoom / oldHZoom;
 				// The position marker was inside the view when we started zooming,
 				// so lets keep it there:
 				// TODO: When mouse calls this, use cursor position instead
