@@ -9,6 +9,9 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Insets;
+import java.awt.MouseInfo;
+import java.awt.Point;
+import java.awt.PointerInfo;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -103,6 +106,9 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 	private JTextArea noteContent = new JTextArea();
 	private JScrollPane notePanel = null;
 	private boolean syncUpdate = false;
+	private boolean mouseHzooming = false;
+	private Point mousePointTrack = null;
+	private Point mousePointView = null;
 
 	public PartPanel(NoteFilterSequencerWrapper sequencer, PartAutoNumberer partAutoNumberer,
 			SequencerWrapper abcSequencer, boolean showMaxPolyphony) {
@@ -181,8 +187,25 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		hZoomSlider.addChangeListener(e -> {
 			float secs = (sequencer.getLength() / (1000 * 1000.f));
 			float adjustedZoom = Math.max(maxHZoomBase, secs / zoomSecondDivider);
+			float oldHZoom = hZoom; 
 			hZoom = Util.map(hZoomSlider.getValue(), 0, 1000, 1.f, adjustedZoom);
+			boolean inView = isPositionInView();
 			updateZoom();
+			if (inView || mouseHzooming) {
+				final boolean mouseZooming = mouseHzooming;
+				mousePointTrack.x *= hZoom / oldHZoom;
+				// The position marker was inside the view when we started zooming,
+				// so lets keep it there:
+				// TODO: When mouse calls this, use cursor position instead
+				SwingUtilities.invokeLater(new Runnable(){
+					// Cannot call this directly, as it relies on attributes that gets updated async
+					// If called directly its going to not work some of the time when zooming drastic.
+					@Override
+					public void run() {
+						scrollToPosition(mouseZooming);
+					}
+				});				
+			}
 //			System.out.println("hz: " + hZoom);
 		});
 		
@@ -345,29 +368,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			if (noteGraphScrollPane.getHorizontalScrollBar().getValueIsAdjusting()) {
 				return;
 			}
-			
-			double sequenceProgress = sequencer.getThumbPosition() / (double)(sequencer.getLength());
-			
-			int graphWidth = graphLayout.getTrackWidth();
-			int trackHeadGraphPos = (int) (graphLayout.getTrackWidth() * sequenceProgress);
-			
-			int bound = noteGraphScrollPane.getWidth() / 2;
-			
-			JScrollBar horizBar = noteGraphScrollPane.getHorizontalScrollBar();
-			int maxScrollValue = horizBar.getMaximum() - horizBar.getVisibleAmount();
-			
-			if (trackHeadGraphPos > bound && trackHeadGraphPos < graphWidth - bound) {
-				double scrollProgress = (trackHeadGraphPos - bound) / (double)(graphWidth - 2 * bound);
-				horizBar.setValue((int)(maxScrollValue * scrollProgress));
-			}
-			// Snap scrollbar all the way to left
-			else if (trackHeadGraphPos <= bound) {
-				horizBar.setValue(0);
-			}
-			// Snap scrollbar all the way to right
-			else if (trackHeadGraphPos >= graphWidth - bound) {
-				horizBar.setValue(maxScrollValue);
-			}
+			scrollToPosition(false);
 		});
 		
 		noteGraphScrollPane.getViewport().getView().addMouseWheelListener(e -> {
@@ -398,12 +399,70 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		initialized = true;
 	}
 	
+	private boolean isPositionInView() {
+		double sequenceProgress = sequencer.getThumbPosition() / (double)(sequencer.getLength());
+				
+		int trackHeadGraphPos = (int) (graphLayout.getTrackWidth() * sequenceProgress);
+		
+		int minimum = noteGraphScrollPane.getViewport().getViewPosition().x;
+		int maximum = noteGraphScrollPane.getViewport().getViewPosition().x + noteGraphScrollPane.getViewport().getExtentSize().width;
+		
+		return trackHeadGraphPos >= minimum && trackHeadGraphPos <= maximum;		
+	}
+
+	private void scrollToPosition(boolean mouseZooming) {
+		double sequenceProgress = sequencer.getThumbPosition() / (double)(sequencer.getLength());
+		
+		int graphWidth = graphLayout.getTrackWidth();
+		int trackHeadGraphPos = (int) (graphLayout.getTrackWidth() * sequenceProgress);
+		
+		if (mouseZooming && mousePointView != null && mousePointTrack != null) {
+			trackHeadGraphPos = mousePointTrack.x;
+			int offset = mousePointView.x - (noteGraphScrollPane.getViewport().getExtentSize().width / 2);
+			trackHeadGraphPos -= offset;
+		}
+		
+		int bound = noteGraphScrollPane.getWidth() / 2;
+		
+		JScrollBar horizBar = noteGraphScrollPane.getHorizontalScrollBar();
+		
+		int maxScrollValue = horizBar.getMaximum() - horizBar.getVisibleAmount();
+		
+		if (trackHeadGraphPos > bound && trackHeadGraphPos < graphWidth - bound) {
+			double scrollProgress = (trackHeadGraphPos - bound) / (double)(graphWidth - 2 * bound);
+			horizBar.setValue((int)(maxScrollValue * scrollProgress));
+		}
+		// Snap scrollbar all the way to left
+		else if (trackHeadGraphPos <= bound) {
+			horizBar.setValue(0);
+		}
+		// Snap scrollbar all the way to right
+		else if (trackHeadGraphPos >= graphWidth - bound) {
+			horizBar.setValue(maxScrollValue);
+		}
+	}
+	
 	// Returns false if we should forward the event to the scroll pane
 	// since it's just a normal scroll (no shift or control held)
 	boolean handleMouseWheelZoom(MouseWheelEvent e) {
 		if (e.isControlDown()) {
 				int val = hZoomSlider.getValue() - 15 * e.getWheelRotation();
+				mouseHzooming = true;
+				PointerInfo info = MouseInfo.getPointerInfo();
+				if (info != null) {
+					Point p = info.getLocation();
+					SwingUtilities.convertPointFromScreen(p, noteGraphPanel);				
+					mousePointTrack = p;
+					info = MouseInfo.getPointerInfo();
+					Point p2 = info.getLocation();
+					SwingUtilities.convertPointFromScreen(p2, noteGraphScrollPane);				
+					mousePointView = p2;
+				} else {
+					mousePointView = null;
+					mousePointTrack = null;
+				}
 				hZoomSlider.setValue(Util.clamp(val, 0, 1000));
+				mouseHzooming  = false;
 				return true;
 		}
 		else if (e.isShiftDown()) {
@@ -628,7 +687,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 	public void updateZoom() {
 		
 		graphLayout.setZoomHorizontal(hZoom);
-		controlLayout.setZoomVertical(vZoom);
+		controlLayout.setZoomVertical(vZoom);		
 		
 		//Note invalidate does not invalidate sub components, hence why its called on the panels directly
 		noteGraphPanel.invalidate();
