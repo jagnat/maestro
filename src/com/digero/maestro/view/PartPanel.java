@@ -109,6 +109,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 	private boolean mouseHzooming = false;
 	private Point mousePointTrack = null;
 	private Point mousePointView = null;
+	private double sequenceProgress = 0.0d;
 
 	public PartPanel(NoteFilterSequencerWrapper sequencer, PartAutoNumberer partAutoNumberer,
 			SequencerWrapper abcSequencer, boolean showMaxPolyphony) {
@@ -189,24 +190,14 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			float adjustedZoom = Math.max(maxHZoomBase, secs / zoomSecondDivider);
 			float oldHZoom = hZoom; 
 			hZoom = Util.map(hZoomSlider.getValue(), 0, 1000, 1.f, adjustedZoom);
-			boolean inView = isPositionInView();
-			updateZoom();
-			if (inView || mouseHzooming) {
-				final boolean mouseZooming = mouseHzooming;
+			if (hZoom != oldHZoom) {
+				calcZoomTarget();
+				updateZoom();
 				if (mousePointTrack != null) mousePointTrack.x *= hZoom / oldHZoom;
-				// The position marker was inside the view when we started zooming,
-				// so lets keep it there:
-				// TODO: When mouse calls this, use cursor position instead
-				SwingUtilities.invokeLater(new Runnable(){
-					// Cannot call this directly, as it relies on attributes that gets updated async
-					// If called directly its going to not work some of the time when zooming drastic.
-					@Override
-					public void run() {
-						scrollToPosition(mouseZooming);
-					}
-				});				
+				scrollToPosition(mouseHzooming);
+				repaintAfterZoom();
+	//			System.out.println("hz: " + hZoom);
 			}
-//			System.out.println("hz: " + hZoom);
 		});
 		
 		final float maxVZoom = 6.f;
@@ -216,6 +207,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		vZoomSlider.addChangeListener(e -> {
 			vZoom = Util.map(vZoomSlider.getValue(), 0, 1000, 1, maxVZoom);
 			updateZoom();
+			repaintAfterZoom();
 //			System.out.println("vz: " + vZoom);
 		});
 		
@@ -267,6 +259,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			}
 		};
 		noteGraphScrollPane = new PatchedJScrollPane(noteGraphPanel, VERTICAL_SCROLLBAR_ALWAYS, HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
 		controlLayout = new ControlLayout(TrackPanel.calculateTrackDims().rowHeight + 1, noteGraphPanel, noteGraphScrollPane);
 		controlPanel = new JPanel(controlLayout) {
 			@Override
@@ -399,47 +392,32 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		initialized = true;
 	}
 	
-	private boolean isPositionInView() {
-		double sequenceProgress = sequencer.getThumbPosition() / (double)(sequencer.getLength());
+	private boolean calcZoomTarget() {
+		sequenceProgress = sequencer.getThumbPosition() / (double)(sequencer.getLength());
 				
 		int trackHeadGraphPos = (int) (graphLayout.getTrackWidth() * sequenceProgress);
 		
 		int minimum = noteGraphScrollPane.getViewport().getViewPosition().x;
 		int maximum = noteGraphScrollPane.getViewport().getViewPosition().x + noteGraphScrollPane.getViewport().getExtentSize().width;
 		
-		return trackHeadGraphPos >= minimum && trackHeadGraphPos <= maximum;		
+		boolean inView = trackHeadGraphPos >= minimum && trackHeadGraphPos <= maximum;
+		
+		if (!inView) sequenceProgress = ((minimum+maximum)/2)/(double)graphLayout.getTrackWidth();
+		
+		return inView;
 	}
 
 	private void scrollToPosition(boolean mouseZooming) {
-		double sequenceProgress = sequencer.getThumbPosition() / (double)(sequencer.getLength());
-		
 		int graphWidth = graphLayout.getTrackWidth();
-		int trackHeadGraphPos = (int) (graphLayout.getTrackWidth() * sequenceProgress);
-		
+		int trackHeadGraphPos = (int) (graphWidth * sequenceProgress);
+		int viewWidth = noteGraphScrollPane.getViewport().getExtentSize().width;
+		int value = trackHeadGraphPos - viewWidth / 2;
 		if (mouseZooming && mousePointView != null && mousePointTrack != null) {
-			trackHeadGraphPos = mousePointTrack.x;
-			int offset = mousePointView.x - (noteGraphScrollPane.getViewport().getExtentSize().width / 2);
-			trackHeadGraphPos -= offset;
-		}
-		
-		int bound = noteGraphScrollPane.getWidth() / 2;
-		
-		JScrollBar horizBar = noteGraphScrollPane.getHorizontalScrollBar();
-		
-		int maxScrollValue = horizBar.getMaximum() - horizBar.getVisibleAmount();
-		
-		if (trackHeadGraphPos > bound && trackHeadGraphPos < graphWidth - bound) {
-			double scrollProgress = (trackHeadGraphPos - bound) / (double)(graphWidth - 2 * bound);
-			horizBar.setValue((int)(maxScrollValue * scrollProgress));
-		}
-		// Snap scrollbar all the way to left
-		else if (trackHeadGraphPos <= bound) {
-			horizBar.setValue(0);
-		}
-		// Snap scrollbar all the way to right
-		else if (trackHeadGraphPos >= graphWidth - bound) {
-			horizBar.setValue(maxScrollValue);
-		}
+			value = mousePointTrack.x - mousePointView.x;
+		}		
+		Point oldView = noteGraphScrollPane.getViewport().getViewPosition();
+		Point newView = new Point(Math.min(graphWidth - viewWidth, Math.max(0,value)), oldView.y);
+		noteGraphScrollPane.getViewport().setViewPosition(newView);
 	}
 	
 	// Returns false if we should forward the event to the scroll pane
@@ -689,8 +667,12 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		graphLayout.setZoomHorizontal(hZoom);
 		controlLayout.setZoomVertical(vZoom);		
 		
+	}
+
+	private void repaintAfterZoom() {
 		//Note invalidate does not invalidate sub components, hence why its called on the panels directly
 		noteGraphPanel.invalidate();
+		noteGraphScrollPane.invalidate();
 		controlPanel.invalidate();
 		revalidate();
 		repaint();
@@ -708,11 +690,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 		hZoomSlider.setValue(0);
 		vZoomSlider.setValue(0);
 		
-		//Note invalidate does not invalidate sub components, hence why its called on the panels directly
-		noteGraphPanel.invalidate();
-		controlPanel.invalidate();
-		revalidate();
-		repaint();
+		repaintAfterZoom();
 	}
 
 	public void textnoteToggle() {
