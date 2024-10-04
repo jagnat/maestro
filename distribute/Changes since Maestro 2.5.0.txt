@@ -46,8 +46,13 @@ Thanks to all who gave feedback of features, bugs plus suggestions.
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
 Version 3.3.9
-- When using HZoom slider and position is in view then keep it centered in view.
+- When using HZoom slider, and song position is in view, then keep it centered in view.
 - When zooming using ctrl-mousewheel, target what mousepointer is aiming at.
+    Known issue: When doing this the note graphs will flicker while being zoomed.
+- Added accelerando/ritardando to tune-editor.
+- When tempo-events are so closely clustered that some have to be removed, its now done smarter.
+- Tune-editor: Added sort button. Added add button. Added tabs to columns. Reduced default tunelines to 8 from 20.
+- Tempopanel will now indicate actual BPM when in abc preview mode. So tune-editors changes will be shown, but not in the tempo graph, only as text.
 
 Version 3.3.8
 - Fix notes were missing

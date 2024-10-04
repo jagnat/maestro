@@ -179,57 +179,7 @@ public class SectionEditor {
 				
 				TreeMap<Float, PartSection> tree = abcPart.sections.get(track);
 				if (tree != null) {
-					/*
-					 *    Initialize values in the swing components that has sections edited when dialog opens 
-					 */
-					int number = 0;
-					int highestNumber = 0;
-					boolean useDialogLineNumbers = true;
-					for (Entry<Float, PartSection> entry : tree.entrySet()) {
-						PartSection ps = entry.getValue();
-						if (ps.dialogLine == -1) {
-							useDialogLineNumbers = false;
-						}
-						if (useDialogLineNumbers) {
-							number = ps.dialogLine;
-						}
-						if (number < 0) {
-							System.err.println(
-									"Line numbers was badly edited in .msx file.");
-						} else {
-							while (sectionInputs.size() < number + 1) {
-								makeNewSectorLine(percussion);
-							}
-							SectionEditorLine secInput = sectionInputs.get(number);
-							secInput.enable[0].setSelected(true);
-							secInput.barA[0].setText(String.valueOf(ps.startBar));
-							secInput.barB[0].setText(String.valueOf(ps.endBar));
-							secInput.enable[1].setSelected(true);
-							secInput.barA[1].setText(String.valueOf(ps.startBar));
-							secInput.barB[1].setText(String.valueOf(ps.endBar));
-							secInput.enable[2].setSelected(true);
-							secInput.barA[2].setText(String.valueOf(ps.startBar));
-							secInput.barB[2].setText(String.valueOf(ps.endBar));
-							
-							secInput.transpose.setText(String.valueOf(ps.octaveStep));
-							secInput.velo.setText(String.valueOf(ps.volumeStep));
-							secInput.silent.setSelected(ps.silence);
-							secInput.fade.setText(String.valueOf(ps.fade));
-							secInput.resetVelocities.setSelected(ps.resetVelocities);
-							secInput.doubling0.setSelected(ps.doubling[0]);
-							secInput.doubling1.setSelected(ps.doubling[1]);
-							secInput.doubling2.setSelected(ps.doubling[2]);
-							secInput.doubling3.setSelected(ps.doubling[3]);
-							secInput.fromPitch.setText(ps.fromPitch.toString());
-							secInput.toPitch.setText(ps.toPitch.toString());
-							secInput.textPitch.setText("("+ps.fromPitch.id+" to "+ps.toPitch.id+")");
-							if (number > highestNumber) highestNumber = number;
-						}
-						number++;
-					}
-					numberOfSections = Math.max(numberOfSections, highestNumber + 1);
-					assert numberOfSections >= sectionInputs.size();
-					assert numberOfSections <= numberOfSectionsMax;
+					processTree(percussion, tree);
 				}
 
 				PartSection ps = abcPart.nonSection.get(track);
@@ -360,107 +310,7 @@ public class SectionEditor {
 					TreeMap<Float, PartSection> tm = new TreeMap<>();
 
 					float lastEnd = 0.0f;
-					for (int k = 0; k < numberOfSections; k++) {
-						if (SectionDialog.this.sectionInputs.get(k).enable[0].isSelected()) {
-							PartSection ps1 = new PartSection();
-							try {
-								ps1.octaveStep = Integer.parseInt(sectionInputs.get(k).transpose.getText());
-								ps1.volumeStep = Integer.parseInt(sectionInputs.get(k).velo.getText());
-								ps1.startBar = Float.parseFloat(sectionInputs.get(k).barA[0].getText().replace(",", "."));
-								ps1.endBar = Float.parseFloat(sectionInputs.get(k).barB[0].getText().replace(",", "."));
-								ps1.silence = sectionInputs.get(k).silent.isSelected();
-								ps1.fade = Integer.parseInt(sectionInputs.get(k).fade.getText());
-								ps1.resetVelocities = sectionInputs.get(k).resetVelocities.isSelected();
-								ps1.doubling[0] = sectionInputs.get(k).doubling0.isSelected();
-								ps1.doubling[1] = sectionInputs.get(k).doubling1.isSelected();
-								ps1.doubling[2] = sectionInputs.get(k).doubling2.isSelected();
-								ps1.doubling[3] = sectionInputs.get(k).doubling3.isSelected();
-								try {
-									ps1.fromPitch = Note.fromName(SectionDialog.this.sectionInputs.get(k).fromPitch.getText());
-								}catch (IllegalArgumentException e1) {
-									try {
-										Note n = Note.fromId(Integer.parseInt(SectionDialog.this.sectionInputs.get(k).fromPitch.getText()));
-										if (n==null) throw new IllegalArgumentException();
-										ps1.fromPitch = n;
-									}catch (IllegalArgumentException e3) {
-										SectionDialog.this.sectionInputs.get(k).fromPitch.setText(ps1.fromPitch.toString());
-									}
-								}
-								try {
-									ps1.toPitch = Note.fromName(SectionDialog.this.sectionInputs.get(k).toPitch.getText());
-								}catch (IllegalArgumentException e2) {
-									try {
-										Note n = Note.fromId(Integer.parseInt(SectionDialog.this.sectionInputs.get(k).toPitch.getText()));
-										if (n==null) throw new IllegalArgumentException();
-										ps1.toPitch = n;
-									}catch (IllegalArgumentException e4) {
-										SectionDialog.this.sectionInputs.get(k).toPitch.setText(ps1.toPitch.toString());
-									}
-								}
-								SectionDialog.this.sectionInputs.get(k).textPitch.setText("("+ps1.fromPitch.id+" to "+ps1.toPitch.id+")");
-								boolean soFarSoGood = true;
-								for (PartSection psC : tm.values()) {
-									if (!(ps1.startBar >= psC.endBar || ps1.endBar <= psC.startBar)) {
-										soFarSoGood = false;
-										break;
-									}
-								}
-								if (ps1.startBar >= 0.0f && ps1.startBar < ps1.endBar && soFarSoGood) {
-									tm.put(ps1.startBar, ps1);
-									if (ps1.endBar > lastEnd)
-										lastEnd = ps1.endBar;
-									ps1.dialogLine = k;
-								} else {
-									SectionDialog.this.sectionInputs.get(k).enable[0].setSelected(false);
-									SectionDialog.this.sectionInputs.get(k).enable[1].setSelected(false);
-									SectionDialog.this.sectionInputs.get(k).enable[2].setSelected(false);
-								}
-							} catch (NumberFormatException nfe) {
-								SectionDialog.this.sectionInputs.get(k).enable[0].setSelected(false);
-								SectionDialog.this.sectionInputs.get(k).enable[1].setSelected(false);
-								SectionDialog.this.sectionInputs.get(k).enable[2].setSelected(false);
-							}
-						}
-					}
-					PartSection ps1 = new PartSection();
-					try {
-						ps1.silence = nonSectionInput.silent.isSelected();
-						ps1.resetVelocities = nonSectionInput.resetVelocities.isSelected();
-						ps1.doubling[0] = nonSectionInput.doubling0.isSelected();
-						ps1.doubling[1] = nonSectionInput.doubling1.isSelected();
-						ps1.doubling[2] = nonSectionInput.doubling2.isSelected();
-						ps1.doubling[3] = nonSectionInput.doubling3.isSelected();
-						try {
-							ps1.fromPitch = Note.fromName(nonSectionInput.fromPitch.getText());
-						}catch (IllegalArgumentException e1) {
-							try {
-								Note n = Note.fromId(Integer.parseInt(nonSectionInput.fromPitch.getText()));
-								if (n==null) throw new IllegalArgumentException();
-								ps1.fromPitch = n;
-							}catch (IllegalArgumentException e3) {
-								nonSectionInput.fromPitch.setText(ps1.fromPitch.toString());
-							}
-						}
-						try {
-							ps1.toPitch = Note.fromName(nonSectionInput.toPitch.getText());
-						}catch (IllegalArgumentException e2) {
-							try {
-								Note n = Note.fromId(Integer.parseInt(nonSectionInput.toPitch.getText()));
-								if (n==null) throw new IllegalArgumentException();
-								ps1.toPitch = n;
-							}catch (IllegalArgumentException e4) {
-								nonSectionInput.toPitch.setText(ps1.toPitch.toString());
-							}
-						}
-						nonSectionInput.textPitch.setText("("+ps1.fromPitch.id+" to "+ps1.toPitch.id+")");
-						if (ps1.silence || ps1.resetVelocities || ps1.doubling[0] || ps1.doubling[1] || ps1.doubling[2]
-								|| ps1.doubling[3] || ps1.fromPitch != Note.C0 || ps1.toPitch != Note.MAX) {
-							SectionDialog.this.abcPart.nonSection.set(SectionDialog.this.track, ps1);
-						} else {
-							SectionDialog.this.abcPart.nonSection.set(SectionDialog.this.track, null);
-						}
-					} catch (NumberFormatException nfe) {
-					}
+					lastEnd = processSections(tm, lastEnd);
 
 					if (lastEnd == 0.0f) {
 						SectionDialog.this.abcPart.sections.set(SectionDialog.this.track, null);
@@ -511,6 +361,165 @@ public class SectionEditor {
 				this.pack();
 				this.repaint();
 				// System.err.println(Thread.currentThread().getName()); Swing event thread
+			}
+
+			private float processSections(TreeMap<Float, PartSection> tm, float lastEnd) {
+				for (int k = 0; k < numberOfSections; k++) {
+					if (SectionDialog.this.sectionInputs.get(k).enable[0].isSelected()) {
+						PartSection ps1 = new PartSection();
+						try {
+							ps1.octaveStep = Integer.parseInt(sectionInputs.get(k).transpose.getText());
+							ps1.volumeStep = Integer.parseInt(sectionInputs.get(k).velo.getText());
+							ps1.startBar = Float.parseFloat(sectionInputs.get(k).barA[0].getText().replace(",", "."));
+							ps1.endBar = Float.parseFloat(sectionInputs.get(k).barB[0].getText().replace(",", "."));
+							ps1.silence = sectionInputs.get(k).silent.isSelected();
+							ps1.fade = Integer.parseInt(sectionInputs.get(k).fade.getText());
+							ps1.resetVelocities = sectionInputs.get(k).resetVelocities.isSelected();
+							ps1.doubling[0] = sectionInputs.get(k).doubling0.isSelected();
+							ps1.doubling[1] = sectionInputs.get(k).doubling1.isSelected();
+							ps1.doubling[2] = sectionInputs.get(k).doubling2.isSelected();
+							ps1.doubling[3] = sectionInputs.get(k).doubling3.isSelected();
+							try {
+								ps1.fromPitch = Note.fromName(SectionDialog.this.sectionInputs.get(k).fromPitch.getText());
+							}catch (IllegalArgumentException e1) {
+								try {
+									Note n = Note.fromId(Integer.parseInt(SectionDialog.this.sectionInputs.get(k).fromPitch.getText()));
+									if (n==null) throw new IllegalArgumentException();
+									ps1.fromPitch = n;
+								}catch (IllegalArgumentException e3) {
+									SectionDialog.this.sectionInputs.get(k).fromPitch.setText(ps1.fromPitch.toString());
+								}
+							}
+							try {
+								ps1.toPitch = Note.fromName(SectionDialog.this.sectionInputs.get(k).toPitch.getText());
+							}catch (IllegalArgumentException e2) {
+								try {
+									Note n = Note.fromId(Integer.parseInt(SectionDialog.this.sectionInputs.get(k).toPitch.getText()));
+									if (n==null) throw new IllegalArgumentException();
+									ps1.toPitch = n;
+								}catch (IllegalArgumentException e4) {
+									SectionDialog.this.sectionInputs.get(k).toPitch.setText(ps1.toPitch.toString());
+								}
+							}
+							SectionDialog.this.sectionInputs.get(k).textPitch.setText("("+ps1.fromPitch.id+" to "+ps1.toPitch.id+")");
+							boolean soFarSoGood = true;
+							for (PartSection psC : tm.values()) {
+								if (!(ps1.startBar >= psC.endBar || ps1.endBar <= psC.startBar)) {
+									soFarSoGood = false;
+									break;
+								}
+							}
+							if (ps1.startBar >= 0.0f && ps1.startBar < ps1.endBar && soFarSoGood) {
+								tm.put(ps1.startBar, ps1);
+								if (ps1.endBar > lastEnd)
+									lastEnd = ps1.endBar;
+								ps1.dialogLine = k;
+							} else {
+								SectionDialog.this.sectionInputs.get(k).enable[0].setSelected(false);
+								SectionDialog.this.sectionInputs.get(k).enable[1].setSelected(false);
+								SectionDialog.this.sectionInputs.get(k).enable[2].setSelected(false);
+							}
+						} catch (NumberFormatException nfe) {
+							SectionDialog.this.sectionInputs.get(k).enable[0].setSelected(false);
+							SectionDialog.this.sectionInputs.get(k).enable[1].setSelected(false);
+							SectionDialog.this.sectionInputs.get(k).enable[2].setSelected(false);
+						}
+					}
+				}
+				PartSection ps1 = new PartSection();
+				try {
+					ps1.silence = nonSectionInput.silent.isSelected();
+					ps1.resetVelocities = nonSectionInput.resetVelocities.isSelected();
+					ps1.doubling[0] = nonSectionInput.doubling0.isSelected();
+					ps1.doubling[1] = nonSectionInput.doubling1.isSelected();
+					ps1.doubling[2] = nonSectionInput.doubling2.isSelected();
+					ps1.doubling[3] = nonSectionInput.doubling3.isSelected();
+					try {
+						ps1.fromPitch = Note.fromName(nonSectionInput.fromPitch.getText());
+					}catch (IllegalArgumentException e1) {
+						try {
+							Note n = Note.fromId(Integer.parseInt(nonSectionInput.fromPitch.getText()));
+							if (n==null) throw new IllegalArgumentException();
+							ps1.fromPitch = n;
+						}catch (IllegalArgumentException e3) {
+							nonSectionInput.fromPitch.setText(ps1.fromPitch.toString());
+						}
+					}
+					try {
+						ps1.toPitch = Note.fromName(nonSectionInput.toPitch.getText());
+					}catch (IllegalArgumentException e2) {
+						try {
+							Note n = Note.fromId(Integer.parseInt(nonSectionInput.toPitch.getText()));
+							if (n==null) throw new IllegalArgumentException();
+							ps1.toPitch = n;
+						}catch (IllegalArgumentException e4) {
+							nonSectionInput.toPitch.setText(ps1.toPitch.toString());
+						}
+					}
+					nonSectionInput.textPitch.setText("("+ps1.fromPitch.id+" to "+ps1.toPitch.id+")");
+					if (ps1.silence || ps1.resetVelocities || ps1.doubling[0] || ps1.doubling[1] || ps1.doubling[2]
+							|| ps1.doubling[3] || ps1.fromPitch != Note.C0 || ps1.toPitch != Note.MAX) {
+						SectionDialog.this.abcPart.nonSection.set(SectionDialog.this.track, ps1);
+					} else {
+						SectionDialog.this.abcPart.nonSection.set(SectionDialog.this.track, null);
+					}
+				} catch (NumberFormatException nfe) {
+				}
+				return lastEnd;
+			}
+
+			private void processTree(final boolean percussion, TreeMap<Float, PartSection> tree) {
+				/*
+				 *    Initialize values in the swing components that has sections edited when dialog opens 
+				 */
+				int number = 0;
+				int highestNumber = 0;
+				boolean useDialogLineNumbers = true;
+				for (Entry<Float, PartSection> entry : tree.entrySet()) {
+					PartSection ps = entry.getValue();
+					if (ps.dialogLine == -1) {
+						useDialogLineNumbers = false;
+					}
+					if (useDialogLineNumbers) {
+						number = ps.dialogLine;
+					}
+					if (number < 0) {
+						System.err.println(
+								"Line numbers was badly edited in .msx file.");
+					} else {
+						while (sectionInputs.size() < number + 1) {
+							makeNewSectorLine(percussion);
+						}
+						SectionEditorLine secInput = sectionInputs.get(number);
+						secInput.enable[0].setSelected(true);
+						secInput.barA[0].setText(String.valueOf(ps.startBar));
+						secInput.barB[0].setText(String.valueOf(ps.endBar));
+						secInput.enable[1].setSelected(true);
+						secInput.barA[1].setText(String.valueOf(ps.startBar));
+						secInput.barB[1].setText(String.valueOf(ps.endBar));
+						secInput.enable[2].setSelected(true);
+						secInput.barA[2].setText(String.valueOf(ps.startBar));
+						secInput.barB[2].setText(String.valueOf(ps.endBar));
+						
+						secInput.transpose.setText(String.valueOf(ps.octaveStep));
+						secInput.velo.setText(String.valueOf(ps.volumeStep));
+						secInput.silent.setSelected(ps.silence);
+						secInput.fade.setText(String.valueOf(ps.fade));
+						secInput.resetVelocities.setSelected(ps.resetVelocities);
+						secInput.doubling0.setSelected(ps.doubling[0]);
+						secInput.doubling1.setSelected(ps.doubling[1]);
+						secInput.doubling2.setSelected(ps.doubling[2]);
+						secInput.doubling3.setSelected(ps.doubling[3]);
+						secInput.fromPitch.setText(ps.fromPitch.toString());
+						secInput.toPitch.setText(ps.toPitch.toString());
+						secInput.textPitch.setText("("+ps.fromPitch.id+" to "+ps.toPitch.id+")");
+						if (number > highestNumber) highestNumber = number;
+					}
+					number++;
+				}
+				numberOfSections = Math.max(numberOfSections, highestNumber + 1);
+				assert numberOfSections >= sectionInputs.size();
+				assert numberOfSections <= numberOfSectionsMax;
 			}
 
 			private void addSectorLine(final boolean percussion, JButton add1) {

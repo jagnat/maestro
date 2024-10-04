@@ -6,6 +6,7 @@ public class TuneLine {
 	public int dialogLine = -1;
 	public int tempo = 0;
 	public int fade = 0;
+	public int accelerando = 0;
 
 	// inclusive:
 	public float startBar = 0;
@@ -18,6 +19,6 @@ public class TuneLine {
 	@Override
 	public String toString() {
 		return "Tune Line " + startBar + " to " + endBar + ": tempo=" + tempo + " seminoteStep=" + seminoteStep
-				 + " fade=" + fade + " dialogLine=" + dialogLine;
+				 + " fade=" + fade + " accelerando=" + accelerando + " dialogLine=" + dialogLine;
 	}
 }

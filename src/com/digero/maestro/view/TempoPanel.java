@@ -24,6 +24,7 @@ import com.digero.common.util.IDiscardable;
 import com.digero.common.util.Listener;
 import com.digero.common.util.Pair;
 import com.digero.common.view.ColorTable;
+import com.digero.maestro.abc.AbcConversionException;
 import com.digero.maestro.abc.AbcSong;
 import com.digero.maestro.abc.TuneLine;
 import com.digero.maestro.midi.FakeNoteEvent;
@@ -155,6 +156,15 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 
 	private void updateTempoLabel() {
 		int mpq = sequenceInfo.getDataCache().getTempoMPQ(sequencer.getThumbTick());
+		int mpqAbc = mpq;
+		if (abcPreviewMode) { //  && !abcSong.isHideEdits()
+			mpqAbc = abcSong.getAbcTempoMPQ(abcSequencer.getThumbTick());
+			if (mpqAbc == 0) {
+				mpqAbc = mpq;
+			} else {
+				mpq = mpqAbc;
+			}
+		}
 		int bpm = (int) Math.round(MidiUtils.convertTempo(mpq) * getCurrentTempoFactor());
 		if (bpm != lastRenderedBPM) {
 			currentTempoLabel.setText(bpm + " BPM ");

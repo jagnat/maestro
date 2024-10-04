@@ -61,7 +61,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	public static final String MSX_FILE_DESCRIPTION_PLURAL = MaestroMain.APP_NAME + " Songs";
 	public static final String MSX_FILE_EXTENSION_NO_DOT = "msx";
 	public static final String MSX_FILE_EXTENSION = "." + MSX_FILE_EXTENSION_NO_DOT;
-	public static final Version SONG_FILE_VERSION = new Version(3, 3, 7, 300);// Keep build above 117 to make earlier
+	public static final Version SONG_FILE_VERSION = new Version(3, 3, 9, 300);// Keep build above 117 to make earlier
 																				// Maestro releases know msx is
 																				// made by newer version.
 
@@ -432,6 +432,14 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		}
 	}
 
+	/**
+	 * Loading tuneline from xml
+	 * 
+	 * @param songElement
+	 * @param fileVersion
+	 * @throws XPathExpressionException
+	 * @throws ParseException
+	 */
 	private void handleTuneSections(Element songElement, Version fileVersion) throws XPathExpressionException, ParseException {
 		float lastEnd = 0;
 		for (Element tuneEle : XmlUtil.selectElements(songElement, "tuneSection")) {
@@ -446,6 +454,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 			}
 			tl.seminoteStep = SaveUtil.parseValue(tuneEle, "seminoteStep", 0);
 			tl.tempo = SaveUtil.parseValue(tuneEle, "tempoChange", 0);
+			tl.accelerando = SaveUtil.parseValue(tuneEle, "tempoAccelerando", 0);
 			int fade = SaveUtil.parseValue(tuneEle, "fade", 0);
 			if (fade != 0) {
 				tl.fade = fade;
@@ -579,6 +588,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 			SaveUtil.appendChildTextElement(tuneEle, "endBar", String.valueOf(tuneLine.endBar));
 			SaveUtil.appendChildTextElement(tuneEle, "seminoteStep", String.valueOf(tuneLine.seminoteStep));
 			SaveUtil.appendChildTextElement(tuneEle, "tempoChange", String.valueOf(tuneLine.tempo));
+			SaveUtil.appendChildTextElement(tuneEle, "tempoAccelerando", String.valueOf(tuneLine.accelerando));
 			SaveUtil.appendChildTextElement(tuneEle, "fade", String.valueOf(tuneLine.fade));
 			SaveUtil.appendChildTextElement(tuneEle, "dialogLine", String.valueOf(tuneLine.dialogLine));
 		}
@@ -1098,11 +1108,54 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		TreeMap<Long, Integer> treeChanges = new TreeMap<>();
 		if (tree != null) {
 			Collection<TuneLine> lines = tree.values();
-			
 			for (TuneLine line : lines) {
-				if (line.tempo != 0) {
+				if (line.accelerando != 0) {
+					int steps = Math.abs(line.accelerando);
+					int step = line.accelerando < 0?-1:1;
+					long domain = line.endTick - line.startTick;
+					long domainStep = domain/steps;
+					while (domainStep == 0L && steps > 1) {
+						// very short number of ticks compared to number of tempo steps
+						steps /= 2;
+						domainStep = domain/steps;
+						step *= 2;
+					}
+					if (domainStep > 0L) {
+						for (int i = 0; Math.abs(step)*(i+1) <= steps; i++) {
+							long distance = i*domainStep;
+							int newTempoOffset = step*(i+1)+line.tempo;
+							treeChanges.put(line.startTick+distance, newTempoOffset);
+							assert line.startTick+distance < line.endTick : "steps="+steps+" step="+step+"\n domainStep="+domainStep+" domain="+domain;
+						}
+						if(treeChanges.get(line.endTick) == null || treeChanges.get(line.endTick) == 0) {
+							treeChanges.put(line.endTick, 0);
+						}
+					}
+					
+					/* example:
+					
+					bar 30 to 40 at 4 accelerando and 10 offset
+					
+					steps=4
+					step=1
+					domain=10
+					domain/steps=2.5
+					
+					forloop 1 to 3:
+					30.0 at 1 +10
+					32.5 at 2 +10
+					35.0 at 3 +10
+					37.5 at 4 +10
+					
+					final:
+					40 at 0 unless another tempochange or accelerando start here, then that will take precedence
+					 
+					*/
+				} else if (line.tempo != 0) {
 					treeChanges.put(line.startTick, line.tempo);
-					treeChanges.put(line.endTick, 0);
+					if(treeChanges.get(line.endTick) == null || treeChanges.get(line.endTick) == 0) {
+						treeChanges.put(line.endTick, 0);
+					}
 				}
 			}
 		}
@@ -1160,5 +1213,11 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	
 	public boolean isHideEdits() {
 		return hideEdits; 
+	}
+
+	public int getAbcTempoMPQ(long thumbTick) {
+		if (timingInfo == null) return 0;
+		int mpq = timingInfo.getAbcTempoMPQForTick(thumbTick);
+		return mpq;
 	}
 }

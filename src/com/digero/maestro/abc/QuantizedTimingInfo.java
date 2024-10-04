@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -131,7 +132,9 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 		};
 		combinedTempos.sort(rator);
 		calcNewMicros(combinedTempos);
-		for (SequenceDataCache.TempoEvent sourceEvent : combinedTempos) {
+		LinkedList<SequenceDataCache.TempoEvent> linker = new LinkedList<>(combinedTempos);
+		outer:for (int index = 0; index < linker.size(); index++) {
+			TempoEvent sourceEvent = linker.get(index);
 			long tick = 0;
 			long micros = 0;
 			double barNumber = 0;
@@ -149,7 +152,7 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 			
 			// Iterate over the existing events in reverse order
 			Iterator<TimingInfoEvent> reverseIterator = reversedEvents.iterator();
-			while (reverseIterator.hasNext()) {
+			inner:while (reverseIterator.hasNext()) {
 				TimingInfoEvent prev = reverseIterator.next();
 				assert prev.tick <= sourceEvent.tick;
 				long gridUnitTicks = prev.info.getMinNoteLengthTicks();
@@ -164,27 +167,46 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 				 * 
 				 * Since Mix Timing do not depend on bars to be on the grid, Mix Timings happily skip this. 
 				 */
+				final double epsilon = TimingInfo.MIN_TEMPO_BPM / (2.0d * TimingInfo.MAX_TEMPO_BPM);//0.005				
 				while (lengthTicks > 0 && !oddsAndEnds) {
 					double barNumberTmp = prev.barNumber + lengthTicks / ((double) prev.info.getBarLengthTicks());
 					double gridUnitsRemaining = ((Math.ceil(barNumberTmp) - barNumberTmp) * info.getBarLengthTicks())
 							/ info.getMinNoteLengthTicks();
-
-					final double epsilon = TimingInfo.MIN_TEMPO_BPM / (2.0 * TimingInfo.MAX_TEMPO_BPM);
+					
 					if (Math.abs(gridUnitsRemaining - Math.round(gridUnitsRemaining)) <= epsilon)
 						break; // Ok, the bar ends on the grid
 
 					lengthTicks -= gridUnitTicks;
 				}
 
-				if (lengthTicks <= 0) {
-					// The prev tempo event was quantized to zero-length; remove it
+				if (lengthTicks == 0L) {
+					// The prev tempo event was quantized to zero-length; remove something
+					if (oddsAndEnds) {
+						if (linker.size() > index) {
+							TempoEvent sourceEventNext = linker.get(index);
+							long lengthTicksNext = Util.floorGrid(sourceEventNext.tick - sourceEvent.tick, info.getMinNoteLengthTicks());
+							if (lengthTicksNext < info.getMinNoteLengthTicks()) {
+								//System.out.println(index+" GOTO outer. Skipping bpm "+MidiUtils.convertTempo(sourceEvent.tempoMPQ));
+								// Skip current event as it is sandwiched between two events
+								// and there is not room for grid cells on either side.
+								continue outer;
+							}
+						}
+						//System.out.println(index+" GOTO inner. Removed bpm "+prev.info.getTempoBPM());
+						// put the current event at prev events place.
+						// This gives more room for the event after current,
+						// and is far enough from prevs prev to be on grid,
+						// as prev is already checked.
+						sourceEvent.tick = prev.tick;
+					}
 					reverseIterator.remove();
-					continue;
+					continue inner;
 				}
 
 				tick = prev.tick + lengthTicks;
 				micros = prev.micros + MidiUtils.ticks2microsec(lengthTicks, prev.info.getTempoMPQ(), resolution);
 				barNumber = prev.barNumber + lengthTicks / ((double) prev.info.getBarLengthTicks());
+				//System.out.println(index+" GO ON. Adding bpm "+info.getTempoBPM());
 				break;
 			}
 
@@ -692,7 +714,6 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 
 	/**
 	 * Microseconds to tick. Does take export tempo change into consideration. Returns micros in the ABC song.
-	 * TODO: Should be division, not multiplication?
 	 */
 	public long tickToMicrosABC(long tick) {
 		TimingInfoEvent e = getTimingEventForTick(tick);
@@ -881,5 +902,19 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 		out += "Source contains "+getTimingInfoByTick().size()+" tempo sections.\n";
 		
 		return out;
+	}
+
+	/**
+	 * Only used by tempopanel
+	 * @param thumbTick
+	 * @return
+	 */
+	public int getAbcTempoMPQForTick(long thumbTick) {
+		TimingInfoEvent entry = getTimingEventForTick(thumbTick);
+		int mpq = 0;
+		if (entry != null) {
+			mpq = entry.info.getTempoMPQ();
+		}
+		return mpq;
 	}
 }
