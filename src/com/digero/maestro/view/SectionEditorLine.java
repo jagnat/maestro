@@ -49,28 +49,28 @@ class SectionEditorLine implements Comparable<SectionEditorLine> {
 	public int compareTo(SectionEditorLine that) {
 		if (that == null) throw new NullPointerException();
 		
-		String thisStr = this.barA[0].getText();
-		String thatStr = that.barA[0].getText();
+		String thisStr = this.barB[0].getText();
+		String thatStr = that.barB[0].getText();
 				
-		Integer thisNum = Integer.MAX_VALUE;
-		Integer thatNum = Integer.MAX_VALUE;
-		
-		if ("0".equals(thatStr)) {
-			thatStr = "10000000";// Bigger than a user would input, but smaller than max
-		}
-		if ("0".equals(thisStr)) {
-			thisStr = "10000000";
-		}
+		Float thisNum = Float.MAX_VALUE;
+		Float thatNum = Float.MAX_VALUE;
 		
 		try {
-			thisNum = Integer.parseInt(thisStr);
+			thisNum = Float.parseFloat(thisStr);
+		} catch (NumberFormatException e) {
+		
+		}
+		try {
+			thatNum = Float.parseFloat(thatStr);
 		} catch (NumberFormatException e) {
 			
 		}
-		try {
-			thatNum = Integer.parseInt(thatStr);
-		} catch (NumberFormatException e) {
-			
+		
+		if (thatNum == 0.0f) {
+			thatNum = 1000000f;// Bigger than a user would input, but smaller than max
+		}
+		if (thisNum == 0.0f) {
+			thisNum = 1000000f;
 		}
 		
 		return thisNum.compareTo(thatNum);
@@ -164,8 +164,8 @@ class SectionEditorLine implements Comparable<SectionEditorLine> {
 
 	protected void setTooltips() {
 		String enableTT = "<html><b> Enable a specific section edit. </b><br> Pressing APPLY will disable a section if it is bad.</html>";
-		String barATT = "<html><b> The start bar (inclusive) where this section edit starts. </b><br> Must be above 0 and greater than the 'From bar' of previous enabled section.</html>";
-		String barBTT = "<html><b> The end bar (inclusive) where this section edit end. </b><br> Must be equal or greater than the 'From bar'.</html>";
+		String barATT = "<html><b> The start bar (inclusive) where this section edit starts. </b><br> Must be above or equal to 0 and greater or equal than the 'From bar' of previous enabled section.</html>";
+		String barBTT = "<html><b> The end bar (exclusive) where this section edit end. </b><br> Must be greater than the 'From bar'.</html>";
 		String transposeTT = "<html><b> Transpose this section some octaves up or down. </b><br> Enter a positive or negative number. </html>";
 		String veloTT = "<html><b> Offset the volume of this section. </b><br> Experiment to find the number that does what you want. <br> Normally a number from -250 to 250. </html>";
 		String silentTT = "<html><b> Silence this section. </b></html>";
