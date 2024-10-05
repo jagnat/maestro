@@ -27,9 +27,12 @@ public class PolyphonyHistogram   {
 	private static int max = 0;
 	public static boolean enabled = true;// set to true to enable this system, set to false to save cpu power.
 	private static Listener<SequencerEvent> listener = new MyListener();
+	private static LotroSequencerWrapper abcSeq = null;
 
 	public static void setSequencer(LotroSequencerWrapper abcSequencer) {
-		abcSequencer.addChangeListener(listener);
+		if (abcSeq != null) abcSeq.removeChangeListener(listener);
+		if (abcSequencer != null) abcSequencer.addChangeListener(listener);
+		abcSeq = abcSequencer;
 	}
 	
 	static class MyListener implements Listener<SequencerEvent> {

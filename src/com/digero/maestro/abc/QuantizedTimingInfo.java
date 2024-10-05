@@ -64,7 +64,8 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 				useTripletTiming, abcSongBPM);
 		TimingInfo defaultOddTiming = new TimingInfo(source.getPrimaryTempoMPQ(), resolution, exportTempoFactor, meter,
 				!useTripletTiming, abcSongBPM);
-		timingInfoByTick.put(0L, new TimingInfoEvent(0, 0, 0, defaultTiming, defaultOddTiming));
+		TimingInfoEvent defaultEvent = new TimingInfoEvent(0, 0, 0, defaultTiming, defaultOddTiming);
+		timingInfoByTick.put(0L, defaultEvent);
 		// System.out.println("even"+defaultTiming.toString());
 		// System.out.println("odd"+defaultOddTiming.toString());
 
@@ -182,7 +183,7 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 				if (lengthTicks == 0L) {
 					// The prev tempo event was quantized to zero-length; remove something
 					if (oddsAndEnds) {
-						if (linker.size() > index) {
+						if (defaultEvent != prev && linker.size() > index) {
 							TempoEvent sourceEventNext = linker.get(index);
 							long lengthTicksNext = Util.floorGrid(sourceEventNext.tick - sourceEvent.tick, info.getMinNoteLengthTicks());
 							if (lengthTicksNext < info.getMinNoteLengthTicks()) {
@@ -862,7 +863,7 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 		return timingInfoByTick;
 	}
 
-	static class TimingInfoEvent {
+	public static class TimingInfoEvent {
 		public final long tick;
 		public final long micros;
 		public final double barNumber; // May start in the middle of a bar

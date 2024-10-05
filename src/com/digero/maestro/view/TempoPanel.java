@@ -7,6 +7,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -24,9 +25,11 @@ import com.digero.common.util.IDiscardable;
 import com.digero.common.util.Listener;
 import com.digero.common.util.Pair;
 import com.digero.common.view.ColorTable;
-import com.digero.maestro.abc.AbcConversionException;
 import com.digero.maestro.abc.AbcSong;
+import com.digero.maestro.abc.AbcSongEvent;
+import com.digero.maestro.abc.QuantizedTimingInfo.TimingInfoEvent;
 import com.digero.maestro.abc.TuneLine;
+import com.digero.maestro.abc.AbcSongEvent.AbcSongProperty;
 import com.digero.maestro.midi.FakeNoteEvent;
 import com.digero.maestro.midi.NoteEvent;
 import com.digero.maestro.midi.SequenceDataCache;
@@ -60,11 +63,16 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 	private final SequencerWrapper sequencer;
 	private final SequencerWrapper abcSequencer;
 	private boolean abcPreviewMode = false;
+	private volatile boolean refreshWanted = true;
+	
+	private int minBPM = 60;
+	private int maxBPM = 160;
 
 	private TempoNoteGraph tempoGraph;
 	private JLabel currentTempoLabel;
 
 	private AbcSong abcSong;
+	private Listener<AbcSongEvent> songListen;
 
 	public TempoPanel(SequenceInfo sequenceInfo, SequencerWrapper sequencer, SequencerWrapper abcSequencer,
 			AbcSong abcSong) {
@@ -86,21 +94,13 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 		this.sequencer = sequencer;
 		this.abcSequencer = abcSequencer;
 
-		int minBPM = 50;
-		int maxBPM = 200;
-		for (TempoEvent event : sequenceInfo.getDataCache().getTempoEvents().values()) {
-			int bpm = (int) Math.round(MidiUtils.convertTempo(event.tempoMPQ));
-			if (bpm < minBPM)
-				minBPM = bpm;
-			if (bpm > maxBPM)
-				maxBPM = bpm;
-		}
+		calcBPMBoundsMIDI();
 
 		JPanel gutter = new JPanel();
 		gutter.setOpaque(true);
 		gutter.setBackground(ColorTable.PANEL_HIGHLIGHT_OTHER_PART.get());
 
-		this.tempoGraph = new TempoNoteGraph(sequenceInfo, sequencer, minBPM, maxBPM);
+		this.tempoGraph = new TempoNoteGraph(sequenceInfo, sequencer);
 		tempoGraph.setBackground(ColorTable.GRAPH_BACKGROUND_DISABLED.get());
 		tempoGraph.setPreferredSize(new Dimension(tempoGraph.getPreferredSize().width, getPreferredSize().height));
 		tempoGraph.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, ColorTable.PANEL_BORDER.get()));
@@ -122,6 +122,41 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 
 		sequencer.addChangeListener(sequencerListener);
 		abcSequencer.addChangeListener(sequencerListener);
+		
+		songListen = new Listener<AbcSongEvent>() {
+			@Override
+			public void onEvent(AbcSongEvent e) {
+				if (e.getProperty().equals(AbcSongProperty.HIDE_EDITS_UPDATE) || e.getProperty().equals(AbcSongProperty.TUNE_EDIT)) {
+					refreshWanted = true;
+					if (tempoGraph != null) tempoGraph.repaint();
+				}
+			}
+		};
+		abcSong.addSongListener(songListen);
+	}
+
+	private void calcBPMBoundsMIDI() {
+		minBPM = 60;
+		maxBPM = 160;
+		for (TempoEvent event : sequenceInfo.getDataCache().getTempoEvents().values()) {
+			int bpm = (int) Math.round(MidiUtils.convertTempo(event.tempoMPQ));
+			if (bpm < minBPM)
+				minBPM = bpm;
+			if (bpm > maxBPM)
+				maxBPM = bpm;
+		}
+	}
+	
+	private void calcBPMBoundsABC(Collection<TimingInfoEvent> events3) {
+		minBPM = 60;
+		maxBPM = 160;
+		for (TimingInfoEvent event : events3) {
+			int bpm = event.info.getTempoBPM();
+			if (bpm < minBPM)
+				minBPM = bpm;
+			if (bpm > maxBPM)
+				maxBPM = bpm;
+		}
 	}
 	
 	@Override
@@ -131,6 +166,8 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 
 	@Override
 	public void discard() {
+		if (abcSong != null && songListen != null)
+			abcSong.removeSongListener(songListen);
 		if (sequencer != null)
 			sequencer.removeChangeListener(sequencerListener);
 		if (abcSequencer != null)
@@ -138,10 +175,12 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 	}
 
 	public void setAbcPreviewMode(boolean abcPreviewMode) {
+		refreshWanted = true;
 		if (this.abcPreviewMode != abcPreviewMode) {
 			this.abcPreviewMode = abcPreviewMode;
 			updateTempoLabel();
 		}
+		if (tempoGraph != null) tempoGraph.repaint();
 	}
 
 	public boolean isAbcPreviewMode() {
@@ -192,16 +231,11 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 	}
 
 	public class TempoNoteGraph extends NoteGraph {
-		private final int minBPM;
-		private final int maxBPM;
 		private List<NoteEvent> events;
 
-		public TempoNoteGraph(SequenceInfo sequenceInfo, SequencerWrapper sequencer, int minBPM, int maxBPM) {
+		public TempoNoteGraph(SequenceInfo sequenceInfo, SequencerWrapper sequencer) {
 			super(sequencer, sequenceInfo, Note.MIN.id - (Note.MIN.id + Note.MAX.id) / 4,
 					Note.MAX.id + (Note.MIN.id + Note.MAX.id) / 4);
-
-			this.minBPM = minBPM;
-			this.maxBPM = maxBPM;
 
 			setOctaveLinesVisible(false);
 			setNoteColor(ColorTable.NOTE_TEMPO);
@@ -213,23 +247,52 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 		private void recalcTempoEvents() {
 			// Make fake note events for every tempo event
 			events = new ArrayList<>();
-			TempoEvent prevEvent = null;
-			SequenceDataCache dataCache = sequenceInfo.getDataCache();
-			for (TempoEvent event : dataCache.getTempoEvents().values()) {
+			if (abcPreviewMode && !abcSong.isHideEdits()) {
+				Collection<TimingInfoEvent> events2 = abcSong.getTimingInfoByTick();
+				calcBPMBoundsABC(events2);
+				TimingInfoEvent prevEvent = null;
+				for (TimingInfoEvent event : events2) {
+					if (prevEvent != null) {
+						int id = tempoToNoteId(prevEvent.info.getTempoMPQ(), minBPM, maxBPM);
+						Note fakenote = Note.fromId(id);
+						assert fakenote != null : "If this happens then something is wrong with min/max BPM";
+						if (fakenote != null) events.add(new FakeNoteEvent(fakenote, prevEvent.tick, event.tick, sequenceInfo.getDataCache()));
+					} else {
+						//int bpm = (int) Math.round(MidiUtils.convertTempo(event.info.getTempoMPQ()));
+						//System.out.println(bpm);
+					}
+					prevEvent = event;
+				}
+				
+				if (prevEvent != null) {
+					int id = tempoToNoteId(prevEvent.info.getTempoMPQ(), minBPM, maxBPM);
+					events.add(
+							new FakeNoteEvent(Note.fromId(id), prevEvent.tick, sequenceInfo.getDataCache().getSongLengthTicks(), sequenceInfo.getDataCache()));
+				} else {
+					int id = tempoToNoteId(sequenceInfo.getPrimaryTempoMPQ(), minBPM, maxBPM);
+					events.add(new FakeNoteEvent(Note.fromId(id), 0, sequenceInfo.getDataCache().getSongLengthTicks(), sequenceInfo.getDataCache()));
+				}
+			} else {
+				TempoEvent prevEvent = null;
+				SequenceDataCache dataCache = sequenceInfo.getDataCache();
+				for (TempoEvent event : dataCache.getTempoEvents().values()) {
+					if (prevEvent != null) {
+						int id = tempoToNoteId(prevEvent.tempoMPQ, minBPM, maxBPM);
+						Note fakenote = Note.fromId(id);
+						assert fakenote != null : "If this happens then something is wrong with min/max BPM";
+						if (fakenote != null) events.add(new FakeNoteEvent(fakenote, prevEvent.tick, event.tick, dataCache));
+					}
+					prevEvent = event;
+				}
+	
 				if (prevEvent != null) {
 					int id = tempoToNoteId(prevEvent.tempoMPQ, minBPM, maxBPM);
-					events.add(new FakeNoteEvent(Note.fromId(id), prevEvent.tick, event.tick, dataCache));
+					events.add(
+							new FakeNoteEvent(Note.fromId(id), prevEvent.tick, dataCache.getSongLengthTicks(), dataCache));
+				} else {
+					int id = tempoToNoteId(sequenceInfo.getPrimaryTempoMPQ(), minBPM, maxBPM);
+					events.add(new FakeNoteEvent(Note.fromId(id), 0, dataCache.getSongLengthTicks(), dataCache));
 				}
-				prevEvent = event;
-			}
-
-			if (prevEvent != null) {
-				int id = tempoToNoteId(prevEvent.tempoMPQ, minBPM, maxBPM);
-				events.add(
-						new FakeNoteEvent(Note.fromId(id), prevEvent.tick, dataCache.getSongLengthTicks(), dataCache));
-			} else {
-				int id = tempoToNoteId(sequenceInfo.getPrimaryTempoMPQ(), minBPM, maxBPM);
-				events.add(new FakeNoteEvent(Note.fromId(id), 0, dataCache.getSongLengthTicks(), dataCache));
 			}
 		}
 
@@ -240,8 +303,10 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 
 		@Override
 		protected List<NoteEvent> getEvents() {
-			if (events == null)
+			if (events == null || refreshWanted) {
 				recalcTempoEvents();
+				refreshWanted = false;
+			}
 			return events;
 		}
 

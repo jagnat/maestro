@@ -46,6 +46,7 @@ import com.digero.common.util.Version;
 import com.digero.maestro.MaestroMain;
 import com.digero.maestro.abc.AbcPartEvent.AbcPartProperty;
 import com.digero.maestro.abc.AbcSongEvent.AbcSongProperty;
+import com.digero.maestro.abc.QuantizedTimingInfo.TimingInfoEvent;
 import com.digero.maestro.midi.SequenceDataCache;
 import com.digero.maestro.midi.SequenceInfo;
 import com.digero.maestro.midi.TrackInfo;
@@ -1130,6 +1131,8 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 						if(treeChanges.get(line.endTick) == null || treeChanges.get(line.endTick) == 0) {
 							treeChanges.put(line.endTick, 0);
 						}
+					} else {
+						System.err.println("Tune-editor accelerando so short that it was skipped.");
 					}
 					
 					/* example:
@@ -1203,6 +1206,11 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	}
 	
 	public QuantizedTimingInfo getQTM() {
+		try {
+			if (getAbcTimingInfo() == null) return null;
+		} catch (AbcConversionException e) {
+			return null;
+		}
 		return timingInfo;
 	}
 
@@ -1216,8 +1224,22 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	}
 
 	public int getAbcTempoMPQ(long thumbTick) {
-		if (timingInfo == null) return 0;
-		int mpq = timingInfo.getAbcTempoMPQForTick(thumbTick);
+		int mpq;
+		try {
+			if (getAbcTimingInfo() == null) return 0;
+			mpq = getAbcTimingInfo().getAbcTempoMPQForTick(thumbTick);
+		} catch (AbcConversionException e) {
+			return 0;
+		}
 		return mpq;
+	}
+
+	public Collection<TimingInfoEvent> getTimingInfoByTick() {
+		try {
+			if (getAbcTimingInfo() == null) return null;
+		} catch (AbcConversionException e) {
+			return null;
+		}
+		return timingInfo.getTimingInfoByTick().values();
 	}
 }
