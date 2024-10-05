@@ -247,8 +247,8 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 		private void recalcTempoEvents() {
 			// Make fake note events for every tempo event
 			events = new ArrayList<>();
-			if (abcPreviewMode && !abcSong.isHideEdits()) {
-				Collection<TimingInfoEvent> events2 = abcSong.getTimingInfoByTick();
+			Collection<TimingInfoEvent> events2 = abcSong.getTimingInfoByTick();
+			if (abcPreviewMode && !abcSong.isHideEdits() && events2 != null) {
 				calcBPMBoundsABC(events2);
 				TimingInfoEvent prevEvent = null;
 				for (TimingInfoEvent event : events2) {
@@ -275,6 +275,7 @@ public class TempoPanel extends JPanel implements IDiscardable, TableLayoutConst
 			} else {
 				TempoEvent prevEvent = null;
 				SequenceDataCache dataCache = sequenceInfo.getDataCache();
+				calcBPMBoundsMIDI();
 				for (TempoEvent event : dataCache.getTempoEvents().values()) {
 					if (prevEvent != null) {
 						int id = tempoToNoteId(prevEvent.tempoMPQ, minBPM, maxBPM);
