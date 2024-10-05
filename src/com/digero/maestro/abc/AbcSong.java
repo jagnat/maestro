@@ -1209,6 +1209,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		try {
 			if (getAbcTimingInfo() == null) return null;
 		} catch (AbcConversionException e) {
+			timingInfo = null;// To make sure at some point the user will see the exception.
 			return null;
 		}
 		return timingInfo;
@@ -1229,6 +1230,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 			if (getAbcTimingInfo() == null) return 0;
 			mpq = getAbcTimingInfo().getAbcTempoMPQForTick(thumbTick);
 		} catch (AbcConversionException e) {
+			timingInfo = null;// To make sure at some point the user will see the exception.
 			return 0;
 		}
 		return mpq;
@@ -1238,6 +1240,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		try {
 			if (getAbcTimingInfo() == null) return null;
 		} catch (AbcConversionException e) {
+			timingInfo = null;// To make sure at some point the user will see the exception.
 			return null;
 		}
 		return timingInfo.getTimingInfoByTick().values();
