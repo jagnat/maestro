@@ -20,6 +20,7 @@ import com.digero.common.midi.SequencerEvent;
 import com.digero.common.midi.SequencerWrapper;
 import com.digero.common.util.IDiscardable;
 import com.digero.common.util.Listener;
+import com.digero.common.util.Util;
 import com.digero.common.view.ColorTable;
 import com.digero.maestro.abc.AbcSong;
 import com.digero.maestro.abc.PolyphonyHistogram;
@@ -153,7 +154,7 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
 		if (PolyphonyHistogram.isDirty()) {
 			PolyphonyHistogram.sumUp(abcSong);
 		}
-		int notes = PolyphonyHistogram.get(sequencer.getThumbPosition());//TODO: Why midi seq here instead of abcseq.?
+		int notes = PolyphonyHistogram.get(abcSequencer.getThumbPosition());// Must be abcSeq, due to tuneeditor can change micros from this call
 		currentCountLabel.setText(notes + " notes (Peak: " + PolyphonyHistogram.max() + ")");
 	}
 
