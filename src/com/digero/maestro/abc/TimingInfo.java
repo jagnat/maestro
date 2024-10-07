@@ -103,8 +103,10 @@ public class TimingInfo {
 			}
 
 			if (meter.denominator > minNoteDivisor) {
+				if (minNoteDivisor == 0) throw new AbcConversionException("The tempo is too high."); 
+				int maximumDenominator = (1 << TimeSignature.floorLog2(minNoteDivisor));
 				throw new AbcConversionException(
-						"The denominator of the meter must be no greater than " + minNoteDivisor + " at this tempo");
+						"The denominator of the meter must be maximum " + maximumDenominator + " at this tempo. Either reduce the tempo or reduce the denominator.");
 			}
 
 			this.minNoteLengthTicks = minNoteTicks;

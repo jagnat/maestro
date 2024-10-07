@@ -186,7 +186,7 @@ public class TimeSignature implements MidiConstants {
 	/**
 	 * @return The floor of the binary logarithm for a 32 bit integer. -1 is returned if n is 0.
 	 */
-	private static byte floorLog2(int n) {
+	public static byte floorLog2(int n) {
 		byte pos = 0; // Position of the most significant bit
 		if (n >= (1 << 16)) {
 			n >>>= 16;
