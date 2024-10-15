@@ -5,6 +5,7 @@ import java.awt.Component;
 import java.awt.FlowLayout;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JList;
@@ -13,9 +14,13 @@ import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTree;
 import javax.swing.ListCellRenderer;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.ToolTipManager;
 import javax.swing.tree.TreePath;
 
+import com.digero.common.abctomidi.AbcToMidi;
+import com.digero.common.abctomidi.FileAndData;
 import com.digero.common.util.AbcFileTreeModel;
 import com.digero.common.util.AbcFileTreeModel.AbcSongFileNode;
 import com.digero.common.util.Util;
@@ -88,6 +93,30 @@ public class AbcPlaylistPanel extends JPanel {
 		addToPlaylistButton = new JButton(">>");
 		addToPlaylistButton.setEnabled(false);
 		fileTreeBottomControls.add(addToPlaylistButton);
+		addToPlaylistButton.addActionListener(e -> {
+			TreePath[] paths = abcFileTree.getSelectionPaths();
+        	List<FileAndData> data = new ArrayList<>();
+			new SwingWorker<Boolean, Boolean>() {
+				
+	            @Override
+	            protected Boolean doInBackground() throws Exception {
+	            	System.out.println("Running from EDT: " + SwingUtilities.isEventDispatchThread());
+	            	for (TreePath path : paths) {
+	            		AbcSongFileNode node = (AbcSongFileNode)path.getLastPathComponent();
+	            		File file = node.getFile();
+	            		data.add(new FileAndData(file, AbcToMidi.readLines(file)));
+	            		System.out.println(file.getPath());
+	            	}
+	            	return true;
+	            }
+	            
+	            @Override
+	            protected void done() {
+	            	System.out.println("Done and running from EDT thread: " + SwingUtilities.isEventDispatchThread());
+	            	System.out.println("Data sz: " + data.size());
+	            }
+			}.execute();
+		});
 		
 		leftPanel.add(fileTreeScrollPane, BorderLayout.CENTER);
 		leftPanel.add(fileTreeBottomControls, BorderLayout.SOUTH);
