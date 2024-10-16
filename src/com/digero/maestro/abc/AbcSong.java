@@ -512,6 +512,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 									// Like "&#11;".
 		Element songEle = (Element) doc.appendChild(doc.createElement("song"));
 		songEle.setAttribute("fileVersion", String.valueOf(SONG_FILE_VERSION));
+		songEle.setAttribute("maestroVersion", String.valueOf(MaestroMain.APP_VERSION));
 
 		SaveUtil.appendChildTextElement(songEle, "sourceFile", String.valueOf(sourceFile));
 		if (exportFile != null)
