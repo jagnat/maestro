@@ -361,6 +361,7 @@ public class PartPanel extends JPanel implements ICompileConstants, TableLayoutC
 			if (noteGraphScrollPane.getHorizontalScrollBar().getValueIsAdjusting()) {
 				return;
 			}
+			sequenceProgress = sequencer.getThumbPosition() / (double)(sequencer.getLength());
 			scrollToPosition(false);
 		});
 		
