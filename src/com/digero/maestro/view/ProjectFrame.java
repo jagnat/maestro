@@ -323,7 +323,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		loadIcons();
 
-		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+		//setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
@@ -1169,6 +1170,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			if (closeSong()) {
 				setVisible(false);
 				dispose();
+				System.exit(0);
 			}
 		});
 
