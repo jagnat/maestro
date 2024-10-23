@@ -54,6 +54,7 @@ Version 3.3.13
 - Tune-editor: Added sort button. Added add button. Added tabs to columns. Reduced default tunelines to 8 from 20.
 - Tempopanel will now indicate actual BPM when in abc preview mode. So tune-editors changes will be shown unless "Hide Edits" is active.
 - Fix histogram label could show wrong count at song position when tune-editor had changed song tempos.
+- Fix for Java process not exiting when Maestro is quit using File -> Exit
 
 Version 3.3.8
 - Fix notes were missing
