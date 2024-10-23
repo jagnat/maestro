@@ -64,6 +64,7 @@ import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
@@ -378,7 +379,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 		titleLabel = new JLabel(" ");
 		Font f = titleLabel.getFont();
-		titleLabel.setFont(f.deriveFont(Font.BOLD, 16));
+		titleLabel.setFont(f.deriveFont(Font.BOLD, f.getSize2D() * 1.3f));
 		titleLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 
 		trackListPanel = new TrackListPanel(sequencer, this);
@@ -590,7 +591,9 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		String artist = abcInfo.getComposer_MaybeNull();
 
 		if (artist != null) {
-			titleLabel.setText("<html>" + title + "&ensp;<span style='font-size:12pt; font-weight:normal'>" + artist
+			titleLabel.setText("<html>" + title + "&ensp;<span style='font-size:"
+					+ UIManager.getFont("defaultFont").getSize()
+					+ "pt; font-weight:normal'>" + artist
 					+ "</span></html>");
 		} else {
 			titleLabel.setText(title);
