@@ -42,7 +42,8 @@ public class AbcPlaylistPanel extends JPanel {
 	private JButton addToPlaylistButton;
 	
 	// Right
-	private JList<AbcSongStub> playlistList;
+//	private JList<AbcSongStub> playlistList;
+	private PlaylistListPanel playlistList;
 	private JScrollPane playlistScrollPane;
 	private JPanel playlistBottomControls;
 	
@@ -114,6 +115,10 @@ public class AbcPlaylistPanel extends JPanel {
 	            protected void done() {
 	            	System.out.println("Done and running from EDT thread: " + SwingUtilities.isEventDispatchThread());
 	            	System.out.println("Data sz: " + data.size());
+	            	for (FileAndData dataItem : data) {
+	            		playlistList.addItem(new PlaylistItem(dataItem.file.getName()));
+	            	}
+	            	playlistList.updatePlaylist();
 	            }
 			}.execute();
 		});
@@ -121,10 +126,14 @@ public class AbcPlaylistPanel extends JPanel {
 		leftPanel.add(fileTreeScrollPane, BorderLayout.CENTER);
 		leftPanel.add(fileTreeBottomControls, BorderLayout.SOUTH);
 		
-		playlistList = new JList<AbcSongStub>();
+//		playlistList = new JList<AbcSongStub>();
 //		playlistList.setCellRenderer();
+		playlistList = new PlaylistListPanel();
+		playlistList.addItem(new PlaylistItem("TEST"));
 		playlistScrollPane = new JScrollPane();
+		playlistScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
 		playlistScrollPane.add(playlistList);
+		playlistList.updatePlaylist();
 		
 		playlistBottomControls = new JPanel(new FlowLayout());
 		playlistBottomControls.add(new JButton("test"));
