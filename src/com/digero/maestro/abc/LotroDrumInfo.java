@@ -73,6 +73,7 @@ public class LotroDrumInfo implements Comparable<LotroDrumInfo> {
 		add(Note.Gs5, "Xtra Bass March");
 		add(Note.A5, "Xtra Bass Boomy");
 		add(Note.As5, "Xtra Snare Tribal");
+		add(Note.B5, "Xtra Clap");
 		// add(Note.A6, "Xtra Reverse Cymbal");
 
 		int noteCount = Note.MAX_PLAYABLE.id - Note.MIN_PLAYABLE.id + 1 + LotroCombiDrumInfo.combiNoteCount;

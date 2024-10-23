@@ -8,7 +8,7 @@ import com.digero.maestro.midi.MidiNoteEvent;
 
 public class LotroCombiDrumInfo {
 
-	public static Note maxCombi = Note.As5;
+	public static Note maxCombi = Note.B5;
 	public static Note minCombi = Note.Cs5;
 	public static Map<Note, Note> firstNotes = new EnumMap<>(Note.class);
 	public static Map<Note, Note> secondNotes = new EnumMap<>(Note.class);
@@ -60,6 +60,10 @@ public class LotroCombiDrumInfo {
 		// Added Xtra Reverse Cymbal: Long Rattle (A) + Tambourine (^A,) (Aifel)
 		// firstNotes.put(Note.A6, Note.A4);
 		// secondNotes.put(Note.A6, Note.As2);
+		
+		// Added Xtra Snare Clap (Elamond)
+		firstNotes.put(Note.B5, Note.E2);
+		secondNotes.put(Note.B5, Note.Ds3);
 
 		combiNoteCount = firstNotes.size();
 
