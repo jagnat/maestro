@@ -1169,6 +1169,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			if (closeSong()) {
 				setVisible(false);
 				dispose();
+				System.exit(0);
 			}
 		});
 
