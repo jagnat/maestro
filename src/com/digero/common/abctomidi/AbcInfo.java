@@ -42,6 +42,7 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 	private String songTitle = null;
 	private String songComposer = null;
 	private String songTranscriber = null;
+	private String songDuration = null;
 	private String genre = null;
 	private String mood = null;
 	private TimeSignature timeSignature = TimeSignature.FOUR_FOUR;
@@ -56,6 +57,7 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 		songTitle = null;
 		songComposer = null;
 		songTranscriber = null;
+		songDuration = null;
 		hasTriplets = false;
 		hasTripletsSet = false;
 		hasMixTimings = true;
@@ -143,6 +145,10 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 	public boolean hasMixTimings() {
 		return hasMixTimings;
 	}
+	
+	public String getSongDurationStr() {
+		return songDuration;
+	}
 
 	public int getPartNumber(int trackIndex) {
 		AbcInfo.PartInfo info = partInfoByIndex.get(trackIndex);
@@ -156,6 +162,10 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 		if (info == null)
 			return LotroInstrument.DEFAULT_INSTRUMENT;
 		return info.instrument;
+	}
+	
+	public int getPartCount() {
+		return partInfoByIndex.size();
 	}
 
 	public String getPartName(int trackIndex) {
@@ -262,12 +272,14 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 			case MIX_TIMINGS:
 				hasMixTimings = Boolean.parseBoolean(value.trim());
 				break;
+			case SONG_DURATION:
+				songDuration = value.trim();
+				break;
 			case ABC_CREATOR:
 			case ABC_VERSION:
 			case PART_NAME:
 			case MADE_FOR:
 			case EXPORT_TIMESTAMP:
-			case SONG_DURATION:
 			case TEMPO:
 			case DELETE_MINIMAL_NOTES:
 			case SKIP_SILENCE_AT_START:

@@ -26,6 +26,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.tree.TreePath;
 
+import com.digero.common.abctomidi.AbcInfo;
 import com.digero.common.abctomidi.AbcToMidi;
 import com.digero.common.abctomidi.FileAndData;
 import com.digero.common.util.AbcFileTreeModel;
@@ -49,8 +50,6 @@ public class AbcPlaylistPanel extends JPanel {
 	private JButton addToPlaylistButton;
 	
 	// Right
-//	private JList<AbcSongStub> playlistList;
-	private PlaylistListPanel playlistList;
 	private JTable playlistTable;
 	private DefaultTableModel playlistTableModel;
 	private JScrollPane playlistScrollPane;
@@ -106,7 +105,7 @@ public class AbcPlaylistPanel extends JPanel {
 		fileTreeBottomControls.add(addToPlaylistButton);
 		addToPlaylistButton.addActionListener(e -> {
 			TreePath[] paths = abcFileTree.getSelectionPaths();
-        	List<FileAndData> data = new ArrayList<>();
+        	List<AbcInfo> data = new ArrayList<>();
 			new SwingWorker<Boolean, Boolean>() {
 				
 	            @Override
@@ -115,7 +114,9 @@ public class AbcPlaylistPanel extends JPanel {
 	            	for (TreePath path : paths) {
 	            		AbcSongFileNode node = (AbcSongFileNode)path.getLastPathComponent();
 	            		File file = node.getFile();
-	            		data.add(new FileAndData(file, AbcToMidi.readLines(file)));
+	            		List<FileAndData> fad = new ArrayList<FileAndData>();
+	            		fad.add(new FileAndData(file, AbcToMidi.readLines(file)));
+	            		data.add(AbcToMidi.parseAbcMetadata(fad));
 	            		System.out.println(file.getPath());
 	            	}
 	            	return true;
@@ -125,9 +126,9 @@ public class AbcPlaylistPanel extends JPanel {
 	            protected void done() {
 	            	System.out.println("Done and running from EDT thread: " + SwingUtilities.isEventDispatchThread());
 	            	System.out.println("Data sz: " + data.size());
-	            	for (FileAndData dataItem : data) {
+	            	for (AbcInfo info : data) {
 //	            		playlistList.addItem(new PlaylistItem(dataItem.file.getName()));
-	            		playlistTableModel.addRow(new String[] {dataItem.file.getName(), "8", "3:40"});
+	            		playlistTableModel.addRow(new String[] {info.getTitle(), ""+info.getPartCount(), info.getSongDurationStr()});
 	            	}
 //	            	playlistList.updatePlaylist();
 	            }
@@ -144,15 +145,14 @@ public class AbcPlaylistPanel extends JPanel {
 		leftPanel.add(abcBrowserLabel, BorderLayout.NORTH);
 		
 		playlistTableModel = new DefaultTableModel() {
+			private static final long serialVersionUID = -3042552892183194823L;
+
 			@Override
 			public boolean isCellEditable(int rI, int cI) {
 				return false;
 			}
 		};
 		playlistTableModel.setColumnIdentifiers(new String[] {"Song Name", "Part Count", "Duration"});
-//		playlistTableModel.addRow(new String[]{"Song 1", "asdf", "ghjkl"});
-//		playlistTableModel.addRow(new String[]{"Song 2", "asdf", "ghjkl"});
-//		playlistTableModel.addRow(new String[]{"Song 3", "asdf", "ghjkl"});
 		playlistTable = new JTable(playlistTableModel);
 		playlistTable.setFocusable(false);
 		playlistTable.setModel(playlistTableModel);
@@ -178,7 +178,6 @@ public class AbcPlaylistPanel extends JPanel {
 		f = abcPlaylistLabel.getFont();
 		abcPlaylistLabel.setFont(f.deriveFont(Font.BOLD, f.getSize2D()));
 		abcPlaylistLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
-//		abcPlaylistLabel.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
 		
 		rightPanel.add(playlistScrollPane, BorderLayout.CENTER);
 		rightPanel.add(playlistBottomControls, BorderLayout.SOUTH);

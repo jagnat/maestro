@@ -912,6 +912,62 @@ public class AbcToMidi {
 
 		return trackNumber;
 	}
+	
+	public static AbcInfo parseAbcMetadata(List<FileAndData> abc) throws ParseException {
+		AbcInfo abcInfo = new AbcInfo();
+		int trackNumber = 0;
+		
+		for (FileAndData fileAndData : abc) {
+			String fileName = fileAndData.file.getName();
+			int lineNumber = 0;
+			int partStartLine = 0;
+			
+			for (String line : fileAndData.lines) {
+				lineNumber++;
+				
+				Matcher xInfoMatcher = XINFO_PATTERN.matcher(line);
+				if (xInfoMatcher.matches()) {
+					AbcField field = AbcField.fromString(xInfoMatcher.group(XINFO_FIELD) + xInfoMatcher.group(XINFO_COLON));
+					if (field == AbcField.TEMPO) {
+						continue;
+					} else if (field != null) {
+						String value = xInfoMatcher.group(XINFO_VALUE).trim();
+						abcInfo.setExtendedMetadata(field, value);
+						if (field == AbcField.PART_NAME) {
+							abcInfo.setPartName(trackNumber, value, true);
+						}
+					}
+					continue;
+				}
+				
+				Matcher infoMatcher = INFO_PATTERN.matcher(line);
+				if (infoMatcher.matches()) {
+					char type = Character.toUpperCase(infoMatcher.group(INFO_TYPE).charAt(0));
+					String value = infoMatcher.group(INFO_VALUE).trim();
+
+					abcInfo.setMetadata(type, value);
+					
+					try {
+						switch(type) {
+						case 'X': // New part
+							trackNumber++;
+							abcInfo.setPartNumber(trackNumber,  Integer.parseInt(value));
+							abcInfo.setPartStartLine(trackNumber, lineNumber);
+							break;
+						case 'T':
+							abcInfo.setPartName(trackNumber, value, false);
+							break;
+						default:
+							break;
+						}
+					} catch (IllegalArgumentException e) {
+							throw new ParseException(e.getMessage(), fileName, lineNumber, infoMatcher.start(INFO_VALUE));
+					}
+				}
+			}
+		}
+		return abcInfo;
+	}
 
 	// From http://abcnotation.com/abc2mtex/abc.txt:
 	//
