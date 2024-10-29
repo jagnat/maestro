@@ -137,6 +137,7 @@ public class AbcToMidi {
 		for (FileAndData fileAndData : filesData) {
 			track = null;
 			String fileName = fileAndData.file.getName();
+			abcInfo.addSourceFile(fileAndData.file);
 			int lineNumber = 0;
 			int partStartLine = 0;
 			for (String line : fileAndData.lines) {
@@ -913,12 +914,14 @@ public class AbcToMidi {
 		return trackNumber;
 	}
 	
+	// Used for ABC Player playlist to read metadata only from ABC to populate playlist view
 	public static AbcInfo parseAbcMetadata(List<FileAndData> abc) throws ParseException {
 		AbcInfo abcInfo = new AbcInfo();
 		int trackNumber = 0;
 		
 		for (FileAndData fileAndData : abc) {
 			String fileName = fileAndData.file.getName();
+			abcInfo.addSourceFile(fileAndData.file);
 			int lineNumber = 0;
 			int partStartLine = 0;
 			

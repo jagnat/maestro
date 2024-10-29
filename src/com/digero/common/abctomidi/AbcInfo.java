@@ -1,6 +1,9 @@
 package com.digero.common.abctomidi;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -29,6 +32,7 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 	}
 
 	private boolean empty = true;
+	private List<File> abcFiles;
 	private String titlePrefix;
 	private Map<Character, String> metadata = new HashMap<>();
 	private NavigableMap<Long, Integer> bars = new TreeMap<>();
@@ -50,6 +54,7 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 
 	void reset() {
 		empty = true;
+		abcFiles = null;
 		titlePrefix = null;
 		metadata.clear();
 		bars.clear();
@@ -63,6 +68,17 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 		hasMixTimings = true;
 		timeSignature = TimeSignature.FOUR_FOUR;
 		keySignature = KeySignature.C_MAJOR;
+	}
+	
+	public List<File> getSourceFiles() {
+		return abcFiles;
+	}
+	
+	public void addSourceFile(File file) {
+		if (abcFiles == null) {
+			abcFiles = new ArrayList<File>();
+		}
+		abcFiles.add(file);
 	}
 
 	public String getComposer() {

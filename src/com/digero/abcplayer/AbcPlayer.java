@@ -70,6 +70,7 @@ import javax.swing.event.MenuListener;
 
 import com.digero.abcplayer.view.AbcPlayerSettingsDialog;
 import com.digero.abcplayer.view.AbcPlaylistPanel;
+import com.digero.abcplayer.view.AbcPlaylistPanel.PlaylistEvent;
 import com.digero.abcplayer.view.HighlightAbcNotesFrame;
 import com.digero.abcplayer.view.TrackListPanel;
 import com.digero.abcplayer.view.TrackListPanelCallback;
@@ -85,6 +86,7 @@ import com.digero.common.midi.SequencerWrapper;
 import com.digero.common.midi.VolumeTransceiver;
 import com.digero.common.util.ExtensionFileFilter;
 import com.digero.common.util.FileFilterDropListener;
+import com.digero.common.util.Listener;
 import com.digero.common.util.LotroParseException;
 import com.digero.common.util.ParseException;
 import com.digero.common.util.Themer;
@@ -495,6 +497,17 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		songViewPanel.add(trackListScroller, "1, 2");
 		
 		playlistViewPanel = new AbcPlaylistPanel();
+		playlistViewPanel.setPlaylistListener(new Listener<PlaylistEvent>(){
+			@Override
+			public void onEvent(PlaylistEvent e) {
+				switch(e.getType()) {
+				case PLAY:
+					AbcInfo inf = (AbcInfo)(e.getSource());
+					SwingUtilities.invokeLater(new OpenSongRunnable(false, inf.getSourceFiles().get(0)));
+					break;
+				}
+			}
+		});
 
 		mainCardPanelLayout = new CardLayout();
 		mainCardPanel = new JPanel(mainCardPanelLayout);
