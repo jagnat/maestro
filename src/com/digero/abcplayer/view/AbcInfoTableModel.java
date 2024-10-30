@@ -10,6 +10,8 @@ public class AbcInfoTableModel extends AbstractTableModel {
 
 	private static final long serialVersionUID = -7672178885656979023L;
 	
+	private static final int COL_COUNT = 5;
+	
 	private ArrayList<AbcInfo> data = new ArrayList<AbcInfo>();
 	
 	public void addRow(AbcInfo inf) {
@@ -19,7 +21,7 @@ public class AbcInfoTableModel extends AbstractTableModel {
 	
 	@Override
 	public int getColumnCount() {
-		return 5;
+		return COL_COUNT;
 	}
 
 	@Override
@@ -59,6 +61,11 @@ public class AbcInfoTableModel extends AbstractTableModel {
 	
 	public AbcInfo getAbcInfoAt(int rowIndex) {
 		return data.get(rowIndex);
+	}
+	
+	public void removeRow(int rowIdx) {
+		data.remove(rowIdx);
+		fireTableRowsDeleted(rowIdx, rowIdx);
 	}
 
 }
