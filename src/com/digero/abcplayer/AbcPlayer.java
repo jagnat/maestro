@@ -501,10 +501,13 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 			@Override
 			public void onEvent(PlaylistEvent e) {
 				switch(e.getType()) {
-				case PLAY:
+				case PLAY_FROM_ABCINFO:
 					AbcInfo inf = (AbcInfo)(e.getSource());
 					SwingUtilities.invokeLater(new OpenSongRunnable(false, inf.getSourceFiles().get(0)));
 					break;
+				case PLAY_FROM_FILE:
+					File f = (File)(e.getSource());
+					SwingUtilities.invokeLater(new OpenSongRunnable(false, f));
 				}
 			}
 		});

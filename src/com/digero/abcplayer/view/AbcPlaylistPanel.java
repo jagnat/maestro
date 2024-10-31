@@ -51,7 +51,7 @@ public class AbcPlaylistPanel extends JPanel {
 		private static final long serialVersionUID = 4331827283417203704L;
 		
 		public enum PlaylistEventType {
-			PLAY,
+			PLAY_FROM_ABCINFO, PLAY_FROM_FILE
 		}
 		
 		private final PlaylistEventType type;
@@ -73,6 +73,9 @@ public class AbcPlaylistPanel extends JPanel {
 	
 	// Left
 	private JTree abcFileTree;
+	// Set with row location of menu right click in mouse listener
+	// for menu item action listeners
+	private int menuRowIdx = -1;
 	private AbcFileTreeModel abcFileTreeModel;
 	private JScrollPane fileTreeScrollPane;
 	private JPanel fileTreeBottomControls;
@@ -140,7 +143,11 @@ public class AbcPlaylistPanel extends JPanel {
 		
 		JMenuItem fileTreePlay = new JMenuItem("Play");
 		fileTreePlay.addActionListener(e -> {
-			System.out.println("Play");
+//			 AbcInfo info = tableModel.getAbcInfoAt(playlistTable.getSelectedRow());
+			AbcSongFileNode f = (AbcSongFileNode)(abcFileTree.getPathForRow(menuRowIdx).getLastPathComponent());
+			 if (parentListener != null) {
+				 parentListener.onEvent(new PlaylistEvent(f.getFile(), PlaylistEvent.PlaylistEventType.PLAY_FROM_FILE));
+			 }
 		});
 		fileTreePopup.add(fileTreePlay);
 		
@@ -157,12 +164,15 @@ public class AbcPlaylistPanel extends JPanel {
 			
 			public void doPopupCheck(MouseEvent e) {
 				if (e.isPopupTrigger()) {
-					int idx = abcFileTree.getClosestRowForLocation(e.getX(), e.getY());
-					if (idx != -1) {
+					menuRowIdx = abcFileTree.getClosestRowForLocation(e.getX(), e.getY());
+					if (menuRowIdx != -1) {
 						abcFileTree.getSelectionRows();
-						if (!IntStream.of(abcFileTree.getSelectionRows()).anyMatch(x -> x == idx)) {
-							abcFileTree.setSelectionRows(new int[] {idx});
+						if (!IntStream.of(abcFileTree.getSelectionRows()).anyMatch(x -> x == menuRowIdx)) {
+							abcFileTree.setSelectionRows(new int[] {menuRowIdx});
 						}
+						TreePath path = abcFileTree.getPathForRow(menuRowIdx);
+						AbcSongFileNode f = (AbcSongFileNode)path.getLastPathComponent();
+						fileTreePlay.setEnabled(!f.getFile().isDirectory());
 						fileTreePopup.show(e.getComponent(), e.getX(), e.getY());	
 					}
 				}
@@ -196,10 +206,9 @@ public class AbcPlaylistPanel extends JPanel {
 		contentPopupMenu = new JPopupMenu();
 		JMenuItem playItem = new JMenuItem("Play");
 		playItem.addActionListener(e -> {
-			 System.out.println("playing " + playlistTable.getSelectedRow());
 			 AbcInfo info = tableModel.getAbcInfoAt(playlistTable.getSelectedRow());
 			 if (parentListener != null) {
-				 parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY));
+				 parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
 			 }
 		});
 		contentPopupMenu.add(playItem);
