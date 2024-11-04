@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 import com.digero.common.abc.Dynamics;
 import com.digero.common.util.IDiscardable;
@@ -38,6 +39,7 @@ public class TrackVolumeBar extends JPanel implements IDiscardable {
 	public static final int WIDTH = PTR_WIDTH * 5;
 
 	private volatile List<ActionListener> actionListeners;
+	private Object actionListenersMutex = new Object();
 
 	private static final int VALUE_GUTTER = 16;
 	private static final int STEP_SIZE = 16;
@@ -65,10 +67,12 @@ public class TrackVolumeBar extends JPanel implements IDiscardable {
 	}
 
 	@Override
-	public synchronized void discard() {
-		if (actionListeners != null) {
-			actionListeners.clear();
-			actionListeners = null;
+	public void discard() {
+		synchronized (actionListenersMutex) {
+			if (actionListeners != null) {
+				actionListeners.clear();
+				actionListeners = null;
+			}
 		}
 	}
 
@@ -87,28 +91,36 @@ public class TrackVolumeBar extends JPanel implements IDiscardable {
 		return mouseDown;
 	}
 
-	public synchronized void addActionListener(ActionListener trackVolumeListener) {
-		// All actionlistener access is synchronized on 'this' object.
+	public void addActionListener(ActionListener trackVolumeListener) {
+		// All actionlistener access is synchronized on 'actionListenersMutex' object.
 		// reason is I had some:
 		// Exception in thread "AWT-EventQueue-0" java.util.ConcurrentModificationException
 		// The sources was handleDrag and endDrag
-		if (actionListeners == null)
-			actionListeners = new ArrayList<>();
-
-		if (!actionListeners.contains(trackVolumeListener))
-			actionListeners.add(trackVolumeListener);
+		synchronized (actionListenersMutex) {
+			if (actionListeners == null)
+				actionListeners = new ArrayList<>();
+	
+			if (!actionListeners.contains(trackVolumeListener))
+				actionListeners.add(trackVolumeListener);
+		}
 	}
 
-	public synchronized void removeActionListener(ActionListener trackVolumeListener) {
-		if (actionListeners != null)
-			actionListeners.remove(trackVolumeListener);
+	public void removeActionListener(ActionListener trackVolumeListener) {
+		synchronized (actionListenersMutex) {
+			if (actionListeners != null)
+				actionListeners.remove(trackVolumeListener);
+		}
 	}
 
-	protected synchronized void fireActionEvent() {
-		if (actionListeners != null) {
-			ActionEvent e = new ActionEvent(this, ActionEvent.ACTION_FIRST, null);
-			for (ActionListener l : actionListeners)
-				l.actionPerformed(e);
+	protected void fireActionEvent() {
+		synchronized (actionListenersMutex) {
+			if (actionListeners != null) {
+				ActionEvent e = new ActionEvent(this, ActionEvent.ACTION_FIRST, null);
+				for (ActionListener l : actionListeners) {
+					// These listeners do swing operations, so lets make sure they are called with AWT thread:
+					SwingUtilities.invokeLater(() -> {l.actionPerformed(e);});
+				}
+			}
 		}
 	}
 

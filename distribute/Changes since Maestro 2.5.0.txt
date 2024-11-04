@@ -47,6 +47,7 @@ Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
 Version 3.3.15
 - Add a new Xtra Clap drum sound
+- Fix that cowbells would count as 1.0s duration in histogram. They are 0.247s and 0.291s.
 
 Version 3.3.14
 - When using HZoom slider, and song position is in view, then keep it centered in view.
