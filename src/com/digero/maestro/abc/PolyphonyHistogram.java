@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.TreeMap;
 
+import com.digero.common.abc.LotroInstrument;
 import com.digero.common.abc.LotroInstrumentSampleDuration;
 import com.digero.common.midi.ITempoCache;
 import com.digero.common.midi.LotroSequencerWrapper;
@@ -97,7 +98,11 @@ public class PolyphonyHistogram   {
 						end = Math.min(endMax, end);
 					}				
 				} else {
-					Double seconds = LotroInstrumentSampleDuration.getDura(part.getInstrument().friendlyName, event.note.id);
+					int pitch = event.note.id;
+					if (part.getInstrument() == LotroInstrument.BASIC_COWBELL || part.getInstrument() == LotroInstrument.MOOR_COWBELL) {
+						pitch = 71;
+					}
+					Double seconds = LotroInstrumentSampleDuration.getDura(part.getInstrument().friendlyName, pitch);
 					if (seconds == null) {
 						System.err.println("Error: LotroInstrumentSampleDuration has no "+part.getInstrument().friendlyName+" with note "+event.note.id);
 						seconds = 1.0d;

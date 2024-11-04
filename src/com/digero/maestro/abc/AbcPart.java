@@ -766,7 +766,11 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 						} else {
 							double dura = 1.0;
 							try {
-								dura = LotroInstrumentSampleDuration.getDura(getInstrument().friendlyName, tone.id);								
+								int pitch = tone.id;
+								if (getInstrument() == LotroInstrument.BASIC_COWBELL || getInstrument() == LotroInstrument.MOOR_COWBELL) {
+									pitch = 71;
+								}
+								dura = LotroInstrumentSampleDuration.getDura(getInstrument().friendlyName, pitch);								
 							} catch (IOException | NullPointerException e) {
 								// will give null pointer if tone is not contained in the map, in conversion from Double to double.
 							}
