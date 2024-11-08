@@ -171,10 +171,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			TreeMap<Long, PartSection> longtree = new TreeMap<>();
 			for (Entry<Float, PartSection> entry : section.entrySet()) {
 				PartSection ps = entry.getValue();
-				
-				assert ps.startTick == -1L;
-				assert ps.endTick == -1L;
-				
+								
 				ps.startTick = (long)(barLengthTicks * ps.startBar);
 				ps.endTick   = (long)(barLengthTicks * ps.endBar);
 				
