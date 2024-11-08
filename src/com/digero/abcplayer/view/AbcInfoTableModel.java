@@ -1,6 +1,7 @@
 package com.digero.abcplayer.view;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -16,6 +17,32 @@ public class AbcInfoTableModel extends AbstractTableModel {
 	
 	public void addRow(AbcInfo inf) {
 		data.add(inf);
+		fireTableRowsInserted(0, getRowCount());
+	}
+	
+	public void insertRow(AbcInfo inf, int idx) {
+		data.add(idx, inf);
+		fireTableRowsInserted(idx, getRowCount());
+	}
+	
+	public void moveRows(int rowsToMove[], int toIdx) {
+		int effectiveInsertIdx = toIdx;
+		ArrayList<AbcInfo> tmpSwap = new ArrayList<AbcInfo>();
+		Arrays.sort(rowsToMove);
+
+		for (int i = rowsToMove.length - 1; i >= 0; i--) {
+			int r = rowsToMove[i];
+			if (r < toIdx) {
+				effectiveInsertIdx--;
+			}
+			tmpSwap.add(data.get(r));
+			data.remove(r);
+		}
+		
+		for (int i = 0; i < tmpSwap.size(); i++) {
+			data.add(effectiveInsertIdx, tmpSwap.get(i));
+		}
+		
 		fireTableRowsInserted(0, getRowCount());
 	}
 	

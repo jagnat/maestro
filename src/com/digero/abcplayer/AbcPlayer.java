@@ -200,6 +200,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 	private boolean useLotroInstruments = true;
 
 	private FileFilterDropListener dropListener;
+	private DropTarget mainWindowDropTarget;
 
 	private JPanel content;
 
@@ -283,11 +284,12 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 		dropListener = new FileFilterDropListener(true, "abc", "txt");
 		dropListener.addActionListener(e -> {
+			System.out.println("Drop target listener");
 			FileFilterDropListener l = (FileFilterDropListener) e.getSource();
 			boolean append = (l.getDropEvent().getDropAction() == DnDConstants.ACTION_COPY);
 			SwingUtilities.invokeLater(new OpenSongRunnable(append, l.getDroppedFiles().toArray(new File[0])));
 		});
-		new DropTarget(this, dropListener);
+		mainWindowDropTarget = new DropTarget(this, dropListener);
 
 		if (isVolumeSupportedSafe()) {
 			volumeTransceiver = null;
@@ -431,6 +433,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		playlistToggleButton.setMargin(playControlButtonMargin);
 		playlistToggleButton.addActionListener(e -> {
 			showPlaylistView = !showPlaylistView;
+			// Drop is handled by playlist table if in playlist view
+			AbcPlayer.this.setDropTarget(showPlaylistView? null : mainWindowDropTarget);
 			mainCardPanelLayout.show(mainCardPanel, showPlaylistView? "playlist" : "song");
 		});
 
