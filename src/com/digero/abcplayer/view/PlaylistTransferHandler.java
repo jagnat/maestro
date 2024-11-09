@@ -70,6 +70,9 @@ public class PlaylistTransferHandler extends TransferHandler {
 		            @Override
 		            protected Boolean doInBackground() throws Exception {
 		            	for (File file : files) {
+		            		if (file.isDirectory()) {
+		            			continue;
+		            		}
 		            		List<FileAndData> fad = new ArrayList<FileAndData>();
 		            		fad.add(new FileAndData(file, AbcToMidi.readLines(file)));
 		            		data.add(AbcToMidi.parseAbcMetadata(fad));

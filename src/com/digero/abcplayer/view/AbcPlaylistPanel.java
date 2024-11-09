@@ -16,7 +16,6 @@ import java.util.EventObject;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import javax.activation.DataHandler;
 import javax.swing.BorderFactory;
 import javax.swing.DropMode;
 import javax.swing.JButton;
