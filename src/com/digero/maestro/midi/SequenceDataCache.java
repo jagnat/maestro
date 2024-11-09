@@ -566,7 +566,7 @@ public class SequenceDataCache implements MidiConstants, ITempoCache, IBarNumber
 		public static final TempoEvent DEFAULT_TEMPO = new TempoEvent(DEFAULT_TEMPO_MPQ, 0, 0);
 
 		public final int tempoMPQ;
-		public long tick;
+		public final long tick;
 		public long micros;
 		
 		@Override

@@ -135,13 +135,13 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 		calcNewMicros(combinedTempos);
 		LinkedList<SequenceDataCache.TempoEvent> linker = new LinkedList<>(combinedTempos);
 		outer:for (int index = 0; index < linker.size(); index++) {
-			TempoEvent sourceEvent = linker.get(index);
-			long tick = 0;
-			long micros = 0;
+			TempoEvent currMidiTempoEvent = linker.get(index);
+			long tick = currMidiTempoEvent.tick;
+			long micros = 0L;
 			double barNumber = 0;
-			TimingInfo info = new TimingInfo(sourceEvent.tempoMPQ, resolution, exportTempoFactor, meter,
+			TimingInfo info = new TimingInfo(currMidiTempoEvent.tempoMPQ, resolution, exportTempoFactor, meter,
 					useTripletTiming, abcSongBPM);
-			TimingInfo infoOdd = new TimingInfo(sourceEvent.tempoMPQ, resolution, exportTempoFactor, meter,
+			TimingInfo infoOdd = new TimingInfo(currMidiTempoEvent.tempoMPQ, resolution, exportTempoFactor, meter,
 					!useTripletTiming, abcSongBPM);
 			
 			//System.out.println("\nstarting "+info.getTempoBPM()+" tick="+sourceEvent.tick+"    min="+info.getMinNoteLengthTicks());
@@ -150,12 +150,12 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 			// Iterate over the existing events in reverse order
 			Iterator<TimingInfoEvent> reverseIterator = reversedEvents.iterator();
 			inner:while (reverseIterator.hasNext()) {
-				TimingInfoEvent prev = reverseIterator.next();
-				assert prev.tick <= sourceEvent.tick;
-				long gridUnitTicks = prev.info.getMinNoteLengthTicks();
+				TimingInfoEvent prevMidiTempoEvent = reverseIterator.next();
+				assert prevMidiTempoEvent.tick <= currMidiTempoEvent.tick;
+				long gridUnitTicks = prevMidiTempoEvent.info.getMinNoteLengthTicks();
 
 				// Quantize the tick length to the floor multiple of gridUnitTicks
-				long lengthTicks = Util.floorGrid(sourceEvent.tick - prev.tick, gridUnitTicks);
+				long lengthTicks = Util.floorGrid(tick - prevMidiTempoEvent.tick, gridUnitTicks);
 
 				/*
 				 * If the new event has a coarser timing grid than prev, then it's possible that the bar splits will not
@@ -166,7 +166,7 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 				 */
 				final double epsilon = TimingInfo.MIN_TEMPO_BPM / (2.0d * TimingInfo.MAX_TEMPO_BPM);//0.005				
 				while (lengthTicks > 0L && !oddsAndEnds) {
-					double barNumberTmp = prev.barNumber + lengthTicks / ((double) prev.info.getBarLengthTicks());
+					double barNumberTmp = prevMidiTempoEvent.barNumber + lengthTicks / ((double) prevMidiTempoEvent.info.getBarLengthTicks());
 					double gridUnitsRemaining = ((Math.ceil(barNumberTmp) - barNumberTmp) * info.getBarLengthTicks())
 							/ info.getMinNoteLengthTicks();
 					
@@ -180,7 +180,7 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 					// The prev tempo event was quantized to zero-length; remove it
 					if (oddsAndEnds) {
 						// Put the current event at prev events place, when we remove prev.
-						sourceEvent.tick = prev.tick;
+						tick = prevMidiTempoEvent.tick;
 						// Be careful here. this line will make sure less events is removed,
 						// as around places where grid goes from one size to another (like 24 to 48), removing
 						// prev might make it not move, which will make it a target for next after
@@ -191,16 +191,30 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 					reverseIterator.remove();
 					continue inner;
 				}
-				
-				tick = prev.tick + lengthTicks;
-				micros = prev.micros + MidiUtils.ticks2microsec(lengthTicks, prev.info.getTempoMPQ(), resolution);
-				barNumber = prev.barNumber + lengthTicks / ((double) prev.info.getBarLengthTicks());
+				assert lengthTicks >= gridUnitTicks;
+				tick = prevMidiTempoEvent.tick + lengthTicks;
+				micros = prevMidiTempoEvent.micros + MidiUtils.ticks2microsec(lengthTicks, prevMidiTempoEvent.info.getTempoMPQ(), resolution);
+				barNumber = prevMidiTempoEvent.barNumber + lengthTicks / ((double) prevMidiTempoEvent.info.getBarLengthTicks());
 				//System.out.println(lengthTicks+" GO ON. Adding bpm "+info.getTempoBPM()+" at tick="+tick+" next tick is="+(tick+info.getMinNoteLengthTicks())+" prev was "+prev.info.getTempoBPM()+" at prevtick="+prev.tick);
 				break;
 			}
 
-			TimingInfoEvent event = new TimingInfoEvent(tick, micros, barNumber, info, infoOdd);
-			timingInfoByTick.put(tick, event);
+			TimingInfoEvent abcTempoEvent = new TimingInfoEvent(tick, micros, barNumber, info, infoOdd);
+			timingInfoByTick.put(tick, abcTempoEvent);
+		}
+		long lastTick = -9999L;
+		long lastMin = 0L;
+		for (TimingInfoEvent tempo : timingInfoByTick.values()) {
+			if (lastTick == -9999L) {
+				lastTick = tempo.tick;
+				lastMin = tempo.info.getMinNoteLengthTicks();
+				continue;
+			}
+			long distance = tempo.tick - lastTick;
+			assert distance % lastMin == 0L : "ASSERT FAIL: "+distance+" "+lastMin;
+			assert distance > 0L : "ASSERT FAIL2: "+distance;
+			lastTick = tempo.tick;
+			lastMin = tempo.info.getMinNoteLengthTicks();
 		}
 		int parts = song.getParts().size();
 		this.oddsAndEnds = oddsAndEnds;
@@ -519,6 +533,21 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 				for (Integer score : sixGridsOdds) {
 					if (score != null) partSixgridsCount[part]++; 
 				}
+			}
+			
+			lastTick = -9999L;
+			lastMin = 0L;
+			for (TimingInfoEvent tempo : partMap.values()) {
+				if (lastTick == -9999L) {
+					lastTick = tempo.tick;
+					lastMin = tempo.info.getMinNoteLengthTicks();
+					continue;
+				}
+				long distance = tempo.tick - lastTick;
+				assert distance % lastMin == 0L : "ASSERT FAIL3: "+distance+" "+lastMin;
+				assert distance > 0L : "ASSERT FAIL4: "+distance;
+				lastTick = tempo.tick;
+				lastMin = tempo.info.getMinNoteLengthTicks();
 			}
 		}
 		
