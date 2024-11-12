@@ -1,5 +1,6 @@
 package com.digero.maestro.abc;
 
+import com.digero.common.abc.AbcConstants;
 import com.digero.common.midi.MidiUtils;
 import com.digero.common.midi.TimeSignature;
 
@@ -9,7 +10,7 @@ public class TimingInfo {
 	// public static final long SHORTEST_NOTE_MICROS = 60001;
 	public static final long LONGEST_NOTE_MICROS = ONE_MINUTE_MICROS / 12;// reduced to 5s from 6s due to some samples
 																			// are shorter than 6s.
-	public static final int MAX_TEMPO_BPM = (int) (ONE_MINUTE_MICROS / getShortestNoteMicros(125));// Maximum 1000 bpm
+	public static final int MAX_TEMPO_BPM = (int) (ONE_MINUTE_MICROS / AbcConstants.getShortestNoteMicros(125));// Maximum 1000 bpm
 																									// (In which case
 																									// 'beat' here is
 																									// 60ms)
@@ -59,7 +60,7 @@ public class TimingInfo {
 		this.useTripletTiming = useTripletTiming;
 
 		final long SHORTEST_NOTE_TICKS = (long) Math
-				.ceil((getShortestNoteMicros(abcSongBPM) * resolutionPPQ) / exportTempoMPQ);
+				.ceil((AbcConstants.getShortestNoteMicros(abcSongBPM) * resolutionPPQ) / exportTempoMPQ);
 		final long LONGEST_NOTE_TICKS = (long) Math.floor((LONGEST_NOTE_MICROS * resolutionPPQ) / exportTempoMPQ);
 
 		final int exportTempoBPM = (int) Math.round(MidiUtils.convertTempo(exportTempoMPQ));
@@ -115,22 +116,6 @@ public class TimingInfo {
 		}
 	}
 	
-	public static long getShortestNoteMicros(int bpm) {
-		int[] strangeBPM = {9, 11, 13, 15, 18, 22, 26, 30, 36, 37, 43, 44, 45, 51, 52, 60, 72, 74, 86, 88, 90, 102, 104, 120, 144, 148, 172, 176, 180, 204, 208, 240, 288, 296, 344, 352, 360, 408, 416, 480, 576, 592, 688, 704, 720};
-		for (int strange : strangeBPM) {
-			if (strange == bpm) {
-				return 60001L;
-			}
-		}
-		
-		// The strange tempos are an odd 'bug' in lotros music system
-		// Its eight series starting with 9, 11, 13, 15, 37, 43, 45, 51
-		// Each series is continued by multiplying with 2 all the time
-		// Have only included up to 800 bpm
-		
-		return 60000L;
-	}
-
 	/**
 	 * Rounds the given MPQ tempo so it corresponds to a whole-number of beats per minute.
 	 */

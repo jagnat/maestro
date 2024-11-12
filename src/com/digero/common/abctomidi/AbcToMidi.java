@@ -599,7 +599,7 @@ public class AbcToMidi {
 							double lengthSeconds = info.getWholeNoteTime() * (numerator_abc / (double) denominator_abc);
 
 							throwExceptionsIfEnabled(enableLotroErrors, fileName, lineNumber, m, abcNoteL, noteLetter,
-									lengthSeconds);
+									lengthSeconds, info.getPrimaryTempoBPM());
 
 							if (generateRegions) {
 								abcInfo.addRegion(new AbcRegion(lineNumberForRegions, m.start(), m.end(),
@@ -780,7 +780,7 @@ public class AbcToMidi {
 			double lengthSeconds = info.getWholeNoteTime() * (numerator_abc / (double) denominator_abc);
 
 			throwExceptionsIfEnabled(enableLotroErrors, fileName, lineNumber, m, abcNoteL, abcNoteAcc, noteLetter,
-					octaveStr, lengthSeconds, true);
+					octaveStr, lengthSeconds, true, info.getPrimaryTempoBPM());
 			int lineAndColumn = (lineNumber << 16) | m.start();
 			tiedNotes.put(noteId, lineAndColumn);
 		} else {
@@ -789,7 +789,7 @@ public class AbcToMidi {
 			double lengthSeconds = info.getWholeNoteTime() * (numerator_abc / (double) denominator_abc);
 
 			throwExceptionsIfEnabled(enableLotroErrors, fileName, lineNumber, m, abcNoteL, abcNoteAcc, noteLetter,
-					octaveStr, lengthSeconds, false);
+					octaveStr, lengthSeconds, false, info.getPrimaryTempoBPM());
 
 			// Lengthen to match the note lengths used in the game
 			double noteEndTickTmp = noteEndTick;
@@ -810,12 +810,15 @@ public class AbcToMidi {
 	}
 
 	private static void throwExceptionsIfEnabled(final boolean enableLotroErrors, String fileName, int lineNumber,
-			Matcher m, String abcNoteL, char noteLetter, double lengthSeconds) throws LotroParseException {
+			Matcher m, String abcNoteL, char noteLetter, double lengthSeconds, int bpm) throws LotroParseException {
 		// Using double for lengthSeconds can result in rounding errors in 17 decimal
 		// place.
 		if (enableLotroErrors && ((float) lengthSeconds) < ((float) AbcConstants.SHORTEST_NOTE_SECONDS)) {
 			throw new LotroParseException("Rest's duration is too short (" + String.format("%.3f", lengthSeconds)
 					+ "s)(" + noteLetter + " " + abcNoteL + ")", fileName, lineNumber, m.start());
+		} else if (enableLotroErrors && AbcConstants.getShortestNoteMicros(bpm) == 60001L && ((float) lengthSeconds) == ((float) AbcConstants.SHORTEST_NOTE_SECONDS)) {
+			throw new LotroParseException("Rest's duration is too short (" + String.format("%.3f", lengthSeconds)
+						+ "s)(" + noteLetter + " " + abcNoteL + ")", fileName, lineNumber, m.start());
 		} else if (enableLotroErrors && lengthSeconds > AbcConstants.LONGEST_NOTE_SECONDS) {
 			throw new LotroParseException("Rest's duration is too long (" + String.format("%.3f", lengthSeconds) + "s)("
 					+ noteLetter + " " + abcNoteL + ")", fileName, lineNumber, m.start());
@@ -824,10 +827,15 @@ public class AbcToMidi {
 
 	private static void throwExceptionsIfEnabled(final boolean enableLotroErrors, String fileName, int lineNumber,
 			Matcher m, String abcNoteL, String abcNoteAcc, char noteLetter, String octaveStr, double lengthSeconds,
-			boolean shouldAddGroup) throws LotroParseException {
+			boolean shouldAddGroup, int bpm) throws LotroParseException {
 		// Using double for lengthSeconds can result in rounding errors in 17 decimal
 		// place.
 		if (enableLotroErrors && ((float) lengthSeconds) < ((float) AbcConstants.SHORTEST_NOTE_SECONDS)) {
+			throw new LotroParseException(
+					"Note's duration is too short (" + String.format("%.3f", lengthSeconds) + "s)(" + abcNoteAcc
+							+ noteLetter + octaveStr + abcNoteL + addGroup(m, shouldAddGroup) + ")",
+					fileName, lineNumber, m.start());
+		} else if (enableLotroErrors && AbcConstants.getShortestNoteMicros(bpm) == 60001L && ((float) lengthSeconds) == ((float) AbcConstants.SHORTEST_NOTE_SECONDS)) {
 			throw new LotroParseException(
 					"Note's duration is too short (" + String.format("%.3f", lengthSeconds) + "s)(" + abcNoteAcc
 							+ noteLetter + octaveStr + abcNoteL + addGroup(m, shouldAddGroup) + ")",
