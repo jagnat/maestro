@@ -68,14 +68,19 @@ public class PlaylistTransferHandler extends TransferHandler {
 				
 				new SwingWorker<Boolean, Boolean>() {	
 		            @Override
-		            protected Boolean doInBackground() throws Exception {
+		            protected Boolean doInBackground() {
 		            	for (File file : files) {
 		            		if (file.isDirectory()) {
 		            			continue;
 		            		}
 		            		List<FileAndData> fad = new ArrayList<FileAndData>();
-		            		fad.add(new FileAndData(file, AbcToMidi.readLines(file)));
-		            		data.add(AbcToMidi.parseAbcMetadata(fad));
+		            		try {
+			            		fad.add(new FileAndData(file, AbcToMidi.readLines(file)));
+			            		data.add(AbcToMidi.parseAbcMetadata(fad));
+		            		} catch (Exception e) {
+		            			continue;
+		            		}
+		            		
 		            	}
 		            	return true;
 		            }

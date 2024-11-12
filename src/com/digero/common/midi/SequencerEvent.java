@@ -6,7 +6,7 @@ import java.util.EventObject;
 public class SequencerEvent extends EventObject {
 
 	public enum SequencerProperty {
-		POSITION, LENGTH, DRAG_POSITION, IS_DRAGGING, IS_RUNNING, IS_LOADED, TRACK_ACTIVE, TEMPO, SEQUENCE;
+		POSITION, LENGTH, DRAG_POSITION, IS_DRAGGING, IS_RUNNING, IS_LOADED, TRACK_ACTIVE, TEMPO, SEQUENCE, SONG_ENDED;
 
 		public static final int THUMB_POSITION_MASK = POSITION.mask | DRAG_POSITION.mask | IS_DRAGGING.mask;
 
@@ -22,6 +22,41 @@ public class SequencerEvent extends EventObject {
 
 		public boolean isInMask(int mask) {
 			return (mask & this.mask) != 0;
+		}
+		
+		// Debug
+		public void printSetMasks() {
+			if ((mask & POSITION.mask) != 0) {
+				System.out.print(" POSITION");
+			}
+			if ((mask & LENGTH.mask) != 0) {
+				System.out.print(" LENGTH");
+			}
+			if ((mask & DRAG_POSITION.mask) != 0) {
+				System.out.print(" DRAG_POSITION");
+			}
+			if ((mask & IS_DRAGGING.mask) != 0) {
+				System.out.print(" IS_DRAGGING");
+			}
+			if ((mask & IS_RUNNING.mask) != 0) {
+				System.out.print(" IS_RUNNING");
+			}
+			if ((mask & IS_LOADED.mask) != 0) {
+				System.out.print(" IS_LOADED");
+			}
+			if ((mask & TRACK_ACTIVE.mask) != 0) {
+				System.out.print(" TRACK_ACTIVE");
+			}
+			if ((mask & TEMPO.mask) != 0) {
+				System.out.print(" TEMPO");
+			}
+			if ((mask & SEQUENCE.mask) != 0) {
+				System.out.print(" SEQUENCE");
+			}
+			if ((mask & SONG_ENDED.mask) != 0) {
+				System.out.print(" SONG_ENDED");
+			}
+			System.out.println();
 		}
 
 		SequencerProperty() {

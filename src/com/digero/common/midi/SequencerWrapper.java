@@ -129,8 +129,10 @@ public class SequencerWrapper implements MidiConstants, ITempoCache, IDiscardabl
 						lastRunning = running;
 						if (running)
 							updateTimer.start();
-						else
+						else {
 							updateTimer.stop();
+							fireChangeEvent(SequencerProperty.SONG_ENDED);
+						}
 						fireChangeEvent(SequencerProperty.IS_RUNNING);
 					}
 				}
@@ -480,7 +482,6 @@ public class SequencerWrapper implements MidiConstants, ITempoCache, IDiscardabl
 				updateTimer.stop();
 			}
 			lastRunning = isRunning;
-
 			fireChangeEvent(SequencerProperty.IS_RUNNING);
 		}
 	}

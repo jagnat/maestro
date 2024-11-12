@@ -305,7 +305,25 @@ public class AbcPlaylistPanel extends JPanel {
 		
 		JCheckBox autoplayCheckBox = new JCheckBox("Autoplay");
 		JButton moveUpButton = new JButton("Move Up");
+		moveUpButton.setEnabled(false);
+		moveUpButton.addActionListener(e -> {
+			int row = playlistTable.getSelectedRow();
+			if (row == 0) {
+				return;
+			}
+			tableModel.moveRows(new int[] {row}, row - 1);
+			playlistTable.setRowSelectionInterval(row - 1, row - 1);
+		});
 		JButton moveDownButton = new JButton("Move Down");
+		moveDownButton.setEnabled(false);
+		moveDownButton.addActionListener(e ->{
+			int row = playlistTable.getSelectedRow();
+			if (row == tableModel.getRowCount() - 1) {
+				return;
+			}
+			tableModel.moveRows(new int[] {row}, row + 2);
+			playlistTable.setRowSelectionInterval(row + 1, row + 1);
+		});
 		
 		playlistBottomControls = new JPanel(new FlowLayout());
 		playlistBottomControls.add(autoplayCheckBox);
@@ -317,6 +335,11 @@ public class AbcPlaylistPanel extends JPanel {
 		abcPlaylistLabel.setFont(f.deriveFont(Font.BOLD, f.getSize2D()));
 		abcPlaylistLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 		
+		playlistTable.getSelectionModel().addListSelectionListener(e -> {
+			moveUpButton.setEnabled(playlistTable.getSelectedRowCount() == 1);
+			moveDownButton.setEnabled(playlistTable.getSelectedRowCount() == 1);
+		});
+		
 		rightPanel.add(playlistScrollPane, BorderLayout.CENTER);
 		rightPanel.add(playlistBottomControls, BorderLayout.SOUTH);
 		rightPanel.add(abcPlaylistLabel, BorderLayout.NORTH);
@@ -327,13 +350,17 @@ public class AbcPlaylistPanel extends JPanel {
 		new SwingWorker<Boolean, Boolean>() {
 			
             @Override
-            protected Boolean doInBackground() throws Exception {
+            protected Boolean doInBackground(){
             	for (TreePath path : paths) {
             		AbcSongFileNode node = (AbcSongFileNode)path.getLastPathComponent();
             		File file = node.getFile();
             		List<FileAndData> fad = new ArrayList<FileAndData>();
-            		fad.add(new FileAndData(file, AbcToMidi.readLines(file)));
-            		data.add(AbcToMidi.parseAbcMetadata(fad));
+            		try {
+                		fad.add(new FileAndData(file, AbcToMidi.readLines(file)));
+                		data.add(AbcToMidi.parseAbcMetadata(fad));
+            		} catch (Exception e) {
+            			continue;
+            		}
             	}
             	return true;
             }

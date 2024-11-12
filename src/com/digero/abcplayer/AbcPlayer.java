@@ -481,6 +481,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		sequencer.addChangeListener(evt -> {
 			SequencerProperty p = evt.getProperty();
 			if (!p.isInMask(SequencerProperty.THUMB_POSITION_MASK)) {
+				p.printSetMasks();
 				updateButtonStates();
 			}
 			

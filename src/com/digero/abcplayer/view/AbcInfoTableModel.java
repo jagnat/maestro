@@ -17,12 +17,12 @@ public class AbcInfoTableModel extends AbstractTableModel {
 	
 	public void addRow(AbcInfo inf) {
 		data.add(inf);
-		fireTableRowsInserted(0, getRowCount());
+		fireTableRowsInserted(getRowCount() - 1, getRowCount() - 1);
 	}
 	
 	public void insertRow(AbcInfo inf, int idx) {
 		data.add(idx, inf);
-		fireTableRowsInserted(idx, getRowCount());
+		fireTableRowsInserted(idx, idx + 2);
 	}
 	
 	public void moveRows(int rowsToMove[], int toIdx) {

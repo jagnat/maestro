@@ -190,5 +190,11 @@
 		    <artifactId>jump3r</artifactId>
 		    <version>1.0.5</version>
 		</dependency>
+		<!-- https://mvnrepository.com/artifact/jakarta.activation/jakarta.activation-api -->
+		<dependency>
+		    <groupId>jakarta.activation</groupId>
+		    <artifactId>jakarta.activation-api</artifactId>
+		    <version>1.2.2</version>
+		</dependency>
 	</dependencies>
 </project>

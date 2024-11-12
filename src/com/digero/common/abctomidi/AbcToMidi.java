@@ -918,9 +918,9 @@ public class AbcToMidi {
 	public static AbcInfo parseAbcMetadata(List<FileAndData> abc) throws ParseException {
 		AbcInfo abcInfo = new AbcInfo();
 		int trackNumber = 0;
-		
+		String fileName = null;
 		for (FileAndData fileAndData : abc) {
-			String fileName = fileAndData.file.getName();
+			fileName = fileAndData.file.getName();
 			abcInfo.addSourceFile(fileAndData.file);
 			int lineNumber = 0;
 			int partStartLine = 0;
@@ -969,6 +969,12 @@ public class AbcToMidi {
 				}
 			}
 		}
+		
+		if (abcInfo.isEmpty()) {
+			throw new ParseException("Empty or invalid ABC files", fileName);
+		}
+		
+		
 		return abcInfo;
 	}
 
