@@ -14,10 +14,12 @@ public class BarNumberLabel extends JLabel implements Listener<SequencerEvent>, 
 	private IBarNumberCache barNumberCache;
 	private SequencerWrapper sequencer;
 	private long initialOffsetTick = 0L;
+	private boolean floatingPoint = false;
 
-	public BarNumberLabel(SequencerWrapper sequencer, IBarNumberCache barNumberCache) {
+	public BarNumberLabel(SequencerWrapper sequencer, IBarNumberCache barNumberCache, boolean floatingPoint) {
 		this.sequencer = sequencer;
 		this.barNumberCache = barNumberCache;
+		this.floatingPoint  = floatingPoint;
 
 		sequencer.addChangeListener(this);
 	}
@@ -116,7 +118,13 @@ public class BarNumberLabel extends JLabel implements Listener<SequencerEvent>, 
 			return;
 		}
 		
-		String bars = getBarString(sequencer, barNumberCache, initialOffsetTick);
+		String bars = "";
+		
+		if (floatingPoint) {
+			bars = getBarStringFloat(sequencer, barNumberCache);
+		} else {
+			bars = getBarString(sequencer, barNumberCache, initialOffsetTick);
+		}
 
 		if (!bars.equals("-/-")) {
 			lastPrintedBars = bars;

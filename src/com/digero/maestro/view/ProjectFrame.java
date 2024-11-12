@@ -867,10 +867,10 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		abcPositionLabel = new SongPositionLabel(abcSequencer, true /* adjustForTempo */);
 		abcPositionLabel.setVisible(!midiPositionLabel.isVisible());
 
-		midiBarLabel = new BarNumberLabel(sequencer, null);
+		midiBarLabel = new BarNumberLabel(sequencer, null, true);
 		midiBarLabel.setToolTipText("Original Bar number");
 
-		abcBarLabel = new BarNumberLabel(abcSequencer, null);
+		abcBarLabel = new BarNumberLabel(abcSequencer, null, false);
 		abcBarLabel.setToolTipText("ABC Preview Bar number");
 		abcBarLabel.setVisible(!midiBarLabel.isVisible());
 

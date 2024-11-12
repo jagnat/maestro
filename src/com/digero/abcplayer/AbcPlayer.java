@@ -380,7 +380,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		songPositionBar = new SongPositionBar(sequencer);
 		songPositionLabel = new SongPositionLabel(sequencer);
 		songPositionLabel.countdown = prefs.getBoolean("countdownMenuItem", false);
-		barNumberLabel = new BarNumberLabel(sequencer, null);
+		barNumberLabel = new BarNumberLabel(sequencer, null, false);
 		barNumberLabel.setToolTipText("Bar number");
 
 		playIcon = IconLoader.getImageIcon("play.png");
