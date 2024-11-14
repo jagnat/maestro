@@ -1,6 +1,8 @@
 package com.digero.abcplayer.view;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Point;
@@ -33,7 +35,9 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 import javax.swing.ToolTipManager;
 import javax.swing.TransferHandler;
+import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreePath;
 
 import com.digero.common.abctomidi.AbcInfo;
@@ -89,6 +93,9 @@ public class AbcPlaylistPanel extends JPanel {
 	private JPanel playlistBottomControls;
 	private JPopupMenu playlistContentPopupMenu;
 	private JPopupMenu playlistHeaderPopupMenu;
+	private JCheckBox autoplayCheckBox;
+	
+	private int nowPlayingIdx = -1;
 	
 	private Listener<PlaylistEvent> parentListener;
 	
@@ -256,18 +263,36 @@ public class AbcPlaylistPanel extends JPanel {
 		
 		tableModel = new AbcInfoTableModel();
 		
-		playlistTable = new JTable(tableModel);
+		playlistTable = new JTable(tableModel) {
+			private static final long serialVersionUID = 7474807902173697106L;
+			
+			@Override
+			public Component prepareRenderer(TableCellRenderer render, int row, int col) {
+				Component c = super.prepareRenderer(render, row, col);
+				JComponent jc = (JComponent)c;
+				
+				if (nowPlayingIdx != -1 && nowPlayingIdx == row) {
+					Border border = BorderFactory.createCompoundBorder(
+							BorderFactory.createMatteBorder(1, 0, 1, 0, Color.blue),
+							BorderFactory.createEmptyBorder(0, 2, 0, 2));
+					jc.setBorder(border);
+				}
+				
+				return jc;
+			}
+		};
 		playlistTable.setFocusable(false);
 		playlistTable.setFillsViewportHeight(true);
 		playlistTable.setDragEnabled(true);
 		playlistTable.setDropMode(DropMode.INSERT_ROWS);
 		playlistTable.setTransferHandler(new PlaylistTransferHandler(abcFileTree, playlistTable));
 		
-		
 		playlistContentPopupMenu = new JPopupMenu();
 		JMenuItem playItem = new JMenuItem("Play");
 		playItem.addActionListener(e -> {
 			 AbcInfo info = tableModel.getAbcInfoAt(playlistTable.getSelectedRow());
+			 nowPlayingIdx = playlistTable.getSelectedRow();
+			 playlistTable.repaint();
 			 if (parentListener != null) {
 				 parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
 			 }
@@ -303,7 +328,7 @@ public class AbcPlaylistPanel extends JPanel {
 		playlistScrollPane = new JScrollPane(playlistTable,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		playlistScrollPane.setViewportView(playlistTable);
 		
-		JCheckBox autoplayCheckBox = new JCheckBox("Autoplay");
+		autoplayCheckBox = new JCheckBox("Autoplay");
 		JButton moveUpButton = new JButton("Move Up");
 		moveUpButton.setEnabled(false);
 		moveUpButton.addActionListener(e -> {
@@ -343,6 +368,28 @@ public class AbcPlaylistPanel extends JPanel {
 		rightPanel.add(playlistScrollPane, BorderLayout.CENTER);
 		rightPanel.add(playlistBottomControls, BorderLayout.SOUTH);
 		rightPanel.add(abcPlaylistLabel, BorderLayout.NORTH);
+	}
+	
+	public void advanceToNextSongIfNeeded() {
+		if (!autoplayCheckBox.isSelected()) {
+			return;
+		}
+		
+		nowPlayingIdx = (nowPlayingIdx + 1) % tableModel.getRowCount();
+		
+		if (nowPlayingIdx != 0) {
+			AbcInfo info = tableModel.getAbcInfoAt(nowPlayingIdx);
+			if (parentListener != null) {
+	 			parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
+ 			}
+		}
+		
+		playlistTable.repaint();
+	}
+	
+	public void resetPlaylistPosition() {
+		nowPlayingIdx = -1;
+		playlistTable.repaint();
 	}
 	
 	private void addTreePathsToPlaylist(TreePath[] paths) {

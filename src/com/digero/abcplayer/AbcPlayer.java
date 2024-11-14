@@ -284,9 +284,9 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 		dropListener = new FileFilterDropListener(true, "abc", "txt");
 		dropListener.addActionListener(e -> {
-			System.out.println("Drop target listener");
 			FileFilterDropListener l = (FileFilterDropListener) e.getSource();
 			boolean append = (l.getDropEvent().getDropAction() == DnDConstants.ACTION_COPY);
+			playlistViewPanel.resetPlaylistPosition();
 			SwingUtilities.invokeLater(new OpenSongRunnable(append, l.getDroppedFiles().toArray(new File[0])));
 		});
 		mainWindowDropTarget = new DropTarget(this, dropListener);
@@ -469,24 +469,16 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		controlPanel.add(playlistToggleButton);
 		controlPanel.add(volumePanel, "center");
 		controlPanel.add(barNumberLabel, "right");
-		// controlPanel.add(songPositionBar, "1, 1, 9, 1");
-		// controlPanel.add(songPositionLabel, "11, 1");
-		// controlPanel.add(playButton, "4, 3");
-		// controlPanel.add(stopButton, "6, 3");
-		// controlPanel.add(playlistToggleButton, "8, 3");
-		// controlPanel.add(tempoPanel, "2, 3, c, c");
-		// controlPanel.add(volumePanel, "9, 3, c, c");
-		// controlPanel.add(barNumberLabel, "10, 3, 12, 3, r, t");
 
 		sequencer.addChangeListener(evt -> {
 			SequencerProperty p = evt.getProperty();
 			if (!p.isInMask(SequencerProperty.THUMB_POSITION_MASK)) {
-				p.printSetMasks();
+//				p.printSetMasks();
 				updateButtonStates();
 			}
 			
-			if (p.isInMask(SequencerProperty.IS_RUNNING.mask)) {
-				
+			if (p == SequencerProperty.SONG_ENDED) {
+				playlistViewPanel.advanceToNextSongIfNeeded();
 			}
 
 			if (p.isInMask(SequencerProperty.TEMPO.mask | SequencerProperty.SEQUENCE.mask)) {
@@ -511,6 +503,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 					SwingUtilities.invokeLater(new OpenSongRunnable(false, inf.getSourceFiles().get(0)));
 					break;
 				case PLAY_FROM_FILE:
+					playlistViewPanel.resetPlaylistPosition();
 					File f = (File)(e.getSource());
 					SwingUtilities.invokeLater(new OpenSongRunnable(false, f));
 				}
@@ -1067,6 +1060,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 			prefs.put("openFileDialog.currentDirectory", openFileDialog.getCurrentDirectory().getAbsolutePath());
 
 			openSong(openFileDialog.getSelectedFiles());
+			playlistViewPanel.resetPlaylistPosition();
 		}
 	}
 
