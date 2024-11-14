@@ -86,6 +86,15 @@ public class AbcInfoTableModel extends AbstractTableModel {
 		return null;
 	}
 	
+	public int getIdxForAbcInfo(AbcInfo inf) {
+		for (int i = 0; i < data.size(); i++) {
+			if (data.get(i) == inf) {
+				return i;
+			}
+		}
+		return -1;
+	}
+	
 	public AbcInfo getAbcInfoAt(int rowIndex) {
 		return data.get(rowIndex);
 	}

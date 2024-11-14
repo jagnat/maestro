@@ -35,6 +35,7 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingWorker;
 import javax.swing.ToolTipManager;
 import javax.swing.TransferHandler;
+import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
@@ -95,7 +96,7 @@ public class AbcPlaylistPanel extends JPanel {
 	private JPopupMenu playlistHeaderPopupMenu;
 	private JCheckBox autoplayCheckBox;
 	
-	private int nowPlayingIdx = -1;
+	private AbcInfo nowPlayingInfo = null;
 	
 	private Listener<PlaylistEvent> parentListener;
 	
@@ -270,10 +271,12 @@ public class AbcPlaylistPanel extends JPanel {
 			public Component prepareRenderer(TableCellRenderer render, int row, int col) {
 				Component c = super.prepareRenderer(render, row, col);
 				JComponent jc = (JComponent)c;
+				AbcInfo inf = (row != -1) ? tableModel.getAbcInfoAt(row) : null;
 				
-				if (nowPlayingIdx != -1 && nowPlayingIdx == row) {
+				if (nowPlayingInfo != null && inf == nowPlayingInfo) {
+					Color foreground = UIManager.getColor("Label.foreground");
 					Border border = BorderFactory.createCompoundBorder(
-							BorderFactory.createMatteBorder(1, 0, 1, 0, Color.blue),
+							BorderFactory.createMatteBorder(1, 0, 1, 0, foreground),
 							BorderFactory.createEmptyBorder(0, 2, 0, 2));
 					jc.setBorder(border);
 				}
@@ -291,7 +294,7 @@ public class AbcPlaylistPanel extends JPanel {
 		JMenuItem playItem = new JMenuItem("Play");
 		playItem.addActionListener(e -> {
 			 AbcInfo info = tableModel.getAbcInfoAt(playlistTable.getSelectedRow());
-			 nowPlayingIdx = playlistTable.getSelectedRow();
+			 nowPlayingInfo = info;
 			 playlistTable.repaint();
 			 if (parentListener != null) {
 				 parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
@@ -375,20 +378,24 @@ public class AbcPlaylistPanel extends JPanel {
 			return;
 		}
 		
-		nowPlayingIdx = (nowPlayingIdx + 1) % tableModel.getRowCount();
+		int newIdx = (tableModel.getIdxForAbcInfo(nowPlayingInfo) + 1) % tableModel.getRowCount();
 		
-		if (nowPlayingIdx != 0) {
-			AbcInfo info = tableModel.getAbcInfoAt(nowPlayingIdx);
+		if (newIdx > 0) {
+			AbcInfo info = tableModel.getAbcInfoAt(newIdx);
+			nowPlayingInfo = info;
 			if (parentListener != null) {
 	 			parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
  			}
+		}
+		else {
+			nowPlayingInfo = null;
 		}
 		
 		playlistTable.repaint();
 	}
 	
 	public void resetPlaylistPosition() {
-		nowPlayingIdx = -1;
+		nowPlayingInfo = null;
 		playlistTable.repaint();
 	}
 	
