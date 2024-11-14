@@ -283,6 +283,22 @@ public class AbcPlaylistPanel extends JPanel {
 				
 				return jc;
 			}
+			
+			@Override
+			public String getToolTipText(MouseEvent e) {
+				String txt = null;
+				Point p = e.getPoint();
+				int row = rowAtPoint(p);
+				
+				if (row != -1) {
+					txt = "";
+					AbcInfo inf = tableModel.getAbcInfoAt(row);
+					for (int i = 0; i < inf.getPartCount(); i++) {
+						txt = txt + inf.getPartFullName(i + 1) + "\n";
+					}
+				}
+				return txt;
+			}
 		};
 		playlistTable.setFocusable(false);
 		playlistTable.setFillsViewportHeight(true);
@@ -355,8 +371,8 @@ public class AbcPlaylistPanel extends JPanel {
 		
 		playlistBottomControls = new JPanel(new FlowLayout());
 		playlistBottomControls.add(autoplayCheckBox);
-		playlistBottomControls.add(moveUpButton);
-		playlistBottomControls.add(moveDownButton);
+//		playlistBottomControls.add(moveUpButton);
+//		playlistBottomControls.add(moveDownButton);
 		
 		JLabel abcPlaylistLabel = new JLabel("ABC Playlist");
 		f = abcPlaylistLabel.getFont();

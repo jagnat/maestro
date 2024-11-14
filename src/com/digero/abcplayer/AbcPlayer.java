@@ -953,6 +953,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 			// The file could not be opened, removing it from the recent list.
 			recentRemove(title);
 		}
+		playlistViewPanel.resetPlaylistPosition();
 	}
 
 	private boolean getAbcDataFromClipboard(ArrayList<String> data, boolean checkContents) {
