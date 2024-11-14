@@ -2,6 +2,7 @@ package com.digero.abcplayer.view;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -14,6 +15,16 @@ public class AbcInfoTableModel extends AbstractTableModel {
 	private static final int COL_COUNT = 5;
 	
 	private ArrayList<AbcInfo> data = new ArrayList<AbcInfo>();
+	
+	public List<AbcInfo> getTableData() {
+		return data;
+	}
+	
+	public void clearRows() {
+		int sz = getRowCount();
+		data.clear();
+		fireTableRowsDeleted(0, sz);
+	}
 	
 	public void addRow(AbcInfo inf) {
 		data.add(inf);
