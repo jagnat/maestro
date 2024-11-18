@@ -46,6 +46,15 @@ Thanks to all who gave feedback of features, bugs plus suggestions.
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
 
+Version 3.3.22
+- Add a playlist feature to AbcPlayer
+  - Access the playlist panel by pressing the new button next to stop
+  - Browse and add songs to the playlist in the file explorer on the left side
+    - Drag and drop songs to the right side, or use the >> button to add selected songs
+  - Play the playlist by right-clicking on a song and choosing Play
+    - if the Autoplay checkbox is selected, the playlist will move to the next song until the end
+  - Save and load playlists
+
 Version 3.3.21
 - Add option to disable auto playing files on open in Maestro, accessible in the misc settings panel
 - Fix for abc preview could break without mix timings enabled.

@@ -2,9 +2,9 @@ package com.digero.common.util;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
+import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreePath;
@@ -15,6 +15,7 @@ import javax.swing.tree.TreePath;
 
 public class AbcFileTreeModel implements TreeModel {
 
+	private ArrayList<TreeModelListener> listeners = new ArrayList<TreeModelListener>();
 	private AbcSongFileNode rootNode;
 	private static ExtensionFileFilter abcFilter = new ExtensionFileFilter("ABC Files", "abc", "txt"); 
 	
@@ -29,11 +30,15 @@ public class AbcFileTreeModel implements TreeModel {
 		for (AbcSongFileNode node : rootNode.children) {
 			node.refresh();
 		}
+		
+		for (TreeModelListener l : listeners) {
+			l.treeStructureChanged(new TreeModelEvent(this, new TreePath(rootNode)));
+		}
 	}
 	
 	@Override
 	public void addTreeModelListener(TreeModelListener arg0) {
-		
+		listeners.add(arg0);
 	}
 
 	@Override
@@ -52,16 +57,6 @@ public class AbcFileTreeModel implements TreeModel {
 		AbcSongFileNode child = ((AbcSongFileNode)childObj);
 		
 		return parent.getIndexOf(child);
-		
-//		File file1 = ((AbcSongFileNode)dFile1).getFile();
-//		File file2 = ((AbcSongFileNode)dFile2).getFile();
-//		if (file1 == rootFile) {
-//			return topLevelDirectories.indexOf(file2);
-//		}
-//		List<File> fileList = Arrays.asList(((File)file1).listFiles(abcFilter));
-//		return fileList.indexOf(file2);
-		
-//		return 0;
 	}
 
 	@Override
@@ -73,12 +68,11 @@ public class AbcFileTreeModel implements TreeModel {
 	public boolean isLeaf(Object file) {
 		AbcSongFileNode f = (AbcSongFileNode)file;
 		return f != rootNode && f.getFile().isFile();
-//		return f.getFile().isFile();
 	}
 
 	@Override
 	public void removeTreeModelListener(TreeModelListener arg0) {
-		
+		listeners.remove(arg0);
 	}
 
 	@Override
