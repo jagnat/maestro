@@ -47,6 +47,7 @@ public class Themer {
 			Font font = UIManager.getFont("defaultFont");
 			Font newFont = StyleContext.getDefaultStyleContext().getFont(font.getFamily(), font.getStyle(), fontSize);
 			UIManager.put("defaultFont", newFont);
+			UIManager.put("Component.focusWidth", 0f);
 			FlatLaf.updateUI();
 		}
 	}

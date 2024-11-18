@@ -135,7 +135,7 @@ public class AbcPlaylistPanel extends JPanel {
 		
 		abcFileTree = new JTree();
 		abcFileTree.setShowsRootHandles(true);
-		abcFileTree.setFocusable(false);
+		abcFileTree.setFocusable(true);
 		abcFileTree.setRootVisible(false);
 		abcFileTree.setModel(abcFileTreeModel);
 		abcFileTree.setCellRenderer(new AbcPlaylistTreeCellRenderer());
@@ -320,9 +320,12 @@ public class AbcPlaylistPanel extends JPanel {
 				if (nowPlayingInfo != null && inf == nowPlayingInfo) {
 					Color foreground = UIManager.getColor("Label.foreground");
 					Border border = BorderFactory.createCompoundBorder(
-							BorderFactory.createMatteBorder(1, 0, 1, 0, foreground),
-							BorderFactory.createEmptyBorder(0, 2, 0, 2));
+							BorderFactory.createMatteBorder(2, 0, 2, 0, foreground),
+							BorderFactory.createEmptyBorder(0, 3, 0, 3));
 					jc.setBorder(border);
+					Font f = new JLabel().getFont();
+					f = f.deriveFont(Font.ITALIC);
+					jc.setFont(f);
 				}
 				
 				return jc;
@@ -347,7 +350,7 @@ public class AbcPlaylistPanel extends JPanel {
 				return txt;
 			}
 		};
-//		playlistTable.setFocusable(false);
+		playlistTable.setFocusable(true);
 		playlistTable.setFillsViewportHeight(true);
 		playlistTable.setDragEnabled(true);
 		playlistTable.setDropMode(DropMode.INSERT_ROWS);
@@ -386,7 +389,7 @@ public class AbcPlaylistPanel extends JPanel {
 		});
 		
 		tableModel.addTableModelListener(e -> {
-			calculateTotalTime();
+			updatePlaylistLabel();
 		});
 		
 		playlistContentPopupMenu = new JPopupMenu();
@@ -565,7 +568,7 @@ public class AbcPlaylistPanel extends JPanel {
 		playlistTable.repaint();
 	}
 	
-	private void calculateTotalTime() {
+	private void updatePlaylistLabel() {
 		long totalTimeMicroSec = 0;
 		int numSongs = tableModel.getRowCount();
 		for (AbcInfo inf : tableModel.getTableData()) {
@@ -575,9 +578,7 @@ public class AbcPlaylistPanel extends JPanel {
 			}
 			String[] split = dur.split(":");
 			int m = Integer.parseInt(split[0]);
-			System.out.println("M: " + m);
 			int s = Integer.parseInt(split[1]);
-			System.out.println("S: " + s);
 			totalTimeMicroSec += 60000000 * m;
 			totalTimeMicroSec += 1000000 * s;
 		}
