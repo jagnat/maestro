@@ -15,12 +15,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
+import java.util.prefs.Preferences;
 import java.util.stream.IntStream;
 
 import javax.swing.BorderFactory;
@@ -114,18 +112,29 @@ public class AbcPlaylistPanel extends JPanel {
 	
 	private Listener<PlaylistEvent> parentListener;
 	
-	public AbcPlaylistPanel() {
+	private Preferences playlistPrefs;
+	
+	public AbcPlaylistPanel(Preferences prefs) {
 		super (new BorderLayout());
+		
+		playlistPrefs = prefs;
 		
 		browserSplitPane = new JSplitPane();
 		browserSplitPane.setResizeWeight(0.5);
-		add(browserSplitPane, BorderLayout.CENTER);
 		
 		leftPanel = new JPanel(new BorderLayout());
 		rightPanel = new JPanel(new BorderLayout());
 		
 		browserSplitPane.setLeftComponent(leftPanel);
 		browserSplitPane.setRightComponent(rightPanel);
+		int pos = prefs.getInt("splitPanePos", -1);
+		if (pos != -1) {
+			browserSplitPane.setDividerLocation(pos);
+		}
+		browserSplitPane.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, e -> {
+			prefs.putInt("splitPanePos", (Integer)e.getNewValue());
+		});
+		add(browserSplitPane, BorderLayout.CENTER);
 		
 		ArrayList<File> tlds = new ArrayList<File>();
 		tlds.add(Util.getLotroMusicPath(false));
@@ -424,6 +433,10 @@ public class AbcPlaylistPanel extends JPanel {
 		
 		autoplayCheckBox = new JCheckBox("Autoplay");
 		autoplayCheckBox.setFocusable(false);
+		autoplayCheckBox.setSelected(playlistPrefs.getBoolean("autoplay", false));
+		autoplayCheckBox.addActionListener(e -> {
+			playlistPrefs.putBoolean("autoplay", autoplayCheckBox.isSelected());
+		});
 		JButton moveUpButton = new JButton("Move Up");
 		moveUpButton.setFocusable(false);
 		moveUpButton.setEnabled(false);
@@ -478,6 +491,9 @@ public class AbcPlaylistPanel extends JPanel {
 			savePlaylistChooser.setFileFilter(new ExtensionFileFilter("ABC Playlist (.abcp)", "abcp"));
 		}
 		
+		String folder = playlistPrefs.get("playlistDirectory", Util.getLotroMusicPath(false).getAbsolutePath());
+		savePlaylistChooser.setCurrentDirectory(new File(folder));
+		
 		int result = savePlaylistChooser.showSaveDialog(this);
 		
 		if (result != JFileChooser.APPROVE_OPTION) {
@@ -496,7 +512,10 @@ public class AbcPlaylistPanel extends JPanel {
 			XmlUtil.saveDocument(AbcPlaylistXmlCoder.savePlaylistToXml(tableModel.getTableData()), file);
 		} catch (Exception e) {
 			e.printStackTrace();
+			return;
 		}
+		
+		playlistPrefs.put("playlistDirectory", savePlaylistChooser.getCurrentDirectory().getAbsolutePath());
 	}
 	
 	public void loadPlaylist() {
@@ -505,6 +524,9 @@ public class AbcPlaylistPanel extends JPanel {
 			openPlaylistChooser.setMultiSelectionEnabled(false);
 			openPlaylistChooser.setFileFilter(new ExtensionFileFilter("ABC Playlist (.abcp)", "abcp"));
 		}
+		
+		String folder = playlistPrefs.get("playlistDirectory", Util.getLotroMusicPath(false).getAbsolutePath());
+		openPlaylistChooser.setCurrentDirectory(new File(folder));
 		
 		int result = openPlaylistChooser.showOpenDialog(this);
 		File file = null;
@@ -545,6 +567,8 @@ public class AbcPlaylistPanel extends JPanel {
 		for (AbcInfo inf : data) {
 			tableModel.addRow(inf);
 		}
+		
+		playlistPrefs.put("playlistDirectory", openPlaylistChooser.getCurrentDirectory().getAbsolutePath());
 	}
 	
 	public void advanceToNextSongIfNeeded() {

@@ -212,7 +212,6 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 	private JPanel mainCardPanel;
 	private CardLayout mainCardPanelLayout;
 	private JPanel songViewPanel;
-//	private JPanel playlistViewPanel;
 	private AbcPlaylistPanel playlistViewPanel;
 
 	private SongPositionBar songPositionBar;
@@ -493,7 +492,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		songViewPanel.add(titleLabel, "1, 0");
 		songViewPanel.add(trackListScroller, "1, 2");
 		
-		playlistViewPanel = new AbcPlaylistPanel();
+		playlistViewPanel = new AbcPlaylistPanel(prefs.node("playlist"));
 		playlistViewPanel.setPlaylistListener(new Listener<PlaylistEvent>(){
 			@Override
 			public void onEvent(PlaylistEvent e) {
