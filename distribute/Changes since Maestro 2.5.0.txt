@@ -45,6 +45,10 @@ Thanks to all who gave feedback of features, bugs plus suggestions.
 
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
+
+Version 3.3.18
+- Add option to disable auto playing files on open in Maestro, accessible in the misc settings panel
+
 Version 3.3.17
 - Add a new Xtra Clap drum sound
 - Fix that cowbells would count as 1.0s duration in histogram. They are 0.247s and 0.291s.
