@@ -1,13 +1,11 @@
 package com.digero.abcplayer;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.xml.sax.SAXException;
 
 import com.digero.common.abctomidi.AbcInfo;
 import com.digero.common.util.ParseException;
@@ -49,6 +47,10 @@ public class AbcPlaylistXmlCoder {
 						playlistPath.getName());
 			}
 			Version fileVersion = SaveUtil.parseValue(playlistEle, "@fileVersion", ABC_PLAYLIST_VERSION);
+			
+			if (fileVersion.compareTo(ABC_PLAYLIST_VERSION) > 0) {
+				// TODO: Warn?
+			}
 			
 			Element trackListEle = XmlUtil.selectSingleElement(playlistEle, "trackList");
 			

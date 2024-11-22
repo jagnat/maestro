@@ -43,6 +43,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 import javax.swing.tree.TreePath;
 
 import com.digero.abcplayer.AbcPlaylistXmlCoder;
@@ -63,6 +64,7 @@ public class AbcPlaylistPanel extends JPanel {
 	public static class PlaylistEvent extends EventObject {
 
 		private static final long serialVersionUID = 4331827283417203704L;
+		private boolean showSongView = false;
 		
 		public enum PlaylistEventType {
 			PLAY_FROM_ABCINFO, PLAY_FROM_FILE
@@ -73,6 +75,15 @@ public class AbcPlaylistPanel extends JPanel {
 		public PlaylistEvent(Object source, PlaylistEventType t) {
 			super(source);
 			type = t;
+		}
+		
+		public PlaylistEvent setShowSongView(boolean showSongView) {
+			this.showSongView = showSongView;
+			return this;
+		}
+		
+		public boolean getShowSongView() {
+			return showSongView;
 		}
 		
 		public PlaylistEventType getType() {
@@ -231,10 +242,9 @@ public class AbcPlaylistPanel extends JPanel {
 		
 		JMenuItem fileTreePlay = new JMenuItem("Play");
 		fileTreePlay.addActionListener(e -> {
-//			 AbcInfo info = tableModel.getAbcInfoAt(playlistTable.getSelectedRow());
 			AbcSongFileNode f = (AbcSongFileNode)(abcFileTree.getPathForRow(menuRowIdx).getLastPathComponent());
 			 if (parentListener != null) {
-				 parentListener.onEvent(new PlaylistEvent(f.getFile(), PlaylistEvent.PlaylistEventType.PLAY_FROM_FILE));
+				 parentListener.onEvent(new PlaylistEvent(f.getFile(), PlaylistEvent.PlaylistEventType.PLAY_FROM_FILE).setShowSongView(true));
 			 }
 		});
 		fileTreePopup.add(fileTreePlay);
@@ -288,6 +298,10 @@ public class AbcPlaylistPanel extends JPanel {
 		
 		fileTreeBottomControls = new JPanel(new FlowLayout());
 		
+		JButton dirListButton = new JButton("Directories...");
+		
+//		fileTreeBottomControls.add(dirListButton);
+		
 		JButton refreshTreeButton = new JButton("Refresh");
 		refreshTreeButton.addActionListener(e -> {
 			abcFileTreeModel.refresh();
@@ -316,6 +330,9 @@ public class AbcPlaylistPanel extends JPanel {
 		abcPlaylistLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 		
 		tableModel = new AbcInfoTableModel();
+		tableModel.addTableModelListener(e -> {
+			updatePlaylistLabel();
+		});
 		
 		playlistTable = new JTable(tableModel) {
 			private static final long serialVersionUID = 7474807902173697106L;
@@ -333,7 +350,7 @@ public class AbcPlaylistPanel extends JPanel {
 							BorderFactory.createEmptyBorder(0, 3, 0, 3));
 					jc.setBorder(border);
 					Font f = new JLabel().getFont();
-					f = f.deriveFont(Font.ITALIC);
+					f = f.deriveFont(Font.ITALIC | Font.BOLD);
 					jc.setFont(f);
 				}
 				
@@ -364,6 +381,7 @@ public class AbcPlaylistPanel extends JPanel {
 		playlistTable.setDragEnabled(true);
 		playlistTable.setDropMode(DropMode.INSERT_ROWS);
 		playlistTable.setTransferHandler(new PlaylistTransferHandler(abcFileTree, playlistTable));
+		TableColumnModel tcm = playlistTable.getColumnModel();
 		playlistTable.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -395,10 +413,6 @@ public class AbcPlaylistPanel extends JPanel {
 					playlistTable.setRowSelectionInterval(row, row);
 				}
 			}
-		});
-		
-		tableModel.addTableModelListener(e -> {
-			updatePlaylistLabel();
 		});
 		
 		playlistContentPopupMenu = new JPopupMenu();

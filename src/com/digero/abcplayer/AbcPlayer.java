@@ -432,9 +432,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		playlistToggleButton.setMargin(playControlButtonMargin);
 		playlistToggleButton.addActionListener(e -> {
 			showPlaylistView = !showPlaylistView;
-			// Drop is handled by playlist table if in playlist view
-			AbcPlayer.this.setDropTarget(showPlaylistView? null : mainWindowDropTarget);
-			mainCardPanelLayout.show(mainCardPanel, showPlaylistView? "playlist" : "song");
+			updatePlaylistCardView();
 		});
 
 		tempoBar = new TempoBar(sequencer);
@@ -505,6 +503,11 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 					playlistViewPanel.resetPlaylistPosition();
 					File f = (File)(e.getSource());
 					SwingUtilities.invokeLater(new OpenSongRunnable(false, f));
+					if (e.getShowSongView()) {
+						showPlaylistView = false;
+						updatePlaylistCardView();
+					}
+					break;
 				}
 			}
 		});
@@ -525,6 +528,12 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 		setMinimumSize(new Dimension(320, 168));
 		Util.initWinBounds(this, prefs.node("window"), 450, 282);
+	}
+	
+	private void updatePlaylistCardView() {
+		// Drop is handled by playlist table if in playlist view
+		AbcPlayer.this.setDropTarget(showPlaylistView? null : mainWindowDropTarget);
+		mainCardPanelLayout.show(mainCardPanel, showPlaylistView? "playlist" : "song");
 	}
 
 	@Override

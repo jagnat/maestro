@@ -20,6 +20,8 @@ import info.clearthought.layout.TableLayoutConstants;
 
 public class AbcPlayerSettingsDialog extends JDialog implements TableLayoutConstants{
 	
+	private static final long serialVersionUID = -1718493618042918571L;
+
 	private JTabbedPane tabPanel;
 	
 	private static final int PAD = 4;
