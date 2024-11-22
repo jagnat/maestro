@@ -2094,7 +2094,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 					abcSong.createNewPart();
 				} else {
 					partsList.selectPart(0);
-					updatePreviewMode(true, true);
+					boolean autoplay = miscSettings.autoplayOnOpen;
+					updatePreviewMode(true, autoplay);
 					updateButtons(true);
 				}
 			} else {
@@ -2102,7 +2103,10 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				if (abcSong.getParts().isEmpty()) {
 					abcSong.createNewPart();
 				}
-				sequencer.start();
+				
+				if (miscSettings.autoplayOnOpen) {
+					sequencer.start();
+				}
 			}
 
 			abcSong.setSkipSilenceAtStart(saveSettings.skipSilenceAtStart);

@@ -12,6 +12,7 @@ public class MiscSettings {
 	public String theme = "Flat Light";
 	public int fontSize = 12;
 	public int maxRangeForNewBendMethod = 12;
+	public boolean autoplayOnOpen = true;
 
 	private final Preferences prefs;
 	
@@ -42,6 +43,7 @@ public class MiscSettings {
 		theme = prefs.get("theme", theme);
 		fontSize = prefs.getInt("fontSize", fontSize);
 		maxRangeForNewBendMethod = prefs.getInt("maxRangeForNewBendMethod", maxRangeForNewBendMethod);
+		autoplayOnOpen = prefs.getBoolean("autoplayOnOpen", autoplayOnOpen);
 	}
 
 	public MiscSettings(MiscSettings that) {
@@ -57,6 +59,7 @@ public class MiscSettings {
 		fontSize = that.fontSize;
 		ignoreExpressionMessages = that.ignoreExpressionMessages;
 		maxRangeForNewBendMethod = that.maxRangeForNewBendMethod;
+		autoplayOnOpen = that.autoplayOnOpen;
 	}
 
 	public void saveToPrefs() {
@@ -67,6 +70,7 @@ public class MiscSettings {
 		prefs.put("theme", theme);
 		prefs.putInt("fontSize", fontSize);
 		prefs.putInt("maxRangeForNewBendMethod", maxRangeForNewBendMethod);
+		prefs.putBoolean("autoplayOnOpen", autoplayOnOpen);
 	}
 
 	public void restoreDefaults() {
