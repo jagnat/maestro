@@ -21,9 +21,7 @@ public class AbcFileTreeModel implements TreeModel {
 	
 	public AbcFileTreeModel(List<File> directories) {
 		this.rootNode = new AbcSongFileNode(new File("a_d7mmy_file-name_thatwillnever-9eused"));
-		for (File file : directories) {
-			rootNode.children.add(new AbcSongFileNode(file));
-		}
+		setDirectories(directories);
 	}
 	
 	public void refresh() {
@@ -33,6 +31,13 @@ public class AbcFileTreeModel implements TreeModel {
 		
 		for (TreeModelListener l : listeners) {
 			l.treeStructureChanged(new TreeModelEvent(this, new TreePath(rootNode)));
+		}
+	}
+	
+	public void setDirectories(List<File> directories) {
+		rootNode.children.clear();
+		for (File file : directories) {
+			rootNode.children.add(new AbcSongFileNode(file));
 		}
 	}
 	

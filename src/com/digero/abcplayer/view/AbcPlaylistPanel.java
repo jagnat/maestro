@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import javax.swing.BorderFactory;
@@ -27,6 +28,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
@@ -36,6 +38,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.SwingWorker;
 import javax.swing.ToolTipManager;
 import javax.swing.TransferHandler;
@@ -122,6 +125,7 @@ public class AbcPlaylistPanel extends JPanel {
 	private AbcInfo nowPlayingInfo = null;
 	
 	private Listener<PlaylistEvent> parentListener;
+	private List<File> topLevelDirs = new ArrayList<File>();
 	
 	private Preferences playlistPrefs;
 	
@@ -147,10 +151,15 @@ public class AbcPlaylistPanel extends JPanel {
 		});
 		add(browserSplitPane, BorderLayout.CENTER);
 		
-		ArrayList<File> tlds = new ArrayList<File>();
-		tlds.add(Util.getLotroMusicPath(false));
+		{
+			String directoryStr = prefs.get("directories", Util.getLotroMusicPath(false).getAbsolutePath());
+			String[] dirs = directoryStr.split(File.pathSeparator);
+			for (String dirStr : dirs) {
+				topLevelDirs.add(new File(dirStr));
+			}
+		}
 		
-		abcFileTreeModel = new AbcFileTreeModel(tlds);
+		abcFileTreeModel = new AbcFileTreeModel(topLevelDirs);
 		abcFileTreeModel.refresh();
 		
 		abcFileTree = new JTree();
@@ -299,8 +308,19 @@ public class AbcPlaylistPanel extends JPanel {
 		fileTreeBottomControls = new JPanel(new FlowLayout());
 		
 		JButton dirListButton = new JButton("Directories...");
-		
-//		fileTreeBottomControls.add(dirListButton);
+		dirListButton.addActionListener(e -> {
+			JFrame f = (JFrame)SwingUtilities.getWindowAncestor(this);
+			PlaylistDirectoryDialog d = new PlaylistDirectoryDialog(f, topLevelDirs);
+			if (d.isSuccess()) {
+				List<String> dirs = d.getDirectories();
+				String newPrefString = String.join(File.pathSeparator, dirs);
+				prefs.put("directories", newPrefString);
+				topLevelDirs = dirs.stream().map(File::new).collect(Collectors.toList());
+				abcFileTreeModel.setDirectories(topLevelDirs);
+				abcFileTreeModel.refresh();
+			}
+		});
+		fileTreeBottomControls.add(dirListButton);
 		
 		JButton refreshTreeButton = new JButton("Refresh");
 		refreshTreeButton.addActionListener(e -> {
