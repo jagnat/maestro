@@ -412,7 +412,12 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		stopIconDisabled = IconLoader.getDisabledIcon("stop.png");
 		
 		final Insets playControlButtonMargin = new Insets(5, 20, 5, 20);
-		playlistIcon = IconLoader.getImageIcon("playlist.png");
+		if (!Themer.isDarkMode()) {
+			playlistIcon = IconLoader.getImageIcon("playlist.png");
+		} else {
+			playlistIcon = IconLoader.getImageIcon("playlist_dark.png");
+		}
+		
 
 		playButton = new JButton(playIcon);
 		playButton.setDisabledIcon(playIconDisabled);
