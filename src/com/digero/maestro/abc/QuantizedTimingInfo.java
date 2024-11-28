@@ -178,7 +178,7 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 
 				if (lengthTicks == 0L) {
 					// The prev tempo event was quantized to zero-length; remove it
-					if (oddsAndEnds) {
+					if (oddsAndEnds || prevMidiTempoEvent.tick == 0L) {
 						// Put the current event at prev events place, when we remove prev.
 						tick = prevMidiTempoEvent.tick;
 						// Be careful here. this line will make sure less events is removed,
@@ -848,10 +848,13 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 	TimingInfoEvent getTimingEventForTick(long tick, AbcPart part) {
 		if (oddsAndEnds)
 			return oddTimingInfoByTick.get(part).floorEntry(tick).getValue();
-		return timingInfoByTick.floorEntry(tick).getValue();
+		return getTimingEventForTick(tick);
 	}
 
 	TimingInfoEvent getTimingEventForTick(long tick) {
+		if (timingInfoByTick.floorEntry(tick) == null) {
+			System.err.println("ERROR: Asking for timing event at tick "+tick);
+		}
 		return timingInfoByTick.floorEntry(tick).getValue();
 	}
 

@@ -46,8 +46,9 @@ Thanks to all who gave feedback of features, bugs plus suggestions.
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
 
-Version 3.3.18
+Version 3.3.20
 - Add option to disable auto playing files on open in Maestro, accessible in the misc settings panel
+- Possible fix for preview could break without mix timings enabled when loading from project file.
 
 Version 3.3.17
 - Add a new Xtra Clap drum sound
