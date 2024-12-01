@@ -15,6 +15,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
@@ -28,6 +29,7 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JFormattedTextField;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -45,6 +47,10 @@ import javax.swing.ToolTipManager;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
@@ -124,6 +130,9 @@ public class AbcPlaylistPanel extends JPanel {
 	
 	// Bottom
 	private JPanel bottomControls;
+	private JButton nextSongButton;
+	private JButton prevSongButton;
+	private JTextField delayField;
 	
 	private JFileChooser openPlaylistChooser = null;
 	private JFileChooser savePlaylistChooser = null;
@@ -357,10 +366,7 @@ public class AbcPlaylistPanel extends JPanel {
 		abcPlaylistLabel.setFont(f.deriveFont(Font.BOLD, f.getSize2D()));
 		abcPlaylistLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 		
-		JTextField playlistNameField = new JTextField();
-		
 		topPanel.add(abcPlaylistLabel);
-//		topPanel.add(playlistNameField);
 		
 		tableModel = new AbcInfoTableModel();
 		tableModel.addTableModelListener(e -> {
@@ -429,12 +435,16 @@ public class AbcPlaylistPanel extends JPanel {
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				if (e.getClickCount() == 2 && e.getButton() == MouseEvent.BUTTON1) {
+					if (playlistTable.getSelectedRow() == -1) {
+						return;
+					}
 					AbcInfo info = tableModel.getAbcInfoAt(playlistTable.getSelectedRow());
-					nowPlayingInfo = info;
+					setNowPlayingInfo(info);
 					if (parentListener != null) {
 						 parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
 					}
-					playlistTable.repaint();
+				} else if (e.getButton() == MouseEvent.BUTTON2) {
+					
 				}
 			}
 			
@@ -452,20 +462,43 @@ public class AbcPlaylistPanel extends JPanel {
 		JMenuItem playItem = new JMenuItem("Play");
 		playItem.addActionListener(e -> {
 			AbcInfo info = tableModel.getAbcInfoAt(playlistTable.getSelectedRow());
-			nowPlayingInfo = info;
-			playlistTable.repaint();
+			setNowPlayingInfo(info);
 			if (parentListener != null) {
 				parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
 			}
 		});
 		playlistContentPopupMenu.add(playItem);
-		JMenuItem removeItem = new JMenuItem("Remove");
+		JMenuItem removeItem = new JMenuItem("Remove Selected");
 		removeItem.addActionListener(e -> {
 			while (playlistTable.getSelectedRow() != -1) {
 				tableModel.removeRow(playlistTable.getSelectedRow());
 			}
 		});
 		playlistContentPopupMenu.add(removeItem);
+		playlistContentPopupMenu.addPopupMenuListener(new PopupMenuListener() {
+
+			@Override
+			public void popupMenuCanceled(PopupMenuEvent e) {
+			}
+
+			@Override
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+			}
+
+			@Override
+			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+				boolean enabled = playlistTable.getSelectedRow() != -1;
+				if (enabled) {
+					AbcInfo info = tableModel.getAbcInfoAt(playlistTable.getSelectedRow());
+					playItem.setText("Play '" + info.getTitle() + "'");
+				} else {
+					playItem.setText("Play");
+				}
+				playItem.setEnabled(enabled);
+				removeItem.setEnabled(enabled);
+			}
+			
+		});
 		playlistTable.setComponentPopupMenu(playlistContentPopupMenu);
 		
 		playlistHeaderPopupMenu = new JPopupMenu();
@@ -523,13 +556,64 @@ public class AbcPlaylistPanel extends JPanel {
 				return;
 			}
 			AbcInfo info = tableModel.getAbcInfoAt(0);
-			nowPlayingInfo = info;
-			playlistTable.repaint();
+			setNowPlayingInfo(info);
 			if (parentListener != null) {
 				parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
 			}
 		});
-		JTextField delayField = new JTextField("Delay");
+		nextSongButton = new JButton("Next Song");
+		nextSongButton.setEnabled(false);
+		nextSongButton.addActionListener(e -> {
+			int newIdx = tableModel.getIdxForAbcInfo(nowPlayingInfo) + 1;
+			if (newIdx >= tableModel.getRowCount()) {
+				return;
+			}
+
+			AbcInfo info = tableModel.getAbcInfoAt(newIdx);
+			setNowPlayingInfo(info);
+			if (parentListener != null) {
+	 			parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
+ 			}
+		});
+		prevSongButton = new JButton("Prev Song");
+		prevSongButton.setEnabled(false);
+		prevSongButton.addActionListener(e -> {
+			int newIdx = tableModel.getIdxForAbcInfo(nowPlayingInfo) - 1;
+			if (newIdx < 0) {
+				return;
+			}
+
+			AbcInfo info = tableModel.getAbcInfoAt(newIdx);
+			setNowPlayingInfo(info);
+			if (parentListener != null) {
+	 			parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
+ 			}
+		});
+		JLabel delayLabel = new JLabel("Song switch delay (seconds):");
+		delayField = new JTextField(playlistPrefs.get("delayInSecs", ""));
+		delayField.addKeyListener(new KeyAdapter() {
+			public void keyTyped(KeyEvent e) {
+				char c = e.getKeyChar();
+				if ((c < '0' || c > '9') && c != KeyEvent.VK_BACK_SPACE && c != KeyEvent.VK_DELETE) {
+					getToolkit().beep();
+					e.consume();
+				}
+			}
+		});
+		delayField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) { changed(e); }
+			@Override
+			public void insertUpdate(DocumentEvent e) { changed(e); }
+			@Override
+			public void changedUpdate(DocumentEvent e) { changed(e); }
+			
+			public void changed(DocumentEvent e) {
+				updatePlaylistLabel();
+				playlistPrefs.put("delayInSecs", delayField.getText());
+			}
+		});
+		delayField.setColumns(4);
 		
 //		playlistBottomControls = new JPanel(new FlowLayout());
 //		playlistBottomControls.add(autoplayCheckBox);
@@ -544,13 +628,16 @@ public class AbcPlaylistPanel extends JPanel {
 		bottomControls.add(new JPanel(), "pushx 200");
 		
 		bottomControls.add(autoplayCheckBox);
+		bottomControls.add(prevSongButton);
 		bottomControls.add(playPlaylistButton);
-		bottomControls.add(delayField);
+		bottomControls.add(nextSongButton);
 		bottomControls.add(savePlaylistButton, "wrap");
 		
 		// New row
 		bottomControls.add(refreshTreeButton, "sg dir");
-		bottomControls.add(loadPlaylistButton, "skip 5");
+		bottomControls.add(delayLabel, "skip 3, span 3, split 2");
+		bottomControls.add(delayField);
+		bottomControls.add(loadPlaylistButton);
 		
 		add(bottomControls, BorderLayout.SOUTH);
 		
@@ -660,15 +747,26 @@ public class AbcPlaylistPanel extends JPanel {
 		
 		if (newIdx > 0) {
 			AbcInfo info = tableModel.getAbcInfoAt(newIdx);
-			nowPlayingInfo = info;
+			setNowPlayingInfo(info);
 			if (parentListener != null) {
 	 			parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
  			}
 		}
 		else {
-			nowPlayingInfo = null;
+			setNowPlayingInfo(null);
 		}
-		
+	}
+	
+	private void setNowPlayingInfo(AbcInfo nowPlaying) {
+		nowPlayingInfo = nowPlaying;
+		if (nowPlayingInfo == null) {
+			nextSongButton.setEnabled(false);
+			prevSongButton.setEnabled(false);
+		} else {
+			int idx = tableModel.getIdxForAbcInfo(nowPlayingInfo);
+			prevSongButton.setEnabled(idx > 0);
+			nextSongButton.setEnabled(idx < tableModel.getRowCount() - 1);
+		}
 		playlistTable.repaint();
 	}
 	
@@ -689,17 +787,32 @@ public class AbcPlaylistPanel extends JPanel {
 		
 		String labelStr = "ABC Playlist";
 		
+		long totalTimeWithDelayMicroSec = totalTimeMicroSec;
+		
+		if (!delayField.getText().isEmpty() && numSongs > 0) {
+			try {
+				int delaySec = Integer.parseInt(delayField.getText());
+				// Add (songs - 1) * part switch delay to total time
+				// e.g. with two songs in playlist, there is one part switch
+				totalTimeWithDelayMicroSec = totalTimeWithDelayMicroSec + (numSongs - 1) * (delaySec * 1000000l);
+			} catch (NumberFormatException e) {
+			}
+		}
+		
 		if (totalTimeMicroSec != 0) {
 			String songs = " Song" + (numSongs > 1? "s" : "");
-			labelStr += " (" + numSongs + songs +  ", Total time: " + Util.formatDuration(totalTimeMicroSec) + ")";
+			labelStr += " (" + numSongs + songs +  ", Time: [" + Util.formatDuration(totalTimeMicroSec) + "]";
+			if (totalTimeWithDelayMicroSec != totalTimeMicroSec) {
+				labelStr += ", With Switches: [" + Util.formatDuration(totalTimeWithDelayMicroSec) + "]";
+			}
+			labelStr += ")";
 		}
 		
 		abcPlaylistLabel.setText(labelStr);
 	}
 	
 	public void resetPlaylistPosition() {
-		nowPlayingInfo = null;
-		playlistTable.repaint();
+		setNowPlayingInfo(null);
 	}
 	
 	private void addTreePathsToPlaylist(TreePath[] paths) {
