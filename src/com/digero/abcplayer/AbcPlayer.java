@@ -374,6 +374,18 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 			// the sequencer field will never be uninitialized
 			throw new RuntimeException();
 		}
+		
+		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				if (playlistViewPanel.promptSavePlaylist()) {
+					setVisible(false);
+					dispose();
+					System.exit(0);
+				}
+			}
+		});
 
 		content = new JPanel(new TableLayout(//
 				new double[] { 4, FILL, 4 }, //
@@ -454,14 +466,6 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		volumeLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		volumePanel.add(volumeLabel, BorderLayout.NORTH);
 		volumePanel.add(volumeBar, BorderLayout.CENTER);
-
-//		controlPanel.add(songPositionBar, "1, 1, 9, 1");
-//		controlPanel.add(songPositionLabel, "11, 1");
-//		controlPanel.add(playButton, "4, 3");
-//		controlPanel.add(stopButton, "6, 3");
-//		controlPanel.add(tempoPanel, "2, 3, c, c");
-//		controlPanel.add(volumePanel, "8, 3, c, c");
-//		controlPanel.add(barNumberLabel, "9, 3, 11, 3, r, t");
 		
 		controlPanel.add(songPositionBar, "spanx 5, growx");
 		controlPanel.add(songPositionLabel, "right");
@@ -751,7 +755,13 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		JMenuItem exit = fileMenu.add(new JMenuItem("Exit"));
 		exit.setMnemonic(KeyEvent.VK_X);
 		exit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F4, InputEvent.ALT_DOWN_MASK));
-		exit.addActionListener(e -> System.exit(0));
+		exit.addActionListener(e -> {
+			if (playlistViewPanel.promptSavePlaylist()) {
+				setVisible(false);
+				dispose();
+				System.exit(0);
+			}
+		});
 
 		fileMenu.addMenuListener(new MenuListener() {
 			@Override
