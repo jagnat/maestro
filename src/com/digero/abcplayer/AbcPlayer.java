@@ -145,7 +145,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		}
 
 		mainWindow = new AbcPlayer();
-		mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//		mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		mainWindow.setVisible(true);
 		mainWindow.openSongFromCommandLine(args);
 		try {

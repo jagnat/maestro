@@ -645,8 +645,8 @@ public class AbcPlaylistPanel extends JPanel {
 		
 		// New row
 		bottomControls.add(refreshTreeButton, "sg dir");
-		bottomControls.add(delayLabel, "skip 2, span 3, split 2");
-		bottomControls.add(delayField);
+		bottomControls.add(delayLabel, "skip 2, span 2, align right");
+		bottomControls.add(delayField, "align center");
 		bottomControls.add(newPlaylistButton, "sg play");
 		bottomControls.add(loadPlaylistButton);
 		
