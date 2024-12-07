@@ -639,12 +639,6 @@ public class AbcPlaylistPanel extends JPanel {
 		});
 		delayField.setColumns(4);
 		
-//		playlistBottomControls = new JPanel(new FlowLayout());
-//		playlistBottomControls.add(autoplayCheckBox);
-//		playlistBottomControls.add(savePlaylistButton);
-//		playlistBottomControls.add(loadPlaylistButton);
-//		playlistBottomControls.add(playPlaylistButton);
-//		playlistBottomControls.add(delayField);
 		bottomControls = new JPanel(new MigLayout("fillx"));
 		bottomControls.add(dirListButton, "sg dir");
 		bottomControls.add(addToPlaylistButton);

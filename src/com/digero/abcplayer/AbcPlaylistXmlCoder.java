@@ -19,7 +19,7 @@ import com.digero.maestro.util.XmlUtil;
 
 public class AbcPlaylistXmlCoder {
 	
-	public static final Version ABC_PLAYLIST_VERSION = new Version(3, 3, 18, 300);
+	public static final Version ABC_PLAYLIST_VERSION = new Version(3, 4, 0, 300);
 	
 	public static Document savePlaylistToXml(List<AbcInfo> abcs) {
 		Document doc = XmlUtil.createDocument();

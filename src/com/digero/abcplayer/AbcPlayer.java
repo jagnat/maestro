@@ -265,12 +265,6 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 					sequencer.close();
 			}
 		});
-		
-//		try {
-//			UIManager.setLookAndFeel(new FlatMacLightLaf());
-//		} catch (UnsupportedLookAndFeelException e) {
-//			e.printStackTrace();
-//		}
 
 		try {
 			List<Image> icons = new ArrayList<>();
