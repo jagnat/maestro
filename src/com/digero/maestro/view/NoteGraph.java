@@ -544,7 +544,13 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 
 	@Override
 	protected void paintComponent(Graphics g) {
+		
+		long PROFILEparentPaint = System.nanoTime();
 		super.paintComponent(g);
+		PROFILEparentPaint = System.nanoTime() - PROFILEparentPaint;
+		
+		
+		long PROFILEinitXforms = System.nanoTime();
 		Graphics2D g2 = (Graphics2D) g;
 
 		Object hintAntialiasSav = g2.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
@@ -558,6 +564,7 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 		long clipPosEnd = Long.MAX_VALUE;
 
 		Rectangle clipRect = g2.getClipBounds();
+		
 		if (clipRect != null) {
 			// Add +/- 2 to account for antialiasing (1 would probably be enough)
 			Point2D.Double leftPoint = new Point2D.Double(clipRect.getMinX() - 2, clipRect.getMinY());
@@ -574,7 +581,9 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 		}
 
 		g2.transform(xform);
+		PROFILEinitXforms = System.nanoTime() - PROFILEinitXforms;
 
+		long PROFILEbarLines = System.nanoTime();
 		if (sequenceInfo != null) {
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 
@@ -661,7 +670,9 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 				g2.fill(rectTmp);
 			}
 		}
-
+		PROFILEbarLines = System.nanoTime() - PROFILEbarLines;
+		
+		long PROFILEoctaveLines = System.nanoTime();
 		if (octaveLinesVisible) {
 			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 
@@ -688,7 +699,9 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 			rectTmp.setRect(0, y2, sequencer.getLength(), lineHeight);
 			g2.fill(rectTmp);
 		}
+		PROFILEoctaveLines = System.nanoTime() - PROFILEoctaveLines;
 
+		long PROFILErenderNotes = System.nanoTime();
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
 		boolean showNotesOn = isShowingNotesOn() && songPos >= 0;
@@ -979,7 +992,38 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 
 		g2.setTransform(xformSav);
 		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, hintAntialiasSav);
+		PROFILErenderNotes = System.nanoTime() - PROFILErenderNotes;
+		
+		PROFILEbarLinesEma = (long)(PROFILEbarLines * 0.2 + PROFILEbarLinesEma * 0.8);
+		PROFILEinitXformsEma = (long)(PROFILEinitXforms * 0.2 + PROFILEinitXformsEma * 0.8);
+		PROFILEoctaveLinesEma = (long)(PROFILEoctaveLines * 0.2 + PROFILEoctaveLinesEma * 0.8);
+		PROFILEparentPaintEma = (long)(PROFILEparentPaint * 0.2 + PROFILEparentPaintEma * 0.8);
+		PROFILErenderNotesEma = (long)(PROFILErenderNotes * 0.2 + PROFILErenderNotesEma * 0.8);
+		
+		tick++;
+		if (tick % 300 == 0) {
+			long total = PROFILEbarLinesEma + PROFILEinitXformsEma + PROFILEoctaveLinesEma + PROFILEparentPaintEma + PROFILErenderNotesEma;
+			long bl = PROFILEbarLinesEma * 100 / total;
+			long xf = PROFILEinitXformsEma * 100 / total;
+			long ol = PROFILEoctaveLinesEma * 100 / total;
+			long pp = PROFILEparentPaintEma * 100 / total;
+			long rn = PROFILErenderNotesEma * 100 / total;
+			System.out.println("rn:" + rn + " bl:" + bl + " ol:" + ol + " xf:" + xf + " pp:" + pp);
+			System.out.println(
+					"barLines:" + PROFILEbarLinesEma +
+					" initXforms:" + PROFILEinitXformsEma + 
+					" octaveLines:" + PROFILEoctaveLinesEma + 
+					" parentPaint:" + PROFILEparentPaintEma + 
+					" renderNotes:" + PROFILErenderNotesEma);
+		}
 	}
+
+	static long tick = 0;
+	static long PROFILEbarLinesEma = 0;
+	static long PROFILEinitXformsEma = 0;
+	static long PROFILEoctaveLinesEma = 0;
+	static long PROFILEparentPaintEma = 0;
+	static long PROFILErenderNotesEma = 0;
 
 	protected List<Pair<Long, Long>> getMicrosModified(long from, long to) {
 		return null;
