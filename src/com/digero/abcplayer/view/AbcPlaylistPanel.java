@@ -558,7 +558,7 @@ public class AbcPlaylistPanel extends JPanel {
 				loadPlaylist();	
 			}
 		});
-		JButton newPlaylistButton = new JButton("New Playlist");
+		JButton newPlaylistButton = new JButton("Clear Playlist");
 		newPlaylistButton.setFocusable(false);
 		newPlaylistButton.addActionListener(e -> {
 			if (promptSavePlaylist()) {
@@ -829,6 +829,10 @@ public class AbcPlaylistPanel extends JPanel {
 	
 	public void advanceToNextSongIfNeeded() {
 		if (!autoplayCheckBox.isSelected()) {
+			return;
+		}
+		
+		if (tableModel.getRowCount() == 0) {
 			return;
 		}
 		
