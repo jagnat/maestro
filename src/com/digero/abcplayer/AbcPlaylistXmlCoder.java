@@ -1,8 +1,12 @@
 package com.digero.abcplayer;
 
+import static java.awt.Frame.getFrames;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.JOptionPane;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -49,10 +53,16 @@ public class AbcPlaylistXmlCoder {
 			Version fileVersion = SaveUtil.parseValue(playlistEle, "@fileVersion", ABC_PLAYLIST_VERSION);
 			
 			if (fileVersion.compareTo(ABC_PLAYLIST_VERSION) > 0) {
-				// TODO: Warn?
+				JOptionPane.showMessageDialog(getFrames()[0],
+						"This playlist was created using a newer version of AbcPlayer. It is suggested to upgrade AbcPlayer before loading this.",
+						"Warning", JOptionPane.WARNING_MESSAGE);
 			}
 			
 			Element trackListEle = XmlUtil.selectSingleElement(playlistEle, "trackList");
+			if (trackListEle == null) {
+				throw new ParseException("Does not appear to be a valid AbcPlayer playlist.",
+						playlistPath.getName());
+			}
 			
 			for (Element songEle : XmlUtil.selectElements(trackListEle, "track")) {
 				List<File> songFiles = new ArrayList<File>();
@@ -65,7 +75,7 @@ public class AbcPlaylistXmlCoder {
 				}
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			throw new ParseException ("Failed to parse AbcPlayer playlist file.", playlistPath.getName());
 		}
 		
 		return files;
