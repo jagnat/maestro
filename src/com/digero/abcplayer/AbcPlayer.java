@@ -444,7 +444,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		stopButton.addActionListener(e -> stop());
 		
 		playlistToggleButton = new JButton(playlistIcon);
-		playlistToggleButton.setToolTipText("Toggle between the current song view and the playlist view");
+		playlistToggleButton.setToolTipText("Toggle between the current song view and the ABC browser / playlist view");
 		playlistToggleButton.setFocusable(false);
 		playlistToggleButton.setMargin(playControlButtonMargin);
 		playlistToggleButton.addActionListener(e -> {

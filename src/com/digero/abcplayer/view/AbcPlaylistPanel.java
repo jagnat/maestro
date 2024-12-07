@@ -320,6 +320,7 @@ public class AbcPlaylistPanel extends JPanel {
 		fileTreeScrollPane = new JScrollPane(abcFileTree, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		
 		JButton dirListButton = new JButton("Directories...");
+		dirListButton.setToolTipText("Configure which directories show up in the ABC Browser.");
 		dirListButton.addActionListener(e -> {
 			JFrame f = (JFrame)SwingUtilities.getWindowAncestor(this);
 			PlaylistDirectoryDialog d = new PlaylistDirectoryDialog(f, topLevelDirs);
@@ -335,17 +336,20 @@ public class AbcPlaylistPanel extends JPanel {
 
 		
 		JButton refreshTreeButton = new JButton("Refresh");
+		refreshTreeButton.setToolTipText("Refresh the ABC Browser to update it with new or deleted ABC files.");
 		refreshTreeButton.addActionListener(e -> {
 			abcFileTreeModel.refresh();
 		});
 		
-		addToPlaylistButton = new JButton(">>");
+		addToPlaylistButton = new JButton("Add Selected");
+		addToPlaylistButton.setToolTipText("<html>Add the selected songs in the ABC Browser to the playlist.<br> Control-click or shift-click to select multiple songs.</html>");
 		addToPlaylistButton.setEnabled(false);
 		addToPlaylistButton.addActionListener(e -> {
 			addTreePathsToPlaylist(abcFileTree.getSelectionPaths());
 		});
 		
 		JLabel abcBrowserLabel = new JLabel("ABC Browser");
+		abcBrowserLabel.setToolTipText("<html>Browser for your ABC files.<br>Double-click a song to play it, or drag selected songs to the playlist panel.</html>");
 		Font f = abcBrowserLabel.getFont();
 		abcBrowserLabel.setFont(f.deriveFont(Font.BOLD, f.getSize2D()));
 		abcBrowserLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
@@ -512,11 +516,13 @@ public class AbcPlaylistPanel extends JPanel {
 		playlistScrollPane.setViewportView(playlistTable);
 		
 		autoplayCheckBox = new JCheckBox("Autoplay");
+		autoplayCheckBox.setToolTipText("When checked, playlist playback will automatically advance to the next song.");
 		autoplayCheckBox.setFocusable(false);
-		autoplayCheckBox.setSelected(playlistPrefs.getBoolean("autoplay", false));
+		autoplayCheckBox.setSelected(playlistPrefs.getBoolean("autoplay", true));
 		autoplayCheckBox.addActionListener(e -> {
 			playlistPrefs.putBoolean("autoplay", autoplayCheckBox.isSelected());
 		});
+		// TODO: Unused
 		JButton moveUpButton = new JButton("Move Up");
 		moveUpButton.setFocusable(false);
 		moveUpButton.setEnabled(false);
@@ -528,6 +534,7 @@ public class AbcPlaylistPanel extends JPanel {
 			tableModel.moveRows(new int[] {row}, row - 1);
 			playlistTable.setRowSelectionInterval(row - 1, row - 1);
 		});
+		// TODO: Unused
 		JButton moveDownButton = new JButton("Move Down");
 		moveDownButton.setFocusable(false);
 		moveDownButton.setEnabled(false);
@@ -560,6 +567,7 @@ public class AbcPlaylistPanel extends JPanel {
 			}
 		});
 		JButton playPlaylistButton = new JButton("Play");
+		playPlaylistButton.setToolTipText("Play playlist starting from the first song.");
 		playPlaylistButton.setFocusable(false);
 		playPlaylistButton.addActionListener(e -> {
 			if (tableModel.getRowCount() == 0) {
@@ -599,8 +607,14 @@ public class AbcPlaylistPanel extends JPanel {
 	 			parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
  			}
 		});
+		String delayToolTipText = "<html>Configure song switch delay.<br>"+
+				"Used to simulate the total setlist time, including the time it takes to switch parts between each song.<br>"+
+				"Set it to the average number of seconds it takes your band to switch songs, and the total time of the set<br>"+
+				"including song switches will be calculated and displayed next to the playlist title.</html>";
 		JLabel delayLabel = new JLabel("Song switch delay (seconds):");
+		delayLabel.setToolTipText(delayToolTipText);
 		delayField = new JTextField(playlistPrefs.get("delayInSecs", ""));
+		delayField.setToolTipText(delayToolTipText);
 		delayField.addKeyListener(new KeyAdapter() {
 			public void keyTyped(KeyEvent e) {
 				char c = e.getKeyChar();
