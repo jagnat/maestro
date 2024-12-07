@@ -372,6 +372,11 @@ public class AbcPlaylistPanel extends JPanel {
 				playlistDirtyFlag = false;
 			}
 			updatePlaylistLabel();
+			
+			if (tableModel.getRowCount() == 0) {
+				nextSongButton.setEnabled(false);
+				prevSongButton.setEnabled(false);
+			}
 		});
 		
 		playlistTable = new JTable(tableModel) {
