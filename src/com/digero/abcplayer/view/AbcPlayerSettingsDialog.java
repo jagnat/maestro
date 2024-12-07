@@ -20,6 +20,8 @@ import info.clearthought.layout.TableLayoutConstants;
 
 public class AbcPlayerSettingsDialog extends JDialog implements TableLayoutConstants{
 	
+	private static final long serialVersionUID = -1718493618042918571L;
+
 	private JTabbedPane tabPanel;
 	
 	private static final int PAD = 4;
@@ -40,7 +42,6 @@ public class AbcPlayerSettingsDialog extends JDialog implements TableLayoutConst
 		okButton.addActionListener(e -> {
 			prefs.put("theme", (String)themeBox.getSelectedItem());
 			prefs.putInt("fontSize", Integer.parseInt((String) fontBox.getSelectedItem()));
-			System.out.println("test");
 			AbcPlayerSettingsDialog.this.setVisible(false);
 		});
 		

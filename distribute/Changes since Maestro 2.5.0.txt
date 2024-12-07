@@ -46,6 +46,21 @@ Thanks to all who gave feedback of features, bugs plus suggestions.
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
 
+Version 3.4.0
+- Add a playlist feature to AbcPlayer
+  - Access the playlist panel by pressing the new button next to the stop button
+  - Browse and add songs to the playlist in the file explorer on the left side
+    - Drag and drop songs to the right side, or use the Add Selected button
+    - Play songs directly from the ABC browser by double-clicking, or right-clicking
+    - Customize which folders show up in the browser using the Directories button
+  - Drag and drop songs within the playlist to reorder them
+  - Play the playlist and move forward and backward with the playlist control buttons under the playlist panel
+    - if the Autoplay checkbox is selected, the playlist will automatically start playing the next song until the end
+    - You can also double-click on songs in the playlist to start playing from that song
+  - Save and load playlist files with the .abcp extension
+  - Use the playlist to plan your sets
+    - The song switch delay feature lets you simulate part switch delay for your band, and calculates the total runtime of the playlist including switches 
+
 Version 3.3.21
 - Add option to disable auto playing files on open in Maestro, accessible in the misc settings panel
 - Fix for abc preview could break without mix timings enabled.

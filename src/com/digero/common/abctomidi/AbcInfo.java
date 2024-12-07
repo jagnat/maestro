@@ -1,6 +1,9 @@
 package com.digero.common.abctomidi;
 
+import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
@@ -29,6 +32,7 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 	}
 
 	private boolean empty = true;
+	private List<File> abcFiles;
 	private String titlePrefix;
 	private Map<Character, String> metadata = new HashMap<>();
 	private NavigableMap<Long, Integer> bars = new TreeMap<>();
@@ -42,6 +46,7 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 	private String songTitle = null;
 	private String songComposer = null;
 	private String songTranscriber = null;
+	private String songDuration = null;
 	private String genre = null;
 	private String mood = null;
 	private TimeSignature timeSignature = TimeSignature.FOUR_FOUR;
@@ -49,6 +54,7 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 
 	void reset() {
 		empty = true;
+		abcFiles = null;
 		titlePrefix = null;
 		metadata.clear();
 		bars.clear();
@@ -56,11 +62,23 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 		songTitle = null;
 		songComposer = null;
 		songTranscriber = null;
+		songDuration = null;
 		hasTriplets = false;
 		hasTripletsSet = false;
 		hasMixTimings = true;
 		timeSignature = TimeSignature.FOUR_FOUR;
 		keySignature = KeySignature.C_MAJOR;
+	}
+	
+	public List<File> getSourceFiles() {
+		return abcFiles;
+	}
+	
+	public void addSourceFile(File file) {
+		if (abcFiles == null) {
+			abcFiles = new ArrayList<File>();
+		}
+		abcFiles.add(file);
 	}
 
 	public String getComposer() {
@@ -143,6 +161,10 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 	public boolean hasMixTimings() {
 		return hasMixTimings;
 	}
+	
+	public String getSongDurationStr() {
+		return songDuration;
+	}
 
 	public int getPartNumber(int trackIndex) {
 		AbcInfo.PartInfo info = partInfoByIndex.get(trackIndex);
@@ -156,6 +178,10 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 		if (info == null)
 			return LotroInstrument.DEFAULT_INSTRUMENT;
 		return info.instrument;
+	}
+	
+	public int getPartCount() {
+		return partInfoByIndex.size();
 	}
 
 	public String getPartName(int trackIndex) {
@@ -262,12 +288,14 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 			case MIX_TIMINGS:
 				hasMixTimings = Boolean.parseBoolean(value.trim());
 				break;
+			case SONG_DURATION:
+				songDuration = value.trim();
+				break;
 			case ABC_CREATOR:
 			case ABC_VERSION:
 			case PART_NAME:
 			case MADE_FOR:
 			case EXPORT_TIMESTAMP:
-			case SONG_DURATION:
 			case TEMPO:
 			case DELETE_MINIMAL_NOTES:
 			case SKIP_SILENCE_AT_START:

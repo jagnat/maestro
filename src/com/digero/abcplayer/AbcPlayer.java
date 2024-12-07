@@ -1,6 +1,7 @@
 package com.digero.abcplayer;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -63,10 +64,13 @@ import javax.swing.KeyStroke;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 
 import com.digero.abcplayer.view.AbcPlayerSettingsDialog;
+import com.digero.abcplayer.view.AbcPlaylistPanel;
+import com.digero.abcplayer.view.AbcPlaylistPanel.PlaylistEvent;
 import com.digero.abcplayer.view.HighlightAbcNotesFrame;
 import com.digero.abcplayer.view.TrackListPanel;
 import com.digero.abcplayer.view.TrackListPanelCallback;
@@ -82,6 +86,7 @@ import com.digero.common.midi.SequencerWrapper;
 import com.digero.common.midi.VolumeTransceiver;
 import com.digero.common.util.ExtensionFileFilter;
 import com.digero.common.util.FileFilterDropListener;
+import com.digero.common.util.Listener;
 import com.digero.common.util.LotroParseException;
 import com.digero.common.util.ParseException;
 import com.digero.common.util.Themer;
@@ -140,7 +145,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		}
 
 		mainWindow = new AbcPlayer();
-		mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+//		mainWindow.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		mainWindow.setVisible(true);
 		mainWindow.openSongFromCommandLine(args);
 		try {
@@ -195,12 +200,19 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 	private boolean useLotroInstruments = true;
 
 	private FileFilterDropListener dropListener;
+	private DropTarget mainWindowDropTarget;
 
 	private JPanel content;
 
 	private JLabel titleLabel;
 
 	private TrackListPanel trackListPanel;
+	
+	private boolean showPlaylistView = false;
+	private JPanel mainCardPanel;
+	private CardLayout mainCardPanelLayout;
+	private JPanel songViewPanel;
+	private AbcPlaylistPanel playlistViewPanel;
 
 	private SongPositionBar songPositionBar;
 	private SongPositionLabel songPositionLabel;
@@ -216,8 +228,10 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 	private ImageIcon playIconDisabled;
 	private ImageIcon pauseIconDisabled;
 	private ImageIcon stopIconDisabled;
+	private ImageIcon playlistIcon;
 	private JButton playButton;
 	private JButton stopButton;
+	private JButton playlistToggleButton;
 
 	private JCheckBoxMenuItem lotroErrorsMenuItem;
 	private JCheckBoxMenuItem stereoMenuItem;
@@ -265,9 +279,10 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		dropListener.addActionListener(e -> {
 			FileFilterDropListener l = (FileFilterDropListener) e.getSource();
 			boolean append = (l.getDropEvent().getDropAction() == DnDConstants.ACTION_COPY);
+			playlistViewPanel.resetPlaylistPosition();
 			SwingUtilities.invokeLater(new OpenSongRunnable(append, l.getDroppedFiles().toArray(new File[0])));
 		});
-		new DropTarget(this, dropListener);
+		mainWindowDropTarget = new DropTarget(this, dropListener);
 
 		if (isVolumeSupportedSafe()) {
 			volumeTransceiver = null;
@@ -353,15 +368,27 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 			// the sequencer field will never be uninitialized
 			throw new RuntimeException();
 		}
+		
+		setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				if (playlistViewPanel.promptSavePlaylist()) {
+					setVisible(false);
+					dispose();
+					System.exit(0);
+				}
+			}
+		});
 
 		content = new JPanel(new TableLayout(//
 				new double[] { 4, FILL, 4 }, //
-				new double[] { PREFERRED, 0, FILL, 8, PREFERRED }));
+				new double[] { FILL, 8, PREFERRED }));
 		setContentPane(content);
 
 		titleLabel = new JLabel(" ");
 		Font f = titleLabel.getFont();
-		titleLabel.setFont(f.deriveFont(Font.BOLD, 16));
+		titleLabel.setFont(f.deriveFont(Font.BOLD, f.getSize2D() * 1.3f));
 		titleLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 
 		trackListPanel = new TrackListPanel(sequencer, this);
@@ -375,7 +402,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 //						SongPositionBar.SIDE_PAD, 4, PREFERRED, 4 }, //
 //				new double[] { 4, PREFERRED, 4, PREFERRED, 4 }));
 		
-		JPanel controlPanel = new JPanel(new MigLayout("fillx, wrap 5", "[][grow -1][grow -1][][grow -1]"));
+		JPanel controlPanel = new JPanel(new MigLayout("fillx, wrap 6", "[][grow -1][grow -1][grow -1][][grow -1]"));
 		
 		songPositionBar = new SongPositionBar(sequencer);
 		songPositionLabel = new SongPositionLabel(sequencer);
@@ -391,6 +418,12 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		stopIconDisabled = IconLoader.getDisabledIcon("stop.png");
 		
 		final Insets playControlButtonMargin = new Insets(5, 20, 5, 20);
+		if (!Themer.isDarkMode()) {
+			playlistIcon = IconLoader.getImageIcon("playlist.png");
+		} else {
+			playlistIcon = IconLoader.getImageIcon("playlist_dark.png");
+		}
+		
 
 		playButton = new JButton(playIcon);
 		playButton.setDisabledIcon(playIconDisabled);
@@ -403,6 +436,15 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		stopButton.setEnabled(false);
 		stopButton.setMargin(playControlButtonMargin);
 		stopButton.addActionListener(e -> stop());
+		
+		playlistToggleButton = new JButton(playlistIcon);
+		playlistToggleButton.setToolTipText("Toggle between the current song view and the ABC browser / playlist view");
+		playlistToggleButton.setFocusable(false);
+		playlistToggleButton.setMargin(playControlButtonMargin);
+		playlistToggleButton.addActionListener(e -> {
+			showPlaylistView = !showPlaylistView;
+			updatePlaylistCardView();
+		});
 
 		tempoBar = new TempoBar(sequencer);
 
@@ -418,27 +460,25 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		volumeLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		volumePanel.add(volumeLabel, BorderLayout.NORTH);
 		volumePanel.add(volumeBar, BorderLayout.CENTER);
-
-//		controlPanel.add(songPositionBar, "1, 1, 9, 1");
-//		controlPanel.add(songPositionLabel, "11, 1");
-//		controlPanel.add(playButton, "4, 3");
-//		controlPanel.add(stopButton, "6, 3");
-//		controlPanel.add(tempoPanel, "2, 3, c, c");
-//		controlPanel.add(volumePanel, "8, 3, c, c");
-//		controlPanel.add(barNumberLabel, "9, 3, 11, 3, r, t");
 		
-		controlPanel.add(songPositionBar, "spanx 4, growx");
+		controlPanel.add(songPositionBar, "spanx 5, growx");
 		controlPanel.add(songPositionLabel, "right");
 		controlPanel.add(tempoPanel, "center");
 		controlPanel.add(playButton, "right");
 		controlPanel.add(stopButton);
+		controlPanel.add(playlistToggleButton);
 		controlPanel.add(volumePanel, "center");
 		controlPanel.add(barNumberLabel, "right");
 
 		sequencer.addChangeListener(evt -> {
 			SequencerProperty p = evt.getProperty();
 			if (!p.isInMask(SequencerProperty.THUMB_POSITION_MASK)) {
+//				p.printSetMasks();
 				updateButtonStates();
+			}
+			
+			if (p == SequencerProperty.SONG_ENDED) {
+				playlistViewPanel.advanceToNextSongIfNeeded();
 			}
 
 			if (p.isInMask(SequencerProperty.TEMPO.mask | SequencerProperty.SEQUENCE.mask)) {
@@ -446,9 +486,42 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 			}
 		});
 
-		add(titleLabel, "0, 0, 2, 0");
-		add(trackListScroller, "0, 2, 2, 2");
-		add(controlPanel, "1, 4");
+		songViewPanel = new JPanel(new TableLayout(//
+				new double[] { 4, FILL, 4 }, //
+				new double[] { PREFERRED, 0, FILL }));
+		songViewPanel.setBorder(BorderFactory.createEmptyBorder());
+		songViewPanel.add(titleLabel, "1, 0");
+		songViewPanel.add(trackListScroller, "1, 2");
+		
+		playlistViewPanel = new AbcPlaylistPanel(prefs.node("playlist"));
+		playlistViewPanel.setPlaylistListener(new Listener<PlaylistEvent>(){
+			@Override
+			public void onEvent(PlaylistEvent e) {
+				switch(e.getType()) {
+				case PLAY_FROM_ABCINFO:
+					AbcInfo inf = (AbcInfo)(e.getSource());
+					SwingUtilities.invokeLater(new OpenSongRunnable(false, inf.getSourceFiles().get(0)));
+					break;
+				case PLAY_FROM_FILE:
+					playlistViewPanel.resetPlaylistPosition();
+					File f = (File)(e.getSource());
+					SwingUtilities.invokeLater(new OpenSongRunnable(false, f));
+					if (e.getShowSongView()) {
+						showPlaylistView = false;
+						updatePlaylistCardView();
+					}
+					break;
+				}
+			}
+		});
+
+		mainCardPanelLayout = new CardLayout();
+		mainCardPanel = new JPanel(mainCardPanelLayout);
+		mainCardPanel.add(songViewPanel, "song");
+		mainCardPanel.add(playlistViewPanel, "playlist");
+		
+		add(mainCardPanel, "0, 0, 2, 0");
+		add(controlPanel, "1, 2");
 		
 		audioExporter = new AudioExportManager(this, AbcPlayer.APP_NAME + AbcPlayer.APP_VERSION, prefs);
 
@@ -458,6 +531,12 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 		setMinimumSize(new Dimension(320, 168));
 		Util.initWinBounds(this, prefs.node("window"), 450, 282);
+	}
+	
+	private void updatePlaylistCardView() {
+		// Drop is handled by playlist table if in playlist view
+		AbcPlayer.this.setDropTarget(showPlaylistView? null : mainWindowDropTarget);
+		mainCardPanelLayout.show(mainCardPanel, showPlaylistView? "playlist" : "song");
 	}
 
 	@Override
@@ -537,7 +616,9 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		String artist = abcInfo.getComposer_MaybeNull();
 
 		if (artist != null) {
-			titleLabel.setText("<html>" + title + "&ensp;<span style='font-size:12pt; font-weight:normal'>" + artist
+			titleLabel.setText("<html>" + title + "&ensp;<span style='font-size:"
+					+ UIManager.getFont("defaultFont").getSize()
+					+ "pt; font-weight:normal'>" + artist
 					+ "</span></html>");
 		} else {
 			titleLabel.setText(title);
@@ -668,7 +749,13 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		JMenuItem exit = fileMenu.add(new JMenuItem("Exit"));
 		exit.setMnemonic(KeyEvent.VK_X);
 		exit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F4, InputEvent.ALT_DOWN_MASK));
-		exit.addActionListener(e -> System.exit(0));
+		exit.addActionListener(e -> {
+			if (playlistViewPanel.promptSavePlaylist()) {
+				setVisible(false);
+				dispose();
+				System.exit(0);
+			}
+		});
 
 		fileMenu.addMenuListener(new MenuListener() {
 			@Override
@@ -883,6 +970,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 			// The file could not be opened, removing it from the recent list.
 			recentRemove(title);
 		}
+		playlistViewPanel.resetPlaylistPosition();
 	}
 
 	private boolean getAbcDataFromClipboard(ArrayList<String> data, boolean checkContents) {
@@ -990,6 +1078,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 			prefs.put("openFileDialog.currentDirectory", openFileDialog.getCurrentDirectory().getAbsolutePath());
 
 			openSong(openFileDialog.getSelectedFiles());
+			playlistViewPanel.resetPlaylistPosition();
 		}
 	}
 
