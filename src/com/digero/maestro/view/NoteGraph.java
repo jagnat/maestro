@@ -584,92 +584,7 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 		PROFILEinitXforms = System.nanoTime() - PROFILEinitXforms;
 
 		long PROFILEbarLines = System.nanoTime();
-		if (sequenceInfo != null) {
-			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
-
-			double lineWidth = Math.abs(1.0 / xform.getScaleX());
-
-			SequenceDataCache data = sequenceInfo.getDataCache();
-			long barLengthTicks = data.getBarLengthTicks();
-
-			long firstBarTick = (data.microsToTick(clipPosStart) / barLengthTicks) * barLengthTicks;
-			long lastBarTick = (data.microsToTick(clipPosEnd) / barLengthTicks) * barLengthTicks;
-
-			boolean[] sectionArray = getSectionsModified();
-			long barCount = data.microsToTick(clipPosStart) / barLengthTicks - 1;
-			long barMicros = clipPosStart;
-			boolean barEdited = false;
-			boolean barBothEdited = false;
-			for (long barTick = firstBarTick; barTick <= lastBarTick + barLengthTicks; barTick += barLengthTicks) {
-				barEdited = false;
-				long barTempMicros = data.tickToMicros(barTick);
-				boolean barTouched = sectionArray != null && barCount < sectionArray.length && barCount > -1 && sectionArray[(int) barCount];
-				List<Pair<Long,Long>> modi = null;
-				if (barTouched) {
-					modi = getMicrosModified(barMicros, barTempMicros);
-				}				
-				if (modi != null) {
-					double start = (barMicros + lineWidth);
-					double finish = (barTempMicros);
-					for (Pair<Long,Long> pair : modi) {
-						double x = Math.max(start, pair.first);
-						double w = Math.min(finish, pair.second) - x;
-						if (w > 0.0d) {
-							rectTmp.setRect(x, MIN_RENDERED - 1, w,	MAX_RENDERED - MIN_RENDERED + 2);
-							g2.setColor(ColorTable.BAR_EDITED.get());
-							g2.fill(rectTmp);
-							barEdited = true;
-							start = x + w;
-						}
-					}
-				}
-				if (getFirstBar() != null && barCount < Math.floor(getFirstBar())) {
-					// whole bar is red
-					rectTmp.setRect(barMicros + lineWidth, MIN_RENDERED - 1, barTempMicros - barMicros - lineWidth,
-							MAX_RENDERED - MIN_RENDERED + 2);
-					g2.setColor(ColorTable.BAR_SILENCED.get());
-					g2.fill(rectTmp);
-				} else if (getLastBar() != null && barCount >= Math.ceil(getLastBar())) {
-					// whole bar is red
-					rectTmp.setRect(barMicros + lineWidth, MIN_RENDERED - 1, barTempMicros - barMicros - lineWidth,
-							MAX_RENDERED - MIN_RENDERED + 2);
-					g2.setColor(ColorTable.BAR_SILENCED.get());
-					g2.fill(rectTmp);
-				} else {
-					if (getFirstBar() != null && barCount < Math.ceil(getFirstBar())) {
-						// partial bar is red
-						assert getFirstBarTick() != null && getFirstBarTick() >= 0L;
-						long lateStart = data.tickToMicros(getFirstBarTick());					
-						rectTmp.setRect(barMicros + lineWidth, MIN_RENDERED - 1, Math.min(lateStart, barTempMicros) - barMicros - lineWidth,
-								MAX_RENDERED - MIN_RENDERED + 2);
-						g2.setColor(ColorTable.BAR_SILENCED.get());
-						g2.fill(rectTmp);
-					}
-					if (getLastBar() != null && barCount >= Math.floor(getLastBar())) {
-						// partial bar is red
-						assert getLastBarTick() != null && getLastBarTick() >= 0L;
-						long earlyEnd = data.tickToMicros(getLastBarTick());					
-						rectTmp.setRect(Math.max(earlyEnd, barMicros + lineWidth), MIN_RENDERED - 1, barTempMicros - barMicros - lineWidth,
-								MAX_RENDERED - MIN_RENDERED + 2);
-						g2.setColor(ColorTable.BAR_SILENCED.get());
-						g2.fill(rectTmp);
-					}
-				}
-
-				barCount++;
-				barMicros = barTempMicros;
-				rectTmp.setRect(barMicros, MIN_RENDERED - 1, lineWidth, MAX_RENDERED - MIN_RENDERED + 2);
-				barBothEdited = false;
-				if (barEdited && sectionArray != null && barCount < sectionArray.length && barCount > -1) {
-					// TODO: This could be refined a bit now that floats are used
-					if (sectionArray[(int) barCount]) {
-						barBothEdited = true;
-					}
-				}
-				g2.setColor(barBothEdited ? ColorTable.BAR_LINE_EDITED.get() : ColorTable.BAR_LINE.get());
-				g2.fill(rectTmp);
-			}
-		}
+		renderBarOverlays(g2, xform, clipPosStart, clipPosEnd);
 		PROFILEbarLines = System.nanoTime() - PROFILEbarLines;
 		
 		long PROFILEoctaveLines = System.nanoTime();
@@ -701,8 +616,41 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 		}
 		PROFILEoctaveLines = System.nanoTime() - PROFILEoctaveLines;
 
+		///////////////////////////////////////////////////////
 		long PROFILErenderNotes = System.nanoTime();
-		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		
+		renderNotes(g2, xform, clipPosStart, clipPosEnd, minLength, height);
+
+		g2.setTransform(xformSav);
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, hintAntialiasSav);
+		PROFILErenderNotes = System.nanoTime() - PROFILErenderNotes;
+		
+		PROFILEbarLinesEma = (long)(PROFILEbarLines * 0.2 + PROFILEbarLinesEma * 0.8);
+		PROFILEinitXformsEma = (long)(PROFILEinitXforms * 0.2 + PROFILEinitXformsEma * 0.8);
+		PROFILEoctaveLinesEma = (long)(PROFILEoctaveLines * 0.2 + PROFILEoctaveLinesEma * 0.8);
+		PROFILEparentPaintEma = (long)(PROFILEparentPaint * 0.2 + PROFILEparentPaintEma * 0.8);
+		PROFILErenderNotesEma = (long)(PROFILErenderNotes * 0.2 + PROFILErenderNotesEma * 0.8);
+		
+		tick++;
+		if (tick % 300 == 0) {
+			long total = PROFILEbarLinesEma + PROFILEinitXformsEma + PROFILEoctaveLinesEma + PROFILEparentPaintEma + PROFILErenderNotesEma;
+			long bl = PROFILEbarLinesEma * 100 / total;
+			long xf = PROFILEinitXformsEma * 100 / total;
+			long ol = PROFILEoctaveLinesEma * 100 / total;
+			long pp = PROFILEparentPaintEma * 100 / total;
+			long rn = PROFILErenderNotesEma * 100 / total;
+			System.out.println("rn:" + rn + " bl:" + bl + " ol:" + ol + " xf:" + xf + " pp:" + pp);
+			System.out.println(
+					"barLines:" + PROFILEbarLinesEma +
+					" initXforms:" + PROFILEinitXformsEma + 
+					" octaveLines:" + PROFILEoctaveLinesEma + 
+					" parentPaint:" + PROFILEparentPaintEma + 
+					" renderNotes:" + PROFILErenderNotesEma);
+		}
+	}
+	
+	private void renderNotes(Graphics2D g2, AffineTransform xform, long clipPosStart, long clipPosEnd, double minLength, double height) {
+		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 
 		boolean showNotesOn = isShowingNotesOn() && songPos >= 0;
 		long minSongPos = songPos;
@@ -989,32 +937,94 @@ public class NoteGraph extends JPanel implements Listener<SequencerEvent>, IDisc
 				}
 			}
 		}
+	}
+	
+	private void renderBarOverlays(Graphics2D g2, AffineTransform xform, long clipPosStart, long clipPosEnd) {
+		if (sequenceInfo != null) {
+			g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
 
-		g2.setTransform(xformSav);
-		g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, hintAntialiasSav);
-		PROFILErenderNotes = System.nanoTime() - PROFILErenderNotes;
-		
-		PROFILEbarLinesEma = (long)(PROFILEbarLines * 0.2 + PROFILEbarLinesEma * 0.8);
-		PROFILEinitXformsEma = (long)(PROFILEinitXforms * 0.2 + PROFILEinitXformsEma * 0.8);
-		PROFILEoctaveLinesEma = (long)(PROFILEoctaveLines * 0.2 + PROFILEoctaveLinesEma * 0.8);
-		PROFILEparentPaintEma = (long)(PROFILEparentPaint * 0.2 + PROFILEparentPaintEma * 0.8);
-		PROFILErenderNotesEma = (long)(PROFILErenderNotes * 0.2 + PROFILErenderNotesEma * 0.8);
-		
-		tick++;
-		if (tick % 300 == 0) {
-			long total = PROFILEbarLinesEma + PROFILEinitXformsEma + PROFILEoctaveLinesEma + PROFILEparentPaintEma + PROFILErenderNotesEma;
-			long bl = PROFILEbarLinesEma * 100 / total;
-			long xf = PROFILEinitXformsEma * 100 / total;
-			long ol = PROFILEoctaveLinesEma * 100 / total;
-			long pp = PROFILEparentPaintEma * 100 / total;
-			long rn = PROFILErenderNotesEma * 100 / total;
-			System.out.println("rn:" + rn + " bl:" + bl + " ol:" + ol + " xf:" + xf + " pp:" + pp);
-			System.out.println(
-					"barLines:" + PROFILEbarLinesEma +
-					" initXforms:" + PROFILEinitXformsEma + 
-					" octaveLines:" + PROFILEoctaveLinesEma + 
-					" parentPaint:" + PROFILEparentPaintEma + 
-					" renderNotes:" + PROFILErenderNotesEma);
+			double lineWidth = Math.abs(1.0 / xform.getScaleX());
+
+			SequenceDataCache data = sequenceInfo.getDataCache();
+			long barLengthTicks = data.getBarLengthTicks();
+
+			long firstBarTick = (data.microsToTick(clipPosStart) / barLengthTicks) * barLengthTicks;
+			long lastBarTick = (data.microsToTick(clipPosEnd) / barLengthTicks) * barLengthTicks;
+
+			boolean[] sectionArray = getSectionsModified();
+			long barCount = data.microsToTick(clipPosStart) / barLengthTicks - 1;
+			long barMicros = clipPosStart;
+			boolean barEdited = false;
+			boolean barBothEdited = false;
+			for (long barTick = firstBarTick; barTick <= lastBarTick + barLengthTicks; barTick += barLengthTicks) {
+				barEdited = false;
+				long barTempMicros = data.tickToMicros(barTick);
+				boolean barTouched = sectionArray != null && barCount < sectionArray.length && barCount > -1 && sectionArray[(int) barCount];
+				List<Pair<Long,Long>> modi = null;
+				if (barTouched) {
+					modi = getMicrosModified(barMicros, barTempMicros);
+				}				
+				if (modi != null) {
+					double start = (barMicros + lineWidth);
+					double finish = (barTempMicros);
+					for (Pair<Long,Long> pair : modi) {
+						double x = Math.max(start, pair.first);
+						double w = Math.min(finish, pair.second) - x;
+						if (w > 0.0d) {
+							rectTmp.setRect(x, MIN_RENDERED - 1, w,	MAX_RENDERED - MIN_RENDERED + 2);
+							g2.setColor(ColorTable.BAR_EDITED.get());
+							g2.fill(rectTmp);
+							barEdited = true;
+							start = x + w;
+						}
+					}
+				}
+				if (getFirstBar() != null && barCount < Math.floor(getFirstBar())) {
+					// whole bar is red
+					rectTmp.setRect(barMicros + lineWidth, MIN_RENDERED - 1, barTempMicros - barMicros - lineWidth,
+							MAX_RENDERED - MIN_RENDERED + 2);
+					g2.setColor(ColorTable.BAR_SILENCED.get());
+					g2.fill(rectTmp);
+				} else if (getLastBar() != null && barCount >= Math.ceil(getLastBar())) {
+					// whole bar is red
+					rectTmp.setRect(barMicros + lineWidth, MIN_RENDERED - 1, barTempMicros - barMicros - lineWidth,
+							MAX_RENDERED - MIN_RENDERED + 2);
+					g2.setColor(ColorTable.BAR_SILENCED.get());
+					g2.fill(rectTmp);
+				} else {
+					if (getFirstBar() != null && barCount < Math.ceil(getFirstBar())) {
+						// partial bar is red
+						assert getFirstBarTick() != null && getFirstBarTick() >= 0L;
+						long lateStart = data.tickToMicros(getFirstBarTick());					
+						rectTmp.setRect(barMicros + lineWidth, MIN_RENDERED - 1, Math.min(lateStart, barTempMicros) - barMicros - lineWidth,
+								MAX_RENDERED - MIN_RENDERED + 2);
+						g2.setColor(ColorTable.BAR_SILENCED.get());
+						g2.fill(rectTmp);
+					}
+					if (getLastBar() != null && barCount >= Math.floor(getLastBar())) {
+						// partial bar is red
+						assert getLastBarTick() != null && getLastBarTick() >= 0L;
+						long earlyEnd = data.tickToMicros(getLastBarTick());					
+						rectTmp.setRect(Math.max(earlyEnd, barMicros + lineWidth), MIN_RENDERED - 1, barTempMicros - barMicros - lineWidth,
+								MAX_RENDERED - MIN_RENDERED + 2);
+						g2.setColor(ColorTable.BAR_SILENCED.get());
+						g2.fill(rectTmp);
+					}
+				}
+
+				barCount++;
+				barMicros = barTempMicros;
+				rectTmp.setRect(barMicros, MIN_RENDERED - 1, lineWidth, MAX_RENDERED - MIN_RENDERED + 2);
+				barBothEdited = false;
+				if (barEdited && sectionArray != null && barCount < sectionArray.length && barCount > -1) {
+					// TODO: This could be refined a bit now that floats are used
+					if (sectionArray[(int) barCount]) {
+						barBothEdited = true;
+					}
+				}
+				g2.setColor(barBothEdited ? ColorTable.BAR_LINE_EDITED.get() : ColorTable.BAR_LINE.get());
+				g2.fill(rectTmp);
+			}
 		}
 	}
 
