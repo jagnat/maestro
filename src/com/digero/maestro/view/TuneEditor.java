@@ -311,18 +311,6 @@ public class TuneEditor {
 				this.getContentPane().add(scrollPane);
 				panel.revalidate();
 				this.pack();
-//				Window window = SwingUtilities.windowForComponent(this);
-//				if (window != null) {
-//					// Lets keep the dialog inside the screen, in case the screen changed resolution
-//					// since it was last popped up
-//					int maxX = window.getBounds().width - this.getWidth();
-//					int maxY = window.getBounds().height - this.getHeight();
-//					int x = Math.max(0, Math.min(maxX, TuneEditor.lastLocation.x));
-//					int y = Math.max(0, Math.min(maxY, TuneEditor.lastLocation.y));
-//					this.setLocation(new Point(x, y));
-//				} else {
-//					this.setLocation(TuneEditor.lastLocation);
-//				}
 				if (lastLocation == null) { // First launch of section editor, center it on maestro window
 					this.setLocationRelativeTo(jf);
 				} else {
@@ -330,6 +318,8 @@ public class TuneEditor {
 					GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 					GraphicsDevice devices[] = ge.getScreenDevices();
 					Rectangle bounds = this.getBounds();
+					bounds.x = lastLocation.x;
+					bounds.y = lastLocation.y;
 					int areaOnScreen = 0;
 					for (GraphicsDevice d : devices) {
 						Rectangle screenBounds = d.getDefaultConfiguration().getBounds();
@@ -345,10 +335,9 @@ public class TuneEditor {
 					}
 				}
 				this.setVisible(true);
-				this.pack();
-				this.repaint();
+//				this.pack();
+//				this.repaint();
 				// this.setResizable(true);
-				// System.err.println(Thread.currentThread().getName()); Swing event thread
 			}
 			
 			private void addTuneLine(JButton add1) {
