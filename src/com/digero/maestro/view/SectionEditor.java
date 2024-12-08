@@ -377,6 +377,8 @@ public class SectionEditor {
 				}
 				
 				this.setVisible(true);
+				this.pack();
+				this.repaint();
 			}
 
 			private float processSections(TreeMap<Float, PartSection> tm, float lastEnd) {

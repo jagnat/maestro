@@ -335,8 +335,8 @@ public class TuneEditor {
 					}
 				}
 				this.setVisible(true);
-//				this.pack();
-//				this.repaint();
+				this.pack();
+				this.repaint();
 				// this.setResizable(true);
 			}
 			
