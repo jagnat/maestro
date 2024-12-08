@@ -2,7 +2,10 @@ package com.digero.maestro.view;
 
 import static javax.swing.SwingConstants.CENTER;
 
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Window;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -39,7 +42,7 @@ import info.clearthought.layout.TableLayoutConstants;
 
 public class TuneEditor {
 
-	private static Point lastLocation = new Point(100, 100);
+	private static Point lastLocation = null;
 	private static JDialog openDialog = null;
 	final static double[] LAYOUT_COLS_TABS = new double[] { 0.166, 0.166, 0.166, 0.166, 0.166, 0.17};
 	public static final int numberOfSectionsMax = 20;
@@ -308,17 +311,38 @@ public class TuneEditor {
 				this.getContentPane().add(scrollPane);
 				panel.revalidate();
 				this.pack();
-				Window window = SwingUtilities.windowForComponent(this);
-				if (window != null) {
-					// Lets keep the dialog inside the screen, in case the screen changed resolution
-					// since it was last popped up
-					int maxX = window.getBounds().width - this.getWidth();
-					int maxY = window.getBounds().height - this.getHeight();
-					int x = Math.max(0, Math.min(maxX, TuneEditor.lastLocation.x));
-					int y = Math.max(0, Math.min(maxY, TuneEditor.lastLocation.y));
-					this.setLocation(new Point(x, y));
+//				Window window = SwingUtilities.windowForComponent(this);
+//				if (window != null) {
+//					// Lets keep the dialog inside the screen, in case the screen changed resolution
+//					// since it was last popped up
+//					int maxX = window.getBounds().width - this.getWidth();
+//					int maxY = window.getBounds().height - this.getHeight();
+//					int x = Math.max(0, Math.min(maxX, TuneEditor.lastLocation.x));
+//					int y = Math.max(0, Math.min(maxY, TuneEditor.lastLocation.y));
+//					this.setLocation(new Point(x, y));
+//				} else {
+//					this.setLocation(TuneEditor.lastLocation);
+//				}
+				if (lastLocation == null) { // First launch of section editor, center it on maestro window
+					this.setLocationRelativeTo(jf);
 				} else {
-					this.setLocation(TuneEditor.lastLocation);
+					// Ensure that window is on screen fully if monitors or resolution changed
+					GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+					GraphicsDevice devices[] = ge.getScreenDevices();
+					Rectangle bounds = this.getBounds();
+					int areaOnScreen = 0;
+					for (GraphicsDevice d : devices) {
+						Rectangle screenBounds = d.getDefaultConfiguration().getBounds();
+						if (bounds.intersects(screenBounds)) {
+							Rectangle inter = bounds.intersection(screenBounds);
+							areaOnScreen += inter.width * inter.height;
+						}
+					}
+					if (areaOnScreen == bounds.width * bounds.height) {
+						this.setLocation(lastLocation);
+					} else {
+						this.setLocationRelativeTo(jf);
+					}
 				}
 				this.setVisible(true);
 				this.pack();

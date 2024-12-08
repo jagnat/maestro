@@ -2,7 +2,12 @@ package com.digero.maestro.view;
 
 import static javax.swing.SwingConstants.CENTER;
 
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -26,6 +31,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+
 import com.digero.common.midi.Note;
 import com.digero.common.util.Listener;
 import com.digero.common.view.PatchedJScrollPane;
@@ -39,7 +45,7 @@ import info.clearthought.layout.TableLayout;
 
 public class SectionEditor {
 
-	private static Point lastLocation = new Point(100, 100);
+	private static Point lastLocation = null;
 	
 	public static final int numberOfSectionsMax = 20;
 	static boolean clipboardArmed = false;
@@ -105,7 +111,7 @@ public class SectionEditor {
 
 					@Override
 					public void windowClosing(WindowEvent we) {
-						SectionEditor.lastLocation = SectionDialog.this.getLocation();
+						SectionEditor.lastLocation = getLocation();
 						if (abcPart.getAbcSong() != null)
 							abcPart.getAbcSong().removeSongListener(songListener);
 						abcPart.removeAbcListener(abcPartListener);
@@ -344,23 +350,35 @@ public class SectionEditor {
 				this.getContentPane().add(scrollPane);
 				panel.revalidate();
 				this.pack();
-				Window window = SwingUtilities.windowForComponent(this);
-				if (window != null) {
-					// Lets keep the dialog inside the screen, in case the screen changed resolution since it was last
-					// popped up
-					int maxX = window.getBounds().width - this.getWidth();
-					int maxY = window.getBounds().height - this.getHeight();
-					int x = Math.max(0, Math.min(maxX, SectionEditor.lastLocation.x));
-					int y = Math.max(0, Math.min(maxY, SectionEditor.lastLocation.y));
-					this.setLocation(new Point(x, y));
+				
+				if (lastLocation == null) { // First launch of section editor, center it on maestro window
+					this.setLocationRelativeTo(jf);
 				} else {
-					this.setLocation(SectionEditor.lastLocation);
+					// Ensure that window is on screen fully if monitors or resolution changed
+					GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+					GraphicsDevice devices[] = ge.getScreenDevices();
+					Rectangle bounds = this.getBounds();
+					System.out.println("bx : " + bounds.x + " llx : " + lastLocation.x);
+					bounds.x = lastLocation.x;
+					bounds.y = lastLocation.y;
+					int areaOnScreen = 0;
+					for (GraphicsDevice d : devices) {
+						Rectangle screenBounds = d.getDefaultConfiguration().getBounds();
+						if (bounds.intersects(screenBounds)) {
+							Rectangle inter = bounds.intersection(screenBounds);
+							areaOnScreen += inter.width * inter.height;
+						}
+					}
+					if (areaOnScreen == bounds.width * bounds.height) {
+						this.setLocation(lastLocation);
+					} else {
+						this.setLocationRelativeTo(jf);
+					}
 				}
 				
 				this.setVisible(true);
-				this.pack();
+//				this.pack();
 				this.repaint();
-				// System.err.println(Thread.currentThread().getName()); Swing event thread
 			}
 
 			private float processSections(TreeMap<Float, PartSection> tm, float lastEnd) {
