@@ -358,7 +358,6 @@ public class SectionEditor {
 					GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
 					GraphicsDevice devices[] = ge.getScreenDevices();
 					Rectangle bounds = this.getBounds();
-					System.out.println("bx : " + bounds.x + " llx : " + lastLocation.x);
 					bounds.x = lastLocation.x;
 					bounds.y = lastLocation.y;
 					int areaOnScreen = 0;
