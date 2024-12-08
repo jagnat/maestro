@@ -91,11 +91,17 @@ public class AbcFileTreeModel implements TreeModel {
 		
 		 public void refresh() {
 			children = new ArrayList<AbcSongFileNode>();
-			if (!theFile.isDirectory()) {
+			if (!theFile.isDirectory() || !theFile.exists()) {
 				return;
 			}
 			
-			for (File file : theFile.listFiles(abcFilter)) {
+			File[] files = theFile.listFiles(abcFilter);
+			
+			if (files == null) {
+				return;
+			}
+			
+			for (File file : files) {
 				AbcSongFileNode node = new AbcSongFileNode(file);
 				node.refresh();
 				children.add(node);
