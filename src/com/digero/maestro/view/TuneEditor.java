@@ -311,7 +311,7 @@ public class TuneEditor {
 				this.getContentPane().add(scrollPane);
 				panel.revalidate();
 				this.pack();
-				if (lastLocation == null) { // First launch of section editor, center it on maestro window
+				if (lastLocation == null) { // First launch of tune editor, center it on maestro window
 					this.setLocationRelativeTo(jf);
 				} else {
 					// Ensure that window is on screen fully if monitors or resolution changed
