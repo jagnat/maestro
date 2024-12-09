@@ -287,6 +287,10 @@ public class AbcPlaylistPanel extends JPanel {
 					}
 					AbcSongFileNode f = (AbcSongFileNode)(abcFileTree.getPathForRow(idx).getLastPathComponent());
 					if (f.getFile().isDirectory()) {
+						if (abcFileTree.isExpanded(idx))
+							abcFileTree.collapsePath(abcFileTree.getPathForRow(idx));
+						else
+							abcFileTree.expandPath(abcFileTree.getPathForRow(idx));
 						return;
 					}
 					if (parentListener != null) {
