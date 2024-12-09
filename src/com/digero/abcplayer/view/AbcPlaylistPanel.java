@@ -199,7 +199,7 @@ public class AbcPlaylistPanel extends JPanel {
 				List<File> fileList = new ArrayList<>();
 				for (TreePath path : selectedPaths) {
 					AbcSongFileNode node = (AbcSongFileNode) path.getLastPathComponent();
-					fileList.add(node.getFile());
+					fileList.add(0, node.getFile());
 		        }
 
 				// Use DataHandler to create a Transferable with the javaFileListFlavor
