@@ -380,6 +380,10 @@ public class AbcPlaylistPanel extends JPanel {
 			if (tableModel.getRowCount() == 0) {
 				nextSongButton.setEnabled(false);
 				prevSongButton.setEnabled(false);
+			} else if (nowPlayingInfo != null) {
+				int idx = tableModel.getIdxForAbcInfo(nowPlayingInfo);
+				prevSongButton.setEnabled(idx > 0);
+				nextSongButton.setEnabled(idx >= 0 && idx < tableModel.getRowCount() -1);
 			}
 		});
 		
