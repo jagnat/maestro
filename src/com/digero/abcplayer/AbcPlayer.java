@@ -884,6 +884,8 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 				abcViewFrame.setVisible(false);
 			}
 		});
+		
+		mainMenu.add(playlistViewPanel.getPlaylistMenu());
 	}
 
 	private void recentAdd(final String fileNameToAdd) {

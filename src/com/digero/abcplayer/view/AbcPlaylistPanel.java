@@ -3,7 +3,6 @@ package com.digero.abcplayer.view;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Point;
 import java.awt.datatransfer.DataFlavor;
@@ -23,6 +22,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import javax.swing.BorderFactory;
+import javax.swing.ButtonGroup;
 import javax.swing.DropMode;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -30,10 +30,12 @@ import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
@@ -131,12 +133,18 @@ public class AbcPlaylistPanel extends JPanel {
 	private JButton prevSongButton;
 	private JTextField delayField;
 	
+	// Playlist menu
+	private JMenu playlistMenu;
+	private JMenuItem saveMenuItem;
+	
 	private JFileChooser openPlaylistChooser = null;
 	private JFileChooser savePlaylistChooser = null;
 	
 	private AbcInfo nowPlayingInfo = null;
 	private boolean playlistDirtyFlag = false;
 	private File playlistFile = null;
+	
+	private AbcFileTreeModel.SortType sortType;
 	
 	private Listener<PlaylistEvent> parentListener;
 	private List<File> topLevelDirs = new ArrayList<File>();
@@ -173,8 +181,14 @@ public class AbcPlaylistPanel extends JPanel {
 			}
 		}
 		
+		// =================================
+		// Left panel
+		// =================================
+
+		sortType = AbcFileTreeModel.SortType.valueOf(prefs.get("sortType", "NAME_ASC"));
+		
 		abcFileTreeModel = new AbcFileTreeModel(topLevelDirs);
-		abcFileTreeModel.refresh();
+		abcFileTreeModel.refresh(sortType);
 		
 		abcFileTree = new JTree();
 		abcFileTree.setShowsRootHandles(true);
@@ -323,51 +337,24 @@ public class AbcPlaylistPanel extends JPanel {
 		ToolTipManager.sharedInstance().registerComponent(abcFileTree);
 		fileTreeScrollPane = new JScrollPane(abcFileTree, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		
-		JButton dirListButton = new JButton("Directories...");
-		dirListButton.setToolTipText("Configure which directories show up in the ABC Browser.");
-		dirListButton.addActionListener(e -> {
-			JFrame f = (JFrame)SwingUtilities.getWindowAncestor(this);
-			PlaylistDirectoryDialog d = new PlaylistDirectoryDialog(f, topLevelDirs);
-			if (d.isSuccess()) {
-				List<String> dirs = d.getDirectories();
-				String newPrefString = String.join(File.pathSeparator, dirs);
-				prefs.put("directories", newPrefString);
-				topLevelDirs = dirs.stream().map(File::new).collect(Collectors.toList());
-				abcFileTreeModel.setDirectories(topLevelDirs);
-				abcFileTreeModel.refresh();
-			}
-		});
-
-		
-		JButton refreshTreeButton = new JButton("Refresh");
-		refreshTreeButton.setToolTipText("Refresh the ABC Browser to update it with new or deleted ABC files.");
-		refreshTreeButton.addActionListener(e -> {
-			abcFileTreeModel.refresh();
-		});
-		
-		addToPlaylistButton = new JButton("Add Selected");
-		addToPlaylistButton.setToolTipText("<html>Add the selected songs in the ABC Browser to the playlist.<br> Control-click or shift-click to select multiple songs.</html>");
-		addToPlaylistButton.setEnabled(false);
-		addToPlaylistButton.addActionListener(e -> {
-			addTreePathsToPlaylist(abcFileTree.getSelectionPaths());
-		});
-		
 		JLabel abcBrowserLabel = new JLabel("ABC Browser");
 		abcBrowserLabel.setToolTipText("<html>Browser for your ABC files.<br>Double-click a song to play it, or drag selected songs to the playlist panel.</html>");
-		Font f = abcBrowserLabel.getFont();
-		abcBrowserLabel.setFont(f.deriveFont(Font.BOLD, f.getSize2D()));
+		Font font = abcBrowserLabel.getFont();
+		abcBrowserLabel.setFont(font.deriveFont(Font.BOLD, font.getSize2D()));
 		abcBrowserLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 		
 		leftPanel.add(fileTreeScrollPane, BorderLayout.CENTER);
 		leftPanel.add(abcBrowserLabel, BorderLayout.NORTH);
 		
-		JPanel topPanel = new JPanel(new FlowLayout());
-		abcPlaylistLabel = new JLabel("Untitled Playlist");
-		f = abcPlaylistLabel.getFont();
-		abcPlaylistLabel.setFont(f.deriveFont(Font.BOLD, f.getSize2D()));
-		abcPlaylistLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 		
-		topPanel.add(abcPlaylistLabel);
+		// =================================
+		// Right panel
+		// =================================
+		
+		abcPlaylistLabel = new JLabel("Untitled Playlist");
+		font = abcPlaylistLabel.getFont();
+		abcPlaylistLabel.setFont(font.deriveFont(Font.BOLD, font.getSize2D()));
+		abcPlaylistLabel.setBorder(BorderFactory.createEmptyBorder(4, 4, 4, 4));
 		
 		tableModel = new AbcInfoTableModel();
 		tableModel.addTableModelListener(e -> {
@@ -437,7 +424,7 @@ public class AbcPlaylistPanel extends JPanel {
 		playlistTable.setFillsViewportHeight(true);
 		playlistTable.setDragEnabled(true);
 		playlistTable.setDropMode(DropMode.INSERT_ROWS);
-		playlistTable.setTransferHandler(new PlaylistTransferHandler(abcFileTree, playlistTable));
+		playlistTable.setTransferHandler(new PlaylistTransferHandler(playlistTable));
 		playlistTable.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -528,6 +515,10 @@ public class AbcPlaylistPanel extends JPanel {
 		playlistScrollPane = new JScrollPane(playlistTable,JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 		playlistScrollPane.setViewportView(playlistTable);
 		
+		// =================================
+		// Bottom Controls
+		// =================================
+		
 		autoplayCheckBox = new JCheckBox("Autoplay");
 		autoplayCheckBox.setToolTipText("When checked, playlist playback will automatically advance to the next song.");
 		autoplayCheckBox.setFocusable(false);
@@ -535,50 +526,14 @@ public class AbcPlaylistPanel extends JPanel {
 		autoplayCheckBox.addActionListener(e -> {
 			playlistPrefs.putBoolean("autoplay", autoplayCheckBox.isSelected());
 		});
-		// TODO: Unused
-		JButton moveUpButton = new JButton("Move Up");
-		moveUpButton.setFocusable(false);
-		moveUpButton.setEnabled(false);
-		moveUpButton.addActionListener(e -> {
-			int row = playlistTable.getSelectedRow();
-			if (row == 0) {
-				return;
-			}
-			tableModel.moveRows(new int[] {row}, row - 1);
-			playlistTable.setRowSelectionInterval(row - 1, row - 1);
+
+		addToPlaylistButton = new JButton("Add Selected");
+		addToPlaylistButton.setToolTipText("<html>Add the selected songs in the ABC Browser to the playlist.<br> Control-click or shift-click to select multiple songs.</html>");
+		addToPlaylistButton.setEnabled(false);
+		addToPlaylistButton.addActionListener(e -> {
+			addTreePathsToPlaylist(abcFileTree.getSelectionPaths());
 		});
-		// TODO: Unused
-		JButton moveDownButton = new JButton("Move Down");
-		moveDownButton.setFocusable(false);
-		moveDownButton.setEnabled(false);
-		moveDownButton.addActionListener(e ->{
-			int row = playlistTable.getSelectedRow();
-			if (row == tableModel.getRowCount() - 1) {
-				return;
-			}
-			tableModel.moveRows(new int[] {row}, row + 2);
-			playlistTable.setRowSelectionInterval(row + 1, row + 1);
-		});
-		JButton savePlaylistButton = new JButton("Save Playlist");
-		savePlaylistButton.setFocusable(false);
-		savePlaylistButton.addActionListener(e -> {
-			savePlaylistAs();
-		});
-		JButton loadPlaylistButton = new JButton("Load Playlist");
-		loadPlaylistButton.setFocusable(false);
-		loadPlaylistButton.addActionListener(e -> {
-			if (promptSavePlaylist()) {
-				loadPlaylist();	
-			}
-		});
-		JButton newPlaylistButton = new JButton("Clear Playlist");
-		newPlaylistButton.setFocusable(false);
-		newPlaylistButton.addActionListener(e -> {
-			if (promptSavePlaylist()) {
-				playlistFile = null;
-				tableModel.clearRows();
-			}
-		});
+		
 		JButton playPlaylistButton = new JButton("Play");
 		playPlaylistButton.setToolTipText("Play playlist starting from the first song.");
 		playPlaylistButton.setFocusable(false);
@@ -592,6 +547,7 @@ public class AbcPlaylistPanel extends JPanel {
 				parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
 			}
 		});
+		
 		nextSongButton = new JButton("Next Song");
 		nextSongButton.setEnabled(false);
 		nextSongButton.addActionListener(e -> {
@@ -606,6 +562,7 @@ public class AbcPlaylistPanel extends JPanel {
 	 			parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
  			}
 		});
+		
 		prevSongButton = new JButton("Prev Song");
 		prevSongButton.setEnabled(false);
 		prevSongButton.addActionListener(e -> {
@@ -620,6 +577,7 @@ public class AbcPlaylistPanel extends JPanel {
 	 			parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
  			}
 		});
+		
 		String delayToolTipText = "<html>Configure song switch delay.<br>"+
 				"Used to simulate the total setlist time, including the time it takes to switch parts between each song.<br>"+
 				"Set it to the average number of seconds it takes your band to switch songs, and the total time of the set<br>"+
@@ -653,33 +611,111 @@ public class AbcPlaylistPanel extends JPanel {
 		delayField.setColumns(4);
 		
 		bottomControls = new JPanel(new MigLayout("fillx"));
-		bottomControls.add(dirListButton, "sg dir");
 		bottomControls.add(addToPlaylistButton);
 		
 		bottomControls.add(new JPanel(), "pushx 200");
 		
+		bottomControls.add(delayLabel, "align right");
+		bottomControls.add(delayField, "align center");
 		bottomControls.add(autoplayCheckBox);
 		bottomControls.add(prevSongButton);
 		bottomControls.add(playPlaylistButton);
 		bottomControls.add(nextSongButton, "sg play");
-		bottomControls.add(savePlaylistButton, "wrap");
-		
-		// New row
-		bottomControls.add(refreshTreeButton, "sg dir");
-		bottomControls.add(delayLabel, "skip 2, span 2, align right");
-		bottomControls.add(delayField, "align center");
-		bottomControls.add(newPlaylistButton, "sg play");
-		bottomControls.add(loadPlaylistButton);
 		
 		add(bottomControls, BorderLayout.SOUTH);
 		
-		playlistTable.getSelectionModel().addListSelectionListener(e -> {
-			moveUpButton.setEnabled(playlistTable.getSelectedRowCount() == 1);
-			moveDownButton.setEnabled(playlistTable.getSelectedRowCount() == 1);
-		});
-		
 		rightPanel.add(playlistScrollPane, BorderLayout.CENTER);
 		rightPanel.add(abcPlaylistLabel, BorderLayout.NORTH);
+		
+		// =================================
+		// Playlist menu
+		// =================================
+		
+		playlistMenu = new JMenu("Playlist");
+		JMenuItem loadMenuItem = playlistMenu.add(new JMenuItem("Open Playlist..."));
+		loadMenuItem.addActionListener(e -> {
+			if (promptSavePlaylist()) {
+				loadPlaylist();	
+			}
+		});
+		JMenuItem saveAsMenuItem = playlistMenu.add(new JMenuItem("Save Playlist As..."));
+		saveAsMenuItem.addActionListener(e -> {
+			savePlaylistAs();
+		});
+		saveMenuItem = playlistMenu.add(new JMenuItem("Save Playlist"));
+		saveMenuItem.setEnabled(false);
+		saveMenuItem.addActionListener(e-> {
+			if (playlistFile == null) {
+				return;
+			}
+			
+			savePlaylist();
+		});
+		JMenuItem clearMenuItem = playlistMenu.add(new JMenuItem("Clear Playlist"));
+		clearMenuItem.addActionListener(e -> {
+			if (promptSavePlaylist()) {
+				playlistFile = null;
+				saveMenuItem.setEnabled(false);
+				tableModel.clearRows();
+			}
+		});
+		playlistMenu.addSeparator();
+		JMenu sortBy = new JMenu("Sort browser by...");
+		playlistMenu.add(sortBy);
+		ButtonGroup group = new ButtonGroup();
+		for (AbcFileTreeModel.SortType type : AbcFileTreeModel.SortType.values()) {
+			JRadioButtonMenuItem item = new JRadioButtonMenuItem(type.toString());
+			item.addActionListener(e -> {
+				sortType = type;
+				prefs.put("sortType", sortType.name());
+				abcFileTreeModel.refresh(sortType);
+			});
+			group.add(item);
+			sortBy.add(item);
+			
+			if (type == sortType) {
+				item.setSelected(true);
+			}
+		}
+		JMenuItem directoryMenuItem = playlistMenu.add(new JMenuItem("Browser Directories..."));
+		directoryMenuItem.addActionListener(e -> {
+			JFrame f = (JFrame)SwingUtilities.getWindowAncestor(AbcPlaylistPanel.this);
+			AbcBrowserDirectoryDialog d = new AbcBrowserDirectoryDialog(f, topLevelDirs);
+			if (d.isSuccess()) {
+				List<String> dirs = d.getDirectories();
+				String newPrefString = String.join(File.pathSeparator, dirs);
+				prefs.put("directories", newPrefString);
+				topLevelDirs = dirs.stream().map(File::new).collect(Collectors.toList());
+				abcFileTreeModel.setDirectories(topLevelDirs);
+				abcFileTreeModel.refresh(sortType);
+			}
+		});
+		JMenuItem refreshMenuItem = playlistMenu.add(new JMenuItem("Refresh Browser"));
+		refreshMenuItem.addActionListener(e -> {
+			abcFileTreeModel.refresh(sortType);
+		});
+	}
+	
+	public JMenu getPlaylistMenu() {
+		return playlistMenu;
+	}
+	
+	private boolean savePlaylist() {
+		if (playlistFile == null) {
+			return false;
+		}
+		try {
+			XmlUtil.saveDocument(AbcPlaylistXmlCoder.savePlaylistToXml(tableModel.getTableData()), playlistFile);
+		} catch (Exception e) {
+			JOptionPane.showMessageDialog(this, "Failed to save playlist", "Failed to save playlist", JOptionPane.ERROR_MESSAGE);
+			return false;
+		}
+		
+		saveMenuItem.setEnabled(true);
+		playlistDirtyFlag = false;
+		playlistPrefs.put("playlistDirectory", playlistFile.getParentFile().getAbsolutePath());
+		updatePlaylistLabel();
+		return true;
 	}
 	
 	private boolean savePlaylistAs() {
@@ -730,11 +766,12 @@ public class AbcPlaylistPanel extends JPanel {
 		try {
 			XmlUtil.saveDocument(AbcPlaylistXmlCoder.savePlaylistToXml(tableModel.getTableData()), file);
 		} catch (Exception e) {
-			e.printStackTrace();
+			JOptionPane.showMessageDialog(this, "Failed to save playlist", "Failed to save playlist", JOptionPane.ERROR_MESSAGE);
 			return false;
 		}
 		
 		playlistFile = file;
+		saveMenuItem.setEnabled(true);
 		playlistDirtyFlag = false;
 		playlistPrefs.put("playlistDirectory", savePlaylistChooser.getCurrentDirectory().getAbsolutePath());
 		updatePlaylistLabel();
@@ -814,6 +851,7 @@ public class AbcPlaylistPanel extends JPanel {
 		
 		playlistDirtyFlag = markDirty;
 		playlistFile = file;
+		saveMenuItem.setEnabled(true);
 		playlistPrefs.put("playlistDirectory", openPlaylistChooser.getCurrentDirectory().getAbsolutePath());
 		updatePlaylistLabel();
 	}
@@ -835,7 +873,7 @@ public class AbcPlaylistPanel extends JPanel {
 		if (result == JOptionPane.CANCEL_OPTION)
 			return false;
 		if (result == JOptionPane.YES_OPTION) {
-			return savePlaylistAs();
+			return playlistFile == null? savePlaylistAs() : savePlaylist();
 		}
 		return true;
 	}

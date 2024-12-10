@@ -10,7 +10,6 @@ import javax.activation.ActivationDataFlavor;
 import javax.activation.DataHandler;
 import javax.swing.JComponent;
 import javax.swing.JTable;
-import javax.swing.JTree;
 import javax.swing.SwingWorker;
 import javax.swing.TransferHandler;
 
@@ -20,14 +19,12 @@ import com.digero.common.abctomidi.FileAndData;
 
 public class PlaylistTransferHandler extends TransferHandler {
 	
-	private JTree fileTree;
 	private JTable playlistTable;
 	private final DataFlavor indexDataFlavor =
 		new ActivationDataFlavor(Integer.class, "application/x-java-Integer;class=java.lang.Integer", "Integer Row Index");
 	
 	
-	public PlaylistTransferHandler(JTree fileTree, JTable playlistTable) {
-		this.fileTree=fileTree;
+	public PlaylistTransferHandler(JTable playlistTable) {
 		this.playlistTable = playlistTable;
 	}
 	
@@ -62,6 +59,7 @@ public class PlaylistTransferHandler extends TransferHandler {
 		try {
 			// Dragging from file explorer or from JTree explorer
 			if (info.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+				@SuppressWarnings("unchecked")
 				List<File> files = (List<File>)(t.getTransferData(DataFlavor.javaFileListFlavor));
 				
 				List<AbcInfo> data = new ArrayList<>();
