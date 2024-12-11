@@ -635,7 +635,7 @@ public class AbcPlaylistPanel extends JPanel {
 		JMenuItem loadMenuItem = playlistMenu.add(new JMenuItem("Open Playlist..."));
 		loadMenuItem.addActionListener(e -> {
 			if (promptSavePlaylist()) {
-				loadPlaylist();	
+				promptOpenPlaylist();	
 			}
 		});
 		JMenuItem saveAsMenuItem = playlistMenu.add(new JMenuItem("Save Playlist As..."));
@@ -779,26 +779,8 @@ public class AbcPlaylistPanel extends JPanel {
 		return true;
 	}
 	
-	public void loadPlaylist() {
-		if (openPlaylistChooser == null) {
-			openPlaylistChooser = new JFileChooser();
-			openPlaylistChooser.setDialogTitle("Open ABC Playlist");
-			openPlaylistChooser.setMultiSelectionEnabled(false);
-			openPlaylistChooser.setFileFilter(new ExtensionFileFilter("ABC Playlist (.abcp)", "abcp"));
-		}
-		
+	public void loadPlaylist(File file) {
 		boolean markDirty = false;
-		
-		String folder = playlistPrefs.get("playlistDirectory", Util.getLotroMusicPath(false).getAbsolutePath());
-		openPlaylistChooser.setCurrentDirectory(new File(folder));
-		
-		int result = openPlaylistChooser.showOpenDialog(this);
-		File file = null;
-		if (result != JFileChooser.APPROVE_OPTION) {
-			return;
-		}
-		
-		file = openPlaylistChooser.getSelectedFile();
 		
 		List<List<File>> songs = null;
 		try {
@@ -852,8 +834,30 @@ public class AbcPlaylistPanel extends JPanel {
 		playlistDirtyFlag = markDirty;
 		playlistFile = file;
 		saveMenuItem.setEnabled(true);
-		playlistPrefs.put("playlistDirectory", openPlaylistChooser.getCurrentDirectory().getAbsolutePath());
 		updatePlaylistLabel();
+	}
+	
+	public void promptOpenPlaylist() {
+		if (openPlaylistChooser == null) {
+			openPlaylistChooser = new JFileChooser();
+			openPlaylistChooser.setDialogTitle("Open ABC Playlist");
+			openPlaylistChooser.setMultiSelectionEnabled(false);
+			openPlaylistChooser.setFileFilter(new ExtensionFileFilter("ABC Playlist (.abcp)", "abcp"));
+		}
+		
+		String folder = playlistPrefs.get("playlistDirectory", Util.getLotroMusicPath(false).getAbsolutePath());
+		openPlaylistChooser.setCurrentDirectory(new File(folder));
+		
+		int result = openPlaylistChooser.showOpenDialog(this);
+		File file = null;
+		if (result != JFileChooser.APPROVE_OPTION) {
+			return;
+		}
+		
+		file = openPlaylistChooser.getSelectedFile();
+		
+		loadPlaylist(file);
+		playlistPrefs.put("playlistDirectory", openPlaylistChooser.getCurrentDirectory().getAbsolutePath());
 	}
 	
 	public boolean promptSavePlaylist() {

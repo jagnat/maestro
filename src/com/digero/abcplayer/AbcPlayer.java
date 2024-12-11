@@ -106,7 +106,7 @@ import net.miginfocom.swing.MigLayout;
 
 @SuppressWarnings("serial")
 public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConstants, TrackListPanelCallback {
-	private static final ExtensionFileFilter ABC_FILE_FILTER = new ExtensionFileFilter("ABC Files", "abc", "txt");
+	private static final ExtensionFileFilter ABC_FILE_FILTER = new ExtensionFileFilter("ABC Files and Playlists", "abc", "txt", "abcp");
 	public static final String APP_NAME = "ABC Player";
 	private static final String APP_NAME_LONG = APP_NAME + " for The Lord of the Rings Online";
 	private static final String APP_URL = "https://github.com/digero/maestro/";
@@ -275,7 +275,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 			// Ignore
 		}
 
-		dropListener = new FileFilterDropListener(true, "abc", "txt");
+		dropListener = new FileFilterDropListener(true, "abc", "txt", "abcp");
 		dropListener.addActionListener(e -> {
 			FileFilterDropListener l = (FileFilterDropListener) e.getSource();
 			boolean append = (l.getDropEvent().getDropAction() == DnDConstants.ACTION_COPY);
@@ -1167,6 +1167,15 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 	private boolean openSong(File[] abcFiles) {
 		List<FileAndData> data = new ArrayList<>();
+		
+		if (abcFiles.length == 1 && abcFiles[0].getName().toLowerCase().endsWith(".abcp")) {
+			playlistViewPanel.loadPlaylist(abcFiles[0]);
+			SwingUtilities.invokeLater(()-> {
+				showPlaylistView = true;
+				updatePlaylistCardView();
+			});
+			return true;
+		}
 
 		try {
 			for (File abcFile : abcFiles) {

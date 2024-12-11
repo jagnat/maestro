@@ -34,7 +34,7 @@ public class AbcFileTreeModel implements TreeModel {
 
 	private ArrayList<TreeModelListener> listeners = new ArrayList<TreeModelListener>();
 	private AbcSongFileNode rootNode;
-	private static ExtensionFileFilter abcFilter = new ExtensionFileFilter("ABC Files", "abc", "txt"); 
+	private static ExtensionFileFilter abcFilter = new ExtensionFileFilter("ABC Files and Playlists", "abc", "txt", "abcp"); 
 	
 	public AbcFileTreeModel(List<File> directories) {
 		this.rootNode = new AbcSongFileNode(new File("a_d7mmy_file-name_thatwillnever-9eused"));
@@ -125,7 +125,7 @@ public class AbcFileTreeModel implements TreeModel {
 		private final File theFile;
 		private ArrayList<AbcSongFileNode> children;
 		
-		 public void refresh(Comparator<File> sorter) {
+		public void refresh(Comparator<File> sorter) {
 			children = new ArrayList<AbcSongFileNode>();
 			if (!theFile.isDirectory() || !theFile.exists()) {
 				return;
@@ -142,6 +142,12 @@ public class AbcFileTreeModel implements TreeModel {
 			
 			Arrays.sort(files, sorter);
 			Arrays.sort(folders, sorter);
+			
+			for (File folder: folders) {
+				AbcSongFileNode node = new AbcSongFileNode(folder);
+				node.refresh(sorter);
+				children.add(node);
+			}
 			
 			for (File file : files) {
 				AbcSongFileNode node = new AbcSongFileNode(file);
