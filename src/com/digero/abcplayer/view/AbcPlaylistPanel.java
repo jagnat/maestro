@@ -988,11 +988,15 @@ public class AbcPlaylistPanel extends JPanel {
 	}
 	
 	private void addTreePathsToPlaylist(TreePath[] paths) {
-		List<AbcInfo> data = new ArrayList<>();
 		new SwingWorker<Boolean, Boolean>() {
-			
+			boolean loadPlaylist = false;
+			List<AbcInfo> data = new ArrayList<>();
             @Override
-            protected Boolean doInBackground(){
+            protected Boolean doInBackground() {
+            	if (paths.length == 1 && ((AbcSongFileNode)paths[0].getLastPathComponent()).getFile().getName().endsWith(".abcp")) {
+            		loadPlaylist = true;
+            		return true;
+            	}
             	for (TreePath path : paths) {
             		AbcSongFileNode node = (AbcSongFileNode)path.getLastPathComponent();
             		File file = node.getFile();
@@ -1009,8 +1013,12 @@ public class AbcPlaylistPanel extends JPanel {
             
             @Override
             protected void done() {
-            	for (AbcInfo info : data) {
-            		tableModel.addRow(info);
+            	if (loadPlaylist && promptSavePlaylist()) {
+            		loadPlaylist(((AbcSongFileNode)paths[0].getLastPathComponent()).getFile());
+            	} else {
+                	for (AbcInfo info : data) {
+                		tableModel.addRow(info);
+                	}
             	}
             }
 		}.execute();
