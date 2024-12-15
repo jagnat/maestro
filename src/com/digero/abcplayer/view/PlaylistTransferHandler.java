@@ -5,6 +5,7 @@ import java.awt.datatransfer.Transferable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.activation.ActivationDataFlavor;
 import javax.activation.DataHandler;
@@ -20,12 +21,14 @@ import com.digero.common.abctomidi.FileAndData;
 public class PlaylistTransferHandler extends TransferHandler {
 	
 	private JTable playlistTable;
+	private Consumer<File> playlistLoader;
 	private final DataFlavor indexDataFlavor =
 		new ActivationDataFlavor(Integer.class, "application/x-java-Integer;class=java.lang.Integer", "Integer Row Index");
 	
 	
-	public PlaylistTransferHandler(JTable playlistTable) {
+	public PlaylistTransferHandler(JTable playlistTable, Consumer<File> playlistLoader) {
 		this.playlistTable = playlistTable;
+		this.playlistLoader = playlistLoader;
 	}
 	
 	@Override
@@ -61,6 +64,12 @@ public class PlaylistTransferHandler extends TransferHandler {
 			if (info.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
 				@SuppressWarnings("unchecked")
 				List<File> files = (List<File>)(t.getTransferData(DataFlavor.javaFileListFlavor));
+				
+				// Playlist load
+				if (files.size() == 1 && files.get(0).getName().endsWith(".abcp")) {
+					playlistLoader.accept(files.get(0));
+					return true;
+				}
 				
 				List<AbcInfo> data = new ArrayList<>();
 				

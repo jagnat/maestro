@@ -424,7 +424,12 @@ public class AbcPlaylistPanel extends JPanel {
 		playlistTable.setFillsViewportHeight(true);
 		playlistTable.setDragEnabled(true);
 		playlistTable.setDropMode(DropMode.INSERT_ROWS);
-		playlistTable.setTransferHandler(new PlaylistTransferHandler(playlistTable));
+		playlistTable.setTransferHandler(new PlaylistTransferHandler(playlistTable, f -> {
+			// Callback to have transfer handler load playlist
+			if (promptSavePlaylist()) {
+				loadPlaylist(f);
+			}
+		}));
 		playlistTable.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {

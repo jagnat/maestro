@@ -1191,6 +1191,16 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 	private boolean appendSong(File[] abcFiles) {
 		List<FileAndData> data = new ArrayList<>();
+		
+		// TODO: support append playlist?
+		if (abcFiles.length == 1 && abcFiles[0].getName().toLowerCase().endsWith(".abcp")) {
+			playlistViewPanel.loadPlaylist(abcFiles[0]);
+			SwingUtilities.invokeLater(()-> {
+				showPlaylistView = true;
+				updatePlaylistCardView();
+			});
+			return true;
+		}
 
 		try {
 			for (File abcFile : abcFiles) {
