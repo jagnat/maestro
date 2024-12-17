@@ -45,6 +45,7 @@
 			<fileset dir="${build}" includes="*.log" />
 		</delete>
 		<copy file="abcfile.ico" todir="${build}" />
+		<copy file="abcplaylist.ico" todir="${build}" />
 		<copy file="midifile.ico" todir="${build}" />
 		<copy file="msxfile.ico" todir="${build}" />
 		<!--<copy file="Start Maestro.bat" todir="${build}" />
@@ -166,6 +167,7 @@
 			<include name="LotroInstruments.sf2" />
 			<include name="midifile.ico" />
 			<include name="abcfile.ico" />
+			<include name="abcplaylist.ico" />
 			<include name="msxfile.ico" />
 			<include name="Maestro.exe" />
 			<include name="AbcPlayer.exe" />

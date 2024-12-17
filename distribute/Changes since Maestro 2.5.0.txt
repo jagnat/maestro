@@ -47,8 +47,17 @@ Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
 
 Version 3.4.1
-- Fix a bug where AbcPlayer would crash if a directory pinned to the ABC browser does not exist
 - Section and tune editor windows are positioned better relative to the Maestro window, and will always appear fully on screen
+- AbcPlayer playlist fixes and changes
+  - Moved several playlist controls to a new playlist menu at the top of the window
+  - Added a sort-by option for files in the abc browser, accessible through the playlist menu
+  - Files and folders are now grouped separately in the abc browser
+  - Folder contents can be added recursively to a playlist, by dragging or adding a folder to the playlist table
+  - Fix a bug where AbcPlayer would crash if a directory pinned to the ABC browser does not exist
+  - Fixed the order of songs being reversed when dragging songs to the playlist
+  - Double clicking on folders in the ABC browser will expand or collapse them
+  - ABC playlist files (.abcp) can now be loaded from the ABC browser or the Open menu in AbcPlayer
+  - AbcPlayer installed through the MSX will set an icon for abc playlist files, and you can open by double-clicking in windows explorer
 
 Version 3.4.0
 - Add a playlist feature to AbcPlayer

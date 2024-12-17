@@ -5,12 +5,12 @@ import java.awt.datatransfer.Transferable;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 import javax.activation.ActivationDataFlavor;
 import javax.activation.DataHandler;
 import javax.swing.JComponent;
 import javax.swing.JTable;
-import javax.swing.JTree;
 import javax.swing.SwingWorker;
 import javax.swing.TransferHandler;
 
@@ -20,15 +20,27 @@ import com.digero.common.abctomidi.FileAndData;
 
 public class PlaylistTransferHandler extends TransferHandler {
 	
-	private JTree fileTree;
+	public interface AbcLoaderCallback {
+		public void load(List<File> files, int insertIdx);
+	}
+	
 	private JTable playlistTable;
+	private Consumer<File> playlistLoader;
+	private AbcLoaderCallback abcFileLoader;
 	private final DataFlavor indexDataFlavor =
 		new ActivationDataFlavor(Integer.class, "application/x-java-Integer;class=java.lang.Integer", "Integer Row Index");
 	
 	
-	public PlaylistTransferHandler(JTree fileTree, JTable playlistTable) {
-		this.fileTree=fileTree;
+	public PlaylistTransferHandler(JTable playlistTable) {
 		this.playlistTable = playlistTable;
+	}
+	
+	public void setPlaylistLoadCallback(Consumer<File> callback) {
+		playlistLoader = callback;
+	}
+	
+	public void setAbcFileLoadCallback(AbcLoaderCallback callback) {
+		abcFileLoader = callback;
 	}
 	
 	@Override
@@ -62,36 +74,16 @@ public class PlaylistTransferHandler extends TransferHandler {
 		try {
 			// Dragging from file explorer or from JTree explorer
 			if (info.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+				@SuppressWarnings("unchecked")
 				List<File> files = (List<File>)(t.getTransferData(DataFlavor.javaFileListFlavor));
 				
-				List<AbcInfo> data = new ArrayList<>();
+				// Playlist load
+				if (files.size() == 1 && files.get(0).getName().endsWith(".abcp")) {
+					playlistLoader.accept(files.get(0));
+					return true;
+				}
 				
-				new SwingWorker<Boolean, Boolean>() {	
-		            @Override
-		            protected Boolean doInBackground() {
-		            	for (File file : files) {
-		            		if (file.isDirectory()) {
-		            			continue;
-		            		}
-		            		List<FileAndData> fad = new ArrayList<FileAndData>();
-		            		try {
-			            		fad.add(new FileAndData(file, AbcToMidi.readLines(file)));
-			            		data.add(AbcToMidi.parseAbcMetadata(fad));
-		            		} catch (Exception e) {
-		            			continue;
-		            		}
-		            		
-		            	}
-		            	return true;
-		            }
-		            
-		            @Override
-		            protected void done() {
-		            	for (AbcInfo info : data) {
-		            		model.insertRow(info, idx);
-		            	}
-		            }
-				}.execute();
+				abcFileLoader.load(files, idx);
 			}
 			// Reorder operation within table using index
 			else if (info.isDataFlavorSupported(indexDataFlavor)) {
