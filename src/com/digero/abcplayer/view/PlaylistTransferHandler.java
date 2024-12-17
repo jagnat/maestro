@@ -20,15 +20,27 @@ import com.digero.common.abctomidi.FileAndData;
 
 public class PlaylistTransferHandler extends TransferHandler {
 	
+	public interface AbcLoaderCallback {
+		public void load(List<File> files, int insertIdx);
+	}
+	
 	private JTable playlistTable;
 	private Consumer<File> playlistLoader;
+	private AbcLoaderCallback abcFileLoader;
 	private final DataFlavor indexDataFlavor =
 		new ActivationDataFlavor(Integer.class, "application/x-java-Integer;class=java.lang.Integer", "Integer Row Index");
 	
 	
-	public PlaylistTransferHandler(JTable playlistTable, Consumer<File> playlistLoader) {
+	public PlaylistTransferHandler(JTable playlistTable) {
 		this.playlistTable = playlistTable;
-		this.playlistLoader = playlistLoader;
+	}
+	
+	public void setPlaylistLoadCallback(Consumer<File> callback) {
+		playlistLoader = callback;
+	}
+	
+	public void setAbcFileLoadCallback(AbcLoaderCallback callback) {
+		abcFileLoader = callback;
 	}
 	
 	@Override
@@ -71,34 +83,7 @@ public class PlaylistTransferHandler extends TransferHandler {
 					return true;
 				}
 				
-				List<AbcInfo> data = new ArrayList<>();
-				
-				new SwingWorker<Boolean, Boolean>() {	
-		            @Override
-		            protected Boolean doInBackground() {
-		            	for (File file : files) {
-		            		if (file.isDirectory()) {
-		            			continue;
-		            		}
-		            		List<FileAndData> fad = new ArrayList<FileAndData>();
-		            		try {
-			            		fad.add(new FileAndData(file, AbcToMidi.readLines(file)));
-			            		data.add(AbcToMidi.parseAbcMetadata(fad));
-		            		} catch (Exception e) {
-		            			continue;
-		            		}
-		            		
-		            	}
-		            	return true;
-		            }
-		            
-		            @Override
-		            protected void done() {
-		            	for (AbcInfo info : data) {
-		            		model.insertRow(info, idx);
-		            	}
-		            }
-				}.execute();
+				abcFileLoader.load(files, idx);
 			}
 			// Reorder operation within table using index
 			else if (info.isDataFlavorSupported(indexDataFlavor)) {

@@ -14,12 +14,15 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 import java.util.prefs.Preferences;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
@@ -213,7 +216,7 @@ public class AbcPlaylistPanel extends JPanel {
 				List<File> fileList = new ArrayList<>();
 				for (TreePath path : selectedPaths) {
 					AbcSongFileNode node = (AbcSongFileNode) path.getLastPathComponent();
-					fileList.add(0, node.getFile());
+					fileList.add(node.getFile());
 		        }
 
 				// Use DataHandler to create a Transferable with the javaFileListFlavor
@@ -273,7 +276,8 @@ public class AbcPlaylistPanel extends JPanel {
 		
 		JMenuItem fileTreeAddToPlaylist = new JMenuItem("Add to playlist");
 		fileTreeAddToPlaylist.addActionListener(e -> {
-			addTreePathsToPlaylist(abcFileTree.getSelectionPaths());
+//			addTreePathsToPlaylist(abcFileTree.getSelectionPaths());
+			addFilesToPlaylist(treePathsToFileList(abcFileTree.getSelectionPaths()), -1);
 		});
 		fileTreePopup.add(fileTreeAddToPlaylist);
 		
@@ -424,12 +428,6 @@ public class AbcPlaylistPanel extends JPanel {
 		playlistTable.setFillsViewportHeight(true);
 		playlistTable.setDragEnabled(true);
 		playlistTable.setDropMode(DropMode.INSERT_ROWS);
-		playlistTable.setTransferHandler(new PlaylistTransferHandler(playlistTable, f -> {
-			// Callback to have transfer handler load playlist
-			if (promptSavePlaylist()) {
-				loadPlaylist(f);
-			}
-		}));
 		playlistTable.addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
@@ -466,6 +464,18 @@ public class AbcPlaylistPanel extends JPanel {
 				}
 			}
 		});
+		
+		PlaylistTransferHandler transferHandler = new PlaylistTransferHandler(playlistTable);
+		transferHandler.setPlaylistLoadCallback(f -> {
+			if (promptSavePlaylist()) {
+				loadPlaylist(f);
+			}
+		});
+		transferHandler.setAbcFileLoadCallback((f, i) -> {
+			addFilesToPlaylist(f, i);
+		});
+		playlistTable.setTransferHandler(transferHandler);
+		
 		
 		playlistContentPopupMenu = new JPopupMenu();
 		JMenuItem playItem = new JMenuItem("Play");
@@ -536,7 +546,8 @@ public class AbcPlaylistPanel extends JPanel {
 		addToPlaylistButton.setToolTipText("<html>Add the selected songs in the ABC Browser to the playlist.<br> Control-click or shift-click to select multiple songs.</html>");
 		addToPlaylistButton.setEnabled(false);
 		addToPlaylistButton.addActionListener(e -> {
-			addTreePathsToPlaylist(abcFileTree.getSelectionPaths());
+//			addTreePathsToPlaylist(abcFileTree.getSelectionPaths());
+			addFilesToPlaylist(treePathsToFileList(abcFileTree.getSelectionPaths()), -1);
 		});
 		
 		JButton playPlaylistButton = new JButton("Play");
@@ -987,41 +998,95 @@ public class AbcPlaylistPanel extends JPanel {
 		setNowPlayingInfo(null);
 	}
 	
-	private void addTreePathsToPlaylist(TreePath[] paths) {
+	private void addFilesToPlaylist(List<File> files, int insertPos) {
 		new SwingWorker<Boolean, Boolean>() {
 			boolean loadPlaylist = false;
 			List<AbcInfo> data = new ArrayList<>();
             @Override
             protected Boolean doInBackground() {
-            	if (paths.length == 1 && ((AbcSongFileNode)paths[0].getLastPathComponent()).getFile().getName().endsWith(".abcp")) {
+            	if (files.size() == 1 && files.get(0).getName().endsWith(".abcp")) {
             		loadPlaylist = true;
             		return true;
             	}
-            	for (TreePath path : paths) {
-            		AbcSongFileNode node = (AbcSongFileNode)path.getLastPathComponent();
-            		File file = node.getFile();
+            	
+            	boolean onlyFolders = true;
+            	
+            	// Pre scan for folders
+            	for (File file : files) {
+            		if (!file.isDirectory()) onlyFolders = false;
+            	}
+            	
+            	List<File> toLoad = files;
+            	// Expand folders recursively
+            	if (onlyFolders) {
+            		toLoad = new ArrayList<File>();
+            		
+            		try {
+            			toLoad = files.stream()
+                                .filter(File::exists)
+                                .map(File::toPath) // Convert File to Path
+                                .flatMap(path -> getAbcFilesInFolder(path)) // Process each directory
+                                .collect(Collectors.toList());
+            		} catch (Exception e) {
+            			e.printStackTrace();
+            			return false;
+            		}
+            	}
+            	
+            	for (File file : toLoad) {
             		List<FileAndData> fad = new ArrayList<FileAndData>();
             		try {
                 		fad.add(new FileAndData(file, AbcToMidi.readLines(file)));
                 		data.add(AbcToMidi.parseAbcMetadata(fad));
             		} catch (Exception e) {
+            			e.printStackTrace();
             			continue;
             		}
             	}
             	return true;
             }
             
+            // TODO: Sort by sort type?
+            private Stream<File> getAbcFilesInFolder(Path directory) {
+            	try {
+            		return Files.walk(directory)
+            				.filter(Files::isRegularFile)
+            				.filter(path -> path.toString().endsWith(".abc") || path.toString().endsWith(".txt"))
+            				.map(Path::toFile);
+            	} catch (IOException e) {
+            		e.printStackTrace();
+            		return Stream.empty();
+            	}
+            }
+            
             @Override
             protected void done() {
             	if (loadPlaylist && promptSavePlaylist()) {
-            		loadPlaylist(((AbcSongFileNode)paths[0].getLastPathComponent()).getFile());
+            		loadPlaylist(files.get(0));
             	} else {
-                	for (AbcInfo info : data) {
-                		tableModel.addRow(info);
-                	}
+            		if (insertPos == -1) { // Append to table
+	                	for (AbcInfo info : data) {
+	                		tableModel.addRow(info);
+	                	}
+            		} else { // Drag and drop to a specific position
+            			int idx = insertPos;
+            			for (AbcInfo info : data) {
+	                		tableModel.insertRow(info, idx++);
+	                	}
+            		}
             	}
             }
 		}.execute();
+	}
+	
+	private List<File> treePathsToFileList(TreePath[] paths) {
+		List<File> ret = new ArrayList<File>(paths.length);
+		for (TreePath path : paths) {
+			AbcSongFileNode node = (AbcSongFileNode)path.getLastPathComponent();
+			ret.add(node.getFile());
+		}
+		
+		return ret;
 	}
 	
 	public void setPlaylistListener(Listener<PlaylistEvent> l) {
