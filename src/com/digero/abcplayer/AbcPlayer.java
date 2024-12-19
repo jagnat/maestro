@@ -511,6 +511,10 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 						updatePlaylistCardView();
 					}
 					break;
+				case CLOSE_SONG:
+					closeSong();
+					break;
+				default: break;
 				}
 			}
 		});
@@ -612,6 +616,12 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 	}
 
 	private void updateTitleLabel() {
+		if (abcInfo == null) {
+			titleLabel.setText(" ");
+			titleLabel.setToolTipText("");
+			return;
+		}
+		
 		String title = abcInfo.getTitle();
 		String artist = abcInfo.getComposer_MaybeNull();
 
@@ -745,6 +755,14 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 		});
 
 		fileMenu.addSeparator();
+		
+		JMenuItem closeSong = fileMenu.add(new JMenuItem("Close Song"));
+		closeSong.addActionListener(e -> {
+			if (abcInfo != null) {
+				closeSong();
+				playlistViewPanel.resetPlaylistPosition();
+			}
+		});
 
 		JMenuItem exit = fileMenu.add(new JMenuItem("Exit"));
 		exit.setMnemonic(KeyEvent.VK_X);
@@ -768,6 +786,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 				saveMenuItem.setEnabled(saveEnabled);
 				exportWavMenuItem.setEnabled(saveEnabled && !audioExporter.isExporting());
 				exportMp3MenuItem.setEnabled(saveEnabled && !audioExporter.isExporting());
+				closeSong.setEnabled(saveEnabled);
 			}
 
 			@Override
@@ -783,6 +802,7 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 				saveMenuItem.setEnabled(true);
 				exportWavMenuItem.setEnabled(true);
 				exportMp3MenuItem.setEnabled(true);
+				closeSong.setEnabled(true);
 			}
 		});
 
@@ -1308,6 +1328,27 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 
 		return true;
 	}
+	
+	private void closeSong() {
+		sequencer.stop();
+		sequencer.clearSequence();
+		sequencer.reset(true);
+		this.exportFileDialog = null;
+		this.saveFileDialog = null;
+		this.abcData = null;
+		this.abcInfo = null;
+		this.instrumentOverrideMap.clear();
+		if (abcViewFrame != null)
+			abcViewFrame.clearLinesAndRegions();
+		
+		barNumberLabel.setBarNumberCache(null);
+		barNumberLabel.setVisible(false);
+		
+		updateWindowTitle();
+		trackListPanel.songChanged(null);
+		updateButtonStates();
+		updateTitleLabel();
+	}
 
 	private boolean appendSong(List<FileAndData> appendData) {
 		if (this.abcData == null || this.abcData.isEmpty()) {
@@ -1392,6 +1433,14 @@ public class AbcPlayer extends JFrame implements TableLayoutConstants, MidiConst
 	}
 
 	private void updateWindowTitle() {
+		if (abcData == null ) {
+			setTitle(APP_NAME);
+			if (abcViewFrame != null) {
+				abcViewFrame.setTitle(APP_NAME);
+			}
+			return;
+		}
+		
 		StringBuilder fileNames = new StringBuilder();
 		int c = 0;
 		for (FileAndData fd : abcData) {

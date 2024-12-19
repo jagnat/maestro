@@ -60,6 +60,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.tree.TreePath;
 
 import com.digero.abcplayer.AbcPlaylistXmlCoder;
+import com.digero.abcplayer.view.AbcPlaylistPanel.PlaylistEvent.PlaylistEventType;
 import com.digero.common.abctomidi.AbcInfo;
 import com.digero.common.abctomidi.AbcToMidi;
 import com.digero.common.abctomidi.FileAndData;
@@ -83,7 +84,7 @@ public class AbcPlaylistPanel extends JPanel {
 		private boolean showSongView = false;
 		
 		public enum PlaylistEventType {
-			PLAY_FROM_ABCINFO, PLAY_FROM_FILE
+			PLAY_FROM_ABCINFO, PLAY_FROM_FILE, CLOSE_SONG
 		}
 		
 		private final PlaylistEventType type;
@@ -284,9 +285,7 @@ public class AbcPlaylistPanel extends JPanel {
 		JMenuItem fileTreePlay = new JMenuItem("Play");
 		fileTreePlay.addActionListener(e -> {
 			AbcSongFileNode f = (AbcSongFileNode)(abcFileTree.getPathForRow(menuRowIdx).getLastPathComponent());
-			 if (parentListener != null) {
-				 parentListener.onEvent(new PlaylistEvent(f.getFile(), PlaylistEvent.PlaylistEventType.PLAY_FROM_FILE).setShowSongView(true));
-			 }
+			firePlaylistEvent(f.getFile(), PlaylistEventType.PLAY_FROM_FILE, true);
 		});
 		fileTreePopup.add(fileTreePlay);
 		
@@ -311,9 +310,7 @@ public class AbcPlaylistPanel extends JPanel {
 							abcFileTree.expandPath(abcFileTree.getPathForRow(idx));
 						return;
 					}
-					if (parentListener != null) {
-						parentListener.onEvent(new PlaylistEvent(f.getFile(), PlaylistEvent.PlaylistEventType.PLAY_FROM_FILE));
-					 }
+					firePlaylistEvent(f.getFile(), PlaylistEventType.PLAY_FROM_FILE);
 				}
 			}
 			
@@ -447,9 +444,7 @@ public class AbcPlaylistPanel extends JPanel {
 					}
 					AbcInfo info = tableModel.getAbcInfoAt(playlistTable.getSelectedRow());
 					setNowPlayingInfo(info);
-					if (parentListener != null) {
-						 parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
-					}
+					firePlaylistEvent(info, PlaylistEventType.PLAY_FROM_ABCINFO);
 				} else if (e.getButton() == MouseEvent.BUTTON2) {
 					
 				}
@@ -482,9 +477,7 @@ public class AbcPlaylistPanel extends JPanel {
 		playItem.addActionListener(e -> {
 			AbcInfo info = tableModel.getAbcInfoAt(playlistTable.getSelectedRow());
 			setNowPlayingInfo(info);
-			if (parentListener != null) {
-				parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
-			}
+			firePlaylistEvent(info, PlaylistEventType.PLAY_FROM_ABCINFO);
 		});
 		playlistContentPopupMenu.add(playItem);
 		JMenuItem removeItem = new JMenuItem("Remove Selected");
@@ -559,9 +552,7 @@ public class AbcPlaylistPanel extends JPanel {
 			}
 			AbcInfo info = tableModel.getAbcInfoAt(0);
 			setNowPlayingInfo(info);
-			if (parentListener != null) {
-				parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
-			}
+			firePlaylistEvent(info, PlaylistEventType.PLAY_FROM_ABCINFO);
 		});
 		
 		nextSongButton = new JButton("Next Song");
@@ -574,9 +565,7 @@ public class AbcPlaylistPanel extends JPanel {
 
 			AbcInfo info = tableModel.getAbcInfoAt(newIdx);
 			setNowPlayingInfo(info);
-			if (parentListener != null) {
-	 			parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
- 			}
+			firePlaylistEvent(info, PlaylistEventType.PLAY_FROM_ABCINFO);
 		});
 		
 		prevSongButton = new JButton("Prev Song");
@@ -589,9 +578,7 @@ public class AbcPlaylistPanel extends JPanel {
 
 			AbcInfo info = tableModel.getAbcInfoAt(newIdx);
 			setNowPlayingInfo(info);
-			if (parentListener != null) {
-	 			parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
- 			}
+			firePlaylistEvent(info, PlaylistEventType.PLAY_FROM_ABCINFO);
 		});
 		
 		String delayToolTipText = "<html>Configure song switch delay.<br>"+
@@ -673,6 +660,10 @@ public class AbcPlaylistPanel extends JPanel {
 				playlistFile = null;
 				saveMenuItem.setEnabled(false);
 				tableModel.clearRows();
+				
+				if (nowPlayingInfo != null) {
+					firePlaylistEvent(this, PlaylistEventType.CLOSE_SONG);
+				}
 			}
 		});
 		playlistMenu.addSeparator();
@@ -710,6 +701,18 @@ public class AbcPlaylistPanel extends JPanel {
 		refreshMenuItem.addActionListener(e -> {
 			abcFileTreeModel.refresh(sortType);
 		});
+	}
+	
+	private void firePlaylistEvent(Object obj, PlaylistEventType type) {
+		if (parentListener != null) {
+ 			parentListener.onEvent(new PlaylistEvent(obj, type));
+		}
+	}
+	
+	private void firePlaylistEvent(Object obj, PlaylistEventType type, boolean showSongView) {
+		if (parentListener != null) {
+ 			parentListener.onEvent(new PlaylistEvent(obj, type).setShowSongView(showSongView));
+		}
 	}
 	
 	public JMenu getPlaylistMenu() {
@@ -912,9 +915,7 @@ public class AbcPlaylistPanel extends JPanel {
 		if (newIdx > 0) {
 			AbcInfo info = tableModel.getAbcInfoAt(newIdx);
 			setNowPlayingInfo(info);
-			if (parentListener != null) {
-	 			parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
- 			}
+			firePlaylistEvent(info, PlaylistEventType.PLAY_FROM_ABCINFO);
 		}
 		else {
 			setNowPlayingInfo(null);
@@ -1002,80 +1003,80 @@ public class AbcPlaylistPanel extends JPanel {
 		new SwingWorker<Boolean, Boolean>() {
 			boolean loadPlaylist = false;
 			List<AbcInfo> data = new ArrayList<>();
-            @Override
-            protected Boolean doInBackground() {
-            	if (files.size() == 1 && files.get(0).getName().endsWith(".abcp")) {
-            		loadPlaylist = true;
-            		return true;
-            	}
-            	
-            	boolean onlyFolders = true;
-            	
-            	// Pre scan for folders
-            	for (File file : files) {
-            		if (!file.isDirectory()) onlyFolders = false;
-            	}
-            	
-            	List<File> toLoad = files;
-            	// Expand folders recursively
-            	if (onlyFolders) {
-            		toLoad = new ArrayList<File>();
-            		
-            		try {
-            			toLoad = files.stream()
-                                .filter(File::exists)
-                                .map(File::toPath) // Convert File to Path
-                                .flatMap(path -> getAbcFilesInFolder(path)) // Process each directory
-                                .collect(Collectors.toList());
-            		} catch (Exception e) {
-            			e.printStackTrace();
-            			return false;
-            		}
-            	}
-            	
-            	for (File file : toLoad) {
-            		List<FileAndData> fad = new ArrayList<FileAndData>();
-            		try {
-                		fad.add(new FileAndData(file, AbcToMidi.readLines(file)));
-                		data.add(AbcToMidi.parseAbcMetadata(fad));
-            		} catch (Exception e) {
-            			e.printStackTrace();
-            			continue;
-            		}
-            	}
-            	return true;
-            }
-            
-            // TODO: Sort by sort type?
-            private Stream<File> getAbcFilesInFolder(Path directory) {
-            	try {
-            		return Files.walk(directory)
-            				.filter(Files::isRegularFile)
-            				.filter(path -> path.toString().endsWith(".abc") || path.toString().endsWith(".txt"))
-            				.map(Path::toFile);
-            	} catch (IOException e) {
-            		e.printStackTrace();
-            		return Stream.empty();
-            	}
-            }
-            
-            @Override
-            protected void done() {
-            	if (loadPlaylist && promptSavePlaylist()) {
-            		loadPlaylist(files.get(0));
-            	} else {
-            		if (insertPos == -1) { // Append to table
-	                	for (AbcInfo info : data) {
-	                		tableModel.addRow(info);
-	                	}
-            		} else { // Drag and drop to a specific position
-            			int idx = insertPos;
-            			for (AbcInfo info : data) {
-	                		tableModel.insertRow(info, idx++);
-	                	}
-            		}
-            	}
-            }
+			@Override
+			protected Boolean doInBackground() {
+				if (files.size() == 1 && files.get(0).getName().endsWith(".abcp")) {
+					loadPlaylist = true;
+					return true;
+				}
+
+				boolean onlyFolders = true;
+
+				// Pre scan for folders
+				for (File file : files) {
+					if (!file.isDirectory()) onlyFolders = false;
+				}
+
+				List<File> toLoad = files;
+				// Expand folders recursively
+				if (onlyFolders) {
+					toLoad = new ArrayList<File>();
+
+					try {
+						toLoad = files.stream()
+								.filter(File::exists)
+								.map(File::toPath) // Convert File to Path
+								.flatMap(path -> getAbcFilesInFolder(path)) // Process each directory
+								.collect(Collectors.toList());
+					} catch (Exception e) {
+						e.printStackTrace();
+						return false;
+					}
+				}
+
+				for (File file : toLoad) {
+					List<FileAndData> fad = new ArrayList<FileAndData>();
+					try {
+						fad.add(new FileAndData(file, AbcToMidi.readLines(file)));
+						data.add(AbcToMidi.parseAbcMetadata(fad));
+					} catch (Exception e) {
+						e.printStackTrace();
+						continue;
+					}
+				}
+				return true;
+			}
+
+			// TODO: Sort by sort type?
+			private Stream<File> getAbcFilesInFolder(Path directory) {
+				try {
+					return Files.walk(directory)
+							.filter(Files::isRegularFile)
+							.filter(path -> path.toString().endsWith(".abc") || path.toString().endsWith(".txt"))
+							.map(Path::toFile);
+				} catch (IOException e) {
+					e.printStackTrace();
+					return Stream.empty();
+				}
+			}
+
+			@Override
+			protected void done() {
+				if (loadPlaylist && promptSavePlaylist()) {
+					loadPlaylist(files.get(0));
+				} else {
+					if (insertPos == -1) { // Append to table
+						for (AbcInfo info : data) {
+							tableModel.addRow(info);
+						}
+					} else { // Drag and drop to a specific position
+						int idx = insertPos;
+						for (AbcInfo info : data) {
+							tableModel.insertRow(info, idx++);
+						}
+					}
+				}
+			}
 		}.execute();
 	}
 	
