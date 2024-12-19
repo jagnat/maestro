@@ -875,6 +875,10 @@ public class AbcPlaylistPanel extends JPanel {
 		
 		file = openPlaylistChooser.getSelectedFile();
 		
+		if (nowPlayingInfo != null) {
+			firePlaylistEvent(this, PlaylistEventType.CLOSE_SONG);
+		}
+		
 		loadPlaylist(file);
 		playlistPrefs.put("playlistDirectory", openPlaylistChooser.getCurrentDirectory().getAbsolutePath());
 	}
