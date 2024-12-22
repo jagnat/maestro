@@ -37,7 +37,7 @@ public class MaxDialog {
 			AbcPart abcPart;
 
 			public MaxDialogWindow(final ProjectFrame jf, AbcPart part) {
-				super(jf, "Delay Part Editor", false);
+				super(jf, "Max Notes Editor", false);
 				
 				abcPart = part;
 
