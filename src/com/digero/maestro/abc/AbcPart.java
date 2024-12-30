@@ -245,6 +245,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 					}
 					SaveUtil.appendChildTextElement(sectionEle, "volumeStep", String.valueOf(ps.volumeStep));
 					SaveUtil.appendChildTextElement(sectionEle, "silence", String.valueOf(ps.silence));
+					SaveUtil.appendChildTextElement(sectionEle, "legato", String.valueOf(ps.legato));
 					SaveUtil.appendChildTextElement(sectionEle, "fade", String.valueOf(ps.fade));
 					SaveUtil.appendChildTextElement(sectionEle, "dialogLine", String.valueOf(ps.dialogLine));
 					SaveUtil.appendChildTextElement(sectionEle, "resetVelocities", String.valueOf(ps.resetVelocities));
@@ -260,6 +261,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 				PartSection ps = nonSection.get(t);
 				Element sectionEle = (Element) trackEle.appendChild(doc.createElement("nonSection"));
 				SaveUtil.appendChildTextElement(sectionEle, "silence", String.valueOf(ps.silence));
+				SaveUtil.appendChildTextElement(sectionEle, "legato", String.valueOf(ps.legato));
 				SaveUtil.appendChildTextElement(sectionEle, "resetVelocities", String.valueOf(ps.resetVelocities));
 				AbcHelper.appendIfNotPercussion(ps, sectionEle, instrument.isPercussion);
 				if (ps.fromPitch != minDefault || ps.toPitch != Note.MAX) {
@@ -392,6 +394,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 				if (nonSectionEle != null) {
 					PartSection ps = new PartSection();
 					ps.silence = SaveUtil.parseValue(nonSectionEle, "silence", false);
+					ps.legato = SaveUtil.parseValue(nonSectionEle, "legato", false);
 					ps.resetVelocities = SaveUtil.parseValue(nonSectionEle, "resetVelocities", false);
 					ps.doubling[0] = SaveUtil.parseValue(nonSectionEle, "double2OctDown", false);
 					ps.doubling[1] = SaveUtil.parseValue(nonSectionEle, "double1OctDown", false);
@@ -1143,6 +1146,26 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		}
 
 		return ne.velocity;
+	}
+	
+	public boolean getSectionLegato(int track, long tick) {
+		if (sectionsTicked != null) {
+			TreeMap<Long, PartSection> tree = sectionsTicked.get(track);
+			
+			if (tree != null) {
+				Entry<Long, PartSection> entry = tree.floorEntry(tick);
+				if (entry != null) {
+					if (tick < entry.getValue().endTick) {
+						return entry.getValue().legato;
+					}
+				}
+			}
+		}
+		if (nonSection.get(track) != null) {
+			return nonSection.get(track).legato;
+		}
+
+		return false;
 	}
 
 	public int[] getSectionVolumeAdjust(int track, NoteEvent ne) {

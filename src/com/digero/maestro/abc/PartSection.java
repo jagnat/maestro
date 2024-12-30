@@ -8,6 +8,7 @@ public class PartSection implements Comparable<PartSection> {
 	public int fade = 0;
 	public boolean resetVelocities = false;
 	public boolean silence = false;
+	public boolean legato = false;
 	public int dialogLine = -1;
 	public Boolean[] doubling = { false, false, false, false };
 

@@ -643,6 +643,38 @@ public class AbcExporter {
 					listOfNotes.removeAll(removeList);
 					listOfNotes.addAll(extraList);
 				}
+				
+				if (part.getInstrument().sustainable) {
+					for (int curr = 0; curr < listOfNotes.size(); curr++) {
+						MidiNoteEvent currNe = listOfNotes.get(curr);
+						if (!part.getSectionLegato(t, currNe.getStartTick())) {
+							currNe.setLegatoEndTick(part, null);
+							continue;
+						}
+						long currEnd = currNe.getEndTick();
+						long nextEnd = currEnd;
+						// Now find where next note event starts
+						for (int next = curr+1; next < listOfNotes.size(); next++) {
+							MidiNoteEvent nextNe = listOfNotes.get(next);
+							if (nextNe.getStartTick() == nextEnd) {
+								break;
+							}
+							if (nextNe.getStartTick() > nextEnd) {
+								nextEnd = nextNe.getStartTick();
+								break;
+							}
+						}
+						if (nextEnd > currEnd) {
+							currNe.setLegatoEndTick(part, nextEnd);
+						} else {
+							currNe.setLegatoEndTick(part, null);
+						}
+					}
+				} else {
+					for (MidiNoteEvent ne : listOfNotes) {
+						ne.setLegatoEndTick(part, null);
+					}
+				}
 
 				for (MidiNoteEvent ne : listOfNotes) {
 					// Skip notes that are outside of the play range.
@@ -670,7 +702,12 @@ public class AbcExporter {
 						// }
 
 						long startTick = Math.max(ne.getStartTick(), exportStartTick);
-						long endTick = Math.min(ne.getEndTick(), exportEndTick);
+						long legatoEndTick = ne.getEndTick();
+						if (ne.getLegatoEndTick(part) != null) {
+							legatoEndTick = ne.getLegatoEndTick(part);
+						}
+						long endTick = Math.min(legatoEndTick, exportEndTick);
+						ne.setLegatoEndTick(part, null);// clean up, so if a part is removed there is not references to it in midinoteevents.
 						if (part.isStudentPart() && mappedNote.id < LotroInstrument.STUDENT_CHROMATIC_LOWEST.id) {
 							long endTickMin = qtm.microsToTick(
 									qtm.tickToMicros(startTick) + (long) (AbcConstants.STUDENT_FX_MIN_SECONDS
@@ -725,6 +762,7 @@ public class AbcExporter {
 							}
 						}
 					} else {
+						ne.setLegatoEndTick(part, null);// clean up, so if a part is removed there is not references to it in midinoteevents.
 						//System.out.println("Final skipping \n"+ne+"\n"+(mappedNote != null)+" "+(part.shouldPlay(ne, t)));
 					}
 				}

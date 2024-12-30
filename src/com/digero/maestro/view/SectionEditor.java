@@ -190,6 +190,7 @@ public class SectionEditor {
 
 				PartSection ps = abcPart.nonSection.get(track);
 				nonSectionInput.silent.setSelected(ps != null && ps.silence);
+				nonSectionInput.legato.setSelected(ps != null && ps.legato);
 				nonSectionInput.resetVelocities.setSelected(ps != null && ps.resetVelocities);
 				nonSectionInput.doubling0.setSelected(ps != null && ps.doubling[0]);
 				nonSectionInput.doubling1.setSelected(ps != null && ps.doubling[1]);
@@ -390,6 +391,7 @@ public class SectionEditor {
 							ps1.startBar = Float.parseFloat(sectionInputs.get(k).barA[0].getText().replace(",", "."));
 							ps1.endBar = Float.parseFloat(sectionInputs.get(k).barB[0].getText().replace(",", "."));
 							ps1.silence = sectionInputs.get(k).silent.isSelected();
+							ps1.legato = sectionInputs.get(k).legato.isSelected();
 							ps1.fade = Integer.parseInt(sectionInputs.get(k).fade.getText());
 							ps1.resetVelocities = sectionInputs.get(k).resetVelocities.isSelected();
 							ps1.doubling[0] = sectionInputs.get(k).doubling0.isSelected();
@@ -446,6 +448,7 @@ public class SectionEditor {
 				PartSection ps1 = new PartSection();
 				try {
 					ps1.silence = nonSectionInput.silent.isSelected();
+					ps1.legato = nonSectionInput.legato.isSelected();
 					ps1.resetVelocities = nonSectionInput.resetVelocities.isSelected();
 					ps1.doubling[0] = nonSectionInput.doubling0.isSelected();
 					ps1.doubling[1] = nonSectionInput.doubling1.isSelected();
@@ -474,7 +477,7 @@ public class SectionEditor {
 						}
 					}
 					nonSectionInput.textPitch.setText("("+ps1.fromPitch.id+" to "+ps1.toPitch.id+")");
-					if (ps1.silence || ps1.resetVelocities || ps1.doubling[0] || ps1.doubling[1] || ps1.doubling[2]
+					if (ps1.silence || ps1.legato || ps1.resetVelocities || ps1.doubling[0] || ps1.doubling[1] || ps1.doubling[2]
 							|| ps1.doubling[3] || ps1.fromPitch != Note.C0 || ps1.toPitch != Note.MAX) {
 						SectionDialog.this.abcPart.nonSection.set(SectionDialog.this.track, ps1);
 					} else {
@@ -521,6 +524,7 @@ public class SectionEditor {
 						secInput.transpose.setText(String.valueOf(ps.octaveStep));
 						secInput.velo.setText(String.valueOf(ps.volumeStep));
 						secInput.silent.setSelected(ps.silence);
+						secInput.legato.setSelected(ps.legato);
 						secInput.fade.setText(String.valueOf(ps.fade));
 						secInput.resetVelocities.setSelected(ps.resetVelocities);
 						secInput.doubling0.setSelected(ps.doubling[0]);
@@ -596,6 +600,8 @@ public class SectionEditor {
 				rangePanel.add(new JLabel("To bar"), "2, 0, c, c");
 				rangePanel.add(new JLabel("Low limit"), "3, 0, c, c");
 				rangePanel.add(new JLabel("High limit"), "4, 0, c, c");
+				// column 5 is helper text for note limits
+				rangePanel.add(new JLabel("Legato"), "6, 0, c, c");
 			}
 
 			private double[] tabsRows() {

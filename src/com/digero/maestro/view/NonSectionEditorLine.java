@@ -55,5 +55,6 @@ public class NonSectionEditorLine extends SectionEditorLine {
 		tab3line.add(fromPitch, "3, 0, f, f");
 		tab3line.add(toPitch, "4, 0, f, f");
 		tab3line.add(textPitch, "5, 0, c, c");
+		tab3line.add(legato, "6, 0, c, f");
 	}
 }
