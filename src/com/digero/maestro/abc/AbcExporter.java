@@ -653,10 +653,11 @@ public class AbcExporter {
 						}
 						long currEnd = currNe.getEndTick();
 						long nextEnd = currEnd;
+						long currEndMicro = qtm.tickToMicros(currEnd);
 						// Now find where next note event starts
 						for (int next = curr+1; next < listOfNotes.size(); next++) {
 							MidiNoteEvent nextNe = listOfNotes.get(next);
-							if (nextNe.getStartTick() == nextEnd) {
+							if (nextNe.getStartTick() <= nextEnd && nextNe.getEndTick() > currEnd) {
 								break;
 							}
 							if (nextNe.getStartTick() > nextEnd) {
@@ -665,7 +666,12 @@ public class AbcExporter {
 							}
 						}
 						if (nextEnd > currEnd) {
-							currNe.setLegatoEndTick(part, nextEnd);
+							long nextEndMicro = qtm.tickToMicros(nextEnd);
+							if (nextEndMicro - currEndMicro < 1000000) {
+								currNe.setLegatoEndTick(part, nextEnd);
+							} else {
+								currNe.setLegatoEndTick(part, null);								
+							}
 						} else {
 							currNe.setLegatoEndTick(part, null);
 						}
