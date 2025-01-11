@@ -28,7 +28,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.DropMode;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -128,7 +128,6 @@ public class AbcPlaylistPanel extends JPanel {
 	private JScrollPane playlistScrollPane;
 	private JPopupMenu playlistContentPopupMenu;
 	private JPopupMenu playlistHeaderPopupMenu;
-	private JCheckBox autoplayCheckBox;
 	private JLabel abcPlaylistLabel;
 	
 	// Bottom
@@ -140,6 +139,8 @@ public class AbcPlaylistPanel extends JPanel {
 	// Playlist menu
 	private JMenu playlistMenu;
 	private JMenuItem saveMenuItem;
+	private JCheckBoxMenuItem autoplayMenuItem;
+	private JCheckBoxMenuItem playbackDelayMenuItem;
 	
 	private JFileChooser openPlaylistChooser = null;
 	private JFileChooser savePlaylistChooser = null;
@@ -526,14 +527,6 @@ public class AbcPlaylistPanel extends JPanel {
 		// =================================
 		// Bottom Controls
 		// =================================
-		
-		autoplayCheckBox = new JCheckBox("Autoplay");
-		autoplayCheckBox.setToolTipText("When checked, playlist playback will automatically advance to the next song.");
-		autoplayCheckBox.setFocusable(false);
-		autoplayCheckBox.setSelected(playlistPrefs.getBoolean("autoplay", true));
-		autoplayCheckBox.addActionListener(e -> {
-			playlistPrefs.putBoolean("autoplay", autoplayCheckBox.isSelected());
-		});
 
 		addToPlaylistButton = new JButton("Add Selected");
 		addToPlaylistButton.setToolTipText("<html>Add the selected songs in the ABC Browser to the playlist.<br> Control-click or shift-click to select multiple songs.</html>");
@@ -620,7 +613,6 @@ public class AbcPlaylistPanel extends JPanel {
 		
 		bottomControls.add(delayLabel, "align right");
 		bottomControls.add(delayField, "align center");
-		bottomControls.add(autoplayCheckBox);
 		bottomControls.add(prevSongButton);
 		bottomControls.add(playPlaylistButton);
 		bottomControls.add(nextSongButton, "sg play");
@@ -665,6 +657,17 @@ public class AbcPlaylistPanel extends JPanel {
 					firePlaylistEvent(this, PlaylistEventType.CLOSE_SONG);
 				}
 			}
+		});
+		playlistMenu.addSeparator();
+		autoplayMenuItem = (JCheckBoxMenuItem) playlistMenu.add(new JCheckBoxMenuItem("Enable Autoplay"));
+		autoplayMenuItem.setSelected(playlistPrefs.getBoolean("autoplay", true));
+		autoplayMenuItem.addActionListener(e -> {
+			playlistPrefs.putBoolean("autoplay", autoplayMenuItem.isSelected());
+		});
+		playbackDelayMenuItem = (JCheckBoxMenuItem) playlistMenu.add(new JCheckBoxMenuItem("Enable Delay between Playback"));
+		playbackDelayMenuItem.setSelected(playlistPrefs.getBoolean("playbackDelay", false));
+		playbackDelayMenuItem.addActionListener(e -> {
+			playlistPrefs.putBoolean("playbackDelay", playbackDelayMenuItem.isSelected());
 		});
 		playlistMenu.addSeparator();
 		JMenu sortBy = new JMenu("Sort browser by...");
@@ -906,7 +909,7 @@ public class AbcPlaylistPanel extends JPanel {
 	}
 	
 	public void advanceToNextSongIfNeeded() {
-		if (!autoplayCheckBox.isSelected()) {
+		if (!autoplayMenuItem.isSelected()) {
 			return;
 		}
 		
@@ -917,9 +920,40 @@ public class AbcPlaylistPanel extends JPanel {
 		int newIdx = (tableModel.getIdxForAbcInfo(nowPlayingInfo) + 1) % tableModel.getRowCount();
 		
 		if (newIdx > 0) {
-			AbcInfo info = tableModel.getAbcInfoAt(newIdx);
-			setNowPlayingInfo(info);
-			firePlaylistEvent(info, PlaylistEventType.PLAY_FROM_ABCINFO);
+			int delayTime = getSongDelayTimeInSeconds(); 
+			if (delayTime > 0 && playbackDelayMenuItem.isSelected()) {
+				new SwingWorker<Boolean, Boolean>() {
+					int delayRemaining = delayTime;
+					@Override
+					protected Boolean doInBackground() throws Exception {
+						while (delayRemaining > 0) {
+							SwingUtilities.invokeLater(() -> {
+								updatePlaylistLabel(delayRemaining);
+							});
+							Thread.sleep(1000);
+							delayRemaining -= 1;
+						}
+						return true;
+					}
+					
+					@Override
+					protected void done() {
+						int idx = (tableModel.getIdxForAbcInfo(nowPlayingInfo) + 1) % tableModel.getRowCount();
+						if (idx > 0) {
+							AbcInfo info = tableModel.getAbcInfoAt(idx);
+							setNowPlayingInfo(info);
+							firePlaylistEvent(info, PlaylistEventType.PLAY_FROM_ABCINFO);
+						} else {
+							setNowPlayingInfo(null);
+						}
+						updatePlaylistLabel();
+					}
+				}.execute();
+			} else {
+				AbcInfo info = tableModel.getAbcInfoAt(newIdx);
+				setNowPlayingInfo(info);
+				firePlaylistEvent(info, PlaylistEventType.PLAY_FROM_ABCINFO);
+			}
 		}
 		else {
 			setNowPlayingInfo(null);
@@ -944,6 +978,10 @@ public class AbcPlaylistPanel extends JPanel {
 	}
 	
 	private void updatePlaylistLabel() {
+		updatePlaylistLabel(-1);
+	}
+	
+	private void updatePlaylistLabel(int nextSongIn) {
 		long totalTimeMicroSec = 0;
 		int numSongs = tableModel.getRowCount();
 		for (AbcInfo inf : tableModel.getTableData()) {
@@ -976,15 +1014,10 @@ public class AbcPlaylistPanel extends JPanel {
 		}
 		
 		long totalTimeWithDelayMicroSec = totalTimeMicroSec;
+		int delaySec = getSongDelayTimeInSeconds();
 		
-		if (!delayField.getText().isEmpty() && numSongs > 0) {
-			try {
-				int delaySec = Integer.parseInt(delayField.getText());
-				// Add (songs - 1) * part switch delay to total time
-				// e.g. with two songs in playlist, there is one part switch
-				totalTimeWithDelayMicroSec = totalTimeWithDelayMicroSec + (numSongs - 1) * (delaySec * 1000000l);
-			} catch (NumberFormatException e) {
-			}
+		if (delaySec > 0 && numSongs > 0) {
+			totalTimeWithDelayMicroSec = totalTimeWithDelayMicroSec + (numSongs - 1) * (delaySec * 1000000l);
 		}
 		
 		if (totalTimeMicroSec != 0) {
@@ -996,7 +1029,23 @@ public class AbcPlaylistPanel extends JPanel {
 			labelStr += ")";
 		}
 		
+		if (nextSongIn >= 0) {
+			labelStr = labelStr + " [Next song playing in: " + nextSongIn + "]";
+		}
+		
 		abcPlaylistLabel.setText(labelStr);
+	}
+	
+	private int getSongDelayTimeInSeconds() {
+		if (!delayField.getText().isEmpty()) {
+			try {
+				int delaySec = Integer.parseInt(delayField.getText());
+				return delaySec;
+			} catch (NumberFormatException e) {
+				return -1;
+			}
+		}
+		return 0;
 	}
 	
 	public void resetPlaylistPosition() {
