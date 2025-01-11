@@ -645,9 +645,11 @@ public class AbcExporter {
 				}
 				
 				if (part.getInstrument().sustainable) {
+					long lastTick = 0L;
 					for (int curr = 0; curr < listOfNotes.size(); curr++) {
 						MidiNoteEvent currNe = listOfNotes.get(curr);
-						if (!part.getSectionLegato(t, currNe.getStartTick())) {
+						if (currNe.getEndTick() > lastTick) lastTick = currNe.getEndTick();
+						if (!part.getSectionLegato(t, currNe.getStartTick()) || lastTick > currNe.getEndTick()) {
 							currNe.setLegatoEndTick(part, null);
 							continue;
 						}
