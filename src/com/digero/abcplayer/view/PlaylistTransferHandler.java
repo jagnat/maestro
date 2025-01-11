@@ -3,7 +3,6 @@ package com.digero.abcplayer.view;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -11,12 +10,7 @@ import javax.activation.ActivationDataFlavor;
 import javax.activation.DataHandler;
 import javax.swing.JComponent;
 import javax.swing.JTable;
-import javax.swing.SwingWorker;
 import javax.swing.TransferHandler;
-
-import com.digero.common.abctomidi.AbcInfo;
-import com.digero.common.abctomidi.AbcToMidi;
-import com.digero.common.abctomidi.FileAndData;
 
 public class PlaylistTransferHandler extends TransferHandler {
 	

@@ -28,7 +28,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ButtonGroup;
 import javax.swing.DropMode;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -51,15 +51,22 @@ import javax.swing.ToolTipManager;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.tree.TreePath;
 
 import com.digero.abcplayer.AbcPlaylistXmlCoder;
+import com.digero.abcplayer.view.AbcPlaylistPanel.PlaylistEvent.PlaylistEventType;
 import com.digero.common.abctomidi.AbcInfo;
 import com.digero.common.abctomidi.AbcToMidi;
 import com.digero.common.abctomidi.FileAndData;
@@ -83,7 +90,7 @@ public class AbcPlaylistPanel extends JPanel {
 		private boolean showSongView = false;
 		
 		public enum PlaylistEventType {
-			PLAY_FROM_ABCINFO, PLAY_FROM_FILE
+			PLAY_FROM_ABCINFO, PLAY_FROM_FILE, CLOSE_SONG
 		}
 		
 		private final PlaylistEventType type;
@@ -127,7 +134,7 @@ public class AbcPlaylistPanel extends JPanel {
 	private JScrollPane playlistScrollPane;
 	private JPopupMenu playlistContentPopupMenu;
 	private JPopupMenu playlistHeaderPopupMenu;
-	private JCheckBox autoplayCheckBox;
+	private JCheckBoxMenuItem columnEnablers[];
 	private JLabel abcPlaylistLabel;
 	
 	// Bottom
@@ -139,6 +146,8 @@ public class AbcPlaylistPanel extends JPanel {
 	// Playlist menu
 	private JMenu playlistMenu;
 	private JMenuItem saveMenuItem;
+	private JCheckBoxMenuItem autoplayMenuItem;
+	private JCheckBoxMenuItem playbackDelayMenuItem;
 	
 	private JFileChooser openPlaylistChooser = null;
 	private JFileChooser savePlaylistChooser = null;
@@ -284,9 +293,7 @@ public class AbcPlaylistPanel extends JPanel {
 		JMenuItem fileTreePlay = new JMenuItem("Play");
 		fileTreePlay.addActionListener(e -> {
 			AbcSongFileNode f = (AbcSongFileNode)(abcFileTree.getPathForRow(menuRowIdx).getLastPathComponent());
-			 if (parentListener != null) {
-				 parentListener.onEvent(new PlaylistEvent(f.getFile(), PlaylistEvent.PlaylistEventType.PLAY_FROM_FILE).setShowSongView(true));
-			 }
+			firePlaylistEvent(f.getFile(), PlaylistEventType.PLAY_FROM_FILE, true);
 		});
 		fileTreePopup.add(fileTreePlay);
 		
@@ -311,9 +318,7 @@ public class AbcPlaylistPanel extends JPanel {
 							abcFileTree.expandPath(abcFileTree.getPathForRow(idx));
 						return;
 					}
-					if (parentListener != null) {
-						parentListener.onEvent(new PlaylistEvent(f.getFile(), PlaylistEvent.PlaylistEventType.PLAY_FROM_FILE));
-					 }
+					firePlaylistEvent(f.getFile(), PlaylistEventType.PLAY_FROM_FILE);
 				}
 			}
 			
@@ -424,6 +429,7 @@ public class AbcPlaylistPanel extends JPanel {
 				return txt;
 			}
 		};
+		
 		playlistTable.setFocusable(true);
 		playlistTable.setFillsViewportHeight(true);
 		playlistTable.setDragEnabled(true);
@@ -447,9 +453,7 @@ public class AbcPlaylistPanel extends JPanel {
 					}
 					AbcInfo info = tableModel.getAbcInfoAt(playlistTable.getSelectedRow());
 					setNowPlayingInfo(info);
-					if (parentListener != null) {
-						 parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
-					}
+					firePlaylistEvent(info, PlaylistEventType.PLAY_FROM_ABCINFO);
 				} else if (e.getButton() == MouseEvent.BUTTON2) {
 					
 				}
@@ -476,15 +480,50 @@ public class AbcPlaylistPanel extends JPanel {
 		});
 		playlistTable.setTransferHandler(transferHandler);
 		
+		Preferences colSizes = playlistPrefs.node("colSizes");
+		playlistTable.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+			@Override
+			public void columnSelectionChanged(ListSelectionEvent e) {
+			}
+			
+			@Override
+			public void columnRemoved(TableColumnModelEvent e) {
+			}
+			
+			@Override
+			public void columnMoved(TableColumnModelEvent e) {
+			}
+			
+			@Override
+			public void columnMarginChanged(ChangeEvent e) {
+				TableColumnModel columnModel = (TableColumnModel) e.getSource();
+				for (int i = 0; i < columnModel.getColumnCount(); i++) {
+					TableColumn column = columnModel.getColumn(i);
+					int width = column.getWidth();
+					colSizes.putInt("column_" + i, width);
+				}
+			}
+			
+			@Override
+			public void columnAdded(TableColumnModelEvent e) {
+			}
+		});
+		
+		TableColumnModel columnModel = playlistTable.getColumnModel();
+		for (int i = 0; i < columnModel.getColumnCount(); i++) {
+			TableColumn column = columnModel.getColumn(i);
+			int savedWidth = colSizes.getInt("column_" + i, -1);
+			if (savedWidth != -1) {
+				column.setPreferredWidth(savedWidth);	
+			}
+		}
 		
 		playlistContentPopupMenu = new JPopupMenu();
 		JMenuItem playItem = new JMenuItem("Play");
 		playItem.addActionListener(e -> {
 			AbcInfo info = tableModel.getAbcInfoAt(playlistTable.getSelectedRow());
 			setNowPlayingInfo(info);
-			if (parentListener != null) {
-				parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
-			}
+			firePlaylistEvent(info, PlaylistEventType.PLAY_FROM_ABCINFO);
 		});
 		playlistContentPopupMenu.add(playItem);
 		JMenuItem removeItem = new JMenuItem("Remove Selected");
@@ -522,6 +561,7 @@ public class AbcPlaylistPanel extends JPanel {
 		
 		playlistHeaderPopupMenu = new JPopupMenu();
 		playlistTable.getTableHeader().setComponentPopupMenu(playlistHeaderPopupMenu);
+		initTableHeaderColumns();
 		playlistTable.getTableHeader().setReorderingAllowed(false);
 		
         DefaultTableCellRenderer centered = new DefaultTableCellRenderer();  
@@ -533,14 +573,6 @@ public class AbcPlaylistPanel extends JPanel {
 		// =================================
 		// Bottom Controls
 		// =================================
-		
-		autoplayCheckBox = new JCheckBox("Autoplay");
-		autoplayCheckBox.setToolTipText("When checked, playlist playback will automatically advance to the next song.");
-		autoplayCheckBox.setFocusable(false);
-		autoplayCheckBox.setSelected(playlistPrefs.getBoolean("autoplay", true));
-		autoplayCheckBox.addActionListener(e -> {
-			playlistPrefs.putBoolean("autoplay", autoplayCheckBox.isSelected());
-		});
 
 		addToPlaylistButton = new JButton("Add Selected");
 		addToPlaylistButton.setToolTipText("<html>Add the selected songs in the ABC Browser to the playlist.<br> Control-click or shift-click to select multiple songs.</html>");
@@ -559,9 +591,7 @@ public class AbcPlaylistPanel extends JPanel {
 			}
 			AbcInfo info = tableModel.getAbcInfoAt(0);
 			setNowPlayingInfo(info);
-			if (parentListener != null) {
-				parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
-			}
+			firePlaylistEvent(info, PlaylistEventType.PLAY_FROM_ABCINFO);
 		});
 		
 		nextSongButton = new JButton("Next Song");
@@ -574,9 +604,7 @@ public class AbcPlaylistPanel extends JPanel {
 
 			AbcInfo info = tableModel.getAbcInfoAt(newIdx);
 			setNowPlayingInfo(info);
-			if (parentListener != null) {
-	 			parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
- 			}
+			firePlaylistEvent(info, PlaylistEventType.PLAY_FROM_ABCINFO);
 		});
 		
 		prevSongButton = new JButton("Prev Song");
@@ -589,9 +617,7 @@ public class AbcPlaylistPanel extends JPanel {
 
 			AbcInfo info = tableModel.getAbcInfoAt(newIdx);
 			setNowPlayingInfo(info);
-			if (parentListener != null) {
-	 			parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
- 			}
+			firePlaylistEvent(info, PlaylistEventType.PLAY_FROM_ABCINFO);
 		});
 		
 		String delayToolTipText = "<html>Configure song switch delay.<br>"+
@@ -633,7 +659,6 @@ public class AbcPlaylistPanel extends JPanel {
 		
 		bottomControls.add(delayLabel, "align right");
 		bottomControls.add(delayField, "align center");
-		bottomControls.add(autoplayCheckBox);
 		bottomControls.add(prevSongButton);
 		bottomControls.add(playPlaylistButton);
 		bottomControls.add(nextSongButton, "sg play");
@@ -673,7 +698,22 @@ public class AbcPlaylistPanel extends JPanel {
 				playlistFile = null;
 				saveMenuItem.setEnabled(false);
 				tableModel.clearRows();
+				
+				if (nowPlayingInfo != null) {
+					firePlaylistEvent(this, PlaylistEventType.CLOSE_SONG);
+				}
 			}
+		});
+		playlistMenu.addSeparator();
+		autoplayMenuItem = (JCheckBoxMenuItem) playlistMenu.add(new JCheckBoxMenuItem("Enable Autoplay"));
+		autoplayMenuItem.setSelected(playlistPrefs.getBoolean("autoplay", true));
+		autoplayMenuItem.addActionListener(e -> {
+			playlistPrefs.putBoolean("autoplay", autoplayMenuItem.isSelected());
+		});
+		playbackDelayMenuItem = (JCheckBoxMenuItem) playlistMenu.add(new JCheckBoxMenuItem("Enable Delay between Playback"));
+		playbackDelayMenuItem.setSelected(playlistPrefs.getBoolean("playbackDelay", false));
+		playbackDelayMenuItem.addActionListener(e -> {
+			playlistPrefs.putBoolean("playbackDelay", playbackDelayMenuItem.isSelected());
 		});
 		playlistMenu.addSeparator();
 		JMenu sortBy = new JMenu("Sort browser by...");
@@ -710,6 +750,55 @@ public class AbcPlaylistPanel extends JPanel {
 		refreshMenuItem.addActionListener(e -> {
 			abcFileTreeModel.refresh(sortType);
 		});
+	}
+	
+	private void initTableHeaderColumns() {
+		columnEnablers = new JCheckBoxMenuItem[AbcInfoTableModel.COL_COUNT];
+		Preferences columnPrefs = playlistPrefs.node("columns");
+		List<String> colNames = tableModel.getColumnNames();
+		for (int i = 0; i < tableModel.getColumnCount(); i++) {
+			int idx = i;
+			String name = tableModel.getColumnName(i);
+			boolean enabled = columnPrefs.getBoolean(name, tableModel.getColumnDefaultEnabled(i));
+			TableColumn col = playlistTable.getColumn(name);
+			JCheckBoxMenuItem item = new JCheckBoxMenuItem((String)name);
+			item.setSelected(enabled);
+			item.addActionListener(e -> {
+				if (item.isSelected()) {
+					playlistTable.addColumn(col); 
+					int from = playlistTable.getColumnCount() - 1;
+					int to = 0;
+					for (int j = 0; j <= from; j++) {
+						String n = playlistTable.getColumnName(j);
+						if (colNames.indexOf(n) > idx) {
+							to = j;
+							break;
+						}
+					}
+					playlistTable.moveColumn(from, to);
+				} else {
+					playlistTable.removeColumn(col);
+				}
+				columnPrefs.putBoolean(name, item.isSelected());
+			});
+			if (!enabled) {
+				playlistTable.removeColumn(col);
+			}
+			playlistHeaderPopupMenu.add(item);
+			columnEnablers[i] = item;
+		}
+	}
+	
+	private void firePlaylistEvent(Object obj, PlaylistEventType type) {
+		if (parentListener != null) {
+ 			parentListener.onEvent(new PlaylistEvent(obj, type));
+		}
+	}
+	
+	private void firePlaylistEvent(Object obj, PlaylistEventType type, boolean showSongView) {
+		if (parentListener != null) {
+ 			parentListener.onEvent(new PlaylistEvent(obj, type).setShowSongView(showSongView));
+		}
 	}
 	
 	public JMenu getPlaylistMenu() {
@@ -872,6 +961,10 @@ public class AbcPlaylistPanel extends JPanel {
 		
 		file = openPlaylistChooser.getSelectedFile();
 		
+		if (nowPlayingInfo != null) {
+			firePlaylistEvent(this, PlaylistEventType.CLOSE_SONG);
+		}
+		
 		loadPlaylist(file);
 		playlistPrefs.put("playlistDirectory", openPlaylistChooser.getCurrentDirectory().getAbsolutePath());
 	}
@@ -899,7 +992,7 @@ public class AbcPlaylistPanel extends JPanel {
 	}
 	
 	public void advanceToNextSongIfNeeded() {
-		if (!autoplayCheckBox.isSelected()) {
+		if (!autoplayMenuItem.isSelected()) {
 			return;
 		}
 		
@@ -910,11 +1003,40 @@ public class AbcPlaylistPanel extends JPanel {
 		int newIdx = (tableModel.getIdxForAbcInfo(nowPlayingInfo) + 1) % tableModel.getRowCount();
 		
 		if (newIdx > 0) {
-			AbcInfo info = tableModel.getAbcInfoAt(newIdx);
-			setNowPlayingInfo(info);
-			if (parentListener != null) {
-	 			parentListener.onEvent(new PlaylistEvent(info, PlaylistEvent.PlaylistEventType.PLAY_FROM_ABCINFO));
- 			}
+			int delayTime = getSongDelayTimeInSeconds(); 
+			if (delayTime > 0 && playbackDelayMenuItem.isSelected()) {
+				new SwingWorker<Boolean, Boolean>() {
+					int delayRemaining = delayTime;
+					@Override
+					protected Boolean doInBackground() throws Exception {
+						while (delayRemaining > 0) {
+							SwingUtilities.invokeLater(() -> {
+								updatePlaylistLabel(delayRemaining);
+							});
+							Thread.sleep(1000);
+							delayRemaining -= 1;
+						}
+						return true;
+					}
+					
+					@Override
+					protected void done() {
+						int idx = (tableModel.getIdxForAbcInfo(nowPlayingInfo) + 1) % tableModel.getRowCount();
+						if (idx > 0) {
+							AbcInfo info = tableModel.getAbcInfoAt(idx);
+							setNowPlayingInfo(info);
+							firePlaylistEvent(info, PlaylistEventType.PLAY_FROM_ABCINFO);
+						} else {
+							setNowPlayingInfo(null);
+						}
+						updatePlaylistLabel();
+					}
+				}.execute();
+			} else {
+				AbcInfo info = tableModel.getAbcInfoAt(newIdx);
+				setNowPlayingInfo(info);
+				firePlaylistEvent(info, PlaylistEventType.PLAY_FROM_ABCINFO);
+			}
 		}
 		else {
 			setNowPlayingInfo(null);
@@ -939,6 +1061,10 @@ public class AbcPlaylistPanel extends JPanel {
 	}
 	
 	private void updatePlaylistLabel() {
+		updatePlaylistLabel(-1);
+	}
+	
+	private void updatePlaylistLabel(int nextSongIn) {
 		long totalTimeMicroSec = 0;
 		int numSongs = tableModel.getRowCount();
 		for (AbcInfo inf : tableModel.getTableData()) {
@@ -971,15 +1097,10 @@ public class AbcPlaylistPanel extends JPanel {
 		}
 		
 		long totalTimeWithDelayMicroSec = totalTimeMicroSec;
+		int delaySec = getSongDelayTimeInSeconds();
 		
-		if (!delayField.getText().isEmpty() && numSongs > 0) {
-			try {
-				int delaySec = Integer.parseInt(delayField.getText());
-				// Add (songs - 1) * part switch delay to total time
-				// e.g. with two songs in playlist, there is one part switch
-				totalTimeWithDelayMicroSec = totalTimeWithDelayMicroSec + (numSongs - 1) * (delaySec * 1000000l);
-			} catch (NumberFormatException e) {
-			}
+		if (delaySec > 0 && numSongs > 0) {
+			totalTimeWithDelayMicroSec = totalTimeWithDelayMicroSec + (numSongs - 1) * (delaySec * 1000000l);
 		}
 		
 		if (totalTimeMicroSec != 0) {
@@ -991,7 +1112,23 @@ public class AbcPlaylistPanel extends JPanel {
 			labelStr += ")";
 		}
 		
+		if (nextSongIn >= 0) {
+			labelStr = labelStr + " [Next song playing in: " + nextSongIn + "]";
+		}
+		
 		abcPlaylistLabel.setText(labelStr);
+	}
+	
+	private int getSongDelayTimeInSeconds() {
+		if (!delayField.getText().isEmpty()) {
+			try {
+				int delaySec = Integer.parseInt(delayField.getText());
+				return delaySec;
+			} catch (NumberFormatException e) {
+				return -1;
+			}
+		}
+		return 0;
 	}
 	
 	public void resetPlaylistPosition() {
@@ -1002,80 +1139,80 @@ public class AbcPlaylistPanel extends JPanel {
 		new SwingWorker<Boolean, Boolean>() {
 			boolean loadPlaylist = false;
 			List<AbcInfo> data = new ArrayList<>();
-            @Override
-            protected Boolean doInBackground() {
-            	if (files.size() == 1 && files.get(0).getName().endsWith(".abcp")) {
-            		loadPlaylist = true;
-            		return true;
-            	}
-            	
-            	boolean onlyFolders = true;
-            	
-            	// Pre scan for folders
-            	for (File file : files) {
-            		if (!file.isDirectory()) onlyFolders = false;
-            	}
-            	
-            	List<File> toLoad = files;
-            	// Expand folders recursively
-            	if (onlyFolders) {
-            		toLoad = new ArrayList<File>();
-            		
-            		try {
-            			toLoad = files.stream()
-                                .filter(File::exists)
-                                .map(File::toPath) // Convert File to Path
-                                .flatMap(path -> getAbcFilesInFolder(path)) // Process each directory
-                                .collect(Collectors.toList());
-            		} catch (Exception e) {
-            			e.printStackTrace();
-            			return false;
-            		}
-            	}
-            	
-            	for (File file : toLoad) {
-            		List<FileAndData> fad = new ArrayList<FileAndData>();
-            		try {
-                		fad.add(new FileAndData(file, AbcToMidi.readLines(file)));
-                		data.add(AbcToMidi.parseAbcMetadata(fad));
-            		} catch (Exception e) {
-            			e.printStackTrace();
-            			continue;
-            		}
-            	}
-            	return true;
-            }
-            
-            // TODO: Sort by sort type?
-            private Stream<File> getAbcFilesInFolder(Path directory) {
-            	try {
-            		return Files.walk(directory)
-            				.filter(Files::isRegularFile)
-            				.filter(path -> path.toString().endsWith(".abc") || path.toString().endsWith(".txt"))
-            				.map(Path::toFile);
-            	} catch (IOException e) {
-            		e.printStackTrace();
-            		return Stream.empty();
-            	}
-            }
-            
-            @Override
-            protected void done() {
-            	if (loadPlaylist && promptSavePlaylist()) {
-            		loadPlaylist(files.get(0));
-            	} else {
-            		if (insertPos == -1) { // Append to table
-	                	for (AbcInfo info : data) {
-	                		tableModel.addRow(info);
-	                	}
-            		} else { // Drag and drop to a specific position
-            			int idx = insertPos;
-            			for (AbcInfo info : data) {
-	                		tableModel.insertRow(info, idx++);
-	                	}
-            		}
-            	}
-            }
+			@Override
+			protected Boolean doInBackground() {
+				if (files.size() == 1 && files.get(0).getName().endsWith(".abcp")) {
+					loadPlaylist = true;
+					return true;
+				}
+
+				boolean onlyFolders = true;
+
+				// Pre scan for folders
+				for (File file : files) {
+					if (!file.isDirectory()) onlyFolders = false;
+				}
+
+				List<File> toLoad = files;
+				// Expand folders recursively
+				if (onlyFolders) {
+					toLoad = new ArrayList<File>();
+
+					try {
+						toLoad = files.stream()
+								.filter(File::exists)
+								.map(File::toPath) // Convert File to Path
+								.flatMap(path -> getAbcFilesInFolder(path)) // Process each directory
+								.collect(Collectors.toList());
+					} catch (Exception e) {
+						e.printStackTrace();
+						return false;
+					}
+				}
+
+				for (File file : toLoad) {
+					List<FileAndData> fad = new ArrayList<FileAndData>();
+					try {
+						fad.add(new FileAndData(file, AbcToMidi.readLines(file)));
+						data.add(AbcToMidi.parseAbcMetadata(fad));
+					} catch (Exception e) {
+						e.printStackTrace();
+						continue;
+					}
+				}
+				return true;
+			}
+
+			// TODO: Sort by sort type?
+			private Stream<File> getAbcFilesInFolder(Path directory) {
+				try {
+					return Files.walk(directory)
+							.filter(Files::isRegularFile)
+							.filter(path -> path.toString().endsWith(".abc") || path.toString().endsWith(".txt"))
+							.map(Path::toFile);
+				} catch (IOException e) {
+					e.printStackTrace();
+					return Stream.empty();
+				}
+			}
+
+			@Override
+			protected void done() {
+				if (loadPlaylist && promptSavePlaylist()) {
+					loadPlaylist(files.get(0));
+				} else {
+					if (insertPos == -1) { // Append to table
+						for (AbcInfo info : data) {
+							tableModel.addRow(info);
+						}
+					} else { // Drag and drop to a specific position
+						int idx = insertPos;
+						for (AbcInfo info : data) {
+							tableModel.insertRow(info, idx++);
+						}
+					}
+				}
+			}
 		}.execute();
 	}
 	
