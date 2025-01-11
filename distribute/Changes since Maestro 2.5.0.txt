@@ -49,6 +49,14 @@ Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 Version 3.4.2
 - Fix max part notes dialog had title from delay part.
 - Added legato option to section-editor.
+- AbcPlayer Playlist changes
+  - Add close song option to AbcPlayer similar to Maestro's close project
+  - Playlist switching will close the open song if it's played from the playlist
+  - Add option to sleep in between songs based on part switch delay to playlist menu
+  - Move playlist autoplay checkbox to playlist menu
+  - Add showing/hiding playlist columns using right-click menu on playlist column header
+  - Persist playlist table column sizes
+  
 
 Version 3.4.1
 - Section and tune editor windows are positioned better relative to the Maestro window, and will always appear fully on screen
