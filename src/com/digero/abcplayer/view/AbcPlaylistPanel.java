@@ -51,12 +51,18 @@ import javax.swing.ToolTipManager;
 import javax.swing.TransferHandler;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.tree.TreePath;
 
 import com.digero.abcplayer.AbcPlaylistXmlCoder;
@@ -128,6 +134,7 @@ public class AbcPlaylistPanel extends JPanel {
 	private JScrollPane playlistScrollPane;
 	private JPopupMenu playlistContentPopupMenu;
 	private JPopupMenu playlistHeaderPopupMenu;
+	private JCheckBoxMenuItem columnEnablers[];
 	private JLabel abcPlaylistLabel;
 	
 	// Bottom
@@ -422,6 +429,7 @@ public class AbcPlaylistPanel extends JPanel {
 				return txt;
 			}
 		};
+		
 		playlistTable.setFocusable(true);
 		playlistTable.setFillsViewportHeight(true);
 		playlistTable.setDragEnabled(true);
@@ -472,6 +480,43 @@ public class AbcPlaylistPanel extends JPanel {
 		});
 		playlistTable.setTransferHandler(transferHandler);
 		
+		Preferences colSizes = playlistPrefs.node("colSizes");
+		playlistTable.getColumnModel().addColumnModelListener(new TableColumnModelListener() {
+			@Override
+			public void columnSelectionChanged(ListSelectionEvent e) {
+			}
+			
+			@Override
+			public void columnRemoved(TableColumnModelEvent e) {
+			}
+			
+			@Override
+			public void columnMoved(TableColumnModelEvent e) {
+			}
+			
+			@Override
+			public void columnMarginChanged(ChangeEvent e) {
+				TableColumnModel columnModel = (TableColumnModel) e.getSource();
+				for (int i = 0; i < columnModel.getColumnCount(); i++) {
+					TableColumn column = columnModel.getColumn(i);
+					int width = column.getWidth();
+					colSizes.putInt("column_" + i, width);
+				}
+			}
+			
+			@Override
+			public void columnAdded(TableColumnModelEvent e) {
+			}
+		});
+		
+		TableColumnModel columnModel = playlistTable.getColumnModel();
+		for (int i = 0; i < columnModel.getColumnCount(); i++) {
+			TableColumn column = columnModel.getColumn(i);
+			int savedWidth = colSizes.getInt("column_" + i, -1);
+			if (savedWidth != -1) {
+				column.setPreferredWidth(savedWidth);	
+			}
+		}
 		
 		playlistContentPopupMenu = new JPopupMenu();
 		JMenuItem playItem = new JMenuItem("Play");
@@ -516,6 +561,7 @@ public class AbcPlaylistPanel extends JPanel {
 		
 		playlistHeaderPopupMenu = new JPopupMenu();
 		playlistTable.getTableHeader().setComponentPopupMenu(playlistHeaderPopupMenu);
+		initTableHeaderColumns();
 		playlistTable.getTableHeader().setReorderingAllowed(false);
 		
         DefaultTableCellRenderer centered = new DefaultTableCellRenderer();  
@@ -704,6 +750,43 @@ public class AbcPlaylistPanel extends JPanel {
 		refreshMenuItem.addActionListener(e -> {
 			abcFileTreeModel.refresh(sortType);
 		});
+	}
+	
+	private void initTableHeaderColumns() {
+		columnEnablers = new JCheckBoxMenuItem[AbcInfoTableModel.COL_COUNT];
+		Preferences columnPrefs = playlistPrefs.node("columns");
+		List<String> colNames = tableModel.getColumnNames();
+		for (int i = 0; i < tableModel.getColumnCount(); i++) {
+			int idx = i;
+			String name = tableModel.getColumnName(i);
+			boolean enabled = columnPrefs.getBoolean(name, tableModel.getColumnDefaultEnabled(i));
+			TableColumn col = playlistTable.getColumn(name);
+			JCheckBoxMenuItem item = new JCheckBoxMenuItem((String)name);
+			item.setSelected(enabled);
+			item.addActionListener(e -> {
+				if (item.isSelected()) {
+					playlistTable.addColumn(col); 
+					int from = playlistTable.getColumnCount() - 1;
+					int to = 0;
+					for (int j = 0; j <= from; j++) {
+						String n = playlistTable.getColumnName(j);
+						if (colNames.indexOf(n) > idx) {
+							to = j;
+							break;
+						}
+					}
+					playlistTable.moveColumn(from, to);
+				} else {
+					playlistTable.removeColumn(col);
+				}
+				columnPrefs.putBoolean(name, item.isSelected());
+			});
+			if (!enabled) {
+				playlistTable.removeColumn(col);
+			}
+			playlistHeaderPopupMenu.add(item);
+			columnEnablers[i] = item;
+		}
 	}
 	
 	private void firePlaylistEvent(Object obj, PlaylistEventType type) {
