@@ -787,6 +787,35 @@ public class AbcExporter {
 		}
 
 		Collections.sort(events);
+		
+		if (part.conclusionFermata != 0) {
+			long finalNoteTickEnd = 0L;
+			List<AbcNoteEvent> conclusion = new ArrayList<>();
+			for (int cc = 0; cc < events.size() ; cc++) {
+				AbcNoteEvent ne = events.get(cc);
+				if (ne.getEndTick() > finalNoteTickEnd) {
+					finalNoteTickEnd = ne.getEndTick();
+					conclusion.removeAll(conclusion);
+					conclusion.add(ne);
+				} else if (ne.getEndTick() == finalNoteTickEnd) {
+					conclusion.add(ne);
+				}
+			}
+			long fermataEndTick = qtm.quantize(qtm.microsToTickABC(part.conclusionFermata * 1000L + qtm.tickToMicrosABC(finalNoteTickEnd)), part);
+			boolean sustain = false;
+			for (int cc = 0; cc < conclusion.size() ; cc++) {
+				AbcNoteEvent ne = conclusion.get(cc);
+				if (part.getInstrument().isSustainable(ne.note.id)) {
+					sustain = true;
+					ne.setEndTick(fermataEndTick);
+				}
+			}
+			if (fermataEndTick > exportEndTick && sustain) {
+				// This is a hack, as at the time this runs
+				// exportEndTick has already been used elsewhere.
+				exportEndTick = fermataEndTick;
+			}
+		}
 
 		// Quantize the events
 		long lastEnding = 0;

@@ -16,7 +16,11 @@ public class AbcPartEvent extends EventObject {
 		DRUM_MAPPING, //
 		VOLUME_ADJUST, //
 		TRACK_SECTION_EDIT, //
-		DELAY_EDIT(true), TRACK_PRIORITY, MAX_EDIT(true), STUDENT_FX(true); //
+		DELAY_EDIT(true), //
+		TRACK_PRIORITY, //
+		MAX_EDIT(true), //
+		STUDENT_FX(true), //
+		CONCLUSION_FERMATA_EDIT(true); //
 
 		private final boolean renderRelated;
 

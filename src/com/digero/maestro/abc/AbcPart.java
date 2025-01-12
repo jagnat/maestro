@@ -82,6 +82,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 	public List<PartSection> nonSection;
 	public List<boolean[]> sectionsModified;
 	public int delay = 0;// ms
+	public int conclusionFermata = 0;// ms
 	private int typeNumber = 0;// -1 for when instr do not match or string dont start with instr, 0 when instr
 								// match but no number, positive number when it has number.
 	private final InstrNameSettings instrNameSettings;
@@ -152,6 +153,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		sectionsTicked = null;
 		sectionsModified = null;
 		delay = 0;
+		conclusionFermata = 0;
 		discarded = true;
 	}
 	
@@ -191,6 +193,9 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		SaveUtil.appendChildTextElement(ele, "instrument", String.valueOf(instrument));
 		if (delay != 0) {
 			SaveUtil.appendChildTextElement(ele, "delay", String.valueOf(delay));
+		}
+		if (conclusionFermata != 0) {
+			SaveUtil.appendChildTextElement(ele, "conclusionFermata", String.valueOf(conclusionFermata));
 		}
 		if (noteMax != AbcConstants.MAX_CHORD_NOTES) {
 			ele.setAttribute("noteMax", String.valueOf(noteMax));
@@ -342,6 +347,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 			instrument = SaveUtil.parseValue(ele, "instrument", instrument);
 			typeNumber = getTypeNumberMatchingTitle();// must be after instr and title
 			delay = SaveUtil.parseValue(ele, "delay", 0);
+			conclusionFermata = SaveUtil.parseValue(ele, "conclusionFermata", 0);
 			noteMax = SaveUtil.parseValue(ele, "@noteMax", AbcConstants.MAX_CHORD_NOTES);
 			for (Element trackEle : XmlUtil.selectElements(ele, "track")) {
 
@@ -1014,7 +1020,8 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 					break;
 				}
 			}
-			fireChangeEvent(AbcPartProperty.INSTRUMENT, affectsPreview);
+			fireChangeEvent(AbcPartProperty.INSTRUMENT, false);// false because the line next will recompute preview anyway.
+			fireChangeEvent(AbcPartProperty.CONCLUSION_FERMATA_EDIT);// to make sure song end tick get recalculated in case we switch between sustain and not.
 		}
 	}
 
@@ -1539,6 +1546,10 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 
 	public void delayEdited() {
 		fireChangeEvent(AbcPartProperty.DELAY_EDIT);
+	}
+	
+	public void conclusionFermataEdited() {
+		fireChangeEvent(AbcPartProperty.CONCLUSION_FERMATA_EDIT);
 	}
 	
 	public void maxEdited() {

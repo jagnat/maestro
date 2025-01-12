@@ -51,6 +51,10 @@ Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 Version 3.4.3
 - Fix max part notes window had title from delay part window.
 - Added legato option to section-editor. Will max extend notes 1 second.
+- Added possibility to add a conclusion fermata up to 5 second on a part.
+    This can be used to extend final note(s) of a part.
+    If a lotro note sample runs out during the fermata, it will not be broken up and renewed,
+    the result will be a shorter fermata than specified, for that note.
 - AbcPlayer Playlist changes
   - Add close song option to AbcPlayer similar to Maestro's close project.
   - Playlist switching will close the open song if it's played from the playlist.
