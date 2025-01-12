@@ -1,25 +1,28 @@
-These instructions only apply to version 2.5.0.82+. Previous versions differ a bit due to being 32 bit per default.
+These instructions only apply to version 3.0.0 or later.
+Previous versions differ a bit due to being 32 bit per default or having bat files instead of exe.
 
 Install instruction (.msi)
 ===================
 0: Install Java (64 bit) from https://java.com
 1: Run the .msi file
 2: Enjoy.
-3: Notice this will uninstall any older version of Maestro you have installed. (but not versions that was unpacked from zip)
+3: Notice this will uninstall any older version of Maestro you have installed.
+   (but not versions that was unpacked from zip unless you install into same folder)
 
 
 Install instruction (.zip)
 ===================
 0: Install Java (64 bit) from https://java.com
 1: Copy the content of this ZIP into a random new folder.
-2: Double click on Maestro.jar or AbcPlayer.jar to start. Or use the bat files.
-(3): Make a Windows shortcut to 'Start Maestro.bat' and one for 'Start AbcPlayer.bat' in the unzipped folder.
+2: Double click on Maestro.jar or AbcPlayer.jar to start. Or use the executable files.
+(3): Make Windows shortcuts to start Maestro, AbcTools or AbcPlayer in the unzipped folder.
 
 
 Getting 32/64 bit Java
 ======================
 You can have both 32 and 64 bit Java installed at same time, as long as you don't install them same place.
-When you click the download link in java.com it will give you the version that match your browser. This is usually the 64 bit version unless you use a very old browser.
+When you click the download link in java.com it will give you the version that match your browser.
+This is usually the 64 bit version unless you use a very old browser.
 To get the other version you might have to search a bit on java.com.
 
 
@@ -37,25 +40,24 @@ https://www.youtube.com/playlist?list=PL3lucMIJ7RQOGmenI7_Stpj8JPXjCGR_Q
 Special Thanks
 ==============
 Thanks to Digero for an amazing original Maestro and ABC Player.
-Thanks to Jersiel for teaching me music theory and giving ideas and feedback, without which I could not have made much of this.
-Thanks to Trincia for introducing me to the art of composition.
-Thanks to the bands I play in (The White Flames and Midnight) for motivating me.
-Thanks to all who gave feedback of features, bugs plus suggestions.
+Thanks to Jersiel for teaching Aifel music theory and giving ideas and feedback,
+          without which he could not have made much of this.
+Thanks to all who gave feedback of features and bugs plus suggestions.
 
 
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
 
 Version 3.4.3
-- Fix max part notes dialog had title from delay part.
-- Added legato option to section-editor.
+- Fix max part notes window had title from delay part window.
+- Added legato option to section-editor. Will max extend notes 1 second.
 - AbcPlayer Playlist changes
-  - Add close song option to AbcPlayer similar to Maestro's close project
-  - Playlist switching will close the open song if it's played from the playlist
-  - Add option to sleep in between songs based on part switch delay to playlist menu
-  - Move playlist autoplay checkbox to playlist menu
-  - Add showing/hiding playlist columns using right-click menu on playlist column header
-  - Persist playlist table column sizes
+  - Add close song option to AbcPlayer similar to Maestro's close project.
+  - Playlist switching will close the open song if it's played from the playlist.
+  - Add option to sleep in between songs based on part switch delay to playlist menu.
+  - Move playlist autoplay checkbox to playlist menu.
+  - Add showing/hiding playlist columns using right-click menu on playlist column header.
+  - Persist playlist table column sizes.
   
 
 Version 3.4.1
@@ -728,7 +730,7 @@ Version 2.5.0.42
 Want to have multiple different Maestro versions installed?
 ===========================================================
 Somebody asked me how to do this, so here is answer:
-If you want different versions of Maestro installed at same time, just install using the zip as described above.
+If you want different versions of Maestro installed at same time, just install using the zip as described at top of this document.
 
 
 
@@ -736,18 +738,14 @@ FAQ
 ===
 Will the upgraded Maestro .msx files load into old 2.5.0 Maestro?
 
-- Yes, but the section edits, tune edits, Student FX, mix timing, Badger Chapter metainfo and delays will be ignored. Combi drum sounds will be silenced. And more than 15 parts wont be previewed.
-
-
-Will these upgrades eventually be merged into Digero's code?
-
-- Might happen if he wants that. For now I just use it myself and give it to whomever wants it.
+- Yes, but new features will be ignored. Combi drum sounds will be silenced. And more than 15 parts wont be previewed.
+  Also note that the midi notes might be grouped into different tracks, for example drum notes can appear inside e.g. a piano track.
 
 
 I get a crash, how can I find out what caused it?
 
 - Start Maestro from commandline with: java -d64 -jar Maestro.jar
-  It should then output a stacktrace when crashing. If unsure on how to read it, just send to me.
+  It should then output a stacktrace when crashing. If unsure on how to read it, just send to Aifel (Laurelin) or Elamond (Landroval).
 
 
 After having put Windows to sleep while Maestro were running the preview starts to sound uneven, there is preview delays. How to fix?
@@ -757,4 +755,4 @@ After having put Windows to sleep while Maestro were running the preview starts 
 
 Can I compile the programs myself, can I get the source-code?
 
-- Yes its open-source, just ask.
+- Yes its open-source, just ask and we will help.
