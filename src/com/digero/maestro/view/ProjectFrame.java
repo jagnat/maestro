@@ -102,6 +102,7 @@ import com.digero.common.util.FileFilterDropListener;
 import com.digero.common.util.ICompileConstants;
 import com.digero.common.util.IDiscardable;
 import com.digero.common.util.Listener;
+import com.digero.common.util.Pair;
 import com.digero.common.util.ParseException;
 import com.digero.common.util.Util;
 import com.digero.common.view.AboutDialog;
@@ -2163,6 +2164,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	}
 	
 	private boolean reloadWithNewSource(File newSource) {
+		List<Pair<Boolean, Boolean>> soloMuteState = partsList.getSoloMuteStates();
 		File originalMsx = abcSong.getSaveFile();
 		File oldSource = abcSong.getSourceFile();
 		boolean modified = abcSongModified;
@@ -2189,6 +2191,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			setAbcSongModified(newSource != oldSource || modified);	
 			updateTitle();
 		}
+		
+		partsList.restoreSoloMuteState(soloMuteState);
 		
 		return true;
 	}
