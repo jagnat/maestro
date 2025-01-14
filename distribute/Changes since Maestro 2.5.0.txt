@@ -48,6 +48,9 @@ Thanks to all who gave feedback of features and bugs plus suggestions.
 Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 ================
 
+Version 3.4.4
+- Solo/mute buttons will no longer reset when reloading MIDI file
+
 Version 3.4.3
 - Fix max part notes window had title from delay part window.
 - Added legato option to section-editor. Will max extend notes 1 second.
