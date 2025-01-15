@@ -136,7 +136,7 @@ public class AbcExporter {
 			 * if (exportStartTick > 0) { track0.add(MidiFactory.createNoteOnEventEx(40,9,100,0L));
 			 * track0.add(MidiFactory.createNoteOffEventEx(40,9,0,100L)); }
 			 */
-
+			
 			return new Pair<>(infoList, sequence);
 		} catch (RuntimeException e) {
 			// Unpack the InvalidMidiDataException if it was the cause
@@ -924,65 +924,9 @@ public class AbcExporter {
 		}
 
 		// Remove duplicate notes
-		List<AbcNoteEvent> notesOn = new ArrayList<>();
-		Iterator<AbcNoteEvent> neIter = events.iterator();
-		dupLoop: while (neIter.hasNext()) {
-			AbcNoteEvent ne = neIter.next();
-			Iterator<AbcNoteEvent> onIter = notesOn.iterator();
-			while (onIter.hasNext()) {
-				AbcNoteEvent on = onIter.next();
-				if (on.getEndTick() < ne.getStartTick()) {
-					// This note has already been turned off
-					onIter.remove();
-				} else if (on.note.id == ne.note.id) {
-					if (on.getStartTick() == ne.getStartTick()) {
-						// If they start at the same time, remove the second event.
-						// Lengthen the first one if it's shorter than the second one.
-						if (on.getEndTick() < ne.getEndTick()) {
-							on.setEndTick(ne.getEndTick());
-							//if (on.origNote.trackNumber != ne.origNote.trackNumber) on.fromHowManyTracks += 0.5f;
-							// Hard to quantify how to do velocity when not ending at same time. So skipping that.
-
-						}/* else if (on.getEndTick() == ne.getEndTick() && on.origNote.trackNumber != ne.origNote.trackNumber) {
-							on.fromHowManyTracks += 1.0f;
-							on.velocity = Math.max(ne.velocity, on.velocity);
-						} else if (on.origNote.trackNumber != ne.origNote.trackNumber) {
-							on.fromHowManyTracks += 0.5f;
-							// Hard to quantify how to do velocity when not ending at same time. So skipping that.
-						}*/
-						
-						
-						
-						// Remove the duplicate note
-						neIter.remove();
-						/*
-						 * if (ne.origEvent != null) { if (on.origEvent == null) { on.origEvent = new
-						 * ArrayList<NoteEvent>(); } on.origEvent.addAll(ne.origEvent); }
-						 */
-						continue dupLoop;
-					} else {
-						// Otherwise, if they don't start at the same time:
-						// 1. Lengthen the second note if necessary, so it doesn't end before
-						// the first note would have ended.
-						if (ne.getEndTick() < on.getEndTick()) {
-							ne.setEndTick(on.getEndTick());
-							/*ne.fromHowManyTracks += 0.75f;
-							ne.velocity = Math.max(ne.velocity, on.velocity);
-						} else {
-							ne.fromHowManyTracks += 0.25f;
-							// Hard to quantify how to do velocity when ne not a subset of on. So skipping that.
-							 */
-						}
-						
-						// 2. Shorten the note that's currently on to end at the same time that
-						// the next one starts.
-						on.setEndTick(ne.getStartTick());
-						onIter.remove();
-					}
-				}
-			}
-			notesOn.add(ne);
-		}
+		removeDuplicateNotes(events, part.getInstrument());
+		
+		Collections.sort(events);// needed due to duplicate adding thirds
 
 		breakLongNotes(part, events);
 
@@ -1117,6 +1061,98 @@ public class AbcExporter {
 		}
 		
 		return chords;
+	}
+
+	/**
+	 * Remove duplicate notes that play at the same time (comes from combining tracks into same part)
+	 * 
+	 * @param events All the notes from all the combined tracks
+	 * @param instrument 
+	 */
+	private void removeDuplicateNotes(List<AbcNoteEvent> events, LotroInstrument instrument) {
+		List<AbcNoteEvent> notesOn = new ArrayList<>();
+		List<AbcNoteEvent> thirds = new ArrayList<>();
+		Iterator<AbcNoteEvent> neIter = events.iterator();
+		dupLoop: while (neIter.hasNext()) {
+			AbcNoteEvent ne = neIter.next();//second
+			List<AbcNoteEvent> thirdsOn = new ArrayList<>();
+			Iterator<AbcNoteEvent> onIter = notesOn.iterator();
+			while (onIter.hasNext()) {
+				AbcNoteEvent on = onIter.next();//first
+				if (on.getEndTick() < ne.getStartTick()) {
+					// First note has already been turned off
+					onIter.remove();
+				} else if (on.note.id == ne.note.id) {
+					if (on.getStartTick() == ne.getStartTick()) {
+						// If they start at the same time, remove the second event.
+						
+						// Lengthen the first one if it's shorter than the second one.
+						if (on.getEndTick() < ne.getEndTick()) {
+							on.setEndTick(ne.getEndTick());
+							if (ne.velocity > on.velocity) {
+								on.velocity = ne.velocity;// due to this, NoteEvent.velocity is not final
+							}
+						}
+						
+						if (!instrument.isSustainable(on.note.id) && ne.velocity > on.velocity) {
+							on.velocity = ne.velocity;// due to this, NoteEvent.velocity is not final
+						}
+						
+						// Remove the duplicate second note
+						neIter.remove();
+						continue dupLoop;
+					} else if (on.getStartTick() < ne.getStartTick()) {
+						// Otherwise, if they don't start at the same time, but first started first:
+
+						if (ne.getEndTick() <= on.getEndTick()) {
+							// second is subset of first
+							
+							if (instrument.isSustainable(on.note.id)) {
+								// remove second
+							
+								if (ne.velocity <= on.velocity) {
+									// we only do this if second has lower or equal volume
+									neIter.remove();
+									continue dupLoop;
+								}
+								// else we stop first, insert second, and add new third (with firsts volume) after second to finish first.
+								long thirdEnd = on.getEndTick(); 
+								on.setEndTick(ne.getStartTick());
+								onIter.remove();
+								if (thirdEnd > ne.getEndTick()) {
+									AbcNoteEvent third = new AbcNoteEvent(on.note, on.velocity, ne.getEndTick(), thirdEnd, qtm, on.origNote);
+									thirds.add(third);
+									thirdsOn.add(third);
+								}
+							} else {
+								// keep both, so end first where second start	
+								on.setEndTick(ne.getStartTick());
+								onIter.remove();
+							}
+						} else if (ne.getEndTick() > on.getEndTick()) {
+							// ne extend beyond on, so we break first, and start second
+							on.setEndTick(ne.getStartTick());
+							onIter.remove();
+						}
+					} else {
+						// Otherwise, if they don't start at the same time, but second started first:
+						assert false : "removeDuplicateNotes sorting issue";
+						
+						if (ne.getEndTick() > on.getEndTick()) {
+							// extend first to match seconds end
+							on.setEndTick(ne.getEndTick());
+						}
+						
+						// remove second
+						neIter.remove();
+						continue dupLoop;
+					}
+				}
+			}
+			notesOn.addAll(thirdsOn);
+			notesOn.add(ne);
+		}
+		events.addAll(thirds);
 	}
 
 

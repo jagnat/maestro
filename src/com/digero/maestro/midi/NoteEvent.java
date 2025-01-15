@@ -29,7 +29,7 @@ public class NoteEvent implements Comparable<NoteEvent> {
 	protected final ITempoCache tempoCache;
 
 	public final Note note;
-	public final int velocity;
+	public int velocity;
 
 	protected long startTick;
 	protected long endTick;
