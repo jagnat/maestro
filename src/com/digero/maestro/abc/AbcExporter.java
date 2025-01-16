@@ -1135,21 +1135,32 @@ public class AbcExporter {
 							onIter.remove();
 						}
 					} else {
-						// Otherwise, if they don't start at the same time, but second started first:
-						assert false : "removeDuplicateNotes sorting issue";
-						
-						if (ne.getEndTick() > on.getEndTick()) {
-							// extend first to match seconds end
-							on.setEndTick(ne.getEndTick());
+						if (on.getStartTick() < ne.getEndTick()) {
+							// Otherwise, if they don't start at the same time, but second started first, which means first was a third
+							
+							if (ne.getEndTick() > on.getEndTick()) {
+								// extend first to match seconds end
+								on.setEndTick(ne.getEndTick());
+							}
+							
+							// since we know that there has been inserted a subset note where
+							// second starts, we dont need to care about the start. Also we know that it
+							// will process third before the subset, so we don't have to worry about subset being extended
+							// as long as second is removed here. And its safe
+							// to remove second as long as its sustained. If its not sustained we shorten it so it dont extend into the third.
+							if (instrument.isSustainable(on.note.id)) {
+								neIter.remove();
+								continue dupLoop;
+							} else if (ne.getEndTick() > on.getStartTick()) {
+								// shorten second to end where first begin
+								// second will then be processed against the subset later in the loop
+								ne.setEndTick(on.getStartTick());
+							}
 						}
-						
-						// remove second
-						neIter.remove();
-						continue dupLoop;
 					}
 				}
 			}
-			notesOn.addAll(thirdsOn);
+			notesOn.addAll(thirdsOn);//must be before adding ne
 			notesOn.add(ne);
 		}
 		events.addAll(thirds);
