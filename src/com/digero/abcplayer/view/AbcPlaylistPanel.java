@@ -857,7 +857,7 @@ public class AbcPlaylistPanel extends JPanel {
 				file = new File(file.getParent(), fileName);
 			}
 			
-			if (playlistFile != null && !file.equals(playlistFile)) {
+			if (file.exists()) {
 				int res = JOptionPane.showConfirmDialog(this,
 						"File \"" + fileName + "\" already exists.\n" + "Do you want to replace it?",
 						"Confirm Replace File", JOptionPane.YES_NO_CANCEL_OPTION);
