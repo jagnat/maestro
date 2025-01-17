@@ -12,8 +12,6 @@ public class AbcInfoTableModel extends AbstractTableModel {
 
 	private static final long serialVersionUID = -7672178885656979023L;
 	
-	public static final int COL_COUNT = 6;
-	
 	private ArrayList<AbcInfo> data = new ArrayList<AbcInfo>();
 	
 	public List<AbcInfo> getTableData() {
@@ -57,6 +55,9 @@ public class AbcInfoTableModel extends AbstractTableModel {
 		fireTableRowsInserted(0, getRowCount());
 	}
 	
+	/// COLUMNS
+	public static final int COL_COUNT = 10;
+	
 	@Override
 	public int getColumnCount() {
 		return COL_COUNT;
@@ -82,12 +83,39 @@ public class AbcInfoTableModel extends AbstractTableModel {
 			return "Composer";
 		case 5:
 			return "Transcriber";
+		case 6:
+			return "Mood";
+		case 7:
+			return "Genre";
+		case 8:
+			return "Export Date";
+		case 9:
+			return "Exported By";
 		}
 		return "ERR";
 	}
 	
+	@Override
+	public Object getValueAt(int rowIndex, int colIndex) {
+		AbcInfo inf = data.get(rowIndex);
+		switch(colIndex) {
+		case 0:  return inf.getSourceFiles().get(0).getName();
+		case 1:  return inf.getTitle();
+		case 2:  return inf.getPartCount();
+		case 3:  return inf.getSongDurationStr();
+		case 4:  return inf.getComposer();
+		case 5:  return inf.getTranscriber();
+		case 6:  return inf.getMood();
+		case 7:  return inf.getGenre();
+		case 8:  return inf.getExportTimestamp();
+		case 9: return inf.getAbcCreator();
+		}
+		return null;
+	}
+	
 	public boolean getColumnDefaultEnabled(int colIndex) {
-		if (colIndex == 0) {
+		// File name, everything after transcriber, all disabled by default
+		if (colIndex == 0 || colIndex >= 6) {
 			return false;
 		}
 		return true;
@@ -99,20 +127,6 @@ public class AbcInfoTableModel extends AbstractTableModel {
 			cols.add(getColumnName(i));
 		}
 		return cols;
-	}
-
-	@Override
-	public Object getValueAt(int rowIndex, int colIndex) {
-		AbcInfo inf = data.get(rowIndex);
-		switch(colIndex) {
-		case 0: return inf.getSourceFiles().get(0).getName();
-		case 1: return inf.getTitle();
-		case 2: return inf.getPartCount();
-		case 3: return inf.getSongDurationStr();
-		case 4: return inf.getComposer();
-		case 5: return inf.getTranscriber();
-		}
-		return null;
 	}
 	
 	public int getIdxForAbcInfo(AbcInfo inf) {

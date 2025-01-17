@@ -767,7 +767,7 @@ public class AbcPlaylistPanel extends JPanel {
 				if (item.isSelected()) {
 					playlistTable.addColumn(col); 
 					int from = playlistTable.getColumnCount() - 1;
-					int to = 0;
+					int to = -1;
 					for (int j = 0; j <= from; j++) {
 						String n = playlistTable.getColumnName(j);
 						if (colNames.indexOf(n) > idx) {
@@ -775,7 +775,9 @@ public class AbcPlaylistPanel extends JPanel {
 							break;
 						}
 					}
-					playlistTable.moveColumn(from, to);
+					if (to != -1) {
+						playlistTable.moveColumn(from, to);	
+					}
 				} else {
 					playlistTable.removeColumn(col);
 				}

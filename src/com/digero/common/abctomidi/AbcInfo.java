@@ -49,6 +49,8 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 	private String songDuration = null;
 	private String genre = null;
 	private String mood = null;
+	private String exportTimestamp = null;
+	private String abcCreator = null;
 	private TimeSignature timeSignature = TimeSignature.FOUR_FOUR;
 	private KeySignature keySignature = KeySignature.C_MAJOR;
 
@@ -58,22 +60,28 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 		titlePrefix = null;
 		metadata.clear();
 		bars.clear();
+		partInfoByIndex.clear();
+		regions = null;
 		primaryTempoBPM = 120;
+		hasTriplets = false;
+		hasTripletsSet = false;
+		hasMixTimings = true;
 		songTitle = null;
 		songComposer = null;
 		songTranscriber = null;
 		songDuration = null;
-		hasTriplets = false;
-		hasTripletsSet = false;
-		hasMixTimings = true;
+		genre = null;
+		mood = null;
+		exportTimestamp = null;
+		abcCreator = null;
 		timeSignature = TimeSignature.FOUR_FOUR;
 		keySignature = KeySignature.C_MAJOR;
 	}
-	
+
 	public List<File> getSourceFiles() {
 		return abcFiles;
 	}
-	
+
 	public void addSourceFile(File file) {
 		if (abcFiles == null) {
 			abcFiles = new ArrayList<File>();
@@ -128,6 +136,14 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 		return Util.emptyIfNull(mood);
 	}
 
+	public String getExportTimestamp() {
+		return Util.emptyIfNull(exportTimestamp);
+	}
+	
+	public String getAbcCreator() {
+		return Util.emptyIfNull(abcCreator);
+	}
+
 	@Override
 	public int tickToBarNumber(long tick) {
 		Entry<Long, Integer> e = bars.floorEntry(tick);
@@ -161,7 +177,7 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 	public boolean hasMixTimings() {
 		return hasMixTimings;
 	}
-	
+
 	public String getSongDurationStr() {
 		return songDuration;
 	}
@@ -179,7 +195,7 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 			return LotroInstrument.DEFAULT_INSTRUMENT;
 		return info.instrument;
 	}
-	
+
 	public int getPartCount() {
 		return partInfoByIndex.size();
 	}
@@ -272,33 +288,37 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 
 	void setExtendedMetadata(AbcField field, String value) {
 		switch (field) {
-			case SONG_TITLE:
-				songTitle = value.trim();
-				break;
-			case SONG_COMPOSER:
-				songComposer = value.trim();
-				break;
-			case SONG_TRANSCRIBER:
-				songTranscriber = value.trim();
-				break;
-			case SWING_RHYTHM:
-				hasTriplets = Boolean.parseBoolean(value.trim());
-				hasTripletsSet = true;
-				break;
-			case MIX_TIMINGS:
-				hasMixTimings = Boolean.parseBoolean(value.trim());
-				break;
-			case SONG_DURATION:
-				songDuration = value.trim();
-				break;
-			case ABC_CREATOR:
-			case ABC_VERSION:
-			case PART_NAME:
-			case MADE_FOR:
-			case EXPORT_TIMESTAMP:
-			case TEMPO:
-			case DELETE_MINIMAL_NOTES:
-			case SKIP_SILENCE_AT_START:
+		case SONG_TITLE:
+			songTitle = value.trim();
+			break;
+		case SONG_COMPOSER:
+			songComposer = value.trim();
+			break;
+		case SONG_TRANSCRIBER:
+			songTranscriber = value.trim();
+			break;
+		case SWING_RHYTHM:
+			hasTriplets = Boolean.parseBoolean(value.trim());
+			hasTripletsSet = true;
+			break;
+		case MIX_TIMINGS:
+			hasMixTimings = Boolean.parseBoolean(value.trim());
+			break;
+		case SONG_DURATION:
+			songDuration = value.trim();
+			break;
+		case EXPORT_TIMESTAMP:
+			exportTimestamp = value.trim();
+			break;
+		case ABC_CREATOR:
+			abcCreator = value.trim();
+			break;
+		case ABC_VERSION:
+		case PART_NAME:
+		case MADE_FOR:
+		case TEMPO:
+		case DELETE_MINIMAL_NOTES:
+		case SKIP_SILENCE_AT_START:
 			// Ignore
 			break;
 		}
