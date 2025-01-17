@@ -38,6 +38,7 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 	private NavigableMap<Long, Integer> bars = new TreeMap<>();
 	private Map<Integer, AbcInfo.PartInfo> partInfoByIndex = new HashMap<>();
 	private NavigableSet<AbcRegion> regions;
+	private List<List<Integer>> partSetups;
 	private int primaryTempoBPM = 120;
 	private boolean hasTriplets = false;
 	private boolean hasTripletsSet = false;
@@ -62,6 +63,7 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 		bars.clear();
 		partInfoByIndex.clear();
 		regions = null;
+		partSetups = null;
 		primaryTempoBPM = 120;
 		hasTriplets = false;
 		hasTripletsSet = false;
@@ -139,7 +141,7 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 	public String getExportTimestamp() {
 		return Util.emptyIfNull(exportTimestamp);
 	}
-	
+
 	public String getAbcCreator() {
 		return Util.emptyIfNull(abcCreator);
 	}
@@ -258,6 +260,21 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 
 		return info.endLine;
 	}
+	
+	public int getPartSetupsMin() {
+		if (partSetups == null) {
+			return partInfoByIndex.size();
+		}
+		int min = -1;
+		
+		for (List<Integer> setup : partSetups) {
+			if (min == -1 || setup.size() < min) {
+				min = setup.size();
+			}
+		}
+		
+		return min;
+	}
 
 	void setMetadata(char key, String value) {
 		this.empty = false;
@@ -283,7 +300,56 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 					mood = value.substring(5).trim();
 				}
 			}
+			if (value.startsWith("ts")) {
+				parseInstrumentSetup(value);
+			}
 		}
+	}
+
+	// Parse setup string format, eg:
+	// TS 8, 1 2 3 4 5 6 7 8
+	// TODO: Validate part numbers actually match with parts in abc?
+	private void parseInstrumentSetup(String value) {
+		String[] data = value.split("\\s+");
+		int numParts = -1;
+		if (data.length < 3) {
+			return;
+		}
+		if (!data[0].equals("ts")) {
+			return;
+		}
+		if (data[1].endsWith(",")) {
+			String partCountStr = data[1].substring(0, data[1].length() - 1);
+			try {
+				numParts = Integer.parseInt(partCountStr);
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+				return;
+			}
+		} else {
+			return;
+		}
+		
+		List<Integer> partList = new ArrayList<Integer>(numParts);
+		
+		for (int i = 2; i < data.length; i++) {
+			try {
+				int partNo = Integer.parseInt(data[i]);
+				partList.add(partNo);
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+				return;
+			}
+		}
+		
+		if (partList.size() != numParts) {
+			return;
+		}
+		
+		if (partSetups == null) {
+			partSetups = new ArrayList<List<Integer>>();
+		}
+		partSetups.add(partList);
 	}
 
 	void setExtendedMetadata(AbcField field, String value) {

@@ -56,7 +56,7 @@ public class AbcInfoTableModel extends AbstractTableModel {
 	}
 	
 	/// COLUMNS
-	public static final int COL_COUNT = 10;
+	public static final int COL_COUNT = 11;
 	
 	@Override
 	public int getColumnCount() {
@@ -78,18 +78,20 @@ public class AbcInfoTableModel extends AbstractTableModel {
 		case 2:
 			return "Part Count";
 		case 3:
-			return "Duration";
+			return "Part Min Count";
 		case 4:
-			return "Composer";
+			return "Duration";
 		case 5:
-			return "Transcriber";
+			return "Composer";
 		case 6:
-			return "Mood";
+			return "Transcriber";
 		case 7:
-			return "Genre";
+			return "Mood";
 		case 8:
-			return "Export Date";
+			return "Genre";
 		case 9:
+			return "Export Date";
+		case 10:
 			return "Exported By";
 		}
 		return "ERR";
@@ -102,20 +104,21 @@ public class AbcInfoTableModel extends AbstractTableModel {
 		case 0:  return inf.getSourceFiles().get(0).getName();
 		case 1:  return inf.getTitle();
 		case 2:  return inf.getPartCount();
-		case 3:  return inf.getSongDurationStr();
-		case 4:  return inf.getComposer();
-		case 5:  return inf.getTranscriber();
-		case 6:  return inf.getMood();
-		case 7:  return inf.getGenre();
-		case 8:  return inf.getExportTimestamp();
-		case 9: return inf.getAbcCreator();
+		case 3:  return inf.getPartSetupsMin();
+		case 4:  return inf.getSongDurationStr();
+		case 5:  return inf.getComposer();
+		case 6:  return inf.getTranscriber();
+		case 7:  return inf.getMood();
+		case 8:  return inf.getGenre();
+		case 9:  return inf.getExportTimestamp();
+		case 10: return inf.getAbcCreator();
 		}
 		return null;
 	}
 	
 	public boolean getColumnDefaultEnabled(int colIndex) {
-		// File name, everything after transcriber, all disabled by default
-		if (colIndex == 0 || colIndex >= 6) {
+		// File name, part min count, and everything after transcriber, all disabled by default
+		if (colIndex == 0 || colIndex == 3 || colIndex >= 6) {
 			return false;
 		}
 		return true;
