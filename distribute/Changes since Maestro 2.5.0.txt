@@ -55,7 +55,8 @@ Version 3.4.4
     It is still quite easy to make bad sounding parts doing this still,
     especially when the volume difference between same notes of combined tracks are large.
 - Fixed a visual bug where buttons and UI elements had no spacing between them.
-- Added more column options to the ABC playlist. Min parts, Genre, Mood, Export Date, Exported By.
+- Fixed a bug where exporting an ABC playlist would ask you to confirm overwriting a file even if the file doesn't exist.
+- Added more column options to the ABC playlist. Setups min, Setups max, Genre, Mood, Export Date, Exported By.
   - All are hidden by default, right-click on the header of the playlist table to show/hide them.
 
 Version 3.4.3
