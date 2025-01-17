@@ -759,7 +759,7 @@ public class AbcPlaylistPanel extends JPanel {
 		for (int i = 0; i < tableModel.getColumnCount(); i++) {
 			int idx = i;
 			String name = tableModel.getColumnName(i);
-			boolean enabled = columnPrefs.getBoolean(name, tableModel.getColumnDefaultEnabled(i));
+			boolean enabled = columnPrefs.getBoolean(name, tableModel.getColumnDefaultEnabled(name));
 			TableColumn col = playlistTable.getColumn(name);
 			JCheckBoxMenuItem item = new JCheckBoxMenuItem((String)name);
 			item.setSelected(enabled);

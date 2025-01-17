@@ -2,7 +2,9 @@ package com.digero.abcplayer.view;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.table.AbstractTableModel;
 
@@ -56,7 +58,7 @@ public class AbcInfoTableModel extends AbstractTableModel {
 	}
 	
 	/// COLUMNS
-	public static final int COL_COUNT = 11;
+	public static final int COL_COUNT = 12;
 	
 	@Override
 	public int getColumnCount() {
@@ -78,20 +80,22 @@ public class AbcInfoTableModel extends AbstractTableModel {
 		case 2:
 			return "Part Count";
 		case 3:
-			return "Part Min Count";
+			return "Setups Min";
 		case 4:
-			return "Duration";
+			return "Setups Max";
 		case 5:
-			return "Composer";
+			return "Duration";
 		case 6:
-			return "Transcriber";
+			return "Composer";
 		case 7:
-			return "Mood";
+			return "Transcriber";
 		case 8:
-			return "Genre";
+			return "Mood";
 		case 9:
-			return "Export Date";
+			return "Genre";
 		case 10:
+			return "Export Date";
+		case 11:
 			return "Exported By";
 		}
 		return "ERR";
@@ -105,23 +109,25 @@ public class AbcInfoTableModel extends AbstractTableModel {
 		case 1:  return inf.getTitle();
 		case 2:  return inf.getPartCount();
 		case 3:  return inf.getPartSetupsMin();
-		case 4:  return inf.getSongDurationStr();
-		case 5:  return inf.getComposer();
-		case 6:  return inf.getTranscriber();
-		case 7:  return inf.getMood();
-		case 8:  return inf.getGenre();
-		case 9:  return inf.getExportTimestamp();
-		case 10: return inf.getAbcCreator();
+		case 4:  return inf.getPartSetupsMax();
+		case 5:  return inf.getSongDurationStr();
+		case 6:  return inf.getComposer();
+		case 7:  return inf.getTranscriber();
+		case 8:  return inf.getMood();
+		case 9:  return inf.getGenre();
+		case 10: return inf.getExportTimestamp();
+		case 11: return inf.getAbcCreator();
 		}
 		return null;
 	}
 	
-	public boolean getColumnDefaultEnabled(int colIndex) {
-		// File name, part min count, and everything after transcriber, all disabled by default
-		if (colIndex == 0 || colIndex == 3 || colIndex >= 6) {
-			return false;
+	public final String[] DEFAULT_ENABLED_COLS = {"Song Name", "Part Count", "Duration", "Composer", "Transcriber" };
+	
+	public boolean getColumnDefaultEnabled(String colName) {
+		if (Arrays.stream(DEFAULT_ENABLED_COLS).anyMatch(colName::equals)) {
+			return true;
 		}
-		return true;
+		return false;
 	}
 	
 	public List<String> getColumnNames() {

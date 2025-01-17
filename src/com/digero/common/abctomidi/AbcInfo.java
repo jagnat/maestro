@@ -42,7 +42,7 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 	private int primaryTempoBPM = 120;
 	private boolean hasTriplets = false;
 	private boolean hasTripletsSet = false;
-	private boolean hasMixTimings = true;
+	private boolean hasMixTimings = false;
 
 	private String songTitle = null;
 	private String songComposer = null;
@@ -67,7 +67,7 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 		primaryTempoBPM = 120;
 		hasTriplets = false;
 		hasTripletsSet = false;
-		hasMixTimings = true;
+		hasMixTimings = false;
 		songTitle = null;
 		songComposer = null;
 		songTranscriber = null;
@@ -266,14 +266,25 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 			return partInfoByIndex.size();
 		}
 		int min = -1;
-		
 		for (List<Integer> setup : partSetups) {
 			if (min == -1 || setup.size() < min) {
 				min = setup.size();
 			}
 		}
-		
 		return min;
+	}
+	
+	public int getPartSetupsMax() {
+		if (partSetups == null) {
+			return partInfoByIndex.size();
+		}
+		int max = -1;
+		for (List<Integer> setup : partSetups) {
+			if (max == -1 || setup.size() > max) {
+				max = setup.size();
+			}
+		}
+		return max;
 	}
 
 	void setMetadata(char key, String value) {
