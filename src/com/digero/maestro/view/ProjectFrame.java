@@ -429,7 +429,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		});
 
 		composerField = new JTextField();
-		composerField.setToolTipText("Song Composer");
+		composerField.setToolTipText("Song Composer/Artist");
 		composerField.getDocument().addDocumentListener(new SimpleDocumentListener() {
 			@Override
 			public void changedUpdate(DocumentEvent e) {
