@@ -50,14 +50,14 @@ Maestro upgrades by Aifel of Laurelin, Elamond of Landroval and Karloman
 
 Version 3.4.4
 - Solo/mute buttons will no longer reset when reloading MIDI file.
-- Slightly changed algorithm for removing duplicate notes (same pitch, playing at same time),
+- Changed the algorithm for removing duplicate notes (same pitch, playing at same time),
     when combining tracks with sustained instruments.
-    It is still quite easy to make bad sounding parts doing this still,
-    especially when the volume difference between same notes of combined tracks are large.
+    It is still quite easy to get bad sounding parts doing this still,
+    especially when the volume difference between them are large.
 - Fixed a visual bug where buttons and UI elements had no spacing between them.
 - Fixed a bug where exporting an ABC playlist would ask you to confirm overwriting a file even if the file doesn't exist.
 - Added more column options to the ABC playlist. Setups min, Setups max, Genre, Mood, Export Date, Exported By.
-  - All are hidden by default, right-click on the header of the playlist table to show/hide them.
+    All are hidden by default, right-click on the header of the playlist table to show/hide them.
 
 Version 3.4.3
 - Fix max part notes window had title from delay part window.
