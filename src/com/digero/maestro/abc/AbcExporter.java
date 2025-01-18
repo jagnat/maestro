@@ -1110,7 +1110,7 @@ public class AbcExporter {
 							if (instrument.isSustainable(on.note.id)) {
 								// remove second
 							
-								if (ne.velocity <= on.velocity) {
+								if (Dynamics.fromMidiVelocity(ne.velocity).abcVol <= Dynamics.fromMidiVelocity(on.velocity).abcVol) {
 									// we only do this if second has lower or equal volume
 									neIter.remove();
 									continue dupLoop;
@@ -1130,9 +1130,18 @@ public class AbcExporter {
 								onIter.remove();
 							}
 						} else if (ne.getEndTick() > on.getEndTick()) {
-							// ne extend beyond on, so we break first, and start second
-							on.setEndTick(ne.getStartTick());
-							onIter.remove();
+							// ne extend beyond on
+							if (!instrument.isSustainable(on.note.id) || Dynamics.fromMidiVelocity(ne.velocity) != Dynamics.fromMidiVelocity(on.velocity)) {
+								// we break first, and start second
+								on.setEndTick(ne.getStartTick());
+								onIter.remove();
+							} else {
+								// sustained and same abc volume
+								// we extend first to cover both, and discard second
+								on.setEndTick(ne.getEndTick());
+								neIter.remove();
+								continue dupLoop;
+							}
 						}
 					} else {
 						if (on.getStartTick() < ne.getEndTick()) {
