@@ -1070,6 +1070,13 @@ public class AbcExporter {
 	 * @param instrument 
 	 */
 	private void removeDuplicateNotes(List<AbcNoteEvent> events, LotroInstrument instrument) {
+		// If prioritizeLongNotes is true, then notes that are subset of the other but lower or equal value
+		// will just be deleted if sustained.
+		// If false, then the 2 notes will become 2 or 3 unisons,
+		// where the middle (subset) will have the volume of the loudest.
+		// Some listening tests convinced me that false is the way to go.
+		final boolean prioritizeUninteruptedLongNotes = false;
+		
 		List<AbcNoteEvent> notesOn = new ArrayList<>();
 		List<AbcNoteEvent> thirds = new ArrayList<>();
 		Iterator<AbcNoteEvent> neIter = events.iterator();
@@ -1108,17 +1115,20 @@ public class AbcExporter {
 							// second is subset of first
 							
 							if (instrument.isSustainable(on.note.id)) {
-								// remove second
-							
-								if (Dynamics.fromMidiVelocity(ne.velocity).abcVol <= Dynamics.fromMidiVelocity(on.velocity).abcVol) {
+															
+								if (prioritizeUninteruptedLongNotes && Dynamics.fromMidiVelocity(ne.velocity).abcVol <= Dynamics.fromMidiVelocity(on.velocity).abcVol) {
+									// remove second
 									// we only do this if second has lower or equal volume
 									neIter.remove();
 									continue dupLoop;
 								}
-								// else we stop first, insert second, and add new third (with firsts volume) after second to finish first.
+								// else we stop first, insert second, and add new third if needed (with firsts volume) after second to finish first.
 								long thirdEnd = on.getEndTick(); 
 								on.setEndTick(ne.getStartTick());
 								onIter.remove();
+								if (on.velocity > ne.velocity) {
+									ne.velocity = on.velocity;
+								}
 								if (thirdEnd > ne.getEndTick()) {
 									AbcNoteEvent third = new AbcNoteEvent(on.note, on.velocity, ne.getEndTick(), thirdEnd, qtm, on.origNote);
 									thirds.add(third);
