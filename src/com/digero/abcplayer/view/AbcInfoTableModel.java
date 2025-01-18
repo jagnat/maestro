@@ -84,7 +84,7 @@ public class AbcInfoTableModel extends AbstractTableModel {
 		case 5:
 			return "Duration";
 		case 6:
-			return "Composer";
+			return "Artist";
 		case 7:
 			return "Transcriber";
 		case 8:
@@ -119,7 +119,7 @@ public class AbcInfoTableModel extends AbstractTableModel {
 		return null;
 	}
 	
-	public final String[] DEFAULT_ENABLED_COLS = {"Song Name", "Part Count", "Duration", "Composer", "Transcriber" };
+	public final String[] DEFAULT_ENABLED_COLS = {"Song Name", "Part Count", "Duration", "Artist", "Transcriber" };
 	
 	public boolean getColumnDefaultEnabled(String colName) {
 		if (Arrays.stream(DEFAULT_ENABLED_COLS).anyMatch(colName::equals)) {
