@@ -759,7 +759,7 @@ public class AbcPlaylistPanel extends JPanel {
 		for (int i = 0; i < tableModel.getColumnCount(); i++) {
 			int idx = i;
 			String name = tableModel.getColumnName(i);
-			boolean enabled = columnPrefs.getBoolean(name, tableModel.getColumnDefaultEnabled(i));
+			boolean enabled = columnPrefs.getBoolean(name, tableModel.getColumnDefaultEnabled(name));
 			TableColumn col = playlistTable.getColumn(name);
 			JCheckBoxMenuItem item = new JCheckBoxMenuItem((String)name);
 			item.setSelected(enabled);
@@ -767,7 +767,7 @@ public class AbcPlaylistPanel extends JPanel {
 				if (item.isSelected()) {
 					playlistTable.addColumn(col); 
 					int from = playlistTable.getColumnCount() - 1;
-					int to = 0;
+					int to = -1;
 					for (int j = 0; j <= from; j++) {
 						String n = playlistTable.getColumnName(j);
 						if (colNames.indexOf(n) > idx) {
@@ -775,7 +775,9 @@ public class AbcPlaylistPanel extends JPanel {
 							break;
 						}
 					}
-					playlistTable.moveColumn(from, to);
+					if (to != -1) {
+						playlistTable.moveColumn(from, to);	
+					}
 				} else {
 					playlistTable.removeColumn(col);
 				}
@@ -855,7 +857,7 @@ public class AbcPlaylistPanel extends JPanel {
 				file = new File(file.getParent(), fileName);
 			}
 			
-			if (playlistFile != null && !file.equals(playlistFile)) {
+			if (file.exists()) {
 				int res = JOptionPane.showConfirmDialog(this,
 						"File \"" + fileName + "\" already exists.\n" + "Do you want to replace it?",
 						"Confirm Replace File", JOptionPane.YES_NO_CANCEL_OPTION);
