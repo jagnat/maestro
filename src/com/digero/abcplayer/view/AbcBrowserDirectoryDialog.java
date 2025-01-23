@@ -21,16 +21,17 @@ import javax.swing.JScrollPane;
 import com.digero.common.util.Util;
 
 @SuppressWarnings("serial")
-public class PlaylistDirectoryDialog extends JDialog {
+public class AbcBrowserDirectoryDialog extends JDialog {
 	
 	private boolean success = false;
 	private DefaultListModel<String> model;
 	
-	public PlaylistDirectoryDialog(JFrame abcPlayer, List<File> directories) {
+	public AbcBrowserDirectoryDialog(JFrame abcPlayer, List<File> directories) {
 		super(abcPlayer, "ABC Directories", true);
 		
 		JPanel panel = new JPanel(new BorderLayout());
-		panel.setPreferredSize(new Dimension(500, 200));
+//		panel.setPreferredSize(new Dimension(500, 200));
+		panel.setMinimumSize(new Dimension(500, 200));
 		
 		JButton remove = new JButton("Remove");
 		remove.setEnabled(false);
@@ -81,12 +82,12 @@ public class PlaylistDirectoryDialog extends JDialog {
 		JButton cancel = new JButton("Cancel");
 		cancel.addActionListener(e -> {
 			success = false;
-			PlaylistDirectoryDialog.this.setVisible(false);
+			AbcBrowserDirectoryDialog.this.setVisible(false);
 		});
 		JButton ok = new JButton("OK");
 		ok.addActionListener(e -> {
 			success = true;
-			PlaylistDirectoryDialog.this.setVisible(false);
+			AbcBrowserDirectoryDialog.this.setVisible(false);
 		});
 		getRootPane().setDefaultButton(ok);
 		controlsPanel.add(add);

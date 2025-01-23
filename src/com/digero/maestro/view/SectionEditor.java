@@ -2,7 +2,13 @@ package com.digero.maestro.view;
 
 import static javax.swing.SwingConstants.CENTER;
 
+import java.awt.Dimension;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.awt.Insets;
 import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -22,10 +28,13 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.KeyStroke;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
+
 import com.digero.common.midi.Note;
 import com.digero.common.util.Listener;
 import com.digero.common.view.PatchedJScrollPane;
@@ -39,9 +48,9 @@ import info.clearthought.layout.TableLayout;
 
 public class SectionEditor {
 
-	private static Point lastLocation = new Point(100, 100);
+	private static Point lastLocation = null;
 	
-	public static final int numberOfSectionsMax = 20;
+	public static final int numberOfSectionsMax = 80;
 	static boolean clipboardArmed = false;
 	static String[] clipboardStart = null;
 	static String[] clipboardEnd = null;
@@ -56,6 +65,10 @@ public class SectionEditor {
 
 		@SuppressWarnings("serial")
 		class SectionDialog extends JDialog {
+			
+			private JTabbedPane tabPanel;
+
+			private JPanel panel;
 			
 			public int numberOfSections = 8;
 
@@ -75,6 +88,7 @@ public class SectionEditor {
 			private JPanel doublingPanel;
 			private JPanel miscPanel;
 			private JPanel rangePanel;
+			private boolean scrolled = false;
 
 			private final JButton add1 = new JButton("Add");
 			
@@ -105,7 +119,7 @@ public class SectionEditor {
 
 					@Override
 					public void windowClosing(WindowEvent we) {
-						SectionEditor.lastLocation = SectionDialog.this.getLocation();
+						SectionEditor.lastLocation = getLocation();
 						if (abcPart.getAbcSong() != null)
 							abcPart.getAbcSong().removeSongListener(songListener);
 						abcPart.removeAbcListener(abcPartListener);
@@ -127,7 +141,7 @@ public class SectionEditor {
 //					auxHeight = (int) (rowHeight * 1.5);
 //				}
 
-				JPanel panel = new JPanel();
+				panel = new JPanel();
 
 				// Set the index of the first row to 2. Rows 0 and 1 are titles and headers
 				final int firstRowIndex = 3;
@@ -148,7 +162,7 @@ public class SectionEditor {
 				titleLabel = new JLabel("<html><b> " + abcPart.getTitle() + ": </b> "
 						+ abcPart.getInstrument().toString() + " on track " + track + " </html>");
 				panel.add(titleLabel, "0, 0, 7, 0, C, C");
-				JTabbedPane tabPanel = new JTabbedPane();
+				tabPanel = new JTabbedPane();
 				tabPanel.setTabPlacement(JTabbedPane.TOP);
 				
 				doublingPanel = new JPanel();
@@ -184,6 +198,7 @@ public class SectionEditor {
 
 				PartSection ps = abcPart.nonSection.get(track);
 				nonSectionInput.silent.setSelected(ps != null && ps.silence);
+				nonSectionInput.legato.setSelected(ps != null && ps.legato);
 				nonSectionInput.resetVelocities.setSelected(ps != null && ps.resetVelocities);
 				nonSectionInput.doubling0.setSelected(ps != null && ps.doubling[0]);
 				nonSectionInput.doubling1.setSelected(ps != null && ps.doubling[1]);
@@ -344,23 +359,34 @@ public class SectionEditor {
 				this.getContentPane().add(scrollPane);
 				panel.revalidate();
 				this.pack();
-				Window window = SwingUtilities.windowForComponent(this);
-				if (window != null) {
-					// Lets keep the dialog inside the screen, in case the screen changed resolution since it was last
-					// popped up
-					int maxX = window.getBounds().width - this.getWidth();
-					int maxY = window.getBounds().height - this.getHeight();
-					int x = Math.max(0, Math.min(maxX, SectionEditor.lastLocation.x));
-					int y = Math.max(0, Math.min(maxY, SectionEditor.lastLocation.y));
-					this.setLocation(new Point(x, y));
+				
+				if (lastLocation == null) { // First launch of section editor, center it on maestro window
+					this.setLocationRelativeTo(jf);
 				} else {
-					this.setLocation(SectionEditor.lastLocation);
+					// Ensure that window is on screen fully if monitors or resolution changed
+					GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+					GraphicsDevice devices[] = ge.getScreenDevices();
+					Rectangle bounds = this.getBounds();
+					bounds.x = lastLocation.x;
+					bounds.y = lastLocation.y;
+					int areaOnScreen = 0;
+					for (GraphicsDevice d : devices) {
+						Rectangle screenBounds = d.getDefaultConfiguration().getBounds();
+						if (bounds.intersects(screenBounds)) {
+							Rectangle inter = bounds.intersection(screenBounds);
+							areaOnScreen += inter.width * inter.height;
+						}
+					}
+					if (areaOnScreen == bounds.width * bounds.height) {
+						this.setLocation(lastLocation);
+					} else {
+						this.setLocationRelativeTo(jf);
+					}
 				}
 				
 				this.setVisible(true);
 				this.pack();
 				this.repaint();
-				// System.err.println(Thread.currentThread().getName()); Swing event thread
 			}
 
 			private float processSections(TreeMap<Float, PartSection> tm, float lastEnd) {
@@ -373,6 +399,7 @@ public class SectionEditor {
 							ps1.startBar = Float.parseFloat(sectionInputs.get(k).barA[0].getText().replace(",", "."));
 							ps1.endBar = Float.parseFloat(sectionInputs.get(k).barB[0].getText().replace(",", "."));
 							ps1.silence = sectionInputs.get(k).silent.isSelected();
+							ps1.legato = sectionInputs.get(k).legato.isSelected();
 							ps1.fade = Integer.parseInt(sectionInputs.get(k).fade.getText());
 							ps1.resetVelocities = sectionInputs.get(k).resetVelocities.isSelected();
 							ps1.doubling[0] = sectionInputs.get(k).doubling0.isSelected();
@@ -429,6 +456,7 @@ public class SectionEditor {
 				PartSection ps1 = new PartSection();
 				try {
 					ps1.silence = nonSectionInput.silent.isSelected();
+					ps1.legato = nonSectionInput.legato.isSelected();
 					ps1.resetVelocities = nonSectionInput.resetVelocities.isSelected();
 					ps1.doubling[0] = nonSectionInput.doubling0.isSelected();
 					ps1.doubling[1] = nonSectionInput.doubling1.isSelected();
@@ -457,7 +485,7 @@ public class SectionEditor {
 						}
 					}
 					nonSectionInput.textPitch.setText("("+ps1.fromPitch.id+" to "+ps1.toPitch.id+")");
-					if (ps1.silence || ps1.resetVelocities || ps1.doubling[0] || ps1.doubling[1] || ps1.doubling[2]
+					if (ps1.silence || ps1.legato || ps1.resetVelocities || ps1.doubling[0] || ps1.doubling[1] || ps1.doubling[2]
 							|| ps1.doubling[3] || ps1.fromPitch != Note.C0 || ps1.toPitch != Note.MAX) {
 						SectionDialog.this.abcPart.nonSection.set(SectionDialog.this.track, ps1);
 					} else {
@@ -504,6 +532,7 @@ public class SectionEditor {
 						secInput.transpose.setText(String.valueOf(ps.octaveStep));
 						secInput.velo.setText(String.valueOf(ps.volumeStep));
 						secInput.silent.setSelected(ps.silence);
+						secInput.legato.setSelected(ps.legato);
 						secInput.fade.setText(String.valueOf(ps.fade));
 						secInput.resetVelocities.setSelected(ps.resetVelocities);
 						secInput.doubling0.setSelected(ps.doubling[0]);
@@ -579,6 +608,8 @@ public class SectionEditor {
 				rangePanel.add(new JLabel("To bar"), "2, 0, c, c");
 				rangePanel.add(new JLabel("Low limit"), "3, 0, c, c");
 				rangePanel.add(new JLabel("High limit"), "4, 0, c, c");
+				// column 5 is helper text for note limits
+				rangePanel.add(new JLabel("Legato"), "6, 0, c, c");
 			}
 
 			private double[] tabsRows() {
@@ -600,6 +631,16 @@ public class SectionEditor {
 					miscPanel.add(sectionLine.tab1line, "0, "+(i+1)+", 7, "+(i+1)+", f, f");
 					doublingPanel.add(sectionLine.tab2line, "0, "+(i+1)+", 7, "+(i+1)+", f, f");
 					rangePanel.add(sectionLine.tab3line, "0, "+(i+1)+", 7, "+(i+1)+", f, f");
+					
+					if (rangePanel.getComponentCount() == 22 && !scrolled) {
+						scrolled = true;
+						Dimension dim = tabPanel.getPreferredSize();
+						panel.remove(tabPanel);
+						JScrollPane tabPanelScroll = new JScrollPane(tabPanel);
+						//tabPanelScroll.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER );
+						tabPanelScroll.setPreferredSize(dim);
+						panel.add(tabPanelScroll, "0, 1, 7, 1, f, f");
+					}
 				}
 				miscPanel.remove(nonLine.tab1line);
 				doublingPanel.remove(nonLine.tab2line);
@@ -607,7 +648,9 @@ public class SectionEditor {
 								
 				miscPanel.add(nonLine.tab1line, "0, "+(numberOfSections+1)+", 7, "+(numberOfSections+1)+", f, f");
 				doublingPanel.add(nonLine.tab2line, "0, "+(numberOfSections+1)+", 7, "+(numberOfSections+1)+", f, f");
-				rangePanel.add(nonLine.tab3line, "0, "+(numberOfSections+1)+", 7, "+(numberOfSections+1)+", f, f");				
+				rangePanel.add(nonLine.tab3line, "0, "+(numberOfSections+1)+", 7, "+(numberOfSections+1)+", f, f");
+				
+				
 			}
 
 			private Listener<AbcPartEvent> abcPartListener = e -> {
@@ -660,6 +703,8 @@ public class SectionEditor {
 					break;
 				}
 			};
+
+			
 
 			
 		

@@ -224,10 +224,18 @@
 						</File>
 						<File Id="file.abcplayer.ico" Source="abcplayer.ico" />
 						<File Id="file.abcfile.ico" Source="abcfile.ico" />
+						<File Id="file.abcplaylist.ico" Source="abcplaylist.ico" />
 
 						<!-- Define ProgID for ABC file type -->
 						<ProgId Id="AbcPlayer.AssocFile.ABC" Description="ABC Song" Icon="file.abcfile.ico" IconIndex="0">
 							<Extension Id="abc" ContentType="text/plain">
+								<Verb Id="play" TargetFile="AbcPlayer.exe" Argument='"%1"' />
+							</Extension>
+						</ProgId>
+						
+						<!-- Define ProgID for ABCP file type -->
+						<ProgId Id="AbcPlayer.AssocFile.ABCP" Description="ABC Playlist" Icon="file.abcplaylist.ico" IconIndex="0">
+							<Extension Id="abcp" ContentType="text/plain">
 								<Verb Id="play" TargetFile="AbcPlayer.exe" Argument='"%1"' />
 							</Extension>
 						</ProgId>
@@ -238,6 +246,7 @@
 						<RegistryValue Root="HKLM" Key="SOFTWARE\[Manufacturer]\AbcPlayer\Capabilities" Type="string" Name="ApplicationIcon" Value="[APPLICATIONFOLDER]abcplayer.ico,0" />
 						<RegistryValue Root="HKLM" Key="SOFTWARE\[Manufacturer]\AbcPlayer\Capabilities\DefaultIcon" Type="string" Value="[#file.abcfile.ico],0" />
 						<RegistryValue Root="HKLM" Key="SOFTWARE\[Manufacturer]\AbcPlayer\Capabilities\FileAssociations" Type="string" Name=".abc" Value="AbcPlayer.AssocFile.ABC" />
+						<RegistryValue Root="HKLM" Key="SOFTWARE\[Manufacturer]\AbcPlayer\Capabilities\FileAssociations" Type="string" Name=".abcp" Value="AbcPlayer.AssocFile.ABCP" />
 						<RegistryValue Root="HKLM" Key="SOFTWARE\[Manufacturer]\AbcPlayer\Capabilities\MIMEAssociations" Type="string" Name="text/plain" Value="AbcPlayer.AssocFile.ABC" />
 						<RegistryValue Root="HKLM" Key="SOFTWARE\[Manufacturer]\AbcPlayer\Capabilities\shell" Type="string" Value="open" />
 						<RegistryValue Root="HKLM" Key="SOFTWARE\[Manufacturer]\AbcPlayer\Capabilities\shell\open\command" Type="string" Value='"[#AbcPlayer.exe]" "%1"' />
@@ -250,6 +259,7 @@
 						<!-- Add to "Open With" menu -->
 						<RegistryValue Root="HKLM" Key="SOFTWARE\Classes\Applications\AbcPlayer.exe" Type="string" Name="FriendlyAppName" Value="$(var.AbcPlayerAppName)" />
 						<RegistryValue Root="HKLM" Key="SOFTWARE\Classes\Applications\AbcPlayer.exe\SupportedTypes" Type="string" Name=".abc" Value="" />
+						<RegistryValue Root="HKLM" Key="SOFTWARE\Classes\Applications\AbcPlayer.exe\SupportedTypes" Type="string" Name=".abcp" Value="" />
 						<RegistryValue Root="HKLM" Key="SOFTWARE\Classes\Applications\AbcPlayer.exe\shell" Type="string" Value="open" />
 						<RegistryValue Root="HKLM" Key="SOFTWARE\Classes\Applications\AbcPlayer.exe\shell\open\command" Type="string" Value='"[#AbcPlayer.exe]" "%1"' />
 					</Component>

@@ -156,7 +156,7 @@ public class ExportFilenameTemplate {
 				return Util.formatDuration(getMetadataSource().getSongLengthMicros(), 0, '-');
 			}
 		});
-		variables.put("$SongComposer", new Variable("The song composer's name, as entered in the \"C:\" field") {
+		variables.put("$SongComposer", new Variable("The song composer/artist, as entered in the \"C:\" field") {
 			@Override
 			public String getValue() {
 				return getMetadataSource().getComposer().trim();

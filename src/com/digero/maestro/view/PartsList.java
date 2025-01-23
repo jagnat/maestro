@@ -15,6 +15,7 @@ import com.digero.common.midi.SequencerWrapper;
 import com.digero.common.midi.SequencerEvent.SequencerProperty;
 import com.digero.common.util.IDiscardable;
 import com.digero.common.util.Listener;
+import com.digero.common.util.Pair;
 import com.digero.maestro.abc.AbcPart;
 import com.digero.maestro.abc.AbcPartEvent;
 import com.digero.maestro.abc.AbcPartMetadataSource;
@@ -167,12 +168,7 @@ public class PartsList extends JPanel implements IDiscardable, TableLayoutConsta
 	}
 	
 	private void updateSequencerState(PartsListItem item) {
-		int trackNo = item.getPart().getPreviewSequenceTrackNumber();
-
-		if (trackNo >= 0) {
-			abcSequencer.setTrackMute(trackNo, item.isMuted());
-			abcSequencer.setTrackSolo(trackNo, item.isSoloed());
-		}
+		updatePartSoloMute(item.getPart());
 	}
 
 	private void updatePartSoloMute(AbcPart part) {
@@ -185,6 +181,26 @@ public class PartsList extends JPanel implements IDiscardable, TableLayoutConsta
 		if (trackNo >= 0) {
 			abcSequencer.setTrackMute(trackNo, part.isMuted());
 			abcSequencer.setTrackSolo(trackNo, part.isSoloed());
+		}
+	}
+	
+	public List<Pair<Boolean, Boolean>> getSoloMuteStates() {
+		List<Pair<Boolean, Boolean>> partSoloMuteList = new ArrayList<Pair<Boolean, Boolean>>(parts.size());
+		for (PartsListItem item : parts) {
+			Pair<Boolean, Boolean> soloMute = new Pair<Boolean, Boolean>(item.isSoloed(), item.isMuted());
+			partSoloMuteList.add(soloMute);
+		}
+		return partSoloMuteList;
+	}
+	
+	public void restoreSoloMuteState(List<Pair<Boolean, Boolean>> soloMuteState) {
+		int len = soloMuteState.size() < parts.size()? soloMuteState.size() : parts.size();
+		for (int i = 0; i < len; i++) {
+			Pair<Boolean, Boolean> soloMute = soloMuteState.get(i);
+			PartsListItem item = parts.get(i);
+			item.setSolo(soloMute.first);
+			item.setMute(soloMute.second);
+			updateSequencerState(item);
 		}
 	}
 	

@@ -102,6 +102,7 @@ import com.digero.common.util.FileFilterDropListener;
 import com.digero.common.util.ICompileConstants;
 import com.digero.common.util.IDiscardable;
 import com.digero.common.util.Listener;
+import com.digero.common.util.Pair;
 import com.digero.common.util.ParseException;
 import com.digero.common.util.Util;
 import com.digero.common.view.AboutDialog;
@@ -200,6 +201,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private JButton newPartButton;
 	private JButton deletePartButton;
 	private JButton delayButton;
+	private JButton conclusionFermataButton;
 	private JButton numerateButton;
 	private JButton maxButton;
 
@@ -427,7 +429,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		});
 
 		composerField = new JTextField();
-		composerField.setToolTipText("Song Composer");
+		composerField.setToolTipText("Song Composer/Artist");
 		composerField.getDocument().addDocumentListener(new SimpleDocumentListener() {
 			@Override
 			public void changedUpdate(DocumentEvent e) {
@@ -582,6 +584,14 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		});
 		maxButton.setToolTipText("Open a small dialog to edit a parts max notes.");
 		
+		conclusionFermataButton = new JButton("Part Fermata");
+		conclusionFermataButton.addActionListener(e -> {
+			if (partsList.getSelectedPart() != null) {
+				FermataDialog.show(ProjectFrame.this, partsList.getSelectedPart());
+			}
+		});
+		conclusionFermataButton.setToolTipText("Open a small dialog to edit conclusion fermata on part.");
+		
 		JPanel partsButtonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, HGAP, VGAP));
 		partsButtonPanel.add(newPartButton);
 		partsButtonPanel.add(deletePartButton);
@@ -596,6 +606,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		delayPanel.add(delayButton);
 		delayPanel.add(numerateButton);
 		delayPanel.add(maxButton);
+		delayPanel.add(conclusionFermataButton);
 		partsListPanel.add(delayPanel, BorderLayout.SOUTH);
 	}
 
@@ -1664,8 +1675,21 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			maxButton.setForeground(new Color(0.6f, 0.6f, 0.6f));
 		}
 		maxButton.setEnabled(partsList.getSelectedIndex() != -1);
+		
+		if (partsList.getSelectedIndex() != -1 && partPanel != null && partPanel.getAbcPart() != null
+				&& partPanel.getAbcPart().conclusionFermata != 0) {
+			conclusionFermataButton.setForeground(new Color(0.2f, 0.8f, 0.2f));// green
+		} else if (partsList.getSelectedIndex() != -1) {
+			Color c = UIManager.getColor("TextField.foreground");
+			conclusionFermataButton.setForeground(c);
+		} else {
+			// This is needed since when starting to set foreground color manually,
+			// it will no longer appear greyed out when disabled automatically.
+			conclusionFermataButton.setForeground(new Color(0.6f, 0.6f, 0.6f));
+		}
+		conclusionFermataButton.setEnabled(partsList.getSelectedIndex() != -1);
 	}
-
+	
 	private void updateButtons(boolean immediate) {
 		if (immediate) {
 			updateButtonsTask.run();
@@ -2140,6 +2164,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	}
 	
 	private boolean reloadWithNewSource(File newSource) {
+		List<Pair<Boolean, Boolean>> soloMuteState = partsList.getSoloMuteStates();
 		File originalMsx = abcSong.getSaveFile();
 		File oldSource = abcSong.getSourceFile();
 		boolean modified = abcSongModified;
@@ -2166,6 +2191,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			setAbcSongModified(newSource != oldSource || modified);	
 			updateTitle();
 		}
+		
+		partsList.restoreSoloMuteState(soloMuteState);
 		
 		return true;
 	}

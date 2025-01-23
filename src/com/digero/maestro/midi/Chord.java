@@ -110,6 +110,14 @@ public class Chord implements AbcConstants {
 			}
 		}
 	}
+	
+	public void setEndTick(long newEndTick) {
+		if (isRest()) return;
+		for (AbcNoteEvent note : notes) {
+			note.setEndTick(newEndTick);
+		}
+		endTick = newEndTick;
+	}
 
 	public void sort() {
 		Collections.sort(notes);

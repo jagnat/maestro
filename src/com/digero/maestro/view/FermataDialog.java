@@ -19,34 +19,34 @@ import com.digero.maestro.abc.AbcSongEvent;
 
 import info.clearthought.layout.TableLayout;
 
-public class MaxDialog {
+public class FermataDialog {
 
 	protected static Point lastLocation = new Point(0, 0);
-	private static JDialog maxDialog = null;
+	private static JDialog conclusionFermataDialog = null;
 
 	public static void show(ProjectFrame jf, AbcPart abcPart) {
 		
 		@SuppressWarnings("serial")
-		class MaxDialogWindow extends JDialog {
+		class ConclusionFermataDialogWindow extends JDialog {
 
 			private final double[] LAYOUT_COLS = new double[] { 0.1, 0.4, 0.4, 0.1 };
 			private double[] LAYOUT_ROWS = new double[] { 0.30, 0.20, 0.20, 0.15, 0.15 };
 			
 			JLabel titleLabel;
-			JTextField maxField;
+			JTextField conclusionFermataField;
 			AbcPart abcPart;
 
-			public MaxDialogWindow(final ProjectFrame jf, AbcPart part) {
-				super(jf, "Max Notes Editor", false);
+			public ConclusionFermataDialogWindow(final ProjectFrame jf, AbcPart part) {
+				super(jf, "Conclusion Fermata Part Editor", false);
 				
 				abcPart = part;
 
-				MaxDialogWindow.this.addWindowListener(new WindowAdapter() {
+				ConclusionFermataDialogWindow.this.addWindowListener(new WindowAdapter() {
 
 					@Override
 					public void windowClosing(WindowEvent we) {
-						MaxDialog.lastLocation = MaxDialogWindow.this.getLocation();
-						maxDialog = null;
+						FermataDialog.lastLocation = ConclusionFermataDialogWindow.this.getLocation();
+						conclusionFermataDialog = null;
 						jf.updateDelayButton();
 						if (abcPart.getAbcSong() != null) {
 							abcPart.getAbcSong().removeSongListener(songListener);
@@ -58,51 +58,51 @@ public class MaxDialog {
 				abcPart.addAbcListener(abcPartListener);
 				abcPart.getAbcSong().addSongListener(songListener);
 
-				this.setSize(250, 170);
+				this.setSize(315, 170);
 				JPanel panel = new JPanel();
 
 				panel.setLayout(new TableLayout(LAYOUT_COLS, LAYOUT_ROWS));
 
-				maxField = new JTextField(String.format("%d", abcPart.getNoteMax()));
-				maxField.setHorizontalAlignment(SwingConstants.CENTER);
+				conclusionFermataField = new JTextField(String.format("%.3f", abcPart.conclusionFermata * 0.001f));
+				conclusionFermataField.setHorizontalAlignment(SwingConstants.CENTER);
 
 				JButton okButton = new JButton("APPLY");
 				okButton.addActionListener(e -> {
 					try {
-						int max = Integer.parseInt(maxField.getText());
-						if (max >= 1 && max <= 6) {
-							abcPart.setNoteMax(max);
-							abcPart.maxEdited();
+						float conclusionFermata = Float.parseFloat(conclusionFermataField.getText().replace(',', '.'));
+						if (conclusionFermata >= 0.000f && conclusionFermata <= 5.00f) {
+							abcPart.conclusionFermata = (int) (conclusionFermata * 1000);
+							abcPart.conclusionFermataEdited();
 						}
 					} catch (NumberFormatException nfe) {
 
 					}
-					maxField.setText(String.format("%d", abcPart.getNoteMax()));
+					conclusionFermataField.setText(String.format("%.3f", abcPart.conclusionFermata * 0.001f));
 				});
-				titleLabel = new JLabel("<html><b> Max notes in " + abcPart.toString() + " </html>");
+				titleLabel = new JLabel("<html><b> Conclusion fermata on " + abcPart.toString() + " </html>");
 				panel.add(titleLabel, "0, 0, 3, 0, C, C");
-				panel.add(maxField, "1, 1, f, f");
-				panel.add(new JLabel("Notes"), "2, 1, C, C");
+				panel.add(conclusionFermataField, "1, 1, f, f");
+				panel.add(new JLabel("Seconds"), "2, 1, C, C");
 				panel.add(okButton, "1, 2, f, f");
-				panel.add(new JLabel("Put a max from 1 to 6 on a part."), "0, 3, 3, 3, C, C");
-				panel.add(new JLabel("The effect wont be shown graphically"), "0, 4, 3, 4, C, C");
-				maxField.setToolTipText("Max concurrent notes");
+				panel.add(new JLabel("Put a conclusion fermata from 0s to 5.00s on a part."), "0, 3, 3, 3, C, C");
+				panel.add(new JLabel("Do nothing if note not sustained by chosen instrument."), "0, 4, 3, 4, C, C");
+				conclusionFermataField.setToolTipText("Seconds of fermata");
 				
 				
 
 				this.getContentPane().add(panel);
-				if (MaxDialog.lastLocation.x == 0 && MaxDialog.lastLocation.y == 0) {
+				if (FermataDialog.lastLocation.x == 0 && FermataDialog.lastLocation.y == 0) {
 					this.setLocationRelativeTo(null);
 				}
 				else {
-					this.setLocation(MaxDialog.lastLocation);	
+					this.setLocation(FermataDialog.lastLocation);	
 				}
 				this.setVisible(true);
 			}
 			
 		    private Listener<AbcPartEvent> abcPartListener = e -> {
 				if (e.getProperty() == AbcPartProperty.TITLE && e.getSource() == abcPart) {
-					titleLabel.setText("<html><b> Max notes in " + abcPart.toString() + " </html>");
+					titleLabel.setText("<html><b> Conclusion fermata on " + abcPart.toString() + " </html>");
 				}
 			};
 
@@ -113,19 +113,19 @@ public class MaxDialog {
 						if (deleted.equals(abcPart)) {
 							// The abcPart for this editor is being deleted, lets close the dialog.
 							dispose();
-							maxDialog = null;
+							conclusionFermataDialog = null;
 						}
 						break;
 					case SONG_CLOSING:
 						dispose();
-						maxDialog = null;
+						conclusionFermataDialog = null;
 						break;
 					default:
 						break;
 				}
 			};
 			
-			// Support clicking max button while dialog is already opened to change the pointed-to part
+			// Support clicking conclusionFermata button while dialog is already opened to change the pointed-to part
 			public void changeAbcPart(AbcPart newPart) {
 				if (abcPart.getAbcSong() != null) {
 					abcPart.getAbcSong().removeSongListener(songListener);
@@ -136,16 +136,16 @@ public class MaxDialog {
 				
 				abcPart.addAbcListener(abcPartListener);
 				abcPart.getAbcSong().addSongListener(songListener);
-				maxField.setText(String.format("%d", abcPart.getNoteMax()));
-				titleLabel.setText("<html><b> Max notes in " + abcPart.toString() + " </html>");
+				conclusionFermataField.setText(String.format("%.3f", abcPart.conclusionFermata * 0.001f));
+				titleLabel.setText("<html><b> Conclusion fermata on " + abcPart.toString() + " </html>");
 			}
 		}
 		
-		if (maxDialog != null) {
-			((MaxDialogWindow)maxDialog).changeAbcPart(abcPart);
+		if (conclusionFermataDialog != null) {
+			((ConclusionFermataDialogWindow)conclusionFermataDialog).changeAbcPart(abcPart);
 		}
 		else {
-			maxDialog = new MaxDialogWindow(jf, abcPart);	
+			conclusionFermataDialog = new ConclusionFermataDialogWindow(jf, abcPart);	
 		}
 	}
 

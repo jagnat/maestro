@@ -48,6 +48,7 @@ public class AbcHelper {
 		ps.volumeStep = SaveUtil.parseValue(sectionEle, "volumeStep", 0);
 		ps.octaveStep = SaveUtil.parseValue(sectionEle, "octaveStep", 0);
 		ps.silence = SaveUtil.parseValue(sectionEle, "silence", false);
+		ps.legato = SaveUtil.parseValue(sectionEle, "legato", false);
 		ps.doubling[0] = SaveUtil.parseValue(sectionEle, "double2OctDown", false);
 		ps.doubling[1] = SaveUtil.parseValue(sectionEle, "double1OctDown", false);
 		ps.doubling[2] = SaveUtil.parseValue(sectionEle, "double1OctUp", false);

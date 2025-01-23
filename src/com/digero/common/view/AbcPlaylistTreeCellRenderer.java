@@ -29,6 +29,8 @@ public class AbcPlaylistTreeCellRenderer extends DefaultTreeCellRenderer {
 		
 		if (file.getName().endsWith(".abc")) {
 			setIcon(IconLoader.getImageIcon("abcfile_16.png"));
+		} else if (file.getName().endsWith(".abcp")) {
+			setIcon(IconLoader.getImageIcon("abcplaylist_16.png"));
 		}
 		
 		setToolTipText(file.getAbsolutePath());

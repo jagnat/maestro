@@ -38,10 +38,11 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 	private NavigableMap<Long, Integer> bars = new TreeMap<>();
 	private Map<Integer, AbcInfo.PartInfo> partInfoByIndex = new HashMap<>();
 	private NavigableSet<AbcRegion> regions;
+	private List<List<Integer>> partSetups;
 	private int primaryTempoBPM = 120;
 	private boolean hasTriplets = false;
 	private boolean hasTripletsSet = false;
-	private boolean hasMixTimings = true;
+	private boolean hasMixTimings = false;
 
 	private String songTitle = null;
 	private String songComposer = null;
@@ -49,6 +50,8 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 	private String songDuration = null;
 	private String genre = null;
 	private String mood = null;
+	private String exportTimestamp = null;
+	private String abcCreator = null;
 	private TimeSignature timeSignature = TimeSignature.FOUR_FOUR;
 	private KeySignature keySignature = KeySignature.C_MAJOR;
 
@@ -58,22 +61,29 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 		titlePrefix = null;
 		metadata.clear();
 		bars.clear();
+		partInfoByIndex.clear();
+		regions = null;
+		partSetups = null;
 		primaryTempoBPM = 120;
+		hasTriplets = false;
+		hasTripletsSet = false;
+		hasMixTimings = false;
 		songTitle = null;
 		songComposer = null;
 		songTranscriber = null;
 		songDuration = null;
-		hasTriplets = false;
-		hasTripletsSet = false;
-		hasMixTimings = true;
+		genre = null;
+		mood = null;
+		exportTimestamp = null;
+		abcCreator = null;
 		timeSignature = TimeSignature.FOUR_FOUR;
 		keySignature = KeySignature.C_MAJOR;
 	}
-	
+
 	public List<File> getSourceFiles() {
 		return abcFiles;
 	}
-	
+
 	public void addSourceFile(File file) {
 		if (abcFiles == null) {
 			abcFiles = new ArrayList<File>();
@@ -128,6 +138,14 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 		return Util.emptyIfNull(mood);
 	}
 
+	public String getExportTimestamp() {
+		return Util.emptyIfNull(exportTimestamp);
+	}
+
+	public String getAbcCreator() {
+		return Util.emptyIfNull(abcCreator);
+	}
+
 	@Override
 	public int tickToBarNumber(long tick) {
 		Entry<Long, Integer> e = bars.floorEntry(tick);
@@ -161,7 +179,7 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 	public boolean hasMixTimings() {
 		return hasMixTimings;
 	}
-	
+
 	public String getSongDurationStr() {
 		return songDuration;
 	}
@@ -179,7 +197,7 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 			return LotroInstrument.DEFAULT_INSTRUMENT;
 		return info.instrument;
 	}
-	
+
 	public int getPartCount() {
 		return partInfoByIndex.size();
 	}
@@ -242,6 +260,32 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 
 		return info.endLine;
 	}
+	
+	public int getPartSetupsMin() {
+		if (partSetups == null) {
+			return partInfoByIndex.size();
+		}
+		int min = -1;
+		for (List<Integer> setup : partSetups) {
+			if (min == -1 || setup.size() < min) {
+				min = setup.size();
+			}
+		}
+		return min;
+	}
+	
+	public int getPartSetupsMax() {
+		if (partSetups == null) {
+			return partInfoByIndex.size();
+		}
+		int max = -1;
+		for (List<Integer> setup : partSetups) {
+			if (max == -1 || setup.size() > max) {
+				max = setup.size();
+			}
+		}
+		return max;
+	}
 
 	void setMetadata(char key, String value) {
 		this.empty = false;
@@ -267,38 +311,91 @@ public class AbcInfo implements AbcConstants, IBarNumberCache {
 					mood = value.substring(5).trim();
 				}
 			}
+			if (value.startsWith("ts")) {
+				parseInstrumentSetup(value);
+			}
 		}
+	}
+
+	// Parse setup string format, eg:
+	// TS 8, 1 2 3 4 5 6 7 8
+	// TODO: Validate part numbers actually match with parts in abc?
+	private void parseInstrumentSetup(String value) {
+		String[] data = value.split("\\s+");
+		int numParts = -1;
+		if (data.length < 3) {
+			return;
+		}
+		if (!data[0].equals("ts")) {
+			return;
+		}
+		if (data[1].endsWith(",")) {
+			String partCountStr = data[1].substring(0, data[1].length() - 1);
+			try {
+				numParts = Integer.parseInt(partCountStr);
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+				return;
+			}
+		} else {
+			return;
+		}
+		
+		List<Integer> partList = new ArrayList<Integer>(numParts);
+		
+		for (int i = 2; i < data.length; i++) {
+			try {
+				int partNo = Integer.parseInt(data[i]);
+				partList.add(partNo);
+			} catch (NumberFormatException e) {
+				e.printStackTrace();
+				return;
+			}
+		}
+		
+		if (partList.size() != numParts) {
+			return;
+		}
+		
+		if (partSetups == null) {
+			partSetups = new ArrayList<List<Integer>>();
+		}
+		partSetups.add(partList);
 	}
 
 	void setExtendedMetadata(AbcField field, String value) {
 		switch (field) {
-			case SONG_TITLE:
-				songTitle = value.trim();
-				break;
-			case SONG_COMPOSER:
-				songComposer = value.trim();
-				break;
-			case SONG_TRANSCRIBER:
-				songTranscriber = value.trim();
-				break;
-			case SWING_RHYTHM:
-				hasTriplets = Boolean.parseBoolean(value.trim());
-				hasTripletsSet = true;
-				break;
-			case MIX_TIMINGS:
-				hasMixTimings = Boolean.parseBoolean(value.trim());
-				break;
-			case SONG_DURATION:
-				songDuration = value.trim();
-				break;
-			case ABC_CREATOR:
-			case ABC_VERSION:
-			case PART_NAME:
-			case MADE_FOR:
-			case EXPORT_TIMESTAMP:
-			case TEMPO:
-			case DELETE_MINIMAL_NOTES:
-			case SKIP_SILENCE_AT_START:
+		case SONG_TITLE:
+			songTitle = value.trim();
+			break;
+		case SONG_COMPOSER:
+			songComposer = value.trim();
+			break;
+		case SONG_TRANSCRIBER:
+			songTranscriber = value.trim();
+			break;
+		case SWING_RHYTHM:
+			hasTriplets = Boolean.parseBoolean(value.trim());
+			hasTripletsSet = true;
+			break;
+		case MIX_TIMINGS:
+			hasMixTimings = Boolean.parseBoolean(value.trim());
+			break;
+		case SONG_DURATION:
+			songDuration = value.trim();
+			break;
+		case EXPORT_TIMESTAMP:
+			exportTimestamp = value.trim();
+			break;
+		case ABC_CREATOR:
+			abcCreator = value.trim();
+			break;
+		case ABC_VERSION:
+		case PART_NAME:
+		case MADE_FOR:
+		case TEMPO:
+		case DELETE_MINIMAL_NOTES:
+		case SKIP_SILENCE_AT_START:
 			// Ignore
 			break;
 		}

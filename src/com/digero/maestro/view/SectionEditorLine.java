@@ -23,6 +23,7 @@ class SectionEditorLine implements Comparable<SectionEditorLine> {
 	JTextField transpose = new JTextField("0");
 	JTextField velo = new JTextField("0");
 	JCheckBox silent = new JCheckBox();
+	JCheckBox legato = new JCheckBox();
 	JCheckBox resetVelocities = new JCheckBox();
 	JTextField fade = new JTextField("0");
 	JCheckBox doubling0 = new JCheckBox();
@@ -187,6 +188,7 @@ class SectionEditorLine implements Comparable<SectionEditorLine> {
 		String transposeTT = "<html><b> Transpose this section some octaves up or down. </b><br> Enter a positive or negative number. </html>";
 		String veloTT = "<html><b> Offset the volume of this section. </b><br> Experiment to find the number that does what you want. <br> Normally a number from -250 to 250. </html>";
 		String silentTT = "<html><b> Silence this section. </b></html>";
+		String legatoTT = "<html><b> Extend notes into following rests. </b></html>";
 		String resetTT = "<html><b> Reset volumes from the source notes. </b></html>";
 		String fadeTT = "<html><b> Fade in/out the volume of this section. </b><br> 0 = no fading <br> 100 = fade out full <br> -100 = fade in full <br> 150 = fade out before section ends <br> Etc. etc.. </html>";
 		String d0TT = "<html><b> Double all notes in this section 2 octaves below.</b></html>";
@@ -197,6 +199,7 @@ class SectionEditorLine implements Comparable<SectionEditorLine> {
 		resetVelocities.setToolTipText(resetTT);
 		fade.setToolTipText(fadeTT);
 		silent.setToolTipText(silentTT);
+		legato.setToolTipText(legatoTT);
 		velo.setToolTipText(veloTT);
 		transpose.setToolTipText(transposeTT);
 		barB[0].setToolTipText(barBTT);
@@ -260,5 +263,6 @@ class SectionEditorLine implements Comparable<SectionEditorLine> {
 		tab3line.add(fromPitch, "3, 0, f, f");
 		tab3line.add(toPitch, "4, 0, f, f");
 		tab3line.add(textPitch, "5, 0, c, c");
+		tab3line.add(legato, "6, 0, c, f");
 	}
 }
