@@ -54,6 +54,9 @@ Version 4.1.5
 - Fix bug where the playlist "Refresh Browser" function wouldn't work until you searched
 - Fix bug where the set exporter wouldn't honor the option to not rename files
 - Fermata now applies to all last notes that ends within 5 ms of last ending.
+- Note graph horizontal zoom now uses a quartic curve, for more natural adjusting
+- The default folder in AbcTools is now the lotro music folder, if it exists
+- Fix bug where the "remove spaces and capitalize first letter" option in File Naming settings would cause a crash
 
 Version 4.1.4
 - Invert how priorites of setups work.
