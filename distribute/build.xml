@@ -338,7 +338,7 @@
 		<delete dir="${build}/jpackageMaestro" />
 	</target>
 	
-	<target name="Wix-Cop" description="Runs WiX cop to fix errors in wix project">
+	<target name="-Wix-Cop" description="Runs WiX cop to fix errors in wix project">
 	    <exec executable="${tools}/wix/WixCop.exe" failonerror="false">
 	    	<arg value="-f"/> <!-- fix errors -->
 	        <arg value="MaestroInstaller.wix"/>
