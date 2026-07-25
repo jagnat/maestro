@@ -175,6 +175,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	private JDialog themeEditorDialog;
 
 	private ArrangementView arrangementView;
+	private JTabbedPane arrangementTabs;
+	private PartEditingTab partEditingTab;
+	private SongEditingTab songEditingTab;
 
 	private JButton tuneEditorButton;
 	private JCheckBox hideEditsCheckbox;
@@ -327,6 +330,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			sequencer.getFilter().onAbcPartChanged(abcPart != null);
 			abcSequencer.getFilter().onAbcPartChanged(abcPart != null);
 			arrangementView.setAbcPart(abcPart, false);
+
+			if (partEditingTab != null && arrangementTabs.getSelectedComponent() == partEditingTab)
+				partEditingTab.setAbcPart(abcPart);
 
 			if (abcPart != null) {
 				scheduleUiRefresh();
@@ -907,8 +913,30 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		playControlPanel.add(feedLabel, "span 8, center");
 
+		partEditingTab = new PartEditingTab(sequencer, abcSequencer);
+		songEditingTab = new SongEditingTab(sequencer, abcSequencer, part -> {
+			if (abcSong != null) {
+				songPartsListPanel.selectPart(abcSong.getParts().indexOf(part));
+				arrangementTabs.setSelectedComponent(partEditingTab);
+			}
+		});
+
+		arrangementTabs = new JTabbedPane(JTabbedPane.TOP);
+		arrangementTabs.setFocusable(false);
+		arrangementTabs.addTab("Track Selection", arrangementView);
+		arrangementTabs.addTab("Part Editing", partEditingTab);
+		arrangementTabs.addTab("Song Editing", songEditingTab);
+		arrangementTabs.addChangeListener(e -> {
+			// Tabs 2 and 3 rebuild lazily on activation from the current selection
+			Component selected = arrangementTabs.getSelectedComponent();
+			if (selected == partEditingTab)
+				partEditingTab.setAbcPart(songPartsListPanel.getSelectedPart());
+			else if (selected == songEditingTab)
+				songEditingTab.setAbcSong(abcSong);
+		});
+
 		midiPartsAndControls = new JPanel(new BorderLayout(HGAP, VGAP));
-		midiPartsAndControls.add(arrangementView, BorderLayout.CENTER);
+		midiPartsAndControls.add(arrangementTabs, BorderLayout.CENTER);
 		midiPartsAndControls.add(playControlPanel, BorderLayout.SOUTH);
 		midiPartsAndControls.setBorder(BorderFactory.createTitledBorder(UIText.get("maestro.part.settings")));
 	}
@@ -2316,7 +2344,10 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		arrangementView.sidepanelVisible(false);
 		arrangementView.unZoom();
 		arrangementView.closeAbcSong();
-		
+
+		partEditingTab.setAbcPart(null);
+		songEditingTab.setAbcSong(null);
+
 		partEditor.setVisible(false);
 
 		songPartsListPanel.updateParts();
