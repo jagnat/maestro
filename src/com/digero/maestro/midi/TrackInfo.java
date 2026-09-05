@@ -403,7 +403,7 @@ public class TrackInfo implements MidiConstants, GenericTrackInfo {
 			// All bent notes that span more than an octave (or whatever the option is set to)
             // will already here be split into small pieces.
 			if (Math.abs(be.getMaxBend() - be.getMinBend()) > miscSettings.maxRangeForNewBendMethod) {
-				List<MidiNoteEvent> prematureSplit = be.split();
+				List<MidiNoteEvent> prematureSplit = be.split(parent.getFileName()+", track "+trackNumber);
 				noteEvents.addAll(prematureSplit);
                 toBeRemoved.add(be);
 			} else {
