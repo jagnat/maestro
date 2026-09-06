@@ -2210,9 +2210,6 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	 * @return true if it was closed
 	 */
 	private boolean closeProject(CloseProjectMode mode) {
-		boolean skipSequencerReset = mode == CloseProjectMode.SHUTDOWN;
-		SectionEditor.clearClipboard();
-		TrackPanel.clearDrumClipboard();
 		sequencer.stop();
 		abcSequencer.stop();
 
@@ -2236,6 +2233,10 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		}
 		
 		log.fine("Closing project");
+
+		boolean skipSequencerReset = mode == CloseProjectMode.SHUTDOWN;
+		SectionEditor.clearClipboard();
+		TrackPanel.clearDrumClipboard();
 
 		hideEditsCheckbox.setSelected(false);//best to have this before song is set to null
 
@@ -2949,8 +2950,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		// Each rebuild request gets a new monotonic id. The preview counts as current
 		// only once applyPreview stamps this id into previewAppliedSeq.
 		final long requestSeq = ++previewRequestSeq;
-		if (log.isLoggable(Level.WARNING)) {
-			log.log(Level.WARNING, "refreshPreviewSequence #" + requestSeq + " immediate=" + immediate,
+		if (log.isLoggable(Level.FINE)) {
+			log.log(Level.FINE, "refreshPreviewSequence #" + requestSeq + " immediate=" + immediate,
 					new Throwable("preview rebuild call site"));
 		}
 
