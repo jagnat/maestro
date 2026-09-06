@@ -2499,9 +2499,19 @@ public class AbcExporter {
         part.numberOfRemovedNotesFromFitting = 0;
         part.numberOfRemovedNotesZeros = 0;
 
+        final boolean OUTPUT_METRICS = true;
+        java.util.Set<AbcNoteEvent> prunedAway = assertionsEnabled && OUTPUT_METRICS
+                ? java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>())
+                : null;
+
         for (AbcNoteEvent note : events) {
             note.startABCMicros = qtm.tickToMicrosABCOrganic(note.getStartTick());
             note.endABCMicros = qtm.tickToMicrosABCOrganic(note.getEndTick());
+        }
+        java.util.Map<AbcNoteEvent, Long> trueOnset = null;
+        if (assertionsEnabled && OUTPUT_METRICS) {
+            trueOnset = new java.util.IdentityHashMap<>();
+            for (AbcNoteEvent note : events) trueOnset.put(note, note.startABCMicros);
         }
         final long songStartMicros = getExportStartMicrosABC();
 
@@ -2540,6 +2550,14 @@ public class AbcExporter {
 					for (int j = 0; j < curChord.size(); j++) {
 						AbcNoteEvent jne = curChord.get(j);
 						if (jne.endABCMicros == jne.startABCMicros) {
+                            if (part.getInstrument().isPercussion && jne.note != Note.REST) {
+                                // Zero-length drum notes are legitimate in the source MIDI (if the notes originate from drum notes).
+                                // LOTRO plays the sample in full as long as the note is at least minimumMicros. Lengthen rather
+                                // than delete, matching combineAndQuantize and processOrganic2.
+                                jne.endABCMicros = jne.startABCMicros + minimumMicros;
+                                jne.setEndTick(qtm.microsToTickABCOrganic(jne.endABCMicros));
+                                continue;
+                            }
 							// this note is zero duration and others in the chord is not
 							curChord.remove(jne);
                             part.numberOfRemovedNotesZeros++;
@@ -2572,6 +2590,7 @@ public class AbcExporter {
 				List<AbcNoteEvent> deadnotes = curChord.prune(part.getInstrument().sustainable,
 						part.getInstrument() == LotroInstrument.BASIC_DRUM, part.getInstrument().isPercussion,
 						part, useRestToShortenChords);
+                if (assertionsEnabled && OUTPUT_METRICS) prunedAway.addAll(deadnotes);
 				removeNotes(events, deadnotes, part);
                 part.numberOfRemovedNotesFromPruning += deadnotes.size();
 
@@ -3300,9 +3319,10 @@ public class AbcExporter {
 			}
 			
 			
-			// Last chord needs to be pruned as that hasn't happened yet.
+			// Last chord needs to be pruned as that hasn't happened yet. Since its the last we don't pass useRestToShortenChords.
 			List<AbcNoteEvent> deadnotes = curChord.prune(part.getInstrument().sustainable,
-					part.getInstrument() == LotroInstrument.BASIC_DRUM, part.getInstrument().isPercussion, part);
+					part.getInstrument() == LotroInstrument.BASIC_DRUM, part.getInstrument().isPercussion, part, false);
+            if (assertionsEnabled && OUTPUT_METRICS) prunedAway.addAll(deadnotes);
 			removeNotes(events, deadnotes, part);// we need to set the pruned flag for last chord too.
             part.numberOfRemovedNotesFromPruning += deadnotes.size();
 			curChord.recalcEndMicros();
@@ -3519,10 +3539,99 @@ public class AbcExporter {
                 assert false:"Please notify Aifel that this occurred, thanks.";
             }
         }
+
+
+        if (assertionsEnabled && OUTPUT_METRICS) {
+            logPartMetrics(part, chords, events, prunedAway, trueOnset, minimumMicros);
+        }
+
 		List<Chord> returnList = new ArrayList<>(chords.size());
 		returnList.addAll(chords);
 		return returnList;
 	}
+
+    /**
+     * One machine-diffable line per part, plus at most a few lines when something is
+     * actually wrong. Meant to be run over the whole corpus on two builds and compared
+     * with a script, not read
+     *
+     * grep "METRICS" and diff field by field.
+     *
+     * sig= is a checksum of every chord's start/end micros. If it matches between two
+     * builds the part is timing-identical and needs no further comparison, which is how
+     * the corpus run gets down to a readable number of parts.
+     */
+    private void logPartMetrics(AbcPart part, List<ChordOrganic> chords, List<AbcNoteEvent> events,
+                                java.util.Set<AbcNoteEvent> prunedAway, java.util.Map<AbcNoteEvent, Long> trueOnset,
+                                long minimumMicros) {
+        final int MAX_ISSUE_LINES_PER_PART = 3;
+        long early = 0, late = 0, worstEarly = 0, worstLate = 0;
+        int onsetN = 0;
+        long shortfall = 0, sig = 1469598103934665603L;
+        int shortChords = 0;
+
+        for (ChordOrganic chord : chords) {
+            sig = (sig ^ chord.getStartMicros()) * 1099511628211L;
+            sig = (sig ^ chord.getEndMicros())   * 1099511628211L;
+
+            long dura = chord.getEndMicros() - chord.getStartMicros();
+            if (dura > 0L && dura < minimumMicros) {
+                shortChords++;
+                shortfall += minimumMicros - dura;
+            }
+            for (AbcNoteEvent note : chord.getNotes()) {
+                Long t = trueOnset.get(note);// null for split tails; they have no true onset
+                if (t == null) continue;
+                long d = chord.getStartMicros() - t;
+                onsetN++;
+                if (d < 0) { early -= d; worstEarly = Math.max(worstEarly, -d); }
+                else       { late  += d; worstLate  = Math.max(worstLate, d); }
+            }
+        }
+
+        java.util.Set<AbcNoteEvent> placed = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        for (ChordOrganic chord : chords) {
+            placed.addAll(chord.getNotes());
+        }
+        List<AbcNoteEvent> lost = new ArrayList<>();
+        for (AbcNoteEvent note : events) {
+            if (note.note == Note.REST || placed.contains(note)) continue;
+            if (prunedAway.contains(note)) continue;// deliberately discarded by the note cap
+            if (note.endABCMicros == note.startABCMicros && note.tiesTo != null) continue;// flattened head, tail carries it
+            lost.add(note);
+        }
+        long lostMicros = 0;
+        for (AbcNoteEvent note : lost) {
+            lostMicros += note.endABCMicros - note.startABCMicros;
+        }
+
+        long spanMicros = chords.isEmpty() ? 0L
+                : chords.getLast().getEndMicros() - chords.getFirst().getStartMicros();
+
+        File f = new File("D:/Users/Nikolai/Documents/ABC/2019 Redos/metrics-2.txt");
+        try (FileWriter fWriter = new FileWriter(f, true)) {
+            fWriter.append("METRICS " + part.getAbcSong().getTitle() + "|" + part.getTitle()
+                    + " chords=" + chords.size()
+                    + " span=" + spanMicros
+                    + " sig=" + Long.toHexString(sig)
+                    + " onsetN=" + onsetN
+                    + " early=" + early + " late=" + late
+                    + " worstEarly=" + worstEarly + " worstLate=" + worstLate
+                    + " short=" + shortChords + " shortfall=" + shortfall
+                    + " lost=" + lost.size() + " lostMicros=" + lostMicros
+                    + "\n");
+
+            for (int k = 0; k < lost.size() && k < MAX_ISSUE_LINES_PER_PART; k++) {
+                AbcNoteEvent note = lost.get(k);
+                fWriter.append("LOST " + part.getAbcSong().getTitle() + "|" + part.getTitle()
+                        + " " + note.note + " " + note.startABCMicros + "-" + note.endABCMicros
+                        + " dura=" + (note.endABCMicros - note.startABCMicros)
+                        + " tiesFrom=" + (note.tiesFrom != null) + " tiesTo=" + (note.tiesTo != null) + "\n");
+            }
+        } catch (Exception e) {
+            System.exit(1);
+        }
+    }
 	
 	private void assertSoftDura(ChordOrganic chord, long minimum) {
 		if (chord == null) return;
