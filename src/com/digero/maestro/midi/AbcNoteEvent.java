@@ -74,9 +74,19 @@ public class AbcNoteEvent extends NoteEvent {
 	 * Only called directly by multi-stage organic
 	 */
 	public AbcNoteEvent splitWithTieAtTick(long splitPointTick, long splitPointMicros) {
-		assert splitPointTick >= startTick:"split before beginning ("+splitPointTick+","+Util.formatDurationM(splitPointMicros)+") "+ this;
-		assert splitPointTick != startTick:"split at beginning ("+splitPointTick+","+Util.formatDurationM(splitPointMicros)+") "+ this;
-		assert splitPointTick < endTick:"split after end";
+		if (splitPointMicros == -1L) {
+			// Tick-domain caller (non-organic): ticks are authoritative.
+			assert splitPointTick >= startTick:"split before beginning ("+splitPointTick+","+Util.formatDurationM(splitPointMicros)+") "+ this;
+			assert splitPointTick != startTick:"split at beginning ("+splitPointTick+","+Util.formatDurationM(splitPointMicros)+") "+ this;
+			assert splitPointTick < endTick:"split after end";
+		} else {
+			// Micros-domain caller (organic): ticks are a lossy projection of micros, so a
+			// legal micros split point can violate the tick preconditions purely because
+			// microsToTick() collapsed both ends onto the same tick.
+			assert splitPointMicros > startABCMicros:"split at or before beginning ("+Util.formatDurationM(splitPointMicros)+") "+ this;
+			assert splitPointMicros < endABCMicros:"split at or after end ("+Util.formatDurationM(splitPointMicros)+") "+ this;
+		}
+
 
 		AbcNoteEvent next = new AbcNoteEvent(note, velocity, splitPointTick, endTick, tempoCache, this.origNote);
 		setEndTick(splitPointTick);
@@ -98,7 +108,7 @@ public class AbcNoteEvent extends NoteEvent {
 		next.continues = this.continues;
 		return next;
 	}
-	
+
 	/*@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof AbcNoteEvent) {
@@ -142,6 +152,7 @@ public class AbcNoteEvent extends NoteEvent {
 	}
 	
 	public AbcNoteEvent copy() {
+		assert tiesFrom == null && tiesTo == null : "copy() of a tied note loses the tie: " + this;
 		if (this instanceof BentAbcNoteEvent) {
 			BentAbcNoteEvent c = new BentAbcNoteEvent(note, velocity, startTick, endTick, tempoCache, (BentMidiNoteEvent)(this.origNote));
 			if (origBend != null) c.setOrigBend(origBend);

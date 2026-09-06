@@ -67,6 +67,7 @@ Version 4.6.25
 * Better simulate lotro not stopping samples that already are running, so e.g. a series of fast lute note with same pitch will now allow the previous to keep playing at full volume till their sample ends. This requires an updated soundfont that will download first time this version is ran.
 * Fix that when skipping in song, the highlighted current notes could stay highlighted, even though the song was now having new position.
 * Added TR-808 and TR-909 drum kit hit names.
+* Minor timing improvements to organic single-stage.
 
 Version 4.6.22
 * Downloads of the apps are now found on github. [https://github.com/NikolaiVChr/maestro/releases](https://github.com/NikolaiVChr/maestro/releases)

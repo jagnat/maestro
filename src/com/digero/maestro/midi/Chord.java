@@ -42,8 +42,8 @@ public class Chord implements AbcConstants, Comparable<Chord> {
 	protected long startTick;
 	protected long endTick;
 	protected List<AbcNoteEvent> notes = new ArrayList<>();
-	private int highest = 0;// source midi highest and lowest pitch in the chord
-	private int lowest = 200;
+	protected int highest = 0;// source midi highest and lowest pitch in the chord
+	protected int lowest = 200;
 
 	public Chord(AbcNoteEvent firstNote) {
 		tempoCache = firstNote.getTempoCache();
@@ -176,7 +176,7 @@ public class Chord implements AbcConstants, Comparable<Chord> {
 	/**
 	 * Called only on demand when the edge values is needed.
 	 */
-	private void recalcEdges() {
+	protected void recalcEdges() {
 		highest = 0;
 		lowest = 200;
 		for (AbcNoteEvent evt : notes) {
@@ -424,7 +424,10 @@ public class Chord implements AbcConstants, Comparable<Chord> {
 		}
 		return rests;
 	}
-	
+
+	/**
+	 * Should be kept uptodate with ChorOrganic.pruneWithMicros()
+	 **/
 	class PruneComparator implements Comparator<AbcNoteEvent> {
 		final boolean sustained;
 		final boolean drum;
