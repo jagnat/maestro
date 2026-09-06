@@ -1938,10 +1938,6 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			case TEMPO_FACTOR:
 				if (songExportSettingsPanel.getTempo() != abcSong.getTempoBPM())
 					setTempoWithoutEvent(abcSong.getTempoBPM());
-
-				//not needed as listeners on spinner will refresh
-				//refreshPreviewSequence(false);
-
 				break;
 			case TRANSPOSE:
 				setTransposeWithoutEvent(abcSong.getTranspose());
@@ -1961,9 +1957,8 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			case MIX_TIMING_COMBINE_PRIORITIES:
 				break;
 			case TIMINGS_MULTI:
-				// one or more timing settings were change in abc song
-				// setting on model dont fire action listener
-				songExportSettingsPanel.setTimingMode(
+				// one or more timing settings were changed in abc song
+				setTimingModeWithoutEvent(
 					TimingMode.getInstance(
 						abcSong.isOrganic(),
 						abcSong.isOrganic2(),
