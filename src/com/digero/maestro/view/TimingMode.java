@@ -47,7 +47,7 @@ public enum TimingMode {
                     return timing;
                 }
             }
-            return MIX;
+            return ORGANIC_SINGLESTAGE;
         }
 
         String getTooltip() {

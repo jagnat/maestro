@@ -226,6 +226,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
     private boolean fireMeterListeners = true;
     private boolean fireTempoListeners = true;
     private boolean fireDynaListeners = true;
+	private boolean fireTimingListeners = true;
     private JMenuItem openItem;
 
 	public ProjectFrame() {
@@ -605,9 +606,10 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		return new SongExportSettingsListener() {
 			@Override
 			public void transposeSettingsChanged() {
-				if (abcSong != null && fireTransposeListeners)
-                	abcSong.setTranspose(songExportSettingsPanel.getTranspose());
-            	refreshPreviewSequence(false);
+				if (abcSong != null && fireTransposeListeners) {
+					abcSong.setTranspose(songExportSettingsPanel.getTranspose());
+					refreshPreviewSequence(false);
+				}
 			}
 
 			@Override
@@ -617,7 +619,10 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 						abcSong.setTempoBPM(songExportSettingsPanel.getTempo());
 
 					abcSequencer.setTempoFactor(abcSong.getTempoFactor());
-					refreshPreviewSequence(false);
+
+					if (fireTempoListeners)
+						refreshPreviewSequence(false);
+
 				} else {
 					abcSequencer.setTempoFactor(1.0f);
 				}
@@ -641,11 +646,12 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 			@Override
 			public void timeSignatureChanged() {
-				if (abcSong != null && fireMeterListeners)
+				if (abcSong != null && fireMeterListeners) {
 					abcSong.setTimeSignature(songExportSettingsPanel.getTimeSignature());
 
-				// Breaking up of long notes can depend on time signature for bar lines.
-				refreshPreviewSequence(false);				
+					// Breaking up of long notes can depend on time signature for bar lines.
+					refreshPreviewSequence(false);
+				}
 			}
 
 			@Override
@@ -659,18 +665,20 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 				TimingMode mode = songExportSettingsPanel.getTimingMode();
             	songExportSettingsPanel.setTimingModeToolTipText(mode.getTooltip());
 
-            	if (abcSong != null)
-                	abcSong.setTimings(mode.organic, mode.multistage, mode.mixTimings, mode.swing, mode.priority, mode.upgraded);
+				if (abcSong != null && fireTimingListeners) {
+					abcSong.setTimings(mode.organic, mode.multistage, mode.mixTimings, mode.swing, mode.priority, mode.upgraded);
 
-            	refreshPreviewSequence(false);
+					refreshPreviewSequence(false);
+				}
 			}
 
 			@Override
 			public void dynamicChordModeChanged() {
 				if (abcSong != null) {
-					if (fireDynaListeners)
+					if (fireDynaListeners) {
 						abcSong.dynamicsMethod = songExportSettingsPanel.getDynamicChordMode();
-					refreshPreviewSequence(false);
+						refreshPreviewSequence(false);
+					}
 				}
 			}
 
@@ -2168,6 +2176,16 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
         fireDynaListeners = true;
     }
 
+	/**
+	 * Will not activate the changelistener to set abcSong
+	 * nor fire preview rebuild
+	 */
+	private void setTimingModeWithoutEvent(TimingMode mode) {
+		fireTimingListeners = false;
+		songExportSettingsPanel.setTimingMode(mode);
+		fireTimingListeners = true;
+	}
+
 	private enum CloseProjectMode {
     	NORMAL,
     	SHUTDOWN
@@ -2268,12 +2286,12 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 
 		clearSongInfoPanel();
 
-		songExportSettingsPanel.setTranspose(0);
-		songExportSettingsPanel.setTempo(MidiConstants.DEFAULT_TEMPO_BPM);
+		setTransposeWithoutEvent(0);
+		setTempoWithoutEvent(MidiConstants.DEFAULT_TEMPO_BPM);
 		songExportSettingsPanel.setKeySignature(KeySignature.C_MAJOR);
-		songExportSettingsPanel.setTimeSignature(TimeSignature.FOUR_FOUR);
-		songExportSettingsPanel.setTimingMode(TimingMode.MIX);
-		songExportSettingsPanel.setDynamicChordMode(AbcSong.dynamicsMethodDefault);
+		setTimeSignatureWithoutEvent(TimeSignature.FOUR_FOUR);
+		setTimingModeWithoutEvent(TimingMode.getFromSettings(saveSettings.defaultTiming));
+		setDynamicChordModeWithoutEvent(AbcSong.dynamicsMethodDefault);
 		songExportSettingsPanel.setCountOnlyTempoChangesFromFirstTrackSelected(false);
 
 		midiBarLabel.setBarNumberCache(null);
@@ -2381,8 +2399,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			songExportSettingsPanel.setKeySignature(abcSong.getKeySignature());
 			setTimeSignatureWithoutEvent(abcSong.getTimeSignature());
 
-            // setting on model dont fire action listener
-			songExportSettingsPanel.setTimingMode(
+			setTimingModeWithoutEvent(
 				TimingMode.getInstance(
 					abcSong.isOrganic(),
 					abcSong.isOrganic2(),
@@ -2937,6 +2954,10 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 		// Each rebuild request gets a new monotonic id. The preview counts as current
 		// only once applyPreview stamps this id into previewAppliedSeq.
 		final long requestSeq = ++previewRequestSeq;
+		if (log.isLoggable(Level.WARNING)) {
+			log.log(Level.WARNING, "refreshPreviewSequence #" + requestSeq + " immediate=" + immediate,
+					new Throwable("preview rebuild call site"));
+		}
 
         PreviewExportWorker oldWorker = null;
         if (previewWorker != null) {
