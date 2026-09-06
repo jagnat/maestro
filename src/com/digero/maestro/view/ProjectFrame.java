@@ -2139,6 +2139,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
      * Will not activate the changelistener to set abcSong
      */
     public void setTransposeWithoutEvent(int transpose) {
+		assert SwingUtilities.isEventDispatchThread():"Called from non-swing thread. Listener boolean must be a volatile instead.";
         fireTransposeListeners = false;
         songExportSettingsPanel.setTranspose(transpose);
         fireTransposeListeners = true;
@@ -2148,6 +2149,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
      * Will not activate the changelistener to set abcSong
      */
     private void setTimeSignatureWithoutEvent(TimeSignature ts) {
+		assert SwingUtilities.isEventDispatchThread():"Called from non-swing thread. Listener boolean must be a volatile instead.";
         fireMeterListeners = false;
         songExportSettingsPanel.setTimeSignature(ts);
         fireMeterListeners = true;
@@ -2157,6 +2159,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
      * Will not activate the changelistener to set abcSong
      */
     private void setTempoWithoutEvent(int tempoBPM) {
+		assert SwingUtilities.isEventDispatchThread():"Called from non-swing thread. Listener boolean must be a volatile instead.";
         fireTempoListeners = false;
         songExportSettingsPanel.setTempo(tempoBPM);
         fireTempoListeners = true;
@@ -2166,6 +2169,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
      * Will not activate the changelistener to set abcSong
      */
     private void setDynamicChordModeWithoutEvent(Chord.CalcDynamics dyna) {
+		assert SwingUtilities.isEventDispatchThread():"Called from non-swing thread. Listener boolean must be a volatile instead.";
         fireDynaListeners = false;
         songExportSettingsPanel.setDynamicChordMode(dyna);
         fireDynaListeners = true;
@@ -2176,6 +2180,7 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 	 * nor fire preview rebuild
 	 */
 	private void setTimingModeWithoutEvent(TimingMode mode) {
+		assert SwingUtilities.isEventDispatchThread():"Called from non-swing thread. Listener boolean must be a volatile instead.";
 		fireTimingListeners = false;
 		songExportSettingsPanel.setTimingMode(mode);
 		fireTimingListeners = true;
