@@ -2922,7 +2922,17 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			abcSequencer.setRunning(abcRunning);
             previewSequenceInfo.histogram.setSequencer(abcSequencer);
             if (previewSequenceInfo.dissonance != null) previewSequenceInfo.dissonance.setSequencer(abcSequencer);
+			PolyphonyHistogram oldHisto = arrangementView.getHistogram();
+			if (oldHisto != null && oldHisto != previewSequenceInfo.histogram) {
+				// remove listeners
+				oldHisto.setSequencer(null);
+			}
             arrangementView.setHistogram(previewSequenceInfo.histogram);
+			DissonanceDetector oldDisso = arrangementView.getDissonance();
+			if (oldDisso != null && oldDisso != previewSequenceInfo.dissonance) {
+				// remove listeners
+				oldDisso.setSequencer(null);
+			}
             arrangementView.setDissonance(previewSequenceInfo.dissonance);
             histogram = previewSequenceInfo.histogram;
             updateStereo();// we call this here to benefit PanVisualizerPanel

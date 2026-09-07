@@ -1149,4 +1149,12 @@ public class ArrangementView extends JPanel implements ICompileConstants, TableL
     public void setDissonance(DissonanceDetector dissonanceDetector) {
         if (dissonancePanel != null) dissonancePanel.setDissonance(dissonanceDetector);
     }
+
+    public PolyphonyHistogram getHistogram() {
+		return histogramPanel.getHistogram();
+    }
+
+	public DissonanceDetector getDissonance() {
+		return dissonancePanel.getDissonance();
+	}
 }
