@@ -46,8 +46,8 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 	private final int origTempo;
 	private final TimeSignature meter;
 	private final boolean tripletTiming;
-	private final boolean oddsAndEnds;
-	private final int oddsAndEndsVersion;
+	private final boolean mixTimings;
+	private final int mixTimingsVersion;
 	private String pctStr = "";
 	private final boolean organic;
 	public static final int COMBINE_PRIORITY_MULTIPLIER = 4;// Do not change this number without exposing the int in UI.
@@ -108,8 +108,8 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 
         if (song == null) {
             //for unit-testing only:
-            this.oddsAndEnds = mixTimings;
-            oddsAndEndsVersion = mixVersion;
+            this.mixTimings = mixTimings;
+            mixTimingsVersion = mixVersion;
             tempoSectionsABC = 0;
             return;
         }
@@ -283,8 +283,8 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 		
 		
 		int parts = song.getParts().size();
-		this.oddsAndEnds = mixTimings;
-		this.oddsAndEndsVersion = mixVersion;
+		this.mixTimings = mixTimings;
+		this.mixTimingsVersion = mixVersion;
 		if (!mixTimings && !organic) {
 			if (useTripletTiming) {
 				pctStr  = "Legacy Timing: Entire song will export in swing/triplet timing.\n";
@@ -748,11 +748,11 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 	}
 
 	public boolean isMixTiming() {
-		return oddsAndEnds;
+		return mixTimings;
 	}
 
 	public int getMixVersion() {
-		return oddsAndEndsVersion;
+		return mixTimingsVersion;
 	}
 
 	public TimingInfo getTimingInfo(long tick, AbcPart part) {
@@ -795,7 +795,7 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 		// exportEndTick, not really needed for end, but lets do it for good measure.
 		TimingInfoEvent e = getTimingEventForTick(tick);
 		long quan  = e.tick + Util.ceilGrid(tick - e.tick, e.info.getMinNoteLengthTicks());
-		if (!oddsAndEnds) return quan;
+		if (!mixTimings) return quan;
 		long quan2 = e.tick + Util.ceilGrid(quan - e.tick, e.infoOdd.getMinNoteLengthTicks());
 		int counter = 0;
 		while (quan != quan2 && counter < 1000) {
@@ -813,7 +813,7 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 		// exportStartTick, this is a double check to ensure we are on both grids for startTick.
 		TimingInfoEvent e = getTimingEventForTick(tick);
 		long quan  = e.tick + Util.floorGrid(tick - e.tick, e.info.getMinNoteLengthTicks());
-		if (!oddsAndEnds) return quan;
+		if (!mixTimings) return quan;
 		long quan2 = e.tick + Util.floorGrid(quan - e.tick, e.infoOdd.getMinNoteLengthTicks());
 		while (quan != quan2 && quan > 0L) {
 			quan  -= e.info.getMinNoteLengthTicks();
@@ -1059,7 +1059,7 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 	}
 	
 	TimingInfoEvent getTimingEventForTick(long tick, AbcPart part) {
-		if (oddsAndEnds)
+		if (mixTimings)
 			return oddTimingInfoByTick.get(part).floorEntry(tick).getValue();
 		return getTimingEventForTick(tick);
 	}
@@ -1109,7 +1109,7 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 
 	TimingInfoEvent getNextTimingEvent(long tick, AbcPart part) {
         Entry<Long, TimingInfoEvent> entry;
-        if (oddsAndEnds) {
+        if (mixTimings) {
             entry = oddTimingInfoByTick.get(part).higherEntry(tick);
         } else {
             entry = timingInfoByTick.higherEntry(tick);
