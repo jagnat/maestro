@@ -388,14 +388,14 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 		}
 	}
 
-	public static AbcPart loadFromXml(AbcSong abcSong, Element ele, Version fileVersion, WarningHandler warningHandler) throws FileParseException {
+	public static AbcPart loadFromXml(AbcSong abcSong, Element ele, Version fileVersion, WarningHandler warningHandler, String filename) throws FileParseException {
 		AbcPart part = new AbcPart(abcSong);
-		part.initFromXml(ele, fileVersion, warningHandler);
+		part.initFromXml(ele, fileVersion, warningHandler, filename);
 		return part;
 	}
 
 	@SuppressWarnings("HardCodedStringLiteral")
-	private void initFromXml(Element ele, Version fileVersion, WarningHandler warningHandler) throws FileParseException {
+	private void initFromXml(Element ele, Version fileVersion, WarningHandler warningHandler, String filename) throws FileParseException {
 		try {
 			partNumber = SaveUtil.parseValue(ele, "@id", partNumber);
 			if (partNumber == 0) partNumber = 999;
@@ -512,7 +512,7 @@ public class AbcPart implements AbcPartMetadataSource, NumberedAbcPart, IDiscard
 					}
 				}
                 if (lastEnd > 200_000f) { // Limit to 200k bars to prevent OOM
-                    log.warning("Section endBar too large: " + lastEnd + ". Clamping to 200,000.");
+                    log.warning(filename+": Section endBar too large: " + lastEnd + ". Clamping to 200,000.");
                     lastEnd = 200_000f;
                 }
 				boolean[] booleanArray = new boolean[(int)(lastEnd) + 1];

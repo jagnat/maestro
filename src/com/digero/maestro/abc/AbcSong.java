@@ -484,9 +484,9 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 
 			priorityActive = SaveUtil.parseValue(songEle, "exportSettings/@combinePriorities", false);
 
-			handleTuneSections(songEle, fileVersion);
+			handleTuneSections(songEle, fileVersion, file.getName());
 
-			loadPartsFromXML(songEle, fileVersion, sorted, warningHandler);
+			loadPartsFromXML(songEle, fileVersion, sorted, warningHandler, file.getName());
 
 			Version def = new Version(0,0,0);
 			Version maestroVersion = SaveUtil.parseValue(songEle, "@maestroVersion", def);
@@ -668,7 +668,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	 *
      */
 	@SuppressWarnings("HardCodedStringLiteral")
-	private void handleTuneSections(Element songElement, Version fileVersion) throws XPathExpressionException, FileParseException {
+	private void handleTuneSections(Element songElement, Version fileVersion, String filename) throws XPathExpressionException, FileParseException {
 		float lastEnd = 0;
 		for (Element tuneEle : XmlUtil.selectElements(songElement, "tuneSection")) {
 			TuneLine tl = new TuneLine();
@@ -699,7 +699,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 			}
 		}
         if (lastEnd > 200_000f) { // Limit to 200k bars to prevent OOM
-            log.warning("Tune section endBar too large: " + lastEnd + ". Clamping to 200,000.");
+            log.warning(filename+": Tune section endBar too large: " + lastEnd + ". Clamping to 200,000.");
             lastEnd = 200_000f;
         }
 		boolean[] booleanArray = new boolean[(int)(lastEnd) + 1];
@@ -715,10 +715,10 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 	}
 
 	@SuppressWarnings("HardCodedStringLiteral")
-	private void loadPartsFromXML(Element songEle, Version fileVersion, boolean autoSorted, WarningHandler warningHandler)
+	private void loadPartsFromXML(Element songEle, Version fileVersion, boolean autoSorted, WarningHandler warningHandler, String filename)
 			throws XPathExpressionException, FileParseException {
 		for (Element ele : XmlUtil.selectElements(songEle, "part")) {
-			AbcPart part = AbcPart.loadFromXml(this, ele, fileVersion, warningHandler);
+			AbcPart part = AbcPart.loadFromXml(this, ele, fileVersion, warningHandler, filename);
 			
 			parts.add(part);
 			part.convertSectionsToLongTrees();
