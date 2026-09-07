@@ -1025,6 +1025,7 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 	}
 
 	private void calcBarStarts() {
+		if (organic) throw new UnsupportedOperationException("This should only be called by mix and legacy timings");
 		barStartTicks = new TreeSet<>();
 		barStartTicks.add(0L);
 		TimingInfoEvent prev = null;
