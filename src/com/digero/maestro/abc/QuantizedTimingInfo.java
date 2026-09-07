@@ -56,7 +56,7 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
     private final int tempoSectionsABC;
 
 	public QuantizedTimingInfo(SequenceInfo source, int newTempo, int origTempo, TimeSignature meter,
-			boolean useTripletTiming, AbcSong song, boolean oddsAndEnds, int mixVersion, boolean organic)
+			boolean useTripletTiming, AbcSong song, boolean mixTimings, int mixVersion, boolean organic)
 			throws AbcConversionException {
 
         /*
@@ -108,7 +108,7 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 
         if (song == null) {
             //for unit-testing only:
-            this.oddsAndEnds = oddsAndEnds;
+            this.oddsAndEnds = mixTimings;
             oddsAndEndsVersion = mixVersion;
             tempoSectionsABC = 0;
             return;
@@ -219,7 +219,7 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
                      * Since Mix Timing do not depend on bars to be on the grid, Mix Timings happily skip this.
                      */
                     final double epsilon = TimingInfo.MIN_TEMPO_BPM / (2.0d * TimingInfo.MAX_TEMPO_BPM);//0.005
-                    while (lengthTicks > 0L && !oddsAndEnds) {
+                    while (lengthTicks > 0L && !mixTimings) {
                         double barNumberTmp = prevMidiTempoEvent.barNumber + lengthTicks / ((double) prevMidiTempoEvent.info.getBarLengthTicks());
                         double gridUnitsRemaining = ((Math.ceil(barNumberTmp) - barNumberTmp) * info.getBarLengthTicks())
                                 / info.getMinNoteLengthTicks();
@@ -232,7 +232,7 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 
                     if (lengthTicks == 0L) {
                         // The prev tempo event was quantized to zero-length; remove it
-                        if (oddsAndEnds || prevMidiTempoEvent.tick == 0L) {
+                        if (mixTimings || prevMidiTempoEvent.tick == 0L) {
                             // Put the current event at prev events place, when we remove prev.
                             tick = prevMidiTempoEvent.tick;
                             // Be careful here. this line will make sure less events is removed,
@@ -283,9 +283,9 @@ public class QuantizedTimingInfo implements ITempoCache, IBarNumberCache {
 		
 		
 		int parts = song.getParts().size();
-		this.oddsAndEnds = oddsAndEnds;
+		this.oddsAndEnds = mixTimings;
 		this.oddsAndEndsVersion = mixVersion;
-		if (!oddsAndEnds && !organic) {
+		if (!mixTimings && !organic) {
 			if (useTripletTiming) {
 				pctStr  = "Legacy Timing: Entire song will export in swing/triplet timing.\n";
 			} else {

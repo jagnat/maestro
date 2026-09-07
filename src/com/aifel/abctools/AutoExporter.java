@@ -473,30 +473,41 @@ public class AutoExporter implements WarningHandler {
 		boolean oldOrganic = abcSong.isOrganic();
 		boolean oldOrganic2 = abcSong.isOrganic2();
         boolean oldOrganic2v2 = abcSong.isUpgraded();
+		boolean oldSwing = abcSong.isTripletTiming();
+		boolean oldPrio = abcSong.isPriorityActive();
         Chord.CalcDynamics oldDyna = abcSong.dynamicsMethod;
+
+		boolean tmpMix = oldMix;
+		boolean tmpOrganic = oldOrganic;
+		boolean tmpOrganic2 = oldOrganic2;
+		boolean tmpOrganic2v2 = oldOrganic2v2;
+		boolean tmpSwing = oldSwing;
+		boolean tmpPrio = oldPrio;
+
         if (frame.getForceLegacyTimingSelected()) {
             if (oldMix || oldOrganic) timingModified = frame.getSaveMSXtimingSelected();
-            abcSong.setMixTiming(false);
-            abcSong.setOrganic(false);
+            tmpMix = false;
+            tmpOrganic = false;
         } else if (frame.getForceMixTimingSelected()) {
 			if (oldOrganic || !oldMix) timingModified = frame.getSaveMSXtimingSelected();
-			abcSong.setMixTiming(true);
-            abcSong.setOrganic(false);
+			tmpMix = true;
+			tmpOrganic = false;
 		} else if (frame.getForceOrganicSelected()) {
 			if (!oldOrganic || oldOrganic2) timingModified = frame.getSaveMSXtimingSelected();
-			abcSong.setOrganic(true);
-            abcSong.setOrganic2(false);
+			tmpOrganic = true;
+			tmpOrganic2 = false;
 		} else if (frame.getForceOrganic2Selected()) {
 			if (!oldOrganic || !oldOrganic2 || oldOrganic2v2) timingModified = frame.getSaveMSXtimingSelected();
-            abcSong.setOrganic(true);
-			abcSong.setOrganic2(true);
-            abcSong.setUpgraded(false);
+			tmpOrganic = true;
+			tmpOrganic2 = true;
+			tmpOrganic2v2 = false;
 		} else if (frame.getForceOrganic2v2Selected()) {
             if (!oldOrganic || !oldOrganic2 || !oldOrganic2v2) timingModified = frame.getSaveMSXtimingSelected();
-            abcSong.setOrganic(true);
-            abcSong.setOrganic2(true);
-            abcSong.setUpgraded(true);
+			tmpOrganic = true;
+			tmpOrganic2 = true;
+			tmpOrganic2v2 = true;
         }
+		abcSong.setTimings(tmpOrganic, tmpOrganic2, tmpMix, tmpSwing, tmpPrio, tmpOrganic2v2);
         if (frame.getForceVolumeMethodSelected()) {
             if (oldDyna != frame.getVolumeMethodSelected()) {
                 dynaModified = frame.isSaveMSXvolumeSelected();
@@ -571,10 +582,7 @@ public class AutoExporter implements WarningHandler {
 		
 		if (!frame.getSaveMSXtimingSelected()) {
 			// Don't save forced timing changes to project file
-			abcSong.setMixTiming(oldMix);
-			abcSong.setOrganic(oldOrganic);
-			abcSong.setOrganic2(oldOrganic2);
-            abcSong.setUpgraded(oldOrganic2v2);
+			abcSong.setTimings(oldOrganic, oldOrganic2, oldMix, oldSwing, oldPrio, oldOrganic2v2);
 		}
 
         if (!frame.isSaveMSXvolumeSelected()) {

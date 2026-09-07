@@ -1169,6 +1169,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 			this.tempoFactor = tempoFactor;
 			this.newTempo = newTempo;
 			this.origTempo = origTempo;
+			setMixDirty(true);
 			fireChangeEvent(AbcSongProperty.TEMPO_FACTOR);
 		}
 	}
@@ -1243,26 +1244,34 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		return mixVersion;
 	}
 
-	public void setMixTiming(boolean mixTiming) {
-		if (this.mixTiming != mixTiming) {
-			this.mixTiming = mixTiming;
-			fireChangeEvent(AbcSongProperty.MIX_TIMING);
-            fireChangeEvent(AbcSongProperty.TIMINGS_MULTI);
-		}
+	public boolean isPriorityActive() {
+		return priorityActive;
 	}
 
+	public boolean isOrganic() {
+		return organic;
+	}
+
+	/**
+	 * @return true if multistage enabled, organic also.
+	 */
+	public boolean isOrganic2() {
+		return organic2;
+	}
+
+	/**
+	 * @return true if multistage 2 enabled, requires organic2 and organic also.
+	 */
+	public boolean isUpgraded() {
+		return upgraded;
+	}
+
+	/**
+	 * Keep this for future use.
+	 */
 	public void setMixVersion(int mixVersion) {
 		if (this.mixVersion != mixVersion) {
 			this.mixVersion = mixVersion;
-			fireChangeEvent(AbcSongProperty.MIX_TIMING);// We can use same event as for mixtiming
-            fireChangeEvent(AbcSongProperty.TIMINGS_MULTI);
-		}
-	}
-
-	public void setTripletTiming(boolean tripletTiming) {
-		if (this.tripletTiming != tripletTiming) {
-			this.tripletTiming = tripletTiming;
-			fireChangeEvent(AbcSongProperty.TRIPLET_TIMING);
             fireChangeEvent(AbcSongProperty.TIMINGS_MULTI);
 		}
 	}
@@ -1276,37 +1285,31 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
         boolean changed = false;
         if (this.tripletTiming != swing) {
             this.tripletTiming = swing;
-            fireChangeEvent(AbcSongProperty.TRIPLET_TIMING);
+			setMixDirty(true);
             changed = true;
         }
         if (this.mixTiming != mix) {
             this.mixTiming = mix;
-            fireChangeEvent(AbcSongProperty.MIX_TIMING);
+			setMixDirty(true);
             changed = true;
         }
         if (this.priorityActive != prio) {
             setMixDirty(true);
             this.priorityActive = prio;
-            fireChangeEvent(AbcSongProperty.MIX_TIMING_COMBINE_PRIORITIES);
             changed = true;
         }
-        boolean orgChanged = false;
         if (organic != org) {
             organic = org;
-            orgChanged = true;
             changed = true;
         }
         if (organic2 != org2) {
             organic2 = org2;
-            orgChanged = true;
             changed = true;
         }
         if (upgraded != upgr) {
             upgraded = upgr;
-            orgChanged = true;
             changed = true;
         }
-        if (orgChanged) fireChangeEvent(AbcSongProperty.ORGANIC);
         if (changed) fireChangeEvent(AbcSongProperty.TIMINGS_MULTI);
     }
 
@@ -1628,64 +1631,6 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		}
 	}
 
-	public boolean isPriorityActive() {
-		return priorityActive;
-	}
-
-	public void setPriorityActive(boolean priorityActive) {
-		if (this.priorityActive != priorityActive) {
-			setMixDirty(true);
-			this.priorityActive = priorityActive;
-			fireChangeEvent(AbcSongProperty.MIX_TIMING_COMBINE_PRIORITIES);
-            fireChangeEvent(AbcSongProperty.TIMINGS_MULTI);
-		}
-	}
-	
-	public void setOrganic(boolean org) {
-		if (organic != org) {
-			organic = org;
-			fireChangeEvent(AbcSongProperty.ORGANIC);
-            fireChangeEvent(AbcSongProperty.TIMINGS_MULTI);
-		}
-	}
-	
-	/**
-	 * Set if multistage should be used when organic is enabled
-	 * 
-	 * @param multistage boolean for multistage
-	 */
-	public void setOrganic2(boolean multistage) {
-		if (organic2 != multistage) {
-			organic2 = multistage;
-			fireChangeEvent(AbcSongProperty.ORGANIC);
-            fireChangeEvent(AbcSongProperty.TIMINGS_MULTI);
-		}
-	}
-	
-	public boolean isOrganic() {
-		return organic;		
-	}
-	
-	/**
-	 * 
-	 * @return true if multistage enabled
-	 */
-	public boolean isOrganic2() {
-		return organic2;		
-	}
-
-    public boolean isUpgraded() {
-        return upgraded;
-    }
-
-    public void setUpgraded(boolean upgr) {
-        if (upgraded != upgr) {
-            upgraded = upgr;
-            fireChangeEvent(AbcSongProperty.ORGANIC);
-            fireChangeEvent(AbcSongProperty.TIMINGS_MULTI);
-        }
-    }
-
     public String getStats() {
         String str = "";
         if (firstExportTime != null && firstExportTime.getTime() != 0L) {
@@ -1814,6 +1759,10 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 		return instrNameSettings;
 	}
 
+	/**
+	 *
+	 * @return true if QuantizedTimingInfo needs to be regenerated.
+	 */
 	public boolean isMixDirty() {
 		return mixDirty;
 	}
@@ -1832,6 +1781,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
 
     public void setUsingOldTempos(boolean onlyFirstTrackTempos) {
         usingOldTempos = onlyFirstTrackTempos;
+		setMixDirty(true);
     }
 	
 	public QuantizedTimingInfo getQTM() {
@@ -2039,7 +1989,7 @@ public class AbcSong implements IDiscardable, AbcMetadataSource {
         // objects that needs to be generated by worker or here
         this.listeners = new ListenerList<>();
         this.abcExporter = null; // Will be regenerated by the worker
-        this.mixDirty = true; // Force regeneration
+        this.mixDirty = true; // Force regeneration of QTM
 
         // Deep Copies
 		this.combiInfo = new LotroCombiDrumInfo(other.combiInfo);

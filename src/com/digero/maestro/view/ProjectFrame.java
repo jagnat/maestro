@@ -1951,13 +1951,9 @@ public class ProjectFrame extends JFrame implements TableLayoutConstants, ICompi
 			case TIME_SIGNATURE:
 				setTimeSignatureWithoutEvent(abcSong.getTimeSignature());
 				break;
-			case ORGANIC:
-			case TRIPLET_TIMING:
-			case MIX_TIMING:
-			case MIX_TIMING_COMBINE_PRIORITIES:
-				break;
 			case TIMINGS_MULTI:
 				// one or more timing settings were changed in abc song
+				// that only happens at load project or from Abc Auto Exporter, which wont have this class loaded.
 				setTimingModeWithoutEvent(
 					TimingMode.getInstance(
 						abcSong.isOrganic(),
