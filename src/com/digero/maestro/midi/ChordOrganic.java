@@ -77,12 +77,10 @@ public class ChordOrganic extends Chord {
 	 *
 	 * Only used by processOrganic (single-stage).
 	 */
-	public void syncNoteTicksFromMicros() {
-		boolean first = true;
+	public void syncNoteTicksFromMicros(boolean first) {
 		for (AbcNoteEvent note : notes) {
 			if (!first) note.setStartTick(qtm.microsToTickABCOrganic(note.startABCMicros));
 			note.setEndTick(qtm.microsToTickABCOrganic(note.endABCMicros));
-			first = false;
 		}
 		recalcEndTick();
 	}

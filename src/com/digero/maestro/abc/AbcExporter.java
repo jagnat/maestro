@@ -3507,8 +3507,10 @@ public class AbcExporter {
                 assert false:"Please notify Aifel that this occurred, thanks.";
             }
         }
+        boolean first = true;
         for (ChordOrganic chord : chords) {
-            chord.syncNoteTicksFromMicros();
+            chord.syncNoteTicksFromMicros(first);
+            first = false;
         }
 
         if (assertionsEnabled && OUTPUT_METRICS) {
