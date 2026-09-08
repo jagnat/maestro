@@ -200,6 +200,11 @@ public class DissonanceDetector {
                 double w = Math.min(ampA, ampB);
 
                 if (prefs.excludeShortestNotes) {
+                    // Calculate how long these two notes
+                    // overlap in orig midi time.
+
+                    // because we used cache to calc micros, tune-editor tempo changes
+                    // are not factored in, can live with that.
                     long startB = b.startMicros;
                     long endB = b.endMicros;
                     long trueDuration = Math.min(endA, endB) - Math.max(startA, startB);
@@ -209,7 +214,7 @@ public class DissonanceDetector {
 
                 int interval = Math.abs(a.noteId - b.noteId);
                 int lowNote = Math.min(a.noteId, b.noteId);
-                if (interval == 0 || interval > 13) continue;
+                if (interval == 0 || interval > 13) continue; // Unison or far enough apart to not sound jarring
                 int semitones = interval % 12;
 
                 if (lowNote < Note.C3.id + MUD_LIMIT_FROM_C3[interval]) {
