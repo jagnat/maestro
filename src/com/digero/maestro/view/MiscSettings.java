@@ -57,6 +57,34 @@ public class MiscSettings {
 		saveToPrefs();
 	}
 
+	/**
+	 * A dissonance weighting preset. Values only: applying it to the spinners is the
+	 * dialog's job, so a preset can be previewed and then cancelled.
+	 */
+	public record DissonancePreset(boolean excludeShortestNotes, int min2factor, int maj7factor,
+								   int maj2factor, int trifactor, int min7factor, int mudfactor,
+								   int min2threshold, int min2penalty) {
+	}
+
+	/**
+	 * Shows harmonic tension, not just collisions. Minor 2nds dominate, with sevenths and
+	 * the tritone contributing lightly so that genuinely thick writing reads higher than
+	 * clean writing. Calibrated against DissonancePanel's 50 clip: five simultaneous
+	 * minor 2nds fill the bar.
+	 */
+	public static DissonancePreset dissonanceDefaultPreset() {
+		return new DissonancePreset(true, 6, 3, 2, 1, 1, 0, 1, 5);
+	}
+
+	/**
+	 * Only the genuinely jarring: minor 2nds beating inside the critical band. Sevenths,
+	 * tritones and bass mud are silent, so ordinary dominant-seventh harmony leaves the
+	 * graph flat and only real clashes show.
+	 */
+	public static DissonancePreset dissonanceMinimalPreset() {
+		return new DissonancePreset(true, 10, 0, 0, 0, 0, 0, 1, 8);
+	}
+
 	@SuppressWarnings("HardCodedStringLiteral")
 	private void loadPrefs(Preferences prefs) {
 		showMaxPolyphony = prefs.getBoolean("showMaxPolyphony", showMaxPolyphony);
