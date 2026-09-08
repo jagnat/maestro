@@ -244,11 +244,12 @@ public class PolyphonyHistogram   {
 						endMicros = Math.min(endMax, endMicros);
 					}
                 } else {
+					/*
 					int pitch = event.note.id;
 					if (cowbell) {
 						pitch = AbcConstants.COWBELL_NOTE_ID;
 					}
-					/*
+
 					Long duraMicros = LotroInstrumentSampleDuration.getDura(friendlyName, pitch);
 					if (duraMicros == null) {
 						System.err.println("Error: LotroInstrumentSampleDuration has no "+friendlyName+" with note "+event.note.id);
@@ -264,19 +265,12 @@ public class PolyphonyHistogram   {
                     endTick   = qtm.microsToTickABC(endMicros);
                 }
                 if (endMicros == startMicros) continue;
-								
-				Pair<Long,Integer> oldStart = partMap.get(startMicros);
-				if (oldStart == null) {
-					oldStart = new Pair<>(event.getStartTick(), 0);
-					partMap.put(startMicros, oldStart);
-				}
-				oldStart.second += 1;
-				
-				Pair<Long,Integer> oldEnd = partMap.get(endMicros);
-				if (oldEnd == null) {
-					oldEnd = new Pair<>(endTick, 0);
-					partMap.put(endMicros, oldEnd);
-				}
+
+                Pair<Long, Integer> oldStart = partMap.computeIfAbsent(startMicros, k -> new Pair<>(event.getStartTick(), 0));
+                oldStart.second += 1;
+
+				final long endTickFinal = endTick;
+				Pair<Long, Integer> oldEnd = partMap.computeIfAbsent(endMicros, k -> new Pair<>(endTickFinal, 0));
 				oldEnd.second -= 1;
 
 				assert endMicros - startMicros > 0L;
@@ -340,13 +334,9 @@ public class PolyphonyHistogram   {
 				long tick = entry.getValue().first;
 				//assert tick >= lastTick:"HISTO OOPS 3";
 				lastTick = tick;
-						
-				Pair<Long,Integer> oldValue = songMap.get(micros);
-				if (oldValue == null) {
-					oldValue = new Pair<>(tick, 0);
-					songMap.put(micros, oldValue);
-				}
-				oldValue.second += noteStarts;
+
+                Pair<Long, Integer> oldValue = songMap.computeIfAbsent(micros, k -> new Pair<>(tick, 0));
+                oldValue.second += noteStarts;
 			}
 		}
 
@@ -379,11 +369,7 @@ public class PolyphonyHistogram   {
                 //assert tick >= lastTick:"HISTO OOPS 3";
                 lastTick = tick;
 
-                Pair<Long,Integer> oldValue = songMap.get(micros);
-                if (oldValue == null) {
-                    oldValue = new Pair<>(tick, 0);
-					songMap.put(micros, oldValue);
-                }
+                Pair<Long, Integer> oldValue = songMap.computeIfAbsent(micros, k -> new Pair<>(tick, 0));
                 oldValue.second += noteStarts;
             }
         }

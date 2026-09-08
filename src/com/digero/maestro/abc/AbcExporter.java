@@ -802,8 +802,8 @@ public class AbcExporter {
 
             for (int i = 0; i < parts; i++) {
                 long rest = base + (i < remainder ? 1L : 0L);   // spread remainder 1 micro at a time
-                if (useMicroAccuracy) delayed.append("z" + rest);
-                else delayed.append("z" + microToMilliCeil(rest,oneMicro,oneMilli));
+                if (useMicroAccuracy) delayed.append("z").append(rest);
+                else delayed.append("z").append(microToMilliCeil(rest, oneMicro, oneMilli));
                 delayed.append(" ");
             }
             delayed.append("| \n");
@@ -1710,21 +1710,21 @@ public class AbcExporter {
     private StringBuilder exportPartHeaderToAbc(AbcPart part, int[] quanFractions, int oneNoteIs) {
         StringBuilder out = new StringBuilder();
         out.append("\n");
-		out.append("X: " + part.getPartNumber()).append("\n");
+		out.append("X: ").append(part.getPartNumber()).append("\n");
 		if (metadata != null) {
-			out.append("T: " + StringCleaner.cleanForABC(metadata.getPartName(part))).append("\n");
+			out.append("T: ").append(StringCleaner.cleanForABC(metadata.getPartName(part))).append("\n");
 		} else {
-			out.append("T: " + StringCleaner.cleanForABC(part.getTitle())).append("\n");
+			out.append("T: ").append(StringCleaner.cleanForABC(part.getTitle())).append("\n");
 		}
 
-		out.append(AbcField.PART_NAME + StringCleaner.cleanForABC(part.getTitle())).append("\n");
+		out.append(AbcField.PART_NAME).append(StringCleaner.cleanForABC(part.getTitle())).append("\n");
 
 		// Since people might not use the instrument-name when they name a part,
 		// we add this so can choose the right instrument in abcPlayer and maestro when
 		// loading abc.
-		out.append(AbcField.MADE_FOR + part.getInstrument().friendlyName.trim()).append("\n");
-        if (part.getUserPan() != null) out.append(AbcField.USER_PAN + part.getUserPan().toString()).append("\n");
-        else out.append(AbcField.USER_PAN + "auto").append("\n");
+		out.append(AbcField.MADE_FOR).append(part.getInstrument().friendlyName.trim()).append("\n");
+        if (part.getUserPan() != null) out.append(AbcField.USER_PAN).append(part.getUserPan().toString()).append("\n");
+        else out.append(AbcField.USER_PAN).append("auto").append("\n");
 
         /*
         if (organic) {
@@ -1738,19 +1738,19 @@ public class AbcExporter {
             // Is really just needed when outputting each part to its own file.
             // But songbook indexers use them
 			if (!metadata.getComposer().isEmpty())
-				out.append("C: " + StringCleaner.cleanForABC(metadata.getComposer())).append("\n");
+				out.append("C: ").append(StringCleaner.cleanForABC(metadata.getComposer())).append("\n");
 
 			if (!metadata.getTranscriber().isEmpty())
-				out.append("Z: " + StringCleaner.cleanForABC(metadata.getTranscriber())).append("\n");
+				out.append("Z: ").append(StringCleaner.cleanForABC(metadata.getTranscriber())).append("\n");
 		}
 
-		out.append("M: " + qtm.getMeter()).append("\n");
-		out.append("Q: " + qtm.getPrimaryExportTempoBPM()).append("\n");
-		out.append("K: " + keySignature).append("\n");
+		out.append("M: ").append(qtm.getMeter()).append("\n");
+		out.append("Q: ").append(qtm.getPrimaryExportTempoBPM()).append("\n");
+		out.append("K: ").append(keySignature).append("\n");
 		if (organic) {
-            out.append("L: " + quanFractions[5]+"/"+quanFractions[6]).append("\n");
+            out.append("L: ").append(quanFractions[5]).append("/").append(quanFractions[6]).append("\n");
         } else {
-            out.append("L: " + ((qtm.getMeter().numerator / (double) qtm.getMeter().denominator) < 0.75d ? "1/16" : "1/8"));
+            out.append("L: ").append((qtm.getMeter().numerator / (double) qtm.getMeter().denominator) < 0.75d ? "1/16" : "1/8");
             out.append("\n");
         }
 		out.append("\n");
@@ -2282,7 +2282,7 @@ public class AbcExporter {
 	/**
 	 * Combine the tracks into one, separate into chords.
 	 */
-	private Pair<List<Chord>, Boolean> combineOrganic(AbcPart part, boolean preview, PolyphonyHistogram histogram, int quanFractions[]) throws AbcConversionException {
+	private Pair<List<Chord>, Boolean> combineOrganic(AbcPart part, boolean preview, PolyphonyHistogram histogram, int[] quanFractions) throws AbcConversionException {
         part.numberOfRemovedNotesForSafety = 0;
 		// Combine the events from the enabled tracks
 		List<AbcNoteEvent> events = new ArrayList<>();
@@ -6966,7 +6966,7 @@ public class AbcExporter {
 		}
 		Note newNote = Note.fromId(noteID);
 		if (newNote == null || newNote == Note.REST) {
-			System.out.println("Note removed, pitch bend out of range: "+noteID);
+			logAbc.warning("Note removed, pitch bend out of range: "+noteID);
 			return null;
 		}
 		AbcNoteEvent sub = new AbcNoteEvent(newNote, be.velocity, tick, be.getEndTick(), be.getTempoCache(), be.origNote);
