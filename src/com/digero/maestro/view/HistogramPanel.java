@@ -227,7 +227,15 @@ public class HistogramPanel extends JPanel implements IDiscardable, TableLayoutC
         // POSITION/DRAG_POSITION fire on every playback tick. histoGraph already
         // region-repaints itself for those via NoteGraph.onEvent, so a full repaint
         // here just defeats that optimization. But always refresh the count label.
-        if (p != SequencerEvent.SequencerProperty.POSITION && p != SequencerEvent.SequencerProperty.DRAG_POSITION) {
+        if (p == SequencerEvent.SequencerProperty.TRACK_ACTIVE) {
+            if (histogram != null) histogram.setDirty();
+            // Rebuild now: repaint() only queues, and updateCountLabel() below calls
+            // get()/max(), which run analyze() and clear the dirty flag. By paint time
+            // getEvents() would see isDirty()==false and keep the stale event list.
+            histoGraph.recalcPolyphonyEvents();
+            histoGraph.invalidateNoteCache();
+            histoGraph.repaint();
+        } else if (p != SequencerEvent.SequencerProperty.POSITION && p != SequencerEvent.SequencerProperty.DRAG_POSITION) {
             histoGraph.repaint();
         }
 		

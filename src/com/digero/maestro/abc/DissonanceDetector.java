@@ -43,7 +43,7 @@ public class DissonanceDetector {
             return;
         }
 
-        if (part.getEnabledTrackCount() == 0 || !part.isActive()) {
+        if (part.getEnabledTrackCount() == 0) {
             dissonanceData.put(part.uniqueID, partData);
             return;
         }
@@ -85,8 +85,19 @@ public class DissonanceDetector {
         allNotes.clear();
         for (Map.Entry<Long, List<DissNote>> partData : dissonanceData.entrySet()) {
             AbcPart part = song.getPartFromID(partData.getKey());
-            if (part == null) continue;
-            if (part.getEnabledTrackCount() == 0 || !part.isActive()) continue;
+
+            if (part == null) {
+                //System.out.println("  ANALYSE skip: id=" + partData.getKey() + " NOT IN SONG, had " + partData.getValue().size() + " notes");
+                continue;
+            }
+            if (part.getEnabledTrackCount() == 0 || !part.isActive()) {
+                //System.out.println("  ANALYSE skip: " + part.getTitle() + " active=" + part.isActive()
+                //        + " soloed=" + part.isSoloed() + " tracks=" + part.getEnabledTrackCount()
+                //        + " had " + partData.getValue().size() + " notes");
+                continue;
+            }
+            //System.out.println("  ANALYSE take: " + part.getTitle() + " perc=" + part.getInstrument().isPercussion
+            //        + " notes=" + partData.getValue().size());
             allNotes.addAll(partData.getValue());
         }
 
@@ -305,7 +316,7 @@ public class DissonanceDetector {
             this.startMicros = startMicros;
             this.endMicros = endMicros;
             this.sustained = sustained;
-            this.vol = velocity / 127.0d;
+            this.vol = Dynamics.fromMidiVelocity(velocity).abcVol / 127.0d;
             this.decayMicros = decayMicros;
         }
     }
