@@ -206,7 +206,10 @@ public class DissonancePanel extends JPanel implements IDiscardable, TableLayout
 
 		// See HistogramPanel: dissoGraph region-repaints itself for POSITION via
 		// NoteGraph.onEvent; only full-repaint on the rarer structural events.
-		if (p != SequencerEvent.SequencerProperty.POSITION && p != SequencerEvent.SequencerProperty.DRAG_POSITION) {
+		if (p == SequencerEvent.SequencerProperty.TRACK_ACTIVE) {
+			dissoGraph.invalidateNoteCache();
+			dissoGraph.repaint();
+		} else if (p != SequencerEvent.SequencerProperty.POSITION && p != SequencerEvent.SequencerProperty.DRAG_POSITION) {
 			dissoGraph.repaint();
 		}
 		updateCountLabel();

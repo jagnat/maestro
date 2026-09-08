@@ -26,14 +26,14 @@ public class MiscSettings {
 
     public boolean dissEnabled = false;
 	public boolean excludeShortestNotes = true;
-    public int min2factor = 1;
-    public int maj2factor = 0;
-    public int maj7factor = 1;
-    public int min7factor = 0;
-    public int trifactor = 0;
-	public int mudfactor = 0;
-    public int min2threshold = 1;
-    public int min2penalty = 10;
+	public int min2factor = 6;    // was 1
+	public int maj2factor = 2;    // was 0
+	public int maj7factor = 3;    // was 1
+	public int trifactor  = 1;    // was 0
+	public int min7factor = 1;    // was 0
+	public int mudfactor = 0;         // was 0
+	public int min2threshold = 1;
+	public int min2penalty = 5;   // was 10
     //public int maj2threshold = 1;
     //public int maj2penalty = 0;
 
